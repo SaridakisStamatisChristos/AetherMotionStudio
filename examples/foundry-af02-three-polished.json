@@ -1,0 +1,721 @@
+{
+  "version": 2,
+  "id": "foundry-af02-three-polished",
+  "title": "Foundry material studies",
+  "voice": "af_heart",
+  "shots": [
+    {
+      "id": "steel",
+      "template": "cinematic-graph",
+      "backend": "three",
+      "durationFrames": 150,
+      "transitionFrames": 0,
+      "heading": "BRUSHED STEEL",
+      "subheading": "Directional grain and moving highlights.",
+      "environment": "midnight",
+      "camera": {
+        "x": [
+          [
+            0,
+            1.2
+          ],
+          [
+            1,
+            -1.1
+          ]
+        ],
+        "y": [
+          [
+            0,
+            2.4
+          ],
+          [
+            1,
+            2.2
+          ]
+        ],
+        "z": [
+          [
+            0,
+            6.1
+          ],
+          [
+            1,
+            6.1
+          ]
+        ],
+        "zoom": [
+          [
+            0,
+            1500
+          ],
+          [
+            1,
+            1500
+          ]
+        ]
+      },
+      "assets": [
+        {
+          "id": "subject",
+          "asset": "retro-robot",
+          "tracks": {
+            "yaw": [
+              [
+                0,
+                -0.14
+              ],
+              [
+                1,
+                0.3
+              ]
+            ],
+            "scale": [
+              [
+                0,
+                1.25
+              ]
+            ]
+          }
+        }
+      ],
+      "effects": [],
+      "narration": [
+        "Brushed steel catches a moving light across fine directional grain."
+      ],
+      "fidelity": {
+        "bloom": 0.25,
+        "atmosphere": 0.18,
+        "contactShadow": 0.7,
+        "surfaceDetail": 0.65,
+        "depthOfField": 0.05,
+        "motionBlur": 0,
+        "grain": 0.07,
+        "grade": 0.15,
+        "particles": 0,
+        "typography": 1
+      },
+      "geometryProfile": "foundry-af01",
+      "cameraRig": {
+        "preset": "close-up",
+        "subject": "subject",
+        "framing": "close-up",
+        "strength": 1,
+        "padding": 0.04
+      },
+      "materialProfile": {
+        "version": 1,
+        "lighting": "sweep",
+        "assignments": [
+          {
+            "asset": "subject",
+            "material": {
+              "preset": "brushed-steel",
+              "texture": {
+                "seed": 23,
+                "resolution": 512,
+                "normal": true,
+                "occlusion": true
+              }
+            },
+            "includeEmissive": false
+          }
+        ]
+      }
+    },
+    {
+      "id": "wood",
+      "template": "cinematic-graph",
+      "backend": "three",
+      "durationFrames": 150,
+      "transitionFrames": 0,
+      "heading": "WARM WOOD",
+      "subheading": "Grain, color and diffuse response.",
+      "environment": "amber",
+      "camera": {
+        "x": [
+          [
+            0,
+            1.2
+          ],
+          [
+            1,
+            -1.1
+          ]
+        ],
+        "y": [
+          [
+            0,
+            2.4
+          ],
+          [
+            1,
+            2.2
+          ]
+        ],
+        "z": [
+          [
+            0,
+            6.1
+          ],
+          [
+            1,
+            6.1
+          ]
+        ],
+        "zoom": [
+          [
+            0,
+            1500
+          ],
+          [
+            1,
+            1500
+          ]
+        ]
+      },
+      "assets": [
+        {
+          "id": "subject",
+          "asset": "temple",
+          "tracks": {
+            "yaw": [
+              [
+                0,
+                -0.14
+              ],
+              [
+                1,
+                0.3
+              ]
+            ],
+            "scale": [
+              [
+                0,
+                1.25
+              ]
+            ]
+          }
+        }
+      ],
+      "effects": [],
+      "narration": [
+        "Warm wood reveals its grain as the light moves."
+      ],
+      "fidelity": {
+        "bloom": 0.25,
+        "atmosphere": 0.18,
+        "contactShadow": 0.7,
+        "surfaceDetail": 0.65,
+        "depthOfField": 0.05,
+        "motionBlur": 0,
+        "grain": 0.07,
+        "grade": 0.15,
+        "particles": 0,
+        "typography": 1
+      },
+      "geometryProfile": "foundry-af01",
+      "cameraRig": {
+        "preset": "close-up",
+        "subject": "subject",
+        "framing": "close-up",
+        "strength": 1,
+        "padding": 0.04
+      },
+      "materialProfile": {
+        "version": 1,
+        "lighting": "sweep",
+        "assignments": [
+          {
+            "asset": "subject",
+            "material": {
+              "preset": "wood",
+              "texture": {
+                "seed": 19,
+                "resolution": 512,
+                "normal": true
+              }
+            },
+            "includeEmissive": false
+          }
+        ]
+      }
+    },
+    {
+      "id": "fabric",
+      "template": "cinematic-graph",
+      "backend": "three",
+      "durationFrames": 150,
+      "transitionFrames": 0,
+      "heading": "WOVEN FABRIC",
+      "subheading": "A soft, matte woven finish.",
+      "environment": "midnight",
+      "camera": {
+        "x": [
+          [
+            0,
+            1.2
+          ],
+          [
+            1,
+            -1.1
+          ]
+        ],
+        "y": [
+          [
+            0,
+            2.4
+          ],
+          [
+            1,
+            2.2
+          ]
+        ],
+        "z": [
+          [
+            0,
+            6.1
+          ],
+          [
+            1,
+            6.1
+          ]
+        ],
+        "zoom": [
+          [
+            0,
+            1500
+          ],
+          [
+            1,
+            1500
+          ]
+        ]
+      },
+      "assets": [
+        {
+          "id": "subject",
+          "asset": "retro-robot",
+          "tracks": {
+            "yaw": [
+              [
+                0,
+                -0.14
+              ],
+              [
+                1,
+                0.3
+              ]
+            ],
+            "scale": [
+              [
+                0,
+                1.25
+              ]
+            ]
+          }
+        }
+      ],
+      "effects": [],
+      "narration": [
+        "Woven fabric scatters light with a broad matte response."
+      ],
+      "fidelity": {
+        "bloom": 0.25,
+        "atmosphere": 0.18,
+        "contactShadow": 0.7,
+        "surfaceDetail": 0.65,
+        "depthOfField": 0.05,
+        "motionBlur": 0,
+        "grain": 0.07,
+        "grade": 0.15,
+        "particles": 0,
+        "typography": 1
+      },
+      "geometryProfile": "foundry-af01",
+      "cameraRig": {
+        "preset": "close-up",
+        "subject": "subject",
+        "framing": "close-up",
+        "strength": 1,
+        "padding": 0.04
+      },
+      "materialProfile": {
+        "version": 1,
+        "lighting": "sweep",
+        "assignments": [
+          {
+            "asset": "subject",
+            "material": {
+              "preset": "fabric",
+              "texture": {
+                "seed": 51,
+                "scale": 2,
+                "resolution": 512,
+                "normal": true,
+                "occlusion": true
+              }
+            },
+            "includeEmissive": false
+          }
+        ]
+      }
+    },
+    {
+      "id": "plastic",
+      "template": "cinematic-graph",
+      "backend": "three",
+      "durationFrames": 150,
+      "transitionFrames": 0,
+      "heading": "POLISHED PLASTIC",
+      "subheading": "Clearcoat and rounded edges.",
+      "environment": "midnight",
+      "camera": {
+        "x": [
+          [
+            0,
+            1.2
+          ],
+          [
+            1,
+            -1.1
+          ]
+        ],
+        "y": [
+          [
+            0,
+            2.4
+          ],
+          [
+            1,
+            2.2
+          ]
+        ],
+        "z": [
+          [
+            0,
+            6.1
+          ],
+          [
+            1,
+            6.1
+          ]
+        ],
+        "zoom": [
+          [
+            0,
+            1500
+          ],
+          [
+            1,
+            1500
+          ]
+        ]
+      },
+      "assets": [
+        {
+          "id": "subject",
+          "asset": "smartphone",
+          "tracks": {
+            "yaw": [
+              [
+                0,
+                -0.14
+              ],
+              [
+                1,
+                0.3
+              ]
+            ],
+            "scale": [
+              [
+                0,
+                1.25
+              ]
+            ]
+          }
+        }
+      ],
+      "effects": [],
+      "narration": [
+        "Polished plastic reflects concentrated highlights."
+      ],
+      "fidelity": {
+        "bloom": 0.25,
+        "atmosphere": 0.18,
+        "contactShadow": 0.7,
+        "surfaceDetail": 0.65,
+        "depthOfField": 0.05,
+        "motionBlur": 0,
+        "grain": 0.07,
+        "grade": 0.15,
+        "particles": 0,
+        "typography": 1
+      },
+      "geometryProfile": "foundry-af01",
+      "cameraRig": {
+        "preset": "close-up",
+        "subject": "subject",
+        "framing": "close-up",
+        "strength": 1,
+        "padding": 0.04
+      },
+      "materialProfile": {
+        "version": 1,
+        "lighting": "sweep",
+        "assignments": [
+          {
+            "asset": "subject",
+            "material": {
+              "preset": "polished-plastic",
+              "baseColor": "#177d98",
+              "roughness": 0.14,
+              "texture": {
+                "resolution": 256,
+                "pattern": "paint"
+              }
+            },
+            "includeEmissive": false
+          }
+        ]
+      }
+    },
+    {
+      "id": "glass",
+      "template": "cinematic-graph",
+      "backend": "three",
+      "durationFrames": 150,
+      "transitionFrames": 0,
+      "heading": "GLASS-LIKE ACRYLIC",
+      "subheading": "Translucent approximation, no refraction.",
+      "environment": "midnight",
+      "camera": {
+        "x": [
+          [
+            0,
+            1.2
+          ],
+          [
+            1,
+            -1.1
+          ]
+        ],
+        "y": [
+          [
+            0,
+            2.4
+          ],
+          [
+            1,
+            2.2
+          ]
+        ],
+        "z": [
+          [
+            0,
+            6.1
+          ],
+          [
+            1,
+            6.1
+          ]
+        ],
+        "zoom": [
+          [
+            0,
+            1500
+          ],
+          [
+            1,
+            1500
+          ]
+        ]
+      },
+      "assets": [
+        {
+          "id": "subject",
+          "asset": "atom-model",
+          "tracks": {
+            "yaw": [
+              [
+                0,
+                -0.14
+              ],
+              [
+                1,
+                0.3
+              ]
+            ],
+            "scale": [
+              [
+                0,
+                1.25
+              ]
+            ]
+          }
+        }
+      ],
+      "effects": [],
+      "narration": [
+        "The translucent study shows a simplified glass-like surface."
+      ],
+      "fidelity": {
+        "bloom": 0.25,
+        "atmosphere": 0.18,
+        "contactShadow": 0.7,
+        "surfaceDetail": 0.65,
+        "depthOfField": 0.05,
+        "motionBlur": 0,
+        "grain": 0.07,
+        "grade": 0.15,
+        "particles": 0,
+        "typography": 1
+      },
+      "geometryProfile": "foundry-af01",
+      "cameraRig": {
+        "preset": "close-up",
+        "subject": "subject",
+        "framing": "close-up",
+        "strength": 1,
+        "padding": 0.04
+      },
+      "materialProfile": {
+        "version": 1,
+        "lighting": "sweep",
+        "assignments": [
+          {
+            "asset": "subject",
+            "material": {
+              "preset": "acrylic",
+              "opacity": 0.65,
+              "baseColor": "#7ccbd9",
+              "texture": {
+                "resolution": 256
+              }
+            },
+            "includeEmissive": false
+          }
+        ]
+      }
+    },
+    {
+      "id": "emission",
+      "template": "cinematic-graph",
+      "backend": "three",
+      "durationFrames": 150,
+      "transitionFrames": 0,
+      "heading": "EMISSIVE DISPLAY",
+      "subheading": "Light from the surface itself.",
+      "environment": "midnight",
+      "camera": {
+        "x": [
+          [
+            0,
+            1.2
+          ],
+          [
+            1,
+            -1.1
+          ]
+        ],
+        "y": [
+          [
+            0,
+            2.4
+          ],
+          [
+            1,
+            2.2
+          ]
+        ],
+        "z": [
+          [
+            0,
+            6.1
+          ],
+          [
+            1,
+            6.1
+          ]
+        ],
+        "zoom": [
+          [
+            0,
+            1500
+          ],
+          [
+            1,
+            1500
+          ]
+        ]
+      },
+      "assets": [
+        {
+          "id": "subject",
+          "asset": "smartphone",
+          "tracks": {
+            "yaw": [
+              [
+                0,
+                -0.14
+              ],
+              [
+                1,
+                0.3
+              ]
+            ],
+            "scale": [
+              [
+                0,
+                1.25
+              ]
+            ]
+          }
+        }
+      ],
+      "effects": [],
+      "narration": [
+        "An emissive display remains bright when the key light moves."
+      ],
+      "fidelity": {
+        "bloom": 0.25,
+        "atmosphere": 0.18,
+        "contactShadow": 0.7,
+        "surfaceDetail": 0.65,
+        "depthOfField": 0.05,
+        "motionBlur": 0,
+        "grain": 0.07,
+        "grade": 0.15,
+        "particles": 0,
+        "typography": 1
+      },
+      "geometryProfile": "foundry-af01",
+      "cameraRig": {
+        "preset": "close-up",
+        "subject": "subject",
+        "framing": "close-up",
+        "strength": 1,
+        "padding": 0.04
+      },
+      "materialProfile": {
+        "version": 1,
+        "lighting": "sweep",
+        "assignments": [
+          {
+            "asset": "subject",
+            "material": {
+              "preset": "emissive-display",
+              "emissiveIntensity": 0.8,
+              "texture": {
+                "seed": 11,
+                "resolution": 512,
+                "pattern": "panel"
+              }
+            },
+            "includeEmissive": true
+          }
+        ]
+      }
+    }
+  ]
+}

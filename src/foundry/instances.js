@@ -1,5 +1,6 @@
 import {roundedCuboid,sphere,cylinder,extrude,validateMesh,topologyAudit,LIMITS} from './geometry.js';
 import {meshDigest,COMPILER_VERSION} from './digest.js';
+import {materialAssignments} from './materials.js';
 import {emitCinematicAsset,emitEnvironment} from '../core/cinematography.js';
 export const PROFILE='foundry-af01';
 export const SUPPORTED=Object.freeze(['retro-robot','smartphone','temple','atom-model']);
@@ -13,10 +14,10 @@ const meshes=Object.freeze({
 const digests=Object.freeze(Object.fromEntries(Object.entries(meshes).map(([id,m])=>[id,meshDigest(m)])));
 export const inventory=()=>Object.fromEntries(Object.entries(meshes).map(([id,m])=>[id,{...validateMesh(m),sha256:digests[id],topologyAudit:topologyAudit(m)}]));
 export function bundleMetadata(asset){if(!SUPPORTED.includes(asset))throw Error('unsupported Foundry asset');return {schemaVersion:1,id:'foundry/'+asset,identity:asset,revision:'1.0.0',recipe:{family:PROFILE,version:1},units:'meters',coordinateSystem:'right-handed-y-up',anchors:{ground:[0,0,0]},compiler:COMPILER_VERSION,license:{sourceKind:'original',status:'project-policy'}}}
-export function meshCommands(state){const out=[];let triangles=0;function emit(id,asset,source){let i=0;source((center,size,color,tf=p=>p,emissive=false)=>{const component=i++;if(out.length>=512)throw Error('instance budget');let type='detail';
+export function meshCommands(state){const out=[],assignments=state.materialProfile?materialAssignments(state.materialProfile,state.backend??'cpu'):null;let triangles=0;function emit(id,asset,source){let i=0;source((center,size,color,tf=p=>p,emissive=false)=>{const component=i++;if(out.length>=512)throw Error('instance budget');let type='detail';
  if(asset==='retro-robot'&&size[0]===1.08&&size[1]===.86)type='round';
  if(asset==='smartphone'&&component===0)type='round';
  if(asset==='temple'){if(size[1]>size[0]*3&&size[1]>size[2]*3)type='cylinder';else if(size[0]>1&&size[1]>.12&&component>0)type='cornice'}
  if(asset==='atom-model')type=size[1]>size[0]*1.4?'cylinder':'ball';
- const origin=tf(center),axes=[0,1,2].map(j=>{const p=center.slice();p[j]+=size[j];return tf(p).map((x,k)=>x-origin[k])});const mesh=meshes[type];triangles+=mesh.indices.length/3;if(triangles>LIMITS.triangles)throw Error('scene triangle budget');out.push({id:id+'/'+component,meshKey:COMPILER_VERSION+':'+digests[type],meshRef:digests[type],mesh,origin,axes,color,emissive,pivot:origin,materialSlot:0})})}
+ const origin=tf(center),axes=[0,1,2].map(j=>{const p=center.slice();p[j]+=size[j];return tf(p).map((x,k)=>x-origin[k])});const mesh=meshes[type];triangles+=mesh.indices.length/3;if(triangles>LIMITS.triangles)throw Error('scene triangle budget');const assignment=assignments?.get(id),surface=assignment&&(!emissive||assignment.includeEmissive)?assignment.material:null;out.push({...(surface?{surface}:{}),id:id+'/'+component,meshKey:COMPILER_VERSION+':'+digests[type],meshRef:digests[type],mesh,origin,axes,color,emissive,pivot:origin,materialSlot:0})})}
  emit('environment','environment',box=>emitEnvironment(state,box));for(const a of state.assets)emit(a.id,a.asset,box=>emitCinematicAsset(a,box));return out}

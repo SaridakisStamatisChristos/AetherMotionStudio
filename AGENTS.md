@@ -22,3 +22,6 @@ Python scripts need a venv, requirements, FFmpeg, eSpeak NG and Kokoro models. v
 
 ## Foundry campaign AF-01
 Successor to accepted v1.0 main db54822d6b785375f47f18f50555ffccbf9eef16 (CI 45375807857). Use docs/foundry/STATUS.md as the forward-only checkpoint. Default pushes: fast tests + one polished AF-01 CPU film only. Manual release-pair/full remain runnable; no native Three.js Foundry render without authorization. Legacy geometry/profile unaffected by opt-in geometryProfile. No automatic merge.
+
+## Foundry AF-02 successor
+AF-01 accepted for continuation at 4e0a2eb (run 45387263982, 125 tests, artifact 14916512944). Default scope now AF-02 fast tests and one polished CPU material study; retain AF-01 evidence and manual full native gate. Use docs/foundry/MATERIALS.md and STATUS.md. No auto merge.
