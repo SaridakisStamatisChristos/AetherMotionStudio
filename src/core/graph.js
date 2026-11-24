@@ -1,5 +1,7 @@
+import {LOD_PROFILE,LOD_SUPPORTED} from '../foundry/lod-meshes.js';
+import {planLOD,validateLODPolicy,enforceBudget,resourceUsage} from '../foundry/lod-policy.js';
 import {validateMaterialProfile} from '../foundry/materials.js';
-import {PROFILE,SUPPORTED} from '../foundry/instances.js';
+import {PROFILE,SUPPORTED,meshCommands} from '../foundry/instances.js';
 import {supportedChannels,RIG_CAMERA_LIMITS,validateCameraRig,sampleCameraRig,frameCamera,validateActions,composePose,validateAttachments,resolveAttachments,validateAssembly,emitCinematicAsset,LAYERED_ENVIRONMENTS,emitEnvironment} from './cinematography.js';
 import {validateOverlays} from './overlays.js';
 import {validateAssetParams} from '../visual/catalog.js';
@@ -25,11 +27,13 @@ export function validateGraph(s,p='shot'){
  if(!Array.isArray(s.assets)||s.assets.length<1||s.assets.length>8)fail(p+'.assets','1–8 assets required');
  const ids=new Set();
  for(const [i,a] of s.assets.entries()){const q=p+'.assets['+i+']';object(a,['id','asset','tracks','params','motion','actions','attachment','assembly','identity','variant','identityPose'],q,['id','asset','tracks']);if(typeof a.id!=='string'||!/^[a-z0-9][a-z0-9-]{0,31}$/.test(a.id)||ids.has(a.id))fail(q+'.id','unique safe ID required');ids.add(a.id);if(!Object.hasOwn(ASSETS,a.asset))fail(q+'.asset','unknown asset');if(Object.hasOwn(a,'params'))validateAssetParams(a.asset,a.params);if(Object.hasOwn(a,'motion')&&!Object.hasOwn(MOTION_PRESETS,a.motion))fail(q+'.motion','unknown motion');tracks(resolveTracks(a),limits,q+'.tracks');if(['armPitch','armSpread','grip'].some(k=>Object.hasOwn(a.tracks,k)&&!supportedChannels(a.asset).includes(k)))fail(q,'unsupported articulated channel');if(Object.hasOwn(a,'actions'))validateActions(a,q);if(Object.hasOwn(a,'assembly'))validateAssembly(a,q+'.assembly');}
- if(Object.hasOwn(s,'geometryProfile')&&(s.geometryProfile!==PROFILE||s.assets.some(a=>!SUPPORTED.includes(a.asset))))fail(p+'.geometryProfile','unsupported Foundry profile or asset');
+ if(Object.hasOwn(s,'geometryProfile')&&(![PROFILE,LOD_PROFILE].includes(s.geometryProfile)||s.assets.some(a=>!(s.geometryProfile===LOD_PROFILE?LOD_SUPPORTED:SUPPORTED).includes(a.asset))))fail(p+'.geometryProfile','unsupported Foundry profile or asset');
+ if(s.geometryProfile===LOD_PROFILE)validateLODPolicy(s.lodPolicy,s.assets);else if(Object.hasOwn(s,'lodPolicy'))fail(p+'.lodPolicy','AF-03 geometry profile required');
  if(Object.hasOwn(s,'materialProfile')){if(!s.geometryProfile)fail(p+'.materialProfile','Foundry geometry profile required');if(s.assets.some(a=>a.identity&&s.materialProfile?.assignments?.some?.(x=>x.asset===a.id)))fail(p+'.materialProfile','pinned identity material override requires a versioned variant');validateMaterialProfile(s.materialProfile,s.assets,s.backend);}
  if(Object.hasOwn(s,'cameraRig'))validateCameraRig(s.cameraRig,ids,p+'.cameraRig');validateAttachments(s.assets,p+'.assets');if(Object.hasOwn(s,'overlays'))validateOverlays(s.overlays,p+'.overlays');if(Object.hasOwn(s,'layers')&&!LAYERED_ENVIRONMENTS.includes(s.layers))fail(p+'.layers','unknown environment layer preset');
  if(!Array.isArray(s.effects)||s.effects.length>4)fail(p+'.effects','0–4 effects required');
  const fx=new Set();for(const [i,raw] of s.effects.entries()){const q=p+'.effects['+i+']';if(raw&&Object.hasOwn(raw,'preset'))object(raw,['preset','target'],q);else object(raw,['type','target','color','start','end'],q);const e=resolveEffect(raw);if(!['orbit','sparkles','glow'].includes(e.type))fail(q+'.type','unknown effect');if(!ids.has(e.target))fail(q+'.target','unknown target');if(typeof e.color!=='string'||!/^#[0-9a-fA-F]{6}$/.test(e.color))fail(q+'.color','hex color required');number(e.start,0,1,q+'.start');number(e.end,0,1,q+'.end');if(e.start>=e.end)fail(q,'invalid effect window');const key=e.type+':'+e.target;if(fx.has(key))fail(q,'duplicate effect');fx.add(key);}
+ if(s.geometryProfile===LOD_PROFILE)planLOD(s,t=>evaluateGraphRaw(s,t));
  return s;
 }
 function sample(t,d,p){return Object.fromEntries(Object.entries(d).map(([k,v])=>[k,t[k]?keyframes(p,t[k]):v]));}
@@ -38,7 +42,7 @@ export const ENVIRONMENTS=Object.freeze({
  midnight:Object.freeze({background:'#151329',floor:'#242238',accent:'#b9a6ff',key:'#ffe6c5',rim:'#a58cff'}),
  amber:Object.freeze({background:'#30201d',floor:'#463029',accent:'#f9cb81',key:'#ffd2a0',rim:'#81d4dc'})
 });
-export function evaluateGraph(s,p){
+function evaluateGraphRaw(s,p){
  if(!Number.isFinite(p)||p<0||p>1)fail('progress','out of range');
  const c=sample(s.camera,cameraDefaults,p);
  function sampleAsset(a,t){
@@ -50,6 +54,7 @@ export function evaluateGraph(s,p){
  const camera=s.cameraRig?frameCamera(sampleCameraRig(s.cameraRig,p,s.camera),s.cameraRig,assets,s.camera):{position:[c.x,c.y,c.z],target:[0,1.2,0],zoom:c.zoom};
  return {camera,assets,...(s.materialProfile?{materialProfile:s.materialProfile,backend:s.backend}:{}),...(s.geometryProfile?{geometryProfile:s.geometryProfile}:{}),...(s.layers?{layers:s.layers}:{}),environment:ENVIRONMENTS[s.environment],effects:s.effects.map(resolveEffect).map(e=>({...e,strength:p>=e.start&&p<=e.end?Math.min(1,(p-e.start)*12,(e.end-p)*12):0})),progress:p,fidelity:fidelity(s.fidelity)};
 }
+export function evaluateGraph(s,p){const state=evaluateGraphRaw(s,p);if(s.geometryProfile!==LOD_PROFILE)return state;const plan=planLOD(s,t=>evaluateGraphRaw(s,t));state.lodSelection=plan.selected;state.lodReport=plan;enforceBudget(resourceUsage(meshCommands(state)),plan.budget);return state}
 // Both backends consume exactly the same emitted box commands, in the same order.
 export function emitGraph(state,box){emitEnvironment(state,box);for(const a of state.assets)emitCinematicAsset(a,box);}
 export function boxBasis(center,transform){const origin=transform(center),axes=[0,1,2].map(i=>{const p=center.slice();p[i]+=1;return transform(p).map((x,j)=>x-origin[j]);});return {origin,axes};}

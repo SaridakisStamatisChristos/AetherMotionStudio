@@ -25,3 +25,6 @@ Successor to accepted v1.0 main db54822d6b785375f47f18f50555ffccbf9eef16 (CI 453
 
 ## Foundry AF-02 successor
 AF-01 accepted for continuation at 4e0a2eb (run 45387263982, 125 tests, artifact 14916512944). Default scope now AF-02 fast tests and one polished CPU material study; retain AF-01 evidence and manual full native gate. Use docs/foundry/MATERIALS.md and STATUS.md. No auto merge.
+
+## AF-03 successor
+AF02 accepted for continuation at 81b10e6, CI 45389538842, 132 tests. Default fast tests + AF03 benchmark + one CPU polished film. No automatic LOD downgrades on budget failure; selected detail must be shot-stable and reported. Preserve prior fixtures and native Three. See docs/foundry/LOD.md and STATUS.md.

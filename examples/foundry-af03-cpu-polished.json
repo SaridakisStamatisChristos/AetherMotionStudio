@@ -1,0 +1,789 @@
+{
+  "version": 2,
+  "id": "foundry-af03-cpu-polished",
+  "title": "Foundry multi-LOD studies",
+  "voice": "af_heart",
+  "shots": [
+    {
+      "id": "robot",
+      "template": "cinematic-graph",
+      "backend": "cpu",
+      "durationFrames": 150,
+      "transitionFrames": 0,
+      "heading": "ROBOT / HERO LOD 0",
+      "subheading": "Fine curves and original articulation.",
+      "environment": "midnight",
+      "camera": {
+        "x": [
+          [
+            0,
+            1.7
+          ],
+          [
+            1,
+            -1.4
+          ]
+        ],
+        "y": [
+          [
+            0,
+            2.8
+          ],
+          [
+            1,
+            2.6
+          ]
+        ],
+        "z": [
+          [
+            0,
+            8.2
+          ],
+          [
+            1,
+            8.2
+          ]
+        ],
+        "zoom": [
+          [
+            0,
+            1260
+          ],
+          [
+            1,
+            1260
+          ]
+        ]
+      },
+      "assets": [
+        {
+          "id": "subject",
+          "asset": "retro-robot",
+          "tracks": {
+            "yaw": [
+              [
+                0,
+                -0.3
+              ],
+              [
+                1,
+                0.6
+              ]
+            ],
+            "scale": [
+              [
+                0,
+                1
+              ]
+            ]
+          }
+        }
+      ],
+      "effects": [],
+      "narration": [
+        "Hero geometry retains the robot's original articulation."
+      ],
+      "fidelity": {
+        "bloom": 0.25,
+        "atmosphere": 0.18,
+        "contactShadow": 0.7,
+        "surfaceDetail": 0.65,
+        "depthOfField": 0.05,
+        "motionBlur": 0,
+        "grain": 0.07,
+        "grade": 0.15,
+        "particles": 0,
+        "typography": 1
+      },
+      "geometryProfile": "foundry-af03",
+      "cameraRig": {
+        "preset": "close-up",
+        "subject": "subject",
+        "framing": "close-up",
+        "strength": 1,
+        "padding": 0.04
+      },
+      "lodPolicy": {
+        "version": 1,
+        "quality": "hero",
+        "selection": "explicit",
+        "overrides": [
+          {
+            "asset": "subject",
+            "level": 0
+          }
+        ],
+        "budget": {
+          "maxTriangles": 50000
+        }
+      },
+      "materialProfile": {
+        "version": 1,
+        "lighting": "sweep",
+        "assignments": [
+          {
+            "asset": "subject",
+            "material": {
+              "preset": "brushed-steel",
+              "texture": {
+                "seed": 23,
+                "resolution": 512,
+                "normal": true,
+                "occlusion": true
+              }
+            },
+            "includeEmissive": false
+          }
+        ]
+      }
+    },
+    {
+      "id": "phone",
+      "template": "cinematic-graph",
+      "backend": "cpu",
+      "durationFrames": 150,
+      "transitionFrames": 0,
+      "heading": "PHONE / LOD 1",
+      "subheading": "Cinematic detail, fewer triangles.",
+      "environment": "midnight",
+      "camera": {
+        "x": [
+          [
+            0,
+            1.7
+          ],
+          [
+            1,
+            -1.4
+          ]
+        ],
+        "y": [
+          [
+            0,
+            2.8
+          ],
+          [
+            1,
+            2.6
+          ]
+        ],
+        "z": [
+          [
+            0,
+            6.2
+          ],
+          [
+            1,
+            6.2
+          ]
+        ],
+        "zoom": [
+          [
+            0,
+            1450
+          ],
+          [
+            1,
+            1450
+          ]
+        ]
+      },
+      "assets": [
+        {
+          "id": "subject",
+          "asset": "smartphone",
+          "tracks": {
+            "yaw": [
+              [
+                0,
+                -0.3
+              ],
+              [
+                1,
+                0.6
+              ]
+            ],
+            "scale": [
+              [
+                0,
+                1.25
+              ]
+            ]
+          }
+        }
+      ],
+      "effects": [],
+      "narration": [
+        "The phone uses the normal cinematic detail level."
+      ],
+      "fidelity": {
+        "bloom": 0.25,
+        "atmosphere": 0.18,
+        "contactShadow": 0.7,
+        "surfaceDetail": 0.65,
+        "depthOfField": 0.05,
+        "motionBlur": 0,
+        "grain": 0.07,
+        "grade": 0.15,
+        "particles": 0,
+        "typography": 1
+      },
+      "geometryProfile": "foundry-af03",
+      "cameraRig": {
+        "preset": "close-up",
+        "subject": "subject",
+        "framing": "close-up",
+        "strength": 1,
+        "padding": 0.04
+      },
+      "lodPolicy": {
+        "version": 1,
+        "quality": "cinematic",
+        "selection": "explicit",
+        "overrides": [
+          {
+            "asset": "subject",
+            "level": 1
+          }
+        ],
+        "budget": {
+          "maxTriangles": 50000
+        }
+      },
+      "materialProfile": {
+        "version": 1,
+        "lighting": "sweep",
+        "assignments": [
+          {
+            "asset": "subject",
+            "material": {
+              "preset": "polished-plastic",
+              "baseColor": "#177d98",
+              "roughness": 0.14,
+              "texture": {
+                "resolution": 256,
+                "pattern": "paint"
+              }
+            },
+            "includeEmissive": false
+          }
+        ]
+      }
+    },
+    {
+      "id": "temple",
+      "template": "cinematic-graph",
+      "backend": "cpu",
+      "durationFrames": 150,
+      "transitionFrames": 0,
+      "heading": "TEMPLE / LOD 2",
+      "subheading": "Efficient curves, same architecture.",
+      "environment": "amber",
+      "camera": {
+        "x": [
+          [
+            0,
+            1.7
+          ],
+          [
+            1,
+            -1.4
+          ]
+        ],
+        "y": [
+          [
+            0,
+            2.8
+          ],
+          [
+            1,
+            2.6
+          ]
+        ],
+        "z": [
+          [
+            0,
+            6.2
+          ],
+          [
+            1,
+            6.2
+          ]
+        ],
+        "zoom": [
+          [
+            0,
+            1450
+          ],
+          [
+            1,
+            1450
+          ]
+        ]
+      },
+      "assets": [
+        {
+          "id": "subject",
+          "asset": "temple",
+          "tracks": {
+            "yaw": [
+              [
+                0,
+                -0.3
+              ],
+              [
+                1,
+                0.6
+              ]
+            ],
+            "scale": [
+              [
+                0,
+                1.25
+              ]
+            ]
+          }
+        }
+      ],
+      "effects": [],
+      "narration": [
+        "The temple keeps its silhouette with efficient geometry."
+      ],
+      "fidelity": {
+        "bloom": 0.25,
+        "atmosphere": 0.18,
+        "contactShadow": 0.7,
+        "surfaceDetail": 0.65,
+        "depthOfField": 0.05,
+        "motionBlur": 0,
+        "grain": 0.07,
+        "grade": 0.15,
+        "particles": 0,
+        "typography": 1
+      },
+      "geometryProfile": "foundry-af03",
+      "cameraRig": {
+        "preset": "close-up",
+        "subject": "subject",
+        "framing": "close-up",
+        "strength": 1,
+        "padding": 0.04
+      },
+      "lodPolicy": {
+        "version": 1,
+        "quality": "efficient",
+        "selection": "explicit",
+        "overrides": [
+          {
+            "asset": "subject",
+            "level": 2
+          }
+        ],
+        "budget": {
+          "maxTriangles": 50000
+        }
+      },
+      "materialProfile": {
+        "version": 1,
+        "lighting": "sweep",
+        "assignments": [
+          {
+            "asset": "subject",
+            "material": {
+              "preset": "wood",
+              "texture": {
+                "seed": 19,
+                "resolution": 512,
+                "normal": true
+              }
+            },
+            "includeEmissive": false
+          }
+        ]
+      }
+    },
+    {
+      "id": "atom",
+      "template": "cinematic-graph",
+      "backend": "cpu",
+      "durationFrames": 150,
+      "transitionFrames": 0,
+      "heading": "ATOM / LOD 2",
+      "subheading": "Reduced tessellation, original layout.",
+      "environment": "midnight",
+      "camera": {
+        "x": [
+          [
+            0,
+            1.7
+          ],
+          [
+            1,
+            -1.4
+          ]
+        ],
+        "y": [
+          [
+            0,
+            2.8
+          ],
+          [
+            1,
+            2.6
+          ]
+        ],
+        "z": [
+          [
+            0,
+            6.2
+          ],
+          [
+            1,
+            6.2
+          ]
+        ],
+        "zoom": [
+          [
+            0,
+            1450
+          ],
+          [
+            1,
+            1450
+          ]
+        ]
+      },
+      "assets": [
+        {
+          "id": "subject",
+          "asset": "atom-model",
+          "tracks": {
+            "yaw": [
+              [
+                0,
+                -0.3
+              ],
+              [
+                1,
+                0.6
+              ]
+            ],
+            "scale": [
+              [
+                0,
+                1.25
+              ]
+            ]
+          }
+        }
+      ],
+      "effects": [],
+      "narration": [
+        "The atomic model preserves the original component layout."
+      ],
+      "fidelity": {
+        "bloom": 0.25,
+        "atmosphere": 0.18,
+        "contactShadow": 0.7,
+        "surfaceDetail": 0.65,
+        "depthOfField": 0.05,
+        "motionBlur": 0,
+        "grain": 0.07,
+        "grade": 0.15,
+        "particles": 0,
+        "typography": 1
+      },
+      "geometryProfile": "foundry-af03",
+      "cameraRig": {
+        "preset": "close-up",
+        "subject": "subject",
+        "framing": "close-up",
+        "strength": 1,
+        "padding": 0.04
+      },
+      "lodPolicy": {
+        "version": 1,
+        "quality": "efficient",
+        "selection": "explicit",
+        "overrides": [
+          {
+            "asset": "subject",
+            "level": 2
+          }
+        ],
+        "budget": {
+          "maxTriangles": 50000
+        }
+      },
+      "materialProfile": {
+        "version": 1,
+        "lighting": "sweep",
+        "assignments": [
+          {
+            "asset": "subject",
+            "material": {
+              "preset": "acrylic",
+              "opacity": 0.65,
+              "baseColor": "#7ccbd9",
+              "texture": {
+                "resolution": 256
+              }
+            },
+            "includeEmissive": false
+          }
+        ]
+      }
+    },
+    {
+      "id": "chest",
+      "template": "cinematic-graph",
+      "backend": "cpu",
+      "durationFrames": 150,
+      "transitionFrames": 0,
+      "heading": "CHEST / LOD 3",
+      "subheading": "Preview geometry, articulated lid.",
+      "environment": "midnight",
+      "camera": {
+        "x": [
+          [
+            0,
+            1.7
+          ],
+          [
+            1,
+            -1.4
+          ]
+        ],
+        "y": [
+          [
+            0,
+            2.8
+          ],
+          [
+            1,
+            2.6
+          ]
+        ],
+        "z": [
+          [
+            0,
+            6.2
+          ],
+          [
+            1,
+            6.2
+          ]
+        ],
+        "zoom": [
+          [
+            0,
+            1450
+          ],
+          [
+            1,
+            1450
+          ]
+        ]
+      },
+      "assets": [
+        {
+          "id": "subject",
+          "asset": "treasure-chest",
+          "tracks": {
+            "yaw": [
+              [
+                0,
+                -0.3
+              ],
+              [
+                1,
+                0.6
+              ]
+            ],
+            "scale": [
+              [
+                0,
+                1.25
+              ]
+            ],
+            "open": [
+              [
+                0,
+                0
+              ],
+              [
+                0.5,
+                0.8
+              ],
+              [
+                1,
+                0.15
+              ]
+            ]
+          }
+        }
+      ],
+      "effects": [],
+      "narration": [
+        "The preview chest keeps its opening lid and all components."
+      ],
+      "fidelity": {
+        "bloom": 0.25,
+        "atmosphere": 0.18,
+        "contactShadow": 0.7,
+        "surfaceDetail": 0.65,
+        "depthOfField": 0.05,
+        "motionBlur": 0,
+        "grain": 0.07,
+        "grade": 0.15,
+        "particles": 0,
+        "typography": 1
+      },
+      "geometryProfile": "foundry-af03",
+      "cameraRig": {
+        "preset": "close-up",
+        "subject": "subject",
+        "framing": "close-up",
+        "strength": 1,
+        "padding": 0.04
+      },
+      "lodPolicy": {
+        "version": 1,
+        "quality": "preview",
+        "selection": "explicit",
+        "overrides": [
+          {
+            "asset": "subject",
+            "level": 3
+          }
+        ],
+        "budget": {
+          "maxTriangles": 50000
+        }
+      }
+    },
+    {
+      "id": "core",
+      "template": "cinematic-graph",
+      "backend": "cpu",
+      "durationFrames": 150,
+      "transitionFrames": 0,
+      "heading": "ENERGY CORE / AUTO",
+      "subheading": "Shot-stable automatic detail.",
+      "environment": "midnight",
+      "camera": {
+        "x": [
+          [
+            0,
+            1.7
+          ],
+          [
+            1,
+            -1.4
+          ]
+        ],
+        "y": [
+          [
+            0,
+            2.8
+          ],
+          [
+            1,
+            2.6
+          ]
+        ],
+        "z": [
+          [
+            0,
+            6.2
+          ],
+          [
+            1,
+            6.2
+          ]
+        ],
+        "zoom": [
+          [
+            0,
+            1450
+          ],
+          [
+            1,
+            1450
+          ]
+        ]
+      },
+      "assets": [
+        {
+          "id": "subject",
+          "asset": "energy-core",
+          "tracks": {
+            "yaw": [
+              [
+                0,
+                -0.3
+              ],
+              [
+                1,
+                0.6
+              ]
+            ],
+            "scale": [
+              [
+                0,
+                1.25
+              ]
+            ],
+            "pulse": [
+              [
+                0,
+                0
+              ],
+              [
+                0.5,
+                1
+              ],
+              [
+                1,
+                0
+              ]
+            ]
+          }
+        }
+      ],
+      "effects": [],
+      "narration": [
+        "Automatic detail stays fixed throughout the shot."
+      ],
+      "fidelity": {
+        "bloom": 0.25,
+        "atmosphere": 0.18,
+        "contactShadow": 0.7,
+        "surfaceDetail": 0.65,
+        "depthOfField": 0.05,
+        "motionBlur": 0,
+        "grain": 0.07,
+        "grade": 0.15,
+        "particles": 0,
+        "typography": 1
+      },
+      "geometryProfile": "foundry-af03",
+      "cameraRig": {
+        "preset": "close-up",
+        "subject": "subject",
+        "framing": "close-up",
+        "strength": 1,
+        "padding": 0.04
+      },
+      "lodPolicy": {
+        "version": 1,
+        "quality": "efficient",
+        "selection": "auto",
+        "overrides": [],
+        "budget": {
+          "maxTriangles": 50000
+        }
+      }
+    }
+  ]
+}
