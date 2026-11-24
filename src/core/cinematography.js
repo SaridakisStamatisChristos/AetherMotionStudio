@@ -1,7 +1,7 @@
 import {generatedBounds} from '../foundry/generator.js';
 import {importedBounds} from '../foundry/import-bundle.js';
 import {emitHeroBoxes,heroBounds} from '../foundry/hero.js';
-import {smooth,clamp,keyframes,mix} from './motion.js';
+import {smooth,clamp,keyframes,interpolate,mix} from './motion.js';
 import {MOTION_PRESETS} from './presets.js';
 import {add,sub,dot,cross,norm,ry} from '../visual/vectors.js';
 import {catalogHandAnchor,recipeRig} from '../visual/catalog-rig.js';
@@ -45,11 +45,11 @@ export function validateCameraRig(x,ids,p){
  if(x.strength!==undefined)finite(x.strength,0,1,p+'.strength');
  if(x.targetOffset!==undefined)vector(x.targetOffset,-.6,.6,p+'.targetOffset');
 }
-export function sampleCameraRig(x,p,tracks){
+export function sampleCameraRig(x,p,tracks,modes={}){
  const r=CAMERA_RIGS[x.preset],t=smooth(p),position=lerp3(r.a,r.b,t),target=lerp3(r.ta,r.tb,t);
  if(x.preset==='orbit')position[2]+=1.2*Math.sin(Math.PI*t);
- for(const [i,k] of ['x','y','z'].entries())if(tracks[k])position[i]=keyframes(p,tracks[k]);
- return {position,target,zoom:tracks.zoom?keyframes(p,tracks.zoom):mix(r.za,r.zb,t)};
+ for(const [i,k] of ['x','y','z'].entries())if(tracks[k])position[i]=interpolate(p,tracks[k],modes[k]??'ease');
+ return {position,target,zoom:tracks.zoom?interpolate(p,tracks.zoom,modes.zoom??'ease'):mix(r.za,r.zb,t)};
 }
 export function geometryBounds(assets){
  const lo=[Infinity,Infinity,Infinity],hi=[-Infinity,-Infinity,-Infinity];
@@ -102,23 +102,25 @@ export function validateActions(a,p){
  if(!Array.isArray(a.actions)||a.actions.length<1||a.actions.length>16)fail(p+'.actions','1–16 actions required');
  const channels=supportedChannels(a.asset);
  for(const [i,x] of a.actions.entries()){
-  const q=p+'.actions['+i+']';fields(x,['name','start','end','speed','phase','weight','blend','mode'],q,['name','start','end']);
+  const q=p+'.actions['+i+']';fields(x,['name','start','end','speed','phase','weight','blend','mode','hold'],q,['name','start','end']);
   choice(x.name,Object.keys(ACTIONS),q+'.name');window(x,q);
   if(x.speed!==undefined)finite(x.speed,.25,8,q+'.speed');
   if(x.phase!==undefined)finite(x.phase,0,1,q+'.phase');
   if(x.weight!==undefined)finite(x.weight,0,1,q+'.weight');
   if(x.blend!==undefined)finite(x.blend,0,.5,q+'.blend');
   if(x.mode!==undefined)choice(x.mode,['once','loop','relative'],q+'.mode');
+  if(x.hold!==undefined&&(x.hold!==true||x.mode==='loop'))fail(q+'.hold','hold must be true and is not allowed with loop');
   for(const ch of Object.keys(ACTIONS[x.name]))if(!channels.includes(ch))fail(q,'unsupported channel '+ch+' for '+a.asset);
  }
 }
 export function composePose(a,base,p,limits){
  const out={...base};
  for(const x of a.actions??[]){
-  if(p<x.start||p>x.end)continue;
-  const t=(p-x.start)/(x.end-x.start),raw=t*(x.speed??1)+(x.phase??0);
+  // hold (ART-01 opt-in): after the window the end pose persists instead of snapping back; blend fades in only.
+  if(p<x.start||(p>x.end&&x.hold!==true))continue;
+  const t=Math.min(1,(p-x.start)/(x.end-x.start)),raw=t*(x.speed??1)+(x.phase??0);
   const u=x.mode==='loop'?(raw%1):clamp(raw);
-  const b=x.blend??0,weight=(x.weight??1)*(b?Math.min(smooth(t/b),smooth((1-t)/b)):1);
+  const b=x.blend??0,weight=(x.weight??1)*(b?(x.hold===true?smooth(t/b):Math.min(smooth(t/b),smooth((1-t)/b))):1);
   for(const [ch,frames] of Object.entries(ACTIONS[x.name])){
    if(Object.hasOwn(a.tracks,ch))continue;
    const v=keyframes(u,frames),prior=out[ch]??0;

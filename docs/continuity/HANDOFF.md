@@ -1,24 +1,23 @@
-# Latest handoff — ART-01 slice 1 (authored product choreography)
-Checkpoint: branch `feature/art-01-motion` from main 4d053cc (LOCAL-03 merged via PR #15; head d6ace0e CI 45500337539, main CI 45500478270 green, test-only). Commits d42512a (record LOCAL-03 merge) plus this checkpoint commit. Not pushed. Date 2026-11-25.
-Status: ART-01 ACTIVE. Slice 1 IMPLEMENTED + TESTED + RENDERED locally; not human-reviewed, not accepted, not pushed.
+# Latest handoff — ART-01 slices 1–2 (choreography; opt-in flow/hold)
+Checkpoint: branch `feature/art-01-motion` from main 4d053cc (LOCAL-03 merged via PR #15). Commits d42512a (record LOCAL-03 merge), 5dc65cf (slice 1), plus this checkpoint commit (slice 2). Not pushed. Date 2026-11-25.
+Status: ART-01 ACTIVE. Slice 1 owner-reviewed (motion OK). Slice 2 implemented + tested + rendered, not human-reviewed. Not pushed, no PR.
 
 ## This session
-- Inspection: LOW_PROJECTED_MOTION (src/quality/preflight.js:54) = mean projected bbox-centre motion over 9 samples < 1 px (360×640). AF01 `product` = lone smartphone, single linear yaw track, camera tracks it → 0.83 px. Smartphone rig channels: x,y,z,yaw,scale only. ~50 motion presets + actions already exist (src/core/presets.js, cinematography.js) with once/loop/relative modes, weight, blend.
-- Decision: no engine change in slice 1. ACTIONS keys are enumerated by src/director/catalog.js, schema.js, scripts/audit-assets.mjs and studio-server /api/catalog — adding action names would change director/audit outputs and evidence.
-- Added examples/art01-product-{cpu,three}-polished.json (single `product` shot; identical identity/copy/look to AF01; tracks: yaw with counter-turn anticipation, overshoot, settle + x drift; actions: settle-in, reveal-spin (scale), emphasis (w .5), hover loop (w .3, blend .15); camera arc + push-in to zoom 1300).
-- Added tests/art01-choreography.test.js (7 tests: pair contract, AF01 identity preserved, preflight clean and AF01 gate unchanged, per-frame continuity + out-of-order determinism, choreography beats, negative snap-back detection, negative validation).
-- Commands/results: `npm test` → 175 tests, 174 pass, 0 fail, 1 skip. `$env:AETHER_CONCURRENCY="8"; $env:AETHER_GL="vulkan"; node scripts/produce.mjs --project examples/art01-product-cpu-polished.json --pair examples/art01-product-three-polished.json --backend both --id art01-product-r1` → succeeded 35.0 s, 1 prep, 2 renders (CPU 14.7 s, Three 10.3 s), verify PASS, quality pass 0/0, compare_release PASS; frame_glitch clean both. Agent viewed 8-beat strips (frames 0,12,30,75,120,140,160,179) for both backends: beats present and matched.
-- Docs: docs/CINEMATOGRAPHY.md "ART-01 choreography authoring pattern"; CURRENT_STATE active unit; NEXT_UNITS status.
+- Owner review of slice 1: "motion is ok"; owner sees Three.js output as visually better than CPU (recorded; CPU stays first-class).
+- Slice 2 (contract additions, all opt-in): `assets[].interpolation` {channel: 'ease'|'flow'}, `shots[].cameraInterpolation` (graph shots only), `actions[].hold: true` (not with loop). Files: src/core/motion.js (flowKeyframes, interpolate, INTERPOLATIONS), src/core/graph.js (validation + sampling), src/core/cinematography.js (sampleCameraRig modes, validateActions/composePose hold), src/core/timeline.js (shot field whitelist), docs/CINEMATOGRAPHY.md.
+- Default-unchanged proof: temporary worktree at 5dc65cf vs working tree, graph-state sha256 over all 48 examples (980 evaluations, 140 graph shots) identical a8db8a25ce7b…3d944. Worktree removed (node_modules there was a copy, not a link; repo node_modules intact).
+- Tests: tests/art01-engine.test.js 9 tests (flow properties, ease-equivalence, camera rig path, hold semantics, negatives with field paths, flow fixture). Fixed one wrong assertion of mine (zoom compared at a non-zoom key) and one vacuous negative (v1 fixture) → now uses blockchain-60s v2 chapter shot. `npm test` 184 tests, 183 pass, 0 fail, 1 skip.
+- Demo fixture examples/art01-flow-{cpu,three}-polished.json (product choreography + flow x/camera + held hover lift). Note: first attempt used `rise-in` with hold, which ends at base (y 0) so hold had no effect — replaced by `hover` once (ends off-base). Production: `$env:AETHER_CONCURRENCY="8"; $env:AETHER_GL="vulkan"; node scripts/produce.mjs --project examples/art01-flow-cpu-polished.json --pair examples/art01-flow-three-polished.json --backend both --id art01-flow-r1` → succeeded 39.1 s, all gates PASS, frame-glitch clean both.
 
 ## Next action
-1. Owner: watch out/art01-product-r1-cpu-polished/film.mp4 and out/art01-product-r1-three-polished/film.mp4 (compare with the product shot inside out/local-03-af01-cpu-polished/film.mp4) and judge the motion.
-2. With owner approval: push branch for test-only CI / PR.
-3. Candidate slice 2 (needs owner go-ahead; contract change, opt-in only, both backends): once-action `hold` so windows can end off-base without snap-back; optional flow-through keyframe interpolation (per-track, default smoothstep unchanged). Composition/framing (small subject) is ART-02.
+1. Owner (optional): watch out/art01-flow-r1-three-polished/film.mp4 vs out/art01-product-r1-three-polished/film.mp4 — difference is the flowing drift/push-in and the floating end pose.
+2. With owner authorization: push branch, test-only CI, PR, merge.
+3. Remaining ART-01 roadmap items (contacts, rig attachments, multi-actor interaction) or move to ART-02 (composition/framing — small subject) — owner's choice.
 
 ## Environment (PowerShell, repo root)
 PYTHON=.venv python; AETHER_FFMPEG=absolute .venv/Lib/site-packages/imageio_ffmpeg/binaries/ffmpeg-win-x86_64-v7.1.exe; AETHER_FFPROBE=absolute node_modules/@remotion/compositor-win32-x64-msvc/ffprobe.exe (absolute paths required).
 
 ## Unresolved risks
-- Motion quality is an agent judgement only; no human visual review yet.
-- Subject small in frame (inherited camera distance; zoom near 1350 limit).
+- Slice 2 visuals are agent-reviewed only.
+- Director/Studio do not author the new fields (no UI exposure yet); they remain valid for hand-authored projects.
 - Kept from LOCAL-03: Three/vulkan not bit-exact (gate by PSNR); keep frame_glitch on GPU renders; measure performance only on a settled machine.
