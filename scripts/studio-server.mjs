@@ -91,6 +91,7 @@ export async function createStudio({root=ROOT,dataDir=join(root,'studio-data'),r
    // Saved projects with speech already have an explicit global target; legacy v2
    // fixed/automatic authored budgets use the normal CLI without Director rewriting.
    const work=async()=>{
+    let outcome='failed';
     try{
      await runner({root,job:publicJob(job),snapshot,flags,log:s=>update(job,s)});
      const dir=join(outputDir,id),scene=validateProject(await json(join(dir,'scene.json')));
@@ -100,11 +101,11 @@ export async function createStudio({root=ROOT,dataDir=join(root,'studio-data'),r
      const audio=join(root,'public','audio',id+'.wav');
      // Copy audio for prepared playback without exposing arbitrary public files.
      const {copyFile}=await import('node:fs/promises');await copyFile(audio,join(dir,'preview-audio.wav'));
-     job.status='succeeded';job.phase='complete';
-    }catch(e){job.status='failed';job.phase='failed';job.error=String(e.message??e).slice(0,1000);}
+     outcome='succeeded';
+    }catch(e){job.error=String(e.message??e).slice(0,1000);}
     finally{
-     try{job.files=(await readdir(join(outputDir,id))).filter(x=>FILES.has(x)&& (job.status==='succeeded'||x!=='film.mp4'));}catch{}
-     job.finishedAt=new Date().toISOString();active=null;
+     try{job.files=(await readdir(join(outputDir,id))).filter(x=>FILES.has(x)&& (outcome==='succeeded'||x!=='film.mp4'));}catch{}
+     job.finishedAt=new Date().toISOString();job.status=outcome;job.phase=outcome==='succeeded'?'complete':'failed';active=null;
     }
    };
    void work();return publicJob(job);

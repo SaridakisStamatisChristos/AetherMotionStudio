@@ -1,7 +1,7 @@
 import {validateProject} from '/src/core/timeline.js';
 import {drawFilm} from '/src/core/draw-film.js';
 import {editProject,applyShotEdit,reorderShot,setBackend,setProfile,addAsset,removeAsset,previewState} from '/src/studio/model.js';
-const $=id=>document.getElementById(id),state={project:null,revision:null,savedId:null,shot:0,frame:0,playing:false,preview:null,prepared:null,three:null,job:null,catalog:null,lastFrame:0,timer:null,drawEpoch:0};
+const $=id=>document.getElementById(id),state={project:null,revision:null,savedId:null,dirty:true,shot:0,frame:0,playing:false,preview:null,prepared:null,three:null,job:null,catalog:null,lastFrame:0,timer:null,drawEpoch:0};
 function status(text,error=false){$('status').textContent=text;$('status').className=error?'error':'';}
 async function api(path,method='GET',data){const response=await fetch(path,{method,headers:method==='GET'?{}:{'Content-Type':'application/json','X-Aether-Studio':'1'},...(data===undefined?{}:{body:JSON.stringify(data)})});const x=await response.json();if(!response.ok)throw Error(x.error??response.statusText);return x;}
 function action(fn){return async e=>{e?.preventDefault();try{await fn(e);}catch(e){status(e.message,true);}};}
@@ -11,8 +11,8 @@ function button(label,fn,cls=''){const b=document.createElement('button');b.text
 function requireProject(){if(!state.project)throw Error('Create or load a project first');return state.project;}
 function stop(){state.playing=false;$('play').textContent='Play';$('audio').pause();}
 function invalidate(){stop();state.prepared=null;$('previewMode').value='draft';$('audio').removeAttribute('src');$('audio').load();state.preview=null;state.frame=0;state.three?.dispose();state.three=null;}
-function install(p,revision=null,savedId=null){validateProject(p);invalidate();state.project=p;state.revision=revision;state.savedId=savedId;state.shot=0;refresh();}
-function commit(p){validateProject(p);invalidate();state.project=p;state.shot=Math.min(state.shot,Math.max(0,(p.shots?.length??1)-1));refresh();}
+function install(p,revision=null,savedId=null){validateProject(p);invalidate();state.project=p;state.revision=revision;state.savedId=savedId;state.dirty=revision===null;state.shot=0;refresh();}
+function commit(p){validateProject(p);invalidate();state.project=p;state.dirty=true;state.shot=Math.min(state.shot,Math.max(0,(p.shots?.length??1)-1));refresh();}
 function duration(){return state.preview?.timeline?.durationFrames??360;}
 function time(f){const s=Math.floor(f/30);return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');}
 function selected(){return state.project?.shots?.[state.shot];}
@@ -21,7 +21,7 @@ function refresh(){
  state.preview=previewState(p,$('previewMode').value==='prepared'?state.prepared:null);
  $('empty').hidden=true;$('title').textContent=p.title;$('projectId').value=p.id;$('projectTitle').value=p.title;$('voice').value=p.voice;
  const graph=p.shots?.find(s=>s.template==='cinematic-graph');$('backend').value=graph?.backend??'cpu';$('profile').value=graph?.fidelity?'polished':'original';
- $('backend').disabled=$('profile').disabled=!graph;$('revision').textContent=state.revision?'Saved base revision '+state.revision.slice(0,10)+' · edits are local until saved':'Unsaved project';
+ $('backend').disabled=$('profile').disabled=!graph;$('revision').textContent=state.revision?(state.dirty?'Unsaved edits · base '+state.revision.slice(0,10):'Saved '+state.revision.slice(0,10)):'Unsaved project';
  $('json').value=JSON.stringify(p,null,2);$('previewLabel').textContent=state.preview.mode+' · reduced-resolution shared renderer; final export is native Remotion';
  $('duration').textContent=time(duration())+' · '+(p.shots?.length??1)+' shots';
  $('scrub').max=duration()-1;state.frame=Math.min(state.frame,duration()-1);
@@ -56,19 +56,20 @@ function tick(now){if(!state.playing)return;const audio=$('audio'),f=$('previewM
 async function play(){requireProject();if(state.playing){stop();return;}if(state.frame>=duration()-1)seek(0);state.playStart=performance.now();state.playFrame=state.frame;state.playing=true;$('play').textContent='Pause';if($('previewMode').value==='prepared'&&$('audio').src){try{$('audio').currentTime=state.frame/30;await $('audio').play();}catch(e){stop();throw Error('Prepared audio playback failed: '+e.message);}}requestAnimationFrame(tick);}
 function renderAssets(){const query=$('search').value.toLowerCase(),category=$('category').value,objects=state.catalog?.catalog.objects??[];$('assets').replaceChildren();for(const a of objects.filter(a=>(!category||a.category===category)&&a.id.includes(query)).slice(0,250)){const b=button(a.id.replaceAll('-',' '),()=>commit(addAsset(requireProject(),state.shot,a.id)));const s=document.createElement('span');s.textContent='+';b.append(s);$('assets').append(b);}}
 async function projects(){const x=await api('/api/projects');fill($('projects'),[['','Select a saved project'],...x.projects.map(p=>[p.id,p.title??p.id+' (invalid)'])]);if(state.savedId)$('projects').value=state.savedId;}
-async function save(){const p=requireProject();const rev=p.id===state.savedId?state.revision:null;const x=await api('/api/projects/'+p.id,'PUT',{project:p,revision:rev});state.revision=x.revision;state.savedId=p.id;$('revision').textContent='Saved '+x.revision.slice(0,10);await projects();status('Saved locally: '+p.id);}
+async function save(){const p=requireProject();const rev=p.id===state.savedId?state.revision:null;const x=await api('/api/projects/'+p.id,'PUT',{project:p,revision:rev});if(state.project!==p)throw Error('Project changed while saving; reload the saved revision before continuing.');state.revision=x.revision;state.savedId=p.id;state.dirty=false;$('revision').textContent='Saved '+x.revision.slice(0,10);await projects();status('Saved locally: '+p.id);}
 function downloadJSON(){const p=requireProject(),url=URL.createObjectURL(new Blob([JSON.stringify(p,null,2)+'\n'],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download=p.id+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
 async function start(mode){await save();const j=await api('/api/jobs','POST',{id:state.project.id,revision:state.revision,mode,quality:$('quality').checked,repair:$('repair').checked});state.job=j.id;await poll();status('Started local '+mode+' job '+j.id);}
 async function showJob(id){state.job=id;const j=await api('/api/jobs/'+id);$('jobState').textContent=j.status+' / '+j.phase;$('logs').textContent=j.log+(j.error?'\nERROR: '+j.error:'');$('logs').scrollTop=$('logs').scrollHeight;$('downloads').replaceChildren();const base='/api/jobs/'+id+'/files/';
  for(const file of j.files){const a=document.createElement('a');a.href=base+file+'?download=1';a.textContent=file;$('downloads').append(a);}
  const v=$('film');if(j.status==='succeeded'&&j.files.includes('film.mp4')){if(v.getAttribute('src')!==base+'film.mp4')v.src=base+'film.mp4';v.hidden=false;}else{v.hidden=true;v.removeAttribute('src');}
- if(j.status==='succeeded'&&j.projectId===state.project?.id&&j.revision===state.revision&&j.files.includes('props.json')&&!state.prepared){
-  const props=await api(base+'props.json');validateProject(props.scene);state.prepared=props;
+ if(j.status==='succeeded'&&!state.dirty&&j.projectId===state.project?.id&&j.revision===state.revision&&j.files.includes('props.json')&&!state.prepared){
+  const props=await api(base+'props.json');validateProject(props.scene);if(state.dirty||state.job!==id||j.projectId!==state.project?.id||j.revision!==state.revision)return;state.prepared=props;
   if(j.files.includes('preview-audio.wav'))$('audio').src=base+'preview-audio.wav';
  }
  if(j.status!=='running'&&j.files.includes('quality-report.json')){const q=await api(base+'quality-report.json');$('report').textContent=JSON.stringify({status:q.status,errors:q.errors,warnings:q.warnings,issues:q.issues,repair:q.repair,cost:q.cost,humanReview:q.humanReview},null,2);}
 }
-async function poll(){const x=await api('/api/jobs');fill($('jobs'),[['','Session jobs'],...x.jobs.map(j=>[j.id,j.projectId+' · '+j.mode+' · '+j.status])]);if(state.job){$('jobs').value=state.job;await showJob(state.job);}for(const id of ['prepare','render'])$(id).disabled=!!x.active;}
+let polling=false;
+async function poll(){if(polling)return;polling=true;try{const x=await api('/api/jobs');fill($('jobs'),[['','Session jobs'],...x.jobs.map(j=>[j.id,j.projectId+' · '+j.mode+' · '+j.status])]);if(state.job){$('jobs').value=state.job;await showJob(state.job);}for(const id of ['prepare','render'])$(id).disabled=!!x.active;}finally{polling=false;}}
 $('save').onclick=action(save);$('export').onclick=action(downloadJSON);$('play').onclick=action(play);$('scrub').oninput=()=>seek(Number($('scrub').value));$('search').oninput=renderAssets;$('category').onchange=renderAssets;
 $('projects').onchange=action(async()=>{if(!$('projects').value)return;const x=await api('/api/projects/'+$('projects').value);install(x.project,x.revision,x.project.id);status('Loaded '+x.project.id);});
 $('examples').onchange=action(async()=>{if(!$('examples').value)return;const x=await api('/api/examples/'+$('examples').value);install(x.project);status('Example imported; choose a project ID and save.');});
