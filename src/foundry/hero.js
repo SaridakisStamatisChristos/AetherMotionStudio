@@ -1,5 +1,5 @@
 import {HERO_PROFILE,HERO_IDS,HERO_REGISTRY,HERO_NEW_IDS,HERO_PACKS,heroDefinition} from './hero-recipes.js';
-import {roundedCuboid,boxMesh,sphere,cylinder,cone,torus,extrude,validateMesh} from './geometry.js';
+import {roundedCuboid,boxMesh,sphere,cylinder,cone,torus,extrude,lathe,flatShade,validateMesh} from './geometry.js';
 import {meshDigest,COMPILER_VERSION} from './digest.js';
 import {resolveMaterial} from './materials.js';
 import {ry,add} from '../visual/vectors.js';
@@ -10,7 +10,7 @@ const cache=new Map();
 export function heroMesh(type,lod){
  if(![0,1,2,3].includes(lod))throw Error('invalid premium LOD');
  const k=type+':'+lod;if(cache.has(k))return cache.get(k);const n=[6,4,2,2][lod],segments=[24,16,8,4][lod],m=[12,8,4,4][lod];let mesh;
- switch(type){case 'box':mesh=boxMesh();break;case 'bevel':mesh=lod===3?boxMesh():roundedCuboid([1,1,1],.12,n);break;case 'sphere':mesh=sphere(.5,segments,m);break;case 'cylinder':mesh=cylinder(.5,1,segments);break;case 'cone':mesh=cone(.5,1,segments);break;case 'ring':mesh=torus(.36,.14,segments,[12,8,4,4][lod]);break;case 'wedge':mesh=extrude([[-.5,-.5],[.5,-.5],[.36,.5],[-.36,.5]],1);break;case 'roof':mesh=extrude([[-.5,-.5],[.5,-.5],[0,.5]],1);break;default:throw Error('unknown premium primitive')}
+ switch(type){case 'box':mesh=boxMesh();break;case 'bevel':mesh=lod===3?boxMesh():roundedCuboid([1,1,1],.12,n);break;case 'sphere':mesh=sphere(.5,segments,m);break;case 'cylinder':mesh=cylinder(.5,1,segments);break;case 'cone':mesh=cone(.5,1,segments);break;case 'ring':mesh=torus(.36,.14,segments,[12,8,4,4][lod]);break;case 'rock':mesh=flatShade(lathe(lod===3?[[.36,-.5],[.50,-.25],[.38,.5]]:[[.33,-.5],[.50,-.28],[.42,.22],[.17,.5]],[16,12,8,4][lod],true));break;case 'wedge':mesh=extrude([[-.5,-.5],[.5,-.5],[.36,.5],[-.36,.5]],1);break;case 'roof':mesh=extrude([[-.5,-.5],[.5,-.5],[0,.5]],1);break;default:throw Error('unknown premium primitive')}
  const digest=meshDigest(mesh),summary=validateMesh(mesh),bytes=mesh.positions.byteLength+mesh.normals.byteLength+mesh.uvs.byteLength+mesh.indices.byteLength,result={mesh,digest,summary,bytes};cache.set(k,result);return result;
 }
 function transform(pose){const origin=pose.origin??[0,0,0],scale=pose.scale??1,yaw=pose.yaw??0;return {point:p=>add(ry(p.map(v=>v*scale),yaw),origin),vector:p=>ry(p.map(v=>v*scale),yaw)}}

@@ -94,7 +94,7 @@ export function heroDefinition(id,pose={}){
  case 'pine-tree':
  c('trunk',[0,.54,0],[.19,1.08,.19],'wood-dark');for(let i=0;i<5;i++){const d=1.16-i*.17;cone('bough'+i,[0,.80+i*.28,0],[d,.70,d],i%2?'pine':'leaf');}an('trunk',[0,.25,0]);break;
  case 'rock-cluster':
- w('base',[0,.14,0],[1.84,.28,1.40],'stone');for(let i=0;i<8;i++){const a=i*2.4,d=.38+(i%3)*.11;w('boulder'+i,[Math.cos(a)*.48,.23+d*.34,Math.sin(a)*.42],[d,.49+d*.3,d*.86],i%3?'stone':'concrete',[.10*(i%3),a,.15*(i%2)]);}an('surface',[0,.25,0]);break;
+ w('base',[0,.14,0],[1.84,.28,1.40],'stone');for(let i=0;i<8;i++){const a=i*2.4,d=.38+(i%3)*.11;part('boulder'+i,'rock',[Math.cos(a)*.48,.23+d*.34,Math.sin(a)*.42],[d,.49+d*.3,d*.86],i%3?'stone':'concrete',[.10*(i%3),a,.15*(i%2)]);}an('surface',[0,.25,0]);break;
  case 'island':
  w('bedrock',[0,.20,0],[2.14,.40,1.73],'stone');s('sand',[0,.38,0],[2.13,.35,1.64],'sand');s('meadow',[-.10,.52,-.05],[1.72,.36,1.23],'leaf');s('hill',[-.28,.69,-.17],[.87,.55,.79],'leaf-light');for(let i=0;i<3;i++){const x=.22+i*.20,z=-.28+i*.09;rod('palm'+i,[x,.55,z],[x-.07,.99+i*.05,z],.06,'wood-dark');for(let j=0;j<5;j++){const a=j*T/5;rod('frond'+i+'-'+j,[x-.07,.99+i*.05,z],[x-.07+.22*Math.cos(a),.92+i*.05,z+.22*Math.sin(a)],.055,'pine');}}an('shore',[.88,.42,0]);break;
  case 'sports-car':case 'pickup-truck':{

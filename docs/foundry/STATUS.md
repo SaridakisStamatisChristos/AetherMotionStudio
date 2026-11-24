@@ -17,3 +17,5 @@ Parent 81b10e6815d43b384cf6560d2738b7f61a8c3e39; same campaign draft PR #13, no 
 
 ## AF-04 — current candidate
 Parent 7fd75bc87a1eb65e36caeabdbd1a7e7e557212ae; same draft PR #13. New opt-in hero-1.0.0 collection with 32 distinct recipes across eight families, 28 existing + four genuinely new premium-only IDs, four representations each, five pack groups, component materials and anchors. Legacy catalog unchanged. Six-shot recurring-character narrative and matched Three fixture. Per-asset inspection sheet/record and index generator in scoped CI; all human approvals explicitly false. Tests, inspections and native CPU film pending; verify evidence before AF05. See HERO_ASSETS.md for deliberate limitations; no merge.
+
+AF04 first candidate c5ce274, run 45395783647: 130/131 JS passed; rock-cluster lacked any LOD-varying geometry because all parts used fixed wedge extrusions. Inspections/render skipped. Repair: add closed faceted rock primitive with four distinct radial segment/profile resolutions, retain component transforms, materials, anchors and original assertions; add targeted strict triangle reduction and topology regression. Reverification required.
