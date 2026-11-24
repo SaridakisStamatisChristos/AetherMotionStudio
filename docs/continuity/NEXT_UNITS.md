@@ -1,0 +1,15 @@
+# Proposed forward-only local roadmap
+This is an actionable proposed sequence for future work, not an approved requirement to implement every unit at once. Current user request takes precedence. Core-first; no new auth, SaaS or rewrite. Preserve AF01–AF09 and both backends. Each unit needs explicit scope, changed-file map, unit/adversarial tests, exact run evidence, reviewed samples where relevant, updated contracts/canon/handoff. Do not auto-launch full historical matrix.
+
+| Unit | Objective | Exit criteria |
+|---|---|---|
+| LOCAL-01 | Local environment + baseline | Actual OS/tool/model versions, fast tests pass, selected CPU and authorized Three short render/decoding, GPU identity measured or clearly unsupported. No broad refactor. |
+| LOCAL-02 | Reproducible native comparison path | Reuse existing produce shared-preparation seam for authored v2 projects as needed; lossless mix/timeline/PCM/caption inventory; exact shared hashes; independent negative tests (tampering, mismatch, stale checkout); one selected pair. No relaxation of frozen AF09 checks. |
+| LOCAL-03 | GPU/performance engineering | Measure actual WebGL renderer, resource lifecycle, timings, memory, concurrency; repeated same-machine tests CPU/Three with identical input; distinguish GPU use vs CPU/software. Opt-in profiles, no silent LOD/backend switches. Address concrete hotspot only. |
+| ART-01 | Richer motion and interaction | Frame-addressed action choreography, secondary motion, easing/anticipation/follow-through, contacts, rig/attachments, transitions; shared deterministic state. One small narrative scene + matched backend tests; preserve stable identities. |
+| ART-02 | Cinematic composition and lighting | Camera blocking and motion, scene depth, material/lighting profiles, silhouettes, composition, tasteful post effects; preserve original/polished profiles. One short hero/product scene; human visual review, structural checks. |
+| ART-03 | High-detail reusable assets | Extend existing Foundry recipes/packs with distinct high-quality hero props/sets, rigging and material/LOD budgets; inspection and thumbnails; explicit review/promotion, no unlicensed content. Avoid hundreds of near-duplicate aliases. |
+| ART-04 | Director and Studio authoring quality | Better retrieval and shot/action planning, fix duplicate shortlist when reproduced, compact IR, local editable preview; manual UI exercise and backward-compatible export/import. No mandatory cloud. |
+| ART-05 | Curated final showcase | User-defined topic/style/duration, coherent multi-shot film, meaningful movement, clear audio, assets/identities, visual review, selected CPU/Three outputs. No aesthetic auto-certification. |
+
+The first two units close environment/reproducibility debt; user can explicitly defer them to prioritize creative work. A full historical regression gate may be run locally later by explicit authorization, reusing frozen evidence where valid. Separate release and commercial/license decisions remain outside these units.
