@@ -13,4 +13,10 @@
 | b1-cin-three-vk-c4 | three | 360 | vulkan | 4 | disable | n | n | 2/0 | 12.5 (0.12) | 11.9 | 0.42 | 28.83 | 0.15 | 0.81 | 0.69 | 21.9 | 851 | 35.5 | 1.67 | 145 | 2 | NO |
 | b2-cin-cpu-c8 | cpu | 360 | – | 8 | disable | n | n | 2/0 | 21.7 (4.72) | 21.1 | 0.51 | 16.97 | 0.36 | 1.64 | 0.83 | 0.0 | 0 | 63.4 | 2.65 | 152 | 1 | yes |
 | b2-cin-three-vk-c8 | three | 360 | vulkan | 8 | disable | n | n | 2/0 | 11.2 (0.09) | 10.5 | 0.52 | 32.12 | 0.15 | 0.88 | 0.74 | 20.0 | 1332 | 48.8 | 1.92 | 146 | 1 | NO |
+| b3-cin-cpu-c4 | cpu | 360 | – | 4 | disable | n | n | 2/0 | 21.0 (0.11) | 20.5 | 0.41 | 17.16 | 0.16 | 0.63 | 0.51 | 0.0 | 0 | 27.5 | 1.81 | 142 | 1 | yes |
+| b3-cin-cpu-c8 | cpu | 360 | – | 8 | disable | n | n | 2/0 | 19.0 (0.95) | 18.6 | 0.34 | 18.94 | 0.19 | 0.70 | 0.58 | 0.0 | 0 | 45.8 | 2.61 | 145 | 1 | yes |
+| b3-cin-three-vk-c4 | three | 360 | vulkan | 4 | disable | n | n | 2/0 | 11.0 (0.18) | 10.6 | 0.33 | 32.74 | 0.15 | 0.65 | 0.54 | 11.0 | 859 | 28.0 | 1.66 | 137 | 2 | NO |
+| b3-cin-three-vk-c8 | three | 360 | vulkan | 8 | disable | n | n | 2/0 | 10.3 (0.18) | 9.8 | 0.37 | 34.92 | 0.16 | 0.70 | 0.57 | 11.9 | 1358 | 35.5 | 1.95 | 147 | 1 | NO |
 | smoke-three-c2 | three | 360 | vulkan | 2 | disable | n | n | 1/0 | 21.0 (0.00) | 20.1 | 0.73 | 17.15 | 0.65 | 1.11 | 0.92 | 27.5 | 568 | 30.3 | 0.67 | 148 | 1 | yes |
+
+Conditions: a*/b1/b2/smoke rows measured 2026-11-24 under memory pressure (≈13 GB of 15.2 GB idle, non-paged pool ≈2.2 GB, Fast Startup kept kernel state across "shutdowns"). b3 rows measured 2026-11-24 after a true cold boot (boot type 0x0, 23:36:37; non-paged pool 0.73 GB, ≥3.5 GB free at start). Compare concurrency only within the same condition group. Every b3 run: verify PASS, quality pass, frame-glitch clean; Three/vulkan min PSNR vs reference 56.26–56.31 dB.
