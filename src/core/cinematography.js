@@ -1,7 +1,7 @@
 import {generatedBounds} from '../foundry/generator.js';
 import {importedBounds} from '../foundry/import-bundle.js';
 import {emitHeroBoxes,heroBounds} from '../foundry/hero.js';
-import {smooth,clamp,keyframes,mix} from './motion.js';
+import {smooth,clamp,keyframes,interpolate,mix} from './motion.js';
 import {MOTION_PRESETS} from './presets.js';
 import {add,sub,dot,cross,norm,ry} from '../visual/vectors.js';
 import {catalogHandAnchor,recipeRig} from '../visual/catalog-rig.js';
@@ -45,11 +45,11 @@ export function validateCameraRig(x,ids,p){
  if(x.strength!==undefined)finite(x.strength,0,1,p+'.strength');
  if(x.targetOffset!==undefined)vector(x.targetOffset,-.6,.6,p+'.targetOffset');
 }
-export function sampleCameraRig(x,p,tracks){
+export function sampleCameraRig(x,p,tracks,modes={}){
  const r=CAMERA_RIGS[x.preset],t=smooth(p),position=lerp3(r.a,r.b,t),target=lerp3(r.ta,r.tb,t);
  if(x.preset==='orbit')position[2]+=1.2*Math.sin(Math.PI*t);
- for(const [i,k] of ['x','y','z'].entries())if(tracks[k])position[i]=keyframes(p,tracks[k]);
- return {position,target,zoom:tracks.zoom?keyframes(p,tracks.zoom):mix(r.za,r.zb,t)};
+ for(const [i,k] of ['x','y','z'].entries())if(tracks[k])position[i]=interpolate(p,tracks[k],modes[k]??'ease');
+ return {position,target,zoom:tracks.zoom?interpolate(p,tracks.zoom,modes.zoom??'ease'):mix(r.za,r.zb,t)};
 }
 export function geometryBounds(assets){
  const lo=[Infinity,Infinity,Infinity],hi=[-Infinity,-Infinity,-Infinity];
@@ -102,23 +102,25 @@ export function validateActions(a,p){
  if(!Array.isArray(a.actions)||a.actions.length<1||a.actions.length>16)fail(p+'.actions','1–16 actions required');
  const channels=supportedChannels(a.asset);
  for(const [i,x] of a.actions.entries()){
-  const q=p+'.actions['+i+']';fields(x,['name','start','end','speed','phase','weight','blend','mode'],q,['name','start','end']);
+  const q=p+'.actions['+i+']';fields(x,['name','start','end','speed','phase','weight','blend','mode','hold'],q,['name','start','end']);
   choice(x.name,Object.keys(ACTIONS),q+'.name');window(x,q);
   if(x.speed!==undefined)finite(x.speed,.25,8,q+'.speed');
   if(x.phase!==undefined)finite(x.phase,0,1,q+'.phase');
   if(x.weight!==undefined)finite(x.weight,0,1,q+'.weight');
   if(x.blend!==undefined)finite(x.blend,0,.5,q+'.blend');
   if(x.mode!==undefined)choice(x.mode,['once','loop','relative'],q+'.mode');
+  if(x.hold!==undefined&&(x.hold!==true||x.mode==='loop'))fail(q+'.hold','hold must be true and is not allowed with loop');
   for(const ch of Object.keys(ACTIONS[x.name]))if(!channels.includes(ch))fail(q,'unsupported channel '+ch+' for '+a.asset);
  }
 }
 export function composePose(a,base,p,limits){
  const out={...base};
  for(const x of a.actions??[]){
-  if(p<x.start||p>x.end)continue;
-  const t=(p-x.start)/(x.end-x.start),raw=t*(x.speed??1)+(x.phase??0);
+  // hold (ART-01 opt-in): after the window the end pose persists instead of snapping back; blend fades in only.
+  if(p<x.start||(p>x.end&&x.hold!==true))continue;
+  const t=Math.min(1,(p-x.start)/(x.end-x.start)),raw=t*(x.speed??1)+(x.phase??0);
   const u=x.mode==='loop'?(raw%1):clamp(raw);
-  const b=x.blend??0,weight=(x.weight??1)*(b?Math.min(smooth(t/b),smooth((1-t)/b)):1);
+  const b=x.blend??0,weight=(x.weight??1)*(b?(x.hold===true?smooth(t/b):Math.min(smooth(t/b),smooth((1-t)/b))):1);
   for(const [ch,frames] of Object.entries(ACTIONS[x.name])){
    if(Object.hasOwn(a.tracks,ch))continue;
    const v=keyframes(u,frames),prior=out[ch]??0;
@@ -127,32 +129,54 @@ export function composePose(a,base,p,limits){
  }
  return out;
 }
+// ART-01: `attachment` is one window (historical) or an opt-in handoff chain of 2–4 sequential windows.
+const attachmentWindows=x=>Array.isArray(x)?x:[x];
 export function validateAttachments(assets,p){
  const byId=new Map(assets.map(a=>[a.id,a]));
  for(const a of assets){
-  const x=a.attachment;if(x===undefined)continue;
-  const q=p+'.'+a.id+'.attachment';fields(x,['parent','anchor','start','end','offset','blendIn'],q,['parent','anchor','start','end']);
-  const parent=byId.get(x.parent);
-  if(!parent||!recipeRig(parent.asset).anchors.includes('right-hand'))fail(q,'parent must have a supported hand rig');
-  choice(x.anchor,['right-hand','left-hand'],q+'.anchor');window(x,q);
-  if(x.offset!==undefined)vector(x.offset,-1,1,q+'.offset');
-  if(x.blendIn!==undefined)finite(x.blendIn,0,Math.min(.2,x.end-x.start),q+'.blendIn');
-  const seen=new Set([a.id]);let at=parent;
-  while(at){if(seen.has(at.id))fail(q,'attachment cycle');seen.add(at.id);at=at.attachment?byId.get(at.attachment.parent):null;}
+  const raw=a.attachment;if(raw===undefined)continue;
+  const q=p+'.'+a.id+'.attachment',chain=Array.isArray(raw),list=attachmentWindows(raw);
+  if(chain&&(list.length<2||list.length>4))fail(q,'handoff chain requires 2–4 windows');
+  list.forEach((x,i)=>{
+   const r=chain?q+'['+i+']':q;fields(x,['parent','anchor','start','end','offset','blendIn','release'],r,['parent','anchor','start','end']);
+   const parent=byId.get(x.parent);
+   if(!parent||!recipeRig(parent.asset).anchors.includes('right-hand'))fail(r,'parent must have a supported hand rig');
+   choice(x.anchor,['right-hand','left-hand'],r+'.anchor');window(x,r);
+   if(x.offset!==undefined)vector(x.offset,-1,1,r+'.offset');
+   if(x.blendIn!==undefined)finite(x.blendIn,0,Math.min(.2,x.end-x.start),r+'.blendIn');
+   if(i>0&&x.start<list[i-1].end)fail(r,'handoff windows must be sequential');
+   if(x.release!==undefined){if(i!==list.length-1)fail(r+'.release','only the last window may release');validateRelease(x.release,x.end,r+'.release');}
+  });
+  const seen=new Set(),stack=list.map(x=>x.parent);
+  while(stack.length){const id=stack.pop();if(id===a.id)fail(q,'attachment cycle');if(seen.has(id))continue;seen.add(id);const b=byId.get(id);if(b?.attachment)stack.push(...attachmentWindows(b.attachment).map(x=>x.parent));}
  }
+}
+function validateRelease(x,end,q){
+ fields(x,['mode','duration','to'],q,['mode','duration']);choice(x.mode,['drop','place'],q+'.mode');finite(x.duration,.02,.5,q+'.duration');
+ if(end+x.duration>1+1e-9)fail(q,'release must complete within the shot');
+ if(x.mode==='place'){vector(x.to,-2.4,2.4,q+'.to');finite(x.to[1],0,1.5,q+'.to');}else if(x.to!==undefined)fail(q+'.to','drop lands on the floor; use place for a target');
 }
 export function resolveAttachments(authored,p,sample){
  const byId=new Map(authored.map(a=>[a.id,a]));
- function at(a,t){
-  const item=sample(a,t),x=a.attachment;
-  if(!x||t<x.start)return item;
-  const time=Math.min(t,x.end),parent=at(byId.get(x.parent),time);
+ // World pose of `a` held in window k at `time` (inside the window). Window 0 is the historical formula.
+ function held(a,k,time){
+  const ws=attachmentWindows(a.attachment),x=ws[k],parent=at(byId.get(x.parent),time);
   const anchor=handAnchor(parent.asset,parent.pose,x.anchor==='right-hand'?1:-1);
-  const offset=ry((x.offset??[0,0,0]).map(v=>v*parent.pose.scale),parent.pose.yaw);
-  // World pose freezes at detach; no previous-frame dependency.
-  const local=sample(a,time).pose;
-  const blend=x.blendIn?smooth(clamp((time-x.start)/x.blendIn)):1;
-  item.pose={...item.pose,origin:blend===1?add(anchor,offset):lerp3(local.origin,add(anchor,offset),blend),yaw:local.yaw+parent.pose.yaw*blend};
+  const offset=ry((x.offset??[0,0,0]).map(v=>v*parent.pose.scale),parent.pose.yaw),target=add(anchor,offset);
+  const local=sample(a,time).pose,blend=x.blendIn?smooth(clamp((time-x.start)/x.blendIn)):1;
+  if(k===0)return {origin:blend===1?target:lerp3(local.origin,target,blend),yaw:local.yaw+parent.pose.yaw*blend};
+  // Handoff: the receiver grips the prop as handed over (world yaw kept), then it turns with the new holder.
+  const from=held(a,k-1,ws[k-1].end),keep=from.yaw-at(byId.get(x.parent),x.start).pose.yaw;
+  return {origin:blend===1?target:lerp3(from.origin,target,blend),yaw:mix(from.yaw,parent.pose.yaw+keep,blend)};
+ }
+ function at(a,t){
+  const item=sample(a,t);if(a.attachment===undefined)return item;
+  const ws=attachmentWindows(a.attachment);if(t<ws[0].start)return item;
+  let k=0;for(let i=1;i<ws.length;i++)if(t>=ws[i].start)k=i;
+  // World pose freezes at detach; no previous-frame dependency. Opt-in release drops or places it.
+  const x=ws[k];let pose=held(a,k,Math.min(t,x.end));
+  if(x.release&&t>x.end){const u=clamp((t-x.end)/x.release.duration);pose=x.release.mode==='drop'?{...pose,origin:[pose.origin[0],pose.origin[1]*(1-u*u),pose.origin[2]]}:{...pose,origin:lerp3(pose.origin,x.release.to,smooth(u))};}
+  item.pose={...item.pose,...pose};
   return item;
  }
  return authored.map(a=>at(a,p));

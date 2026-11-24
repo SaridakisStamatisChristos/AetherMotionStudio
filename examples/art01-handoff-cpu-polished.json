@@ -1,0 +1,357 @@
+{
+ "version": 2,
+ "id": "art01-handoff-cpu-polished",
+ "title": "ART-01 handoff",
+ "voice": "af_heart",
+ "shots": [
+  {
+   "id": "handoff",
+   "template": "cinematic-graph",
+   "backend": "cpu",
+   "durationFrames": 240,
+   "transitionFrames": 0,
+   "heading": "HAND TO HAND",
+   "subheading": "One tool, passed with care.",
+   "environment": "laboratory",
+   "camera": {
+    "x": [
+     [
+      0,
+      0.8
+     ],
+     [
+      1,
+      -0.6
+     ]
+    ],
+    "y": [
+     [
+      0,
+      2.9
+     ],
+     [
+      1,
+      2.9
+     ]
+    ],
+    "z": [
+     [
+      0,
+      7.8
+     ],
+     [
+      1,
+      7.8
+     ]
+    ],
+    "zoom": [
+     [
+      0,
+      1120
+     ],
+     [
+      0.6,
+      1200
+     ],
+     [
+      1,
+      1260
+     ]
+    ]
+   },
+   "cameraInterpolation": {
+    "x": "flow",
+    "zoom": "flow"
+   },
+   "assets": [
+    {
+     "id": "giver",
+     "asset": "engineer",
+     "tracks": {
+      "x": [
+       [
+        0,
+        -0.8
+       ]
+      ],
+      "z": [
+       [
+        0,
+        0.1
+       ]
+      ],
+      "armPitch": [
+       [
+        0,
+        -0.9
+       ],
+       [
+        0.42,
+        -0.9
+       ],
+       [
+        0.55,
+        -1
+       ],
+       [
+        0.62,
+        -1
+       ],
+       [
+        0.8,
+        0
+       ]
+      ],
+      "grip": [
+       [
+        0,
+        1
+       ],
+       [
+        0.6,
+        1
+       ],
+       [
+        0.68,
+        0
+       ]
+      ]
+     },
+     "face": {
+      "target": "receiver",
+      "start": 0,
+      "end": 1,
+      "offset": -0.9
+     }
+    },
+    {
+     "id": "receiver",
+     "asset": "service-robot",
+     "tracks": {
+      "x": [
+       [
+        0,
+        0.5
+       ]
+      ],
+      "z": [
+       [
+        0,
+        -0.4
+       ]
+      ],
+      "yaw": [
+       [
+        0,
+        -1.7036
+       ],
+       [
+        0.62,
+        -1.7036
+       ],
+       [
+        0.8,
+        1.2
+       ]
+      ],
+      "armPitch": [
+       [
+        0,
+        0
+       ],
+       [
+        0.4,
+        0
+       ],
+       [
+        0.55,
+        -1.75
+       ],
+       [
+        0.62,
+        -1.75
+       ],
+       [
+        0.78,
+        -1
+       ],
+       [
+        0.92,
+        -1
+       ],
+       [
+        1,
+        -0.3
+       ]
+      ],
+      "grip": [
+       [
+        0,
+        0
+       ],
+       [
+        0.55,
+        0
+       ],
+       [
+        0.6,
+        1
+       ],
+       [
+        0.9,
+        1
+       ],
+       [
+        0.95,
+        0
+       ]
+      ]
+     },
+     "interpolation": {
+      "armPitch": "flow"
+     },
+     "face": {
+      "target": "giver",
+      "start": 0,
+      "end": 0.62,
+      "offset": -0.5
+     }
+    },
+    {
+     "id": "table",
+     "asset": "table",
+     "tracks": {
+      "x": [
+       [
+        0,
+        1.66
+       ]
+      ],
+      "z": [
+       [
+        0,
+        -0.47
+       ]
+      ],
+      "scale": [
+       [
+        0,
+        0.9
+       ]
+      ]
+     }
+    },
+    {
+     "id": "watcher",
+     "asset": "retro-robot",
+     "tracks": {
+      "x": [
+       [
+        0,
+        -1.9
+       ]
+      ],
+      "z": [
+       [
+        0,
+        -0.7
+       ]
+      ],
+      "scale": [
+       [
+        0,
+        0.8
+       ]
+      ]
+     },
+     "face": {
+      "target": "receiver",
+      "start": 0,
+      "end": 1
+     },
+     "actions": [
+      {
+       "name": "look-at",
+       "start": 0.2,
+       "end": 0.6
+      },
+      {
+       "name": "wave",
+       "start": 0.84,
+       "end": 1,
+       "blend": 0.2
+      }
+     ]
+    },
+    {
+     "id": "tool",
+     "asset": "wrench",
+     "tracks": {
+      "x": [
+       [
+        0,
+        -0.5
+       ]
+      ],
+      "scale": [
+       [
+        0,
+        0.75
+       ]
+      ]
+     },
+     "attachment": [
+      {
+       "parent": "giver",
+       "anchor": "right-hand",
+       "start": 0,
+       "end": 0.58,
+       "offset": [
+        0,
+        -0.08,
+        0.12
+       ]
+      },
+      {
+       "parent": "receiver",
+       "anchor": "right-hand",
+       "start": 0.58,
+       "end": 0.9,
+       "offset": [
+        0,
+        -0.08,
+        0.12
+       ],
+       "blendIn": 0.05,
+       "release": {
+        "mode": "place",
+        "to": [
+         1.214,
+         0.792,
+         -0.641
+        ],
+        "duration": 0.05
+       }
+      }
+     ]
+    }
+   ],
+   "effects": [],
+   "narration": [
+    "One tool passes from hand to hand."
+   ],
+   "fidelity": {
+    "bloom": 0.6,
+    "atmosphere": 0.5,
+    "contactShadow": 0.75,
+    "surfaceDetail": 0.6,
+    "depthOfField": 0.15,
+    "motionBlur": 0,
+    "grain": 0.15,
+    "grade": 0.45,
+    "particles": 0.4,
+    "typography": 1
+   }
+  }
+ ]
+}
