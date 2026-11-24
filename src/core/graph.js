@@ -1,3 +1,5 @@
+import {validateAssetParams} from '../visual/catalog.js';
+import {MOTION_PRESETS,resolveTracks,resolveEffect} from './presets.js';
 import {ASSETS,emitAsset} from '../visual/assets.js';
 import {keyframes} from './motion.js';
 import {validateFidelity,fidelity} from './fidelity.js';
@@ -18,9 +20,9 @@ export function validateGraph(s,p='shot'){
  tracks(s.camera,cameraLimits,p+'.camera');
  if(!Array.isArray(s.assets)||s.assets.length<1||s.assets.length>8)fail(p+'.assets','1–8 assets required');
  const ids=new Set();
- for(const [i,a] of s.assets.entries()){const q=p+'.assets['+i+']';object(a,['id','asset','tracks'],q);if(typeof a.id!=='string'||!/^[a-z0-9][a-z0-9-]{0,31}$/.test(a.id)||ids.has(a.id))fail(q+'.id','unique safe ID required');ids.add(a.id);if(!Object.hasOwn(ASSETS,a.asset))fail(q+'.asset','unknown asset');tracks(a.tracks,limits,q+'.tracks');}
+ for(const [i,a] of s.assets.entries()){const q=p+'.assets['+i+']';object(a,['id','asset','tracks','params','motion'],q,['id','asset','tracks']);if(typeof a.id!=='string'||!/^[a-z0-9][a-z0-9-]{0,31}$/.test(a.id)||ids.has(a.id))fail(q+'.id','unique safe ID required');ids.add(a.id);if(!Object.hasOwn(ASSETS,a.asset))fail(q+'.asset','unknown asset');if(Object.hasOwn(a,'params'))validateAssetParams(a.asset,a.params);if(Object.hasOwn(a,'motion')&&!Object.hasOwn(MOTION_PRESETS,a.motion))fail(q+'.motion','unknown motion');tracks(resolveTracks(a),limits,q+'.tracks');}
  if(!Array.isArray(s.effects)||s.effects.length>4)fail(p+'.effects','0–4 effects required');
- const fx=new Set();for(const [i,e] of s.effects.entries()){const q=p+'.effects['+i+']';object(e,['type','target','color','start','end'],q);if(!['orbit','sparkles','glow'].includes(e.type))fail(q+'.type','unknown effect');if(!ids.has(e.target))fail(q+'.target','unknown target');if(typeof e.color!=='string'||!/^#[0-9a-fA-F]{6}$/.test(e.color))fail(q+'.color','hex color required');number(e.start,0,1,q+'.start');number(e.end,0,1,q+'.end');if(e.start>=e.end)fail(q,'invalid effect window');const key=e.type+':'+e.target;if(fx.has(key))fail(q,'duplicate effect');fx.add(key);}
+ const fx=new Set();for(const [i,raw] of s.effects.entries()){const q=p+'.effects['+i+']';if(raw&&Object.hasOwn(raw,'preset'))object(raw,['preset','target'],q);else object(raw,['type','target','color','start','end'],q);const e=resolveEffect(raw);if(!['orbit','sparkles','glow'].includes(e.type))fail(q+'.type','unknown effect');if(!ids.has(e.target))fail(q+'.target','unknown target');if(typeof e.color!=='string'||!/^#[0-9a-fA-F]{6}$/.test(e.color))fail(q+'.color','hex color required');number(e.start,0,1,q+'.start');number(e.end,0,1,q+'.end');if(e.start>=e.end)fail(q,'invalid effect window');const key=e.type+':'+e.target;if(fx.has(key))fail(q,'duplicate effect');fx.add(key);}
  return s;
 }
 function sample(t,d,p){return Object.fromEntries(Object.entries(d).map(([k,v])=>[k,t[k]?keyframes(p,t[k]):v]));}
@@ -31,8 +33,8 @@ export const ENVIRONMENTS=Object.freeze({
 });
 export function evaluateGraph(s,p){
  if(!Number.isFinite(p)||p<0||p>1)fail('progress','out of range');
- const c=sample(s.camera,cameraDefaults,p),assets=s.assets.map(a=>{const {x,y,z,...pose}=sample(a.tracks,defaults,p);return {id:a.id,asset:a.asset,pose:{origin:[x,y,z],...pose}}});
- return {camera:{position:[c.x,c.y,c.z],target:[0,1.2,0],zoom:c.zoom},assets,environment:ENVIRONMENTS[s.environment],effects:s.effects.map(e=>({...e,strength:p>=e.start&&p<=e.end?Math.min(1,(p-e.start)*12,(e.end-p)*12):0})),progress:p,fidelity:fidelity(s.fidelity)};
+ const c=sample(s.camera,cameraDefaults,p),assets=s.assets.map(a=>{const {x,y,z,...pose}=sample(resolveTracks(a),defaults,p);return {id:a.id,asset:a.asset,pose:{origin:[x,y,z],...pose,...(a.params?{params:a.params}:{})}}});
+ return {camera:{position:[c.x,c.y,c.z],target:[0,1.2,0],zoom:c.zoom},assets,environment:ENVIRONMENTS[s.environment],effects:s.effects.map(resolveEffect).map(e=>({...e,strength:p>=e.start&&p<=e.end?Math.min(1,(p-e.start)*12,(e.end-p)*12):0})),progress:p,fidelity:fidelity(s.fidelity)};
 }
 // Both backends consume exactly the same emitted box commands, in the same order.
 export function emitGraph(state,box){for(const a of state.assets)emitAsset(a.asset,box,a.pose);}

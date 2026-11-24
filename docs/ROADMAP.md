@@ -7,7 +7,7 @@
 | v0.3 | Dynamic timeline, multi-shot film, Kokoro-measured duration | Exact 60-second film, automatic duration, three legacy regression renders, caption/transition tests |
 | v0.4 | Cinematic engine and general composable scene graph, first-class Three.js backend alongside CPU | CPU fallback, visual comparison, independently reusable assets, deterministic camera/effects |
 | v0.4.1 | Opt-in dual-backend visual fidelity | Matched original/polished renders, bounded lens and surface effects, measured cost |
-| v0.4.2 | Universal asset library | Configurable components, category coverage, shared renderer tests; initial target 330 |
+| v0.4.2 | Universal asset library | 250 object presets, 50 motion presets, 30 effect presets; shared geometry tests and polished CPU showcase |
 | v0.4.3 | Cinematography and motion design | Reusable camera/character animation, typography and diagram primitives |
 | v0.5 | Provider-neutral AI director | Prompt to validated scene data; malformed output fails safely; measured token consumption |
 | v0.6 | Character consistency & asset library | Reusable rig/appearance across independently authored scenes |
@@ -16,4 +16,4 @@
 | v0.9 | Local editor/UI | Preview, edit, render; no mandatory service |
 | v1.0 | One-click production | Reproducible release, install docs, real end-to-end evidence |
 
-Current gate: v0.4.1 candidate. v0.4 baseline is verified and archived (run 45348529087, release v0.4-render-baseline). Next v0.4.2 then v0.4.3 before AI director. Both backends binding; nine render fixtures and matched comparisons required.
+Current gate: v0.4.2 candidate, based on verified v0.4.1 run 45350601641. User-scoped CI: fast tests plus polished CPU showcase only; all other native renders retained for final manual full suite. Next v0.4.3 cinematography, then v0.5 director.

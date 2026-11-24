@@ -9,6 +9,9 @@ User decision (2026-11-24): both CPU Canvas and Three.js WebGL backends are perm
 - Keep both source implementations and example JSON files in version control. Do not modify frozen baseline evidence. Store rendered baseline binaries as release assets, not ordinary git blobs.
 - New rendering backends or capabilities are additive. CPU must remain usable without a GPU or paid inference service.
 
+## Scoped verification exception (2026-11-24)
+User explicitly authorizes CPU-polished-only development renders during asset/cinematography refinements. Preserve every earlier fixture, both renderer implementations and full comparison jobs. Run shared fast tests and one polished CPU showcase on development pushes. Defer full matched CPU/Three.js native renders until the final head-to-head; use manual suite=full. The full gate is not waived and CPU success does not certify new Three.js output.
+
 ## Verified v0.4 baseline
 
 Source commit: `6e3e894e29ae30ba59e82a894760dabea9971b11`. GitHub Actions run: [45348529087](https://github.com/SaridakisStamatisChristos/AetherMotionStudio/actions/runs/45348529087), all nine jobs passed. Identical 12-second Discovery shot, 1080×1920 at 30 fps, Kokoro narration. CPU Canvas 26.559671665 seconds; Three.js swangle 113.978981844 seconds (CI wall time, not a GPU benchmark). Source artifacts: CPU 14898858288; Three.js 14899810419; comparison 14899785482. Archive workflow copies original artifacts, verifies source run identity, packages videos and comparison evidence, and publishes a prerelease anchored to the verified source commit. CI artifact links are temporary; the release assets are the archival copy.

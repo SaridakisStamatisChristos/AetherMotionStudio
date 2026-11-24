@@ -1,0 +1,1088 @@
+{
+  "version": 2,
+  "id": "asset-showcase-three-polished",
+  "title": "AetherMotion universal asset library",
+  "voice": "af_heart",
+  "shots": [
+    {
+      "id": "characters",
+      "template": "cinematic-graph",
+      "backend": "three",
+      "durationFrames": 120,
+      "transitionFrames": 0,
+      "heading": "CHARACTERS",
+      "subheading": "Robots and stylized people",
+      "environment": "laboratory",
+      "camera": {
+        "x": [
+          [
+            0,
+            1.8
+          ],
+          [
+            1,
+            -1.2
+          ]
+        ],
+        "y": [
+          [
+            0,
+            3.6
+          ],
+          [
+            1,
+            3.1
+          ]
+        ],
+        "z": [
+          [
+            0,
+            9.4
+          ],
+          [
+            1,
+            8.9
+          ]
+        ],
+        "zoom": [
+          [
+            0,
+            1040
+          ],
+          [
+            1,
+            1130
+          ]
+        ]
+      },
+      "assets": [
+        {
+          "id": "item-1",
+          "asset": "service-robot",
+          "motion": "inspect-turn",
+          "tracks": {
+            "x": [
+              [
+                0,
+                -1.78
+              ]
+            ],
+            "scale": [
+              [
+                0,
+                0.76
+              ]
+            ]
+          }
+        },
+        {
+          "id": "item-2",
+          "asset": "astronaut",
+          "motion": "presentation-turn",
+          "tracks": {
+            "x": [
+              [
+                0,
+                0
+              ]
+            ],
+            "scale": [
+              [
+                0,
+                0.84
+              ]
+            ]
+          }
+        },
+        {
+          "id": "item-3",
+          "asset": "robot-dog",
+          "motion": "inspect-turn",
+          "tracks": {
+            "x": [
+              [
+                0,
+                1.78
+              ]
+            ],
+            "scale": [
+              [
+                0,
+                0.76
+              ]
+            ]
+          },
+          "params": {
+            "accent": "#a0edf0"
+          }
+        }
+      ],
+      "effects": [
+        {
+          "preset": "cyan-aura",
+          "target": "item-2"
+        }
+      ],
+      "narration": [
+        "Meet our robots and explorers."
+      ],
+      "fidelity": {
+        "bloom": 0.68,
+        "atmosphere": 0.52,
+        "contactShadow": 0.7,
+        "surfaceDetail": 0.65,
+        "depthOfField": 0.46,
+        "motionBlur": 0.35,
+        "grain": 0.18,
+        "grade": 0.48,
+        "particles": 0.75,
+        "typography": 1
+      }
+    },
+    {
+      "id": "technology",
+      "template": "cinematic-graph",
+      "backend": "three",
+      "durationFrames": 120,
+      "transitionFrames": 8,
+      "heading": "TECHNOLOGY",
+      "subheading": "Devices and industrial systems",
+      "environment": "midnight",
+      "camera": {
+        "x": [
+          [
+            0,
+            1.8
+          ],
+          [
+            1,
+            -1.2
+          ]
+        ],
+        "y": [
+          [
+            0,
+            3.6
+          ],
+          [
+            1,
+            3.1
+          ]
+        ],
+        "z": [
+          [
+            0,
+            9.4
+          ],
+          [
+            1,
+            8.9
+          ]
+        ],
+        "zoom": [
+          [
+            0,
+            1040
+          ],
+          [
+            1,
+            1130
+          ]
+        ]
+      },
+      "assets": [
+        {
+          "id": "item-1",
+          "asset": "server-rack",
+          "motion": "inspect-turn",
+          "tracks": {
+            "x": [
+              [
+                0,
+                -1.78
+              ]
+            ],
+            "scale": [
+              [
+                0,
+                0.76
+              ]
+            ]
+          }
+        },
+        {
+          "id": "item-2",
+          "asset": "robot-arm",
+          "motion": "presentation-turn",
+          "tracks": {
+            "x": [
+              [
+                0,
+                0
+              ]
+            ],
+            "scale": [
+              [
+                0,
+                0.84
+              ]
+            ]
+          }
+        },
+        {
+          "id": "item-3",
+          "asset": "solar-panel",
+          "motion": "inspect-turn",
+          "tracks": {
+            "x": [
+              [
+                0,
+                1.78
+              ]
+            ],
+            "scale": [
+              [
+                0,
+                0.76
+              ]
+            ]
+          },
+          "params": {
+            "accent": "#a0edf0"
+          }
+        }
+      ],
+      "effects": [
+        {
+          "preset": "gold-sparks",
+          "target": "item-2"
+        }
+      ],
+      "narration": [
+        "Build systems from reusable technology."
+      ],
+      "fidelity": {
+        "bloom": 0.68,
+        "atmosphere": 0.52,
+        "contactShadow": 0.7,
+        "surfaceDetail": 0.65,
+        "depthOfField": 0.46,
+        "motionBlur": 0.35,
+        "grain": 0.18,
+        "grade": 0.48,
+        "particles": 0.75,
+        "typography": 1
+      }
+    },
+    {
+      "id": "everyday",
+      "template": "cinematic-graph",
+      "backend": "three",
+      "durationFrames": 120,
+      "transitionFrames": 8,
+      "heading": "EVERYDAY OBJECTS",
+      "subheading": "Furniture, tools and household props",
+      "environment": "amber",
+      "camera": {
+        "x": [
+          [
+            0,
+            1.8
+          ],
+          [
+            1,
+            -1.2
+          ]
+        ],
+        "y": [
+          [
+            0,
+            3.6
+          ],
+          [
+            1,
+            3.1
+          ]
+        ],
+        "z": [
+          [
+            0,
+            9.4
+          ],
+          [
+            1,
+            8.9
+          ]
+        ],
+        "zoom": [
+          [
+            0,
+            1040
+          ],
+          [
+            1,
+            1130
+          ]
+        ]
+      },
+      "assets": [
+        {
+          "id": "item-1",
+          "asset": "bookshelf",
+          "motion": "inspect-turn",
+          "tracks": {
+            "x": [
+              [
+                0,
+                -1.78
+              ]
+            ],
+            "scale": [
+              [
+                0,
+                0.76
+              ]
+            ]
+          }
+        },
+        {
+          "id": "item-2",
+          "asset": "desk-lamp",
+          "motion": "presentation-turn",
+          "tracks": {
+            "x": [
+              [
+                0,
+                0
+              ]
+            ],
+            "scale": [
+              [
+                0,
+                0.84
+              ]
+            ]
+          }
+        },
+        {
+          "id": "item-3",
+          "asset": "chair",
+          "motion": "inspect-turn",
+          "tracks": {
+            "x": [
+              [
+                0,
+                1.78
+              ]
+            ],
+            "scale": [
+              [
+                0,
+                0.76
+              ]
+            ]
+          },
+          "params": {
+            "accent": "#a0edf0"
+          }
+        }
+      ],
+      "effects": [
+        {
+          "preset": "cyan-aura",
+          "target": "item-2"
+        }
+      ],
+      "narration": [
+        "Furnish any scene with familiar objects."
+      ],
+      "fidelity": {
+        "bloom": 0.68,
+        "atmosphere": 0.52,
+        "contactShadow": 0.7,
+        "surfaceDetail": 0.65,
+        "depthOfField": 0.46,
+        "motionBlur": 0.35,
+        "grain": 0.18,
+        "grade": 0.48,
+        "particles": 0.75,
+        "typography": 1
+      }
+    },
+    {
+      "id": "architecture",
+      "template": "cinematic-graph",
+      "backend": "three",
+      "durationFrames": 120,
+      "transitionFrames": 8,
+      "heading": "ARCHITECTURE",
+      "subheading": "Buildings and infrastructure",
+      "environment": "laboratory",
+      "camera": {
+        "x": [
+          [
+            0,
+            1.8
+          ],
+          [
+            1,
+            -1.2
+          ]
+        ],
+        "y": [
+          [
+            0,
+            3.6
+          ],
+          [
+            1,
+            3.1
+          ]
+        ],
+        "z": [
+          [
+            0,
+            9.4
+          ],
+          [
+            1,
+            8.9
+          ]
+        ],
+        "zoom": [
+          [
+            0,
+            1040
+          ],
+          [
+            1,
+            1130
+          ]
+        ]
+      },
+      "assets": [
+        {
+          "id": "item-1",
+          "asset": "office-building",
+          "motion": "inspect-turn",
+          "tracks": {
+            "x": [
+              [
+                0,
+                -1.78
+              ]
+            ],
+            "scale": [
+              [
+                0,
+                0.76
+              ]
+            ]
+          }
+        },
+        {
+          "id": "item-2",
+          "asset": "suspension-bridge",
+          "motion": "presentation-turn",
+          "tracks": {
+            "x": [
+              [
+                0,
+                0
+              ]
+            ],
+            "scale": [
+              [
+                0,
+                0.84
+              ]
+            ]
+          }
+        },
+        {
+          "id": "item-3",
+          "asset": "lighthouse",
+          "motion": "inspect-turn",
+          "tracks": {
+            "x": [
+              [
+                0,
+                1.78
+              ]
+            ],
+            "scale": [
+              [
+                0,
+                0.76
+              ]
+            ]
+          },
+          "params": {
+            "accent": "#a0edf0"
+          }
+        }
+      ],
+      "effects": [
+        {
+          "preset": "gold-sparks",
+          "target": "item-2"
+        }
+      ],
+      "narration": [
+        "Design cities, bridges and buildings."
+      ],
+      "fidelity": {
+        "bloom": 0.68,
+        "atmosphere": 0.52,
+        "contactShadow": 0.7,
+        "surfaceDetail": 0.65,
+        "depthOfField": 0.46,
+        "motionBlur": 0.35,
+        "grain": 0.18,
+        "grade": 0.48,
+        "particles": 0.75,
+        "typography": 1
+      }
+    },
+    {
+      "id": "nature",
+      "template": "cinematic-graph",
+      "backend": "three",
+      "durationFrames": 120,
+      "transitionFrames": 8,
+      "heading": "NATURAL WORLD",
+      "subheading": "Plants, terrain and landscapes",
+      "environment": "amber",
+      "camera": {
+        "x": [
+          [
+            0,
+            1.8
+          ],
+          [
+            1,
+            -1.2
+          ]
+        ],
+        "y": [
+          [
+            0,
+            3.6
+          ],
+          [
+            1,
+            3.1
+          ]
+        ],
+        "z": [
+          [
+            0,
+            9.4
+          ],
+          [
+            1,
+            8.9
+          ]
+        ],
+        "zoom": [
+          [
+            0,
+            1040
+          ],
+          [
+            1,
+            1130
+          ]
+        ]
+      },
+      "assets": [
+        {
+          "id": "item-1",
+          "asset": "pine-tree",
+          "motion": "inspect-turn",
+          "tracks": {
+            "x": [
+              [
+                0,
+                -1.78
+              ]
+            ],
+            "scale": [
+              [
+                0,
+                0.76
+              ]
+            ]
+          }
+        },
+        {
+          "id": "item-2",
+          "asset": "waterfall",
+          "motion": "presentation-turn",
+          "tracks": {
+            "x": [
+              [
+                0,
+                0
+              ]
+            ],
+            "scale": [
+              [
+                0,
+                0.84
+              ]
+            ]
+          }
+        },
+        {
+          "id": "item-3",
+          "asset": "crystal-cluster",
+          "motion": "inspect-turn",
+          "tracks": {
+            "x": [
+              [
+                0,
+                1.78
+              ]
+            ],
+            "scale": [
+              [
+                0,
+                0.76
+              ]
+            ]
+          },
+          "params": {
+            "accent": "#a0edf0"
+          }
+        }
+      ],
+      "effects": [
+        {
+          "preset": "cyan-aura",
+          "target": "item-2"
+        }
+      ],
+      "narration": [
+        "Create stylized landscapes and plants."
+      ],
+      "fidelity": {
+        "bloom": 0.68,
+        "atmosphere": 0.52,
+        "contactShadow": 0.7,
+        "surfaceDetail": 0.65,
+        "depthOfField": 0.46,
+        "motionBlur": 0.35,
+        "grain": 0.18,
+        "grade": 0.48,
+        "particles": 0.75,
+        "typography": 1
+      }
+    },
+    {
+      "id": "vehicles",
+      "template": "cinematic-graph",
+      "backend": "three",
+      "durationFrames": 120,
+      "transitionFrames": 8,
+      "heading": "TRANSPORT",
+      "subheading": "Land, air and sea",
+      "environment": "midnight",
+      "camera": {
+        "x": [
+          [
+            0,
+            1.8
+          ],
+          [
+            1,
+            -1.2
+          ]
+        ],
+        "y": [
+          [
+            0,
+            3.6
+          ],
+          [
+            1,
+            3.1
+          ]
+        ],
+        "z": [
+          [
+            0,
+            9.4
+          ],
+          [
+            1,
+            8.9
+          ]
+        ],
+        "zoom": [
+          [
+            0,
+            1040
+          ],
+          [
+            1,
+            1130
+          ]
+        ]
+      },
+      "assets": [
+        {
+          "id": "item-1",
+          "asset": "sports-car",
+          "motion": "inspect-turn",
+          "tracks": {
+            "x": [
+              [
+                0,
+                -1.78
+              ]
+            ],
+            "scale": [
+              [
+                0,
+                0.76
+              ]
+            ]
+          }
+        },
+        {
+          "id": "item-2",
+          "asset": "airplane",
+          "motion": "presentation-turn",
+          "tracks": {
+            "x": [
+              [
+                0,
+                0
+              ]
+            ],
+            "scale": [
+              [
+                0,
+                0.84
+              ]
+            ]
+          }
+        },
+        {
+          "id": "item-3",
+          "asset": "sailboat",
+          "motion": "inspect-turn",
+          "tracks": {
+            "x": [
+              [
+                0,
+                1.78
+              ]
+            ],
+            "scale": [
+              [
+                0,
+                0.76
+              ]
+            ]
+          },
+          "params": {
+            "accent": "#a0edf0"
+          }
+        }
+      ],
+      "effects": [
+        {
+          "preset": "gold-sparks",
+          "target": "item-2"
+        }
+      ],
+      "narration": [
+        "Animate vehicles across land and sea."
+      ],
+      "fidelity": {
+        "bloom": 0.68,
+        "atmosphere": 0.52,
+        "contactShadow": 0.7,
+        "surfaceDetail": 0.65,
+        "depthOfField": 0.46,
+        "motionBlur": 0.35,
+        "grain": 0.18,
+        "grade": 0.48,
+        "particles": 0.75,
+        "typography": 1
+      }
+    },
+    {
+      "id": "science",
+      "template": "cinematic-graph",
+      "backend": "three",
+      "durationFrames": 120,
+      "transitionFrames": 8,
+      "heading": "SCIENCE",
+      "subheading": "Models, networks and instruments",
+      "environment": "laboratory",
+      "camera": {
+        "x": [
+          [
+            0,
+            1.8
+          ],
+          [
+            1,
+            -1.2
+          ]
+        ],
+        "y": [
+          [
+            0,
+            3.6
+          ],
+          [
+            1,
+            3.1
+          ]
+        ],
+        "z": [
+          [
+            0,
+            9.4
+          ],
+          [
+            1,
+            8.9
+          ]
+        ],
+        "zoom": [
+          [
+            0,
+            1040
+          ],
+          [
+            1,
+            1130
+          ]
+        ]
+      },
+      "assets": [
+        {
+          "id": "item-1",
+          "asset": "dna-helix",
+          "motion": "inspect-turn",
+          "tracks": {
+            "x": [
+              [
+                0,
+                -1.78
+              ]
+            ],
+            "scale": [
+              [
+                0,
+                0.76
+              ]
+            ]
+          }
+        },
+        {
+          "id": "item-2",
+          "asset": "atom-model",
+          "motion": "presentation-turn",
+          "tracks": {
+            "x": [
+              [
+                0,
+                0
+              ]
+            ],
+            "scale": [
+              [
+                0,
+                0.84
+              ]
+            ]
+          }
+        },
+        {
+          "id": "item-3",
+          "asset": "microscope",
+          "motion": "inspect-turn",
+          "tracks": {
+            "x": [
+              [
+                0,
+                1.78
+              ]
+            ],
+            "scale": [
+              [
+                0,
+                0.76
+              ]
+            ]
+          },
+          "params": {
+            "accent": "#a0edf0"
+          }
+        }
+      ],
+      "effects": [
+        {
+          "preset": "cyan-aura",
+          "target": "item-2"
+        }
+      ],
+      "narration": [
+        "Explain scientific ideas with visual models."
+      ],
+      "fidelity": {
+        "bloom": 0.68,
+        "atmosphere": 0.52,
+        "contactShadow": 0.7,
+        "surfaceDetail": 0.65,
+        "depthOfField": 0.46,
+        "motionBlur": 0.35,
+        "grain": 0.18,
+        "grade": 0.48,
+        "particles": 0.75,
+        "typography": 1
+      }
+    },
+    {
+      "id": "business",
+      "template": "cinematic-graph",
+      "backend": "three",
+      "durationFrames": 120,
+      "transitionFrames": 8,
+      "heading": "BUSINESS",
+      "subheading": "Charts, finance and logistics",
+      "environment": "midnight",
+      "camera": {
+        "x": [
+          [
+            0,
+            1.8
+          ],
+          [
+            1,
+            -1.2
+          ]
+        ],
+        "y": [
+          [
+            0,
+            3.6
+          ],
+          [
+            1,
+            3.1
+          ]
+        ],
+        "z": [
+          [
+            0,
+            9.4
+          ],
+          [
+            1,
+            8.9
+          ]
+        ],
+        "zoom": [
+          [
+            0,
+            1040
+          ],
+          [
+            1,
+            1130
+          ]
+        ]
+      },
+      "assets": [
+        {
+          "id": "item-1",
+          "asset": "bar-chart",
+          "motion": "inspect-turn",
+          "tracks": {
+            "x": [
+              [
+                0,
+                -1.78
+              ]
+            ],
+            "scale": [
+              [
+                0,
+                0.76
+              ]
+            ]
+          }
+        },
+        {
+          "id": "item-2",
+          "asset": "organization-chart",
+          "motion": "presentation-turn",
+          "tracks": {
+            "x": [
+              [
+                0,
+                0
+              ]
+            ],
+            "scale": [
+              [
+                0,
+                0.84
+              ]
+            ]
+          }
+        },
+        {
+          "id": "item-3",
+          "asset": "safe",
+          "motion": "inspect-turn",
+          "tracks": {
+            "x": [
+              [
+                0,
+                1.78
+              ]
+            ],
+            "scale": [
+              [
+                0,
+                0.76
+              ]
+            ]
+          },
+          "params": {
+            "accent": "#a0edf0"
+          }
+        }
+      ],
+      "effects": [
+        {
+          "preset": "gold-sparks",
+          "target": "item-2"
+        }
+      ],
+      "narration": [
+        "Turn business concepts into moving graphics."
+      ],
+      "fidelity": {
+        "bloom": 0.68,
+        "atmosphere": 0.52,
+        "contactShadow": 0.7,
+        "surfaceDetail": 0.65,
+        "depthOfField": 0.46,
+        "motionBlur": 0.35,
+        "grain": 0.18,
+        "grade": 0.48,
+        "particles": 0.75,
+        "typography": 1
+      }
+    }
+  ]
+}
