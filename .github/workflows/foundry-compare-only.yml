@@ -1,0 +1,76 @@
+name: AF09 - comparison only
+on:
+  push:
+    branches: ['feature/af-01-geometry-kernel']
+permissions:
+  contents: read
+  actions: read
+jobs:
+  compare:
+    if: github.event.before == '1615e8d31195b5122cddf479b171826ac02a506f' && github.event.head_commit.message == 'AF09 compare verified artifacts only'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          ref: '202ee715012c0e857461ec56c4df733a438c1608'
+          path: frozen
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ github.token }}
+          run-id: 45423588804
+          pattern: aethermotion-*
+          path: frozen/comparison
+      - uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ github.token }}
+          run-id: 45433500593
+          name: repaired-foundry-af05-three-polished
+          path: frozen/repaired/05
+      - uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ github.token }}
+          run-id: 45433500593
+          name: repaired-foundry-af09-three-polished
+          path: frozen/repaired/09
+      - run: python -m pip install numpy==2.2.6 imageio-ffmpeg==0.6.0
+      - name: Validate actual frozen source and correct derived provenance
+        working-directory: frozen
+        run: |
+          test "$(git rev-parse HEAD)" = '202ee715012c0e857461ec56c4df733a438c1608'
+          python ../scripts/reconcile-foundry-provenance.py comparison repaired
+      - name: Execute every original comparison without short-circuit
+        working-directory: frozen
+        run: |
+          result=0
+          for script in compare_foundry_final compare_backends compare_fidelity compare_phase_pairs; do
+            if python "scripts/$script.py" comparison > "comparison/$script.log" 2>&1; then
+              echo "$script PASS"
+              echo "$script PASS" >> comparison/comparison-status.txt
+            else
+              echo "$script FAIL"
+              echo "$script FAIL" >> comparison/comparison-status.txt
+              result=1
+            fi
+            cat "comparison/$script.log"
+          done
+          exit "$result"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cinematic-backend-comparison-final
+          path: |
+            frozen/comparison/comparison.json
+            frozen/comparison/fidelity-comparison.json
+            frozen/comparison/phase-pairs.json
+            frozen/comparison/foundry-final-report.json
+            frozen/comparison/*-review.jpg
+            frozen/comparison/repair-provenance-*.json
+            frozen/comparison/qualification-reported-*.json
+            frozen/comparison/*.log
+            frozen/comparison/comparison-status.txt
+          if-no-files-found: error

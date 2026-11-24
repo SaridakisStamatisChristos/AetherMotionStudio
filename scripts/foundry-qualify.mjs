@@ -2,6 +2,8 @@ import assert from 'node:assert/strict';
 import {readFileSync,writeFileSync,mkdirSync,existsSync,statSync} from 'node:fs';
 import {join} from 'node:path';
 import {createHash} from 'node:crypto';
+import {execFileSync} from 'node:child_process';
+const checkedOutCommit=()=>execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim();
 import {cpus,totalmem,platform,arch,release} from 'node:os';
 import {validateProject,validateTimeline} from '../src/core/timeline.js';
 import {evaluateGraph} from '../src/core/graph.js';
@@ -31,7 +33,7 @@ function plan(){
  }
  assert.deepEqual(normalize(read('examples/cinematic-cpu-polished.json'),{assetQuality:true}),normalize(read('examples/foundry-af09-discovery-cpu-polished.json'),{assetQuality:true}));
  const manifests=BUILTIN_PACKS.map(builtinPack);write(join(out,'catalog.json'),searchRegistry({limit:300}));write(join(out,'packs.json'),manifests);
- write(join(out,'protocol.json'),{...protocol,sourceCommit:process.env.GITHUB_SHA??null,protocolDigest:sha(protocolPath),pairs:rows,humanApproval:false,nativeThree:'deferred until authorized full'});
+ write(join(out,'protocol.json'),{...protocol,sourceCommit:checkedOutCommit(),orchestrationCommit:process.env.GITHUB_SHA??null,protocolDigest:sha(protocolPath),pairs:rows,humanApproval:false,nativeThree:'deferred until authorized full'});
  console.log(JSON.stringify({protocol:protocol.id,pairs:rows.length,staticPairs:rows.filter(r=>r.sourceDigests).length,generatedPairs:rows.filter(r=>!r.sourceDigests).length,packs:manifests.length}));
 }
 function measure(id){
@@ -44,7 +46,7 @@ function measure(id){
  assert.equal(timing.backend,id===row.cpu?'cpu':'three');assert.equal(Number(v.nb_frames),row.frames);
  const inventory=Object.fromEntries(protocol.requiredArtifacts.filter(n=>n!=='qualification.json').map(n=>{const p=join(out,n);return [n,{bytes:statSync(p).size,sha256:sha(p)}]}));
  const system={cpu:cpus()[0]?.model??null,logicalCpus:cpus().length,memoryBytes:totalmem(),platform:platform(),arch:arch(),kernel:release(),node:process.version,remotion:pkg.dependencies.remotion,three:pkg.dependencies.three,gl:timing.gl??null,concurrency:2,gpuModel:null};
- const report={version:1,protocolDigest:sha(protocolPath),sourceCommit:process.env.GITHUB_SHA??null,id,kind:row.kind,system,media:{width:v.width,height:v.height,frames:Number(v.nb_frames),fps:v.r_frame_rate,bytes:inventory['film.mp4'].bytes},renderSeconds:timing.renderSeconds,encodingSeconds:null,geometryTraversal:{firstSeconds:first.seconds,warmSeconds:warm.seconds,scope:'post-validation geometry traversal, not cold compile or renderer startup',samples:first.value},peakRssKiB:null,firstPreviewSeconds:null,frameLatency:null,inventory,humanReview:'unreviewed',nativeVerified:true};
+ const report={version:1,protocolDigest:sha(protocolPath),sourceCommit:checkedOutCommit(),orchestrationCommit:process.env.GITHUB_SHA??null,id,kind:row.kind,system,media:{width:v.width,height:v.height,frames:Number(v.nb_frames),fps:v.r_frame_rate,bytes:inventory['film.mp4'].bytes},renderSeconds:timing.renderSeconds,encodingSeconds:null,geometryTraversal:{firstSeconds:first.seconds,warmSeconds:warm.seconds,scope:'post-validation geometry traversal, not cold compile or renderer startup',samples:first.value},peakRssKiB:null,firstPreviewSeconds:null,frameLatency:null,inventory,humanReview:'unreviewed',nativeVerified:true};
  const timeFile=join(out,'qualification-process.txt');if(existsSync(timeFile)){const raw=readFileSync(timeFile,'utf8');const m=/maximum_rss_kib=(\d+)/.exec(raw),w=/elapsed_seconds=([\d.]+)/.exec(raw);if(m)report.peakRssKiB=Number(m[1]);if(w)report.totalCliSeconds=Number(w[1]);}
  write(join(out,'qualification.json'),report);console.log('AF09 evidence',id,report.renderSeconds,report.media.frames);
 }
