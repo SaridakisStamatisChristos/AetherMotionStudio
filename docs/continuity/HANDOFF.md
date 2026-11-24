@@ -1,32 +1,27 @@
-# Latest handoff — LOCAL-02 verified; LOCAL-03 prepared
-Checkpoint: branch `local-dev` (from main 1e0adcd). Commits: 5eba606 symlink test, 031a554 LOCAL-01 docs+lockfile, 19b20ec LOCAL-02, e1caa74 comparator fix, plus this checkpoint commit. Date 2026-11-24. Not pushed, not merged, no release.
-Status: LOCAL-01 and LOCAL-02 IMPLEMENTED + VERIFIED locally, awaiting owner acceptance. LOCAL-03 PLANNED (scope in NEXT_UNITS.md), not started.
+# Latest handoff — LOCAL-03 implemented + measured, PR #15 merge authorized
+Checkpoint: branch `feature/local-03-performance` from main 43e0c2e (LOCAL-01/02 merged via PR #14). Commits 4b01f2b (bench), d24a943 (glitch scanner, opt-in seam), 73ce93f (pre-reboot checkpoint), 4ed3e7d (clean-boot c4/c8), 56d8f82 (settled controls, reuse rejected), 9746236 (NVENC, AF01, profile), a547bf2 + this commit (PR/CI record). Pushed to origin; PR #15. Date 2026-11-25.
+Status: LOCAL-03 IMPLEMENTED + MEASURED (Phases A–C). Owner authorized push, PR and merge 2026-11-25: PR #15, test-only CI run 45500133921 on 9746236 green (test pass; render/compare skipped by policy). Merge commit recorded at next checkpoint. Formal acceptance of the profile values not separately stated beyond merge authorization. Details: CURRENT_STATE.md "Active unit"; table + NVENC quality section docs/performance/local-03-bench-report.md; profile docs/continuity/LOCAL_DEVELOPMENT.md "Recommended local performance profile".
 
-## LOCAL-01 (summary; details in CURRENT_STATE)
-Windows 11, Ryzen 9 7845HX, RTX 4060 Laptop + Radeon 610M. Python 3.11.9 (winget, owner-approved), release_setup OK, models verified. ffprobe from Remotion compositor via AETHER_FFPROBE. GPU: AETHER_GL=vulkan reaches RTX; angle → iGPU. Symlink test: capability-aware skip (win32+EPERM only). package-lock.json reviewed and committed.
+## This session
+- Reboot: owner's first two "reboots" were Fast Startup resumes (Kernel-Boot event 27, boot type 0x1; HiberbootEnabled=1) keeping the 2.2 GB non-paged pool. True cold boot 2026-11-24 23:36:37 (0x0): non-paged pool 0.73 GB. Fast Startup setting left unchanged. Low-RAM explanation given to owner (Windows "free"≈0 normal, available incl. standby 6.7 GB; pre-boot ~5–6 GB kernel-side growth, culprit not identifiable retroactively; poolmon/RAMMap need owner permission).
+- b3 (5–15 min post-boot, settling): CPU c4 21.0 / c8 19.0 s; Three c4 11.0 / c8 10.3 s — c8 rows pessimistic.
+- b4 (settled, interleaved): CPU c4 22.1 / c8 15.5–15.9 s; Three c4 11.0 / c8 8.9 s; --reuse-browser no gain → rejected.
+- c1 NVENC (`--hw-encode required`, c8): CPU 13.1 s, Three 7.9 s; 2.06 Mbps Main vs x264 5.1/6.9 Mbps High; vs near-lossless CPU ref (`npx remotion render … --crf=1` → out/bench/c1-lossless-cpu-ref): x264 49.34/47.69 dB, NVENC 47.90/45.85 dB avg/min, SSIM 0.9958 vs 0.9936 → drafts-only opt-in.
+- d1 AF01 900 f: CPU c2 78.6 → c8 33.5 s (bit-identical); Three/vulkan c2 44.6 → c8 21.8 s. All runs verify PASS, glitch clean, quality = reference finding only (LOW_PROJECTED_MOTION, `product`).
+- End-to-end profile check: `$env:AETHER_CONCURRENCY="8"; $env:AETHER_GL="vulkan"; node scripts/produce.mjs --project examples/cinematic-cpu-polished.json --pair examples/cinematic-three-polished.json --backend both --id local-03-profile-c8` → succeeded 44.9 s, compare_release PASS, CPU film = reference 45a364e0…, Three glitch clean 56.31 dB; render-timing.json records concurrency 8. sourceDirty true (uncommitted bench-report doc). GPU not sampled in that run.
+- Tests: `npm test` 168 tests, 167 pass, 0 fail, 1 skip (Windows symlink). Python tests not rerun (no Python changes).
+- Changed files: docs/performance/local-03-bench-report.md, docs/continuity/{CURRENT_STATE,HANDOFF,LOCAL_DEVELOPMENT,NEXT_UNITS}.md. No source changes this session.
 
-## LOCAL-02 changed files
-- scripts/production-options.mjs — `--project`/`--pair` authored mode; exactly one of --topic/--request/--project; rejects retiming options and normalized pair mismatch. Director-mode semantics preserved.
-- src/studio/production.js — matchedTargetFrames, projectProfile, SPEECH_SHARED/AUTHORED_SHARED, sharedArtifacts, verifyShared; matchedProject accepts fixed-budget authored projects, still requires measured timeline.
-- scripts/produce.mjs — authored planning path (no Director, prepare without --director-budget), mix.wav archive for non-speech, inputHashes, sourceDirty, frameAllocation, per-output shared-inputs.json, pre/post-render hash checks incl. public/audio soundtrack.
-- scripts/matched_inventory.py (new, stdlib) + scripts/compare_release.py (imports it; main() entry point).
-- tests/production.test.js (+4 tests), tests/test_compare_release.py (new, 11 tests incl. numpy-gated entry point).
-- README.md, docs/continuity/{CURRENT_STATE,HANDOFF,LOCAL_DEVELOPMENT,NEXT_UNITS}.md.
+## Next action
+1. Optional human visual check of an NVENC film vs x264 (out/bench/c1-cin-cpu-c8-nvenc/run-01/film.mp4 vs out/local-02-cinematic-r2-cpu-polished/film.mp4).
+2. Done: pushed, PR #15, CI green, merge authorized.
+3. Then prepare ART-01 (input: LOW_PROJECTED_MOTION on AF01 `product` shot). Bootstrap/inspection first, no speculative rewrite.
 
-## Commands and results
-- `npm test` → 164 tests, 163 pass, 0 fail, 1 skip (symlink, Windows).
-- `PYTHONPATH=scripts .venv/Scripts/python.exe -m unittest discover -s tests -p "test_*.py"` → 22 OK. Same on bare `py -3.11` (no numpy, CI-equivalent) → 22 OK, 1 skipped.
-- compileall scripts OK; `node scripts/foundry-qualify.mjs plan` → 9 pairs.
-- Controlled matched run (PowerShell; AETHER_FFPROBE set, AETHER_GL=vulkan):
-  `node scripts/produce.mjs --project examples/cinematic-cpu-polished.json --pair examples/cinematic-three-polished.json --backend both --id local-02-cinematic-r2`
-  → PASS: 1 preparation, 2 renders, quality pass 0/0 each, compare_release PASS, inventory verified; sourceCommit e1caa74, sourceDirty false. CPU 44.8 s; Three/vulkan 28.6 s, RTX peak 44% util / 424 MiB. Shared: timeline c6e3b42f…, narration f1bad798…, mix 69b75285…, voice-report 1beb081f… identical in both outputs and the three public/audio soundtracks. Films: cpu 45a364e0…, three 4b12d823… (byte-identical to LOCAL-01 renders).
-- Failed first attempt `local-02-cinematic` (comparator NameError after both renders passed) preserved under out/; fixed in e1caa74.
+## Environment (PowerShell, repo root)
+PYTHON=.venv python; AETHER_FFMPEG=absolute .venv/Lib/site-packages/imageio_ffmpeg/binaries/ffmpeg-win-x86_64-v7.1.exe; AETHER_FFPROBE=absolute node_modules/@remotion/compositor-win32-x64-msvc/ffprobe.exe (absolute paths required).
 
 ## Unresolved risks
-- Only a single-shot pair rendered matched; multi-shot authored pairs covered by unit tests only.
-- Timings are single runs; not benchmarks. No human/audio review of LOCAL-02 films.
-- `npm run produce -- ...` loses `--` in PowerShell; use node directly (documented).
-- CI (Linux) not yet run on these commits; nothing pushed.
-
-## Next executable action
-Owner: accept LOCAL-01/02 (or request changes), decide push/PR of `local-dev`, and authorize LOCAL-03 (step 1 measurement first). Do not push/merge without authorization.
+- Rare Vulkan frame corruption observed once (serial-encode diagnostic); keep frame_glitch scan on any GPU-profile render.
+- Three/vulkan output not bit-exact across runs (≥56 dB); Three reproducibility gates must use PSNR, not hashes.
+- Memory pressure recurs with long uptime / Fast Startup; performance numbers are condition-dependent — compare only within the same condition group. c8 needs ~2.5 GB headroom.
+- Speedups rest on 2 measured runs per config on one machine; NVENC not human-reviewed.

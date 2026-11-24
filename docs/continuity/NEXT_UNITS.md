@@ -13,7 +13,7 @@ This is an actionable proposed sequence for future work, not an approved require
 | ART-05 | Curated final showcase | User-defined topic/style/duration, coherent multi-shot film, meaningful movement, clear audio, assets/identities, visual review, selected CPU/Three outputs. No aesthetic auto-certification. |
 
 ## Unit status (2026-11-24, branch `local-dev`, not pushed)
-LOCAL-01 and LOCAL-02 implemented and verified locally, awaiting owner acceptance (see CURRENT_STATE). LOCAL-03 prepared below, not started.
+LOCAL-01 and LOCAL-02 implemented and verified locally, awaiting owner acceptance (see CURRENT_STATE). Update 2026-11-25: LOCAL-01/02 merged (PR #14). LOCAL-03 IMPLEMENTED + MEASURED, merged via PR #15 (owner-authorized): bench tooling, opt-in AETHER_CONCURRENCY/AETHER_GL/AETHER_HW_ENCODE seam, measurement table and recommended profile (c8 + vulkan, x264) documented in LOCAL_DEVELOPMENT.md. Hotspot addressed = concurrency scaling (frame render ≈97% of time); defaults unchanged. Next proposed unit: ART-01.
 
 ## LOCAL-03 prepared scope — GPU acceleration and performance
 Starting facts (measured, single runs): owner PC hybrid RTX 4060 Laptop + Radeon 610M; only `AETHER_GL=vulkan` reaches the RTX (`angle` → iGPU). 360-frame cinematic polished pair at concurrency 2: CPU 44.8 s, Three/vulkan 28.6 s (RTX peak util 44–54%, ~424 MiB), Three/swangle 155.7 s. RTX is under-utilized; where time goes (bundle, frame capture, encode, audio mux) is unmeasured. Renders are bit-reproducible for this fixture, so output hashes can gate optimizations.
