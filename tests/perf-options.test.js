@@ -16,6 +16,15 @@ test('opt-in render settings default to the historical native path',()=>{
  for(const env of [{AETHER_CONCURRENCY:'0'},{AETHER_CONCURRENCY:'99'},{AETHER_CONCURRENCY:'four'},{AETHER_CONCURRENCY:' 4'},{AETHER_GL:'directx'},{AETHER_HW_ENCODE:'yes'}])assert.throws(()=>renderSettings(env),undefined,JSON.stringify(env));
  assert.throws(()=>intIn('x',null,1,2));
 });
+test('default native render arguments are byte-for-byte the historical CLI call',async()=>{
+ const {remotionRenderArgs}=await import('../scripts/native-render.mjs');
+ const base=['render','src/index.jsx','AetherFilm','f.mp4','--props=p.json','--codec=h264','--concurrency=2'];
+ assert.deepEqual(remotionRenderArgs({film:'f.mp4',propsPath:'p.json',usesThree:false,...renderSettings({})}),base);
+ assert.deepEqual(remotionRenderArgs({film:'f.mp4',propsPath:'p.json',usesThree:true,...renderSettings({})}),[...base,'--gl=swangle']);
+ // GL never reaches the CPU path; opt-ins appear only when requested.
+ assert.deepEqual(remotionRenderArgs({film:'f.mp4',propsPath:'p.json',usesThree:false,...renderSettings({AETHER_GL:'vulkan',AETHER_CONCURRENCY:'4'})}),[...base.slice(0,6),'--concurrency=4']);
+ assert.deepEqual(remotionRenderArgs({film:'f.mp4',propsPath:'p.json',usesThree:true,...renderSettings({AETHER_GL:'vulkan',AETHER_HW_ENCODE:'if-possible'})}),[...base,'--gl=vulkan','--hardware-acceleration=if-possible']);
+});
 test('stats summarise finite values only',()=>{
  assert.deepEqual(stats([3,1,2]),{n:3,mean:2,min:1,max:3,median:2,sd:1});
  assert.equal(stats([4,2]).median,3);assert.equal(stats([NaN,null,undefined]),null);assert.equal(stats([5]).sd,0);

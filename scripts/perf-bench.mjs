@@ -76,7 +76,11 @@ for(let i=0;i<o.warmup+o.runs&&!stop;i++){
   row.filmSha256=sha(join(dir,'film.mp4'));row.filmBytes=statSync(join(dir,'film.mp4')).size;row.matchesReference=referenceFilm?row.filmSha256===referenceFilm:null;
   row.verify=runPy('scripts/verify.py',dir);if(!o.skipQuality&&row.verify.ok)row.quality=runPy('scripts/quality_media.py',dir);
   if(row.quality?.ok){const q=read(join(dir,'quality-report.json'));row.quality.errors=q.errors;row.quality.warnings=q.warnings;row.quality.status=q.status}
-  row.status=row.verify.ok&&(o.skipQuality||row.quality?.ok&&row.quality.errors===0)?'succeeded':'failed-verification';
+  // Every frame is scanned: isolated temporal spikes, plus PSNR against the production reference film.
+  {const t=performance.now(),g=spawnSync(python,['scripts/frame_glitch.py',join(dir,'film.mp4'),...(referenceFilm?[join(src,'film.mp4')]:[])],{cwd:root,env,encoding:'utf8',maxBuffer:64*1024*1024});
+   try{const r=JSON.parse(g.stdout);row.glitch={ms:performance.now()-t,status:r.status,frames:r.glitchFrames,minPsnr:r.minPsnr??null,identicalFrames:r.identicalFrames??null};writeFileSync(join(dir,'frame-glitch.json'),JSON.stringify(r,null,2))}
+   catch{row.glitch={ms:performance.now()-t,status:'scan-error',error:(g.stderr||'').slice(-400)}}}
+  row.status=!row.verify.ok||!(o.skipQuality||row.quality?.ok&&row.quality.errors===0)?'failed-verification':row.glitch.status!=='clean'?'failed-glitch':'succeeded';
  }catch(e){row.resources=row.resources??summarize(smp.stop(),ramBase);row.status='failed';row.error=String(e?.message??e).slice(0,1500);stop=true;try{if(browser&&!shared)await browser.close({silent:true})}catch{}}
  save();console.log(row.name,row.status,row.renderMediaMs?Math.round(row.renderMediaMs)+'ms':'',row.framesPerSecond?row.framesPerSecond.toFixed(2)+' fps':'',row.matchesReference===false?'FILM DIFFERS FROM REFERENCE':'',row.error??'');
 }
