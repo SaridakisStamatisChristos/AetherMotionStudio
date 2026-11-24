@@ -1,0 +1,8 @@
+export function r(i){const a=Math.sin(i*127.1+311.7)*43758.5453;return a-Math.floor(a)}
+export function glow(ctx,x,y,rad,color){const g=ctx.createRadialGradient(x,y,0,x,y,rad);g.addColorStop(0,color);g.addColorStop(1,'transparent');ctx.fillStyle=g;ctx.fillRect(x-rad,y-rad,rad*2,rad*2)}
+export function text(ctx,s,x,y,size,color='#fff',weight=800,font='Arial',max=610){ctx.font=weight+' '+size+'px '+font;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle=color;ctx.fillText(s,x,y,max)}
+export function star(ctx,x,y,rad,a){ctx.beginPath();for(let k=0;k<10;k++){const th=a+k*Math.PI/5,rr=rad*(k%2?.43:1),xx=x+Math.cos(th)*rr,yy=y+Math.sin(th)*rr;k?ctx.lineTo(xx,yy):ctx.moveTo(xx,yy)}ctx.closePath();ctx.fill()}
+
+export const polygon=(ctx,p,fill,stroke)=>{ctx.beginPath();p.forEach((a,i)=>i?ctx.lineTo(a[0],a[1]):ctx.moveTo(a[0],a[1]));ctx.closePath();if(fill){ctx.fillStyle=fill;ctx.fill()}if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=.7;ctx.stroke()}};
+export function paperLabel(ctx,s,x,y,sz,bg,fg,alpha=1,rot=0){ctx.save();ctx.globalAlpha=alpha;ctx.translate(x,y);ctx.rotate(rot);ctx.font='900 '+sz+'px Arial';const ww=Math.min(650,ctx.measureText(s).width+44),hh=sz*1.31;ctx.shadowColor='rgba(0,0,0,.35)';ctx.shadowBlur=16;ctx.shadowOffsetY=5;polygon(ctx,[[-ww/2,-hh/2+3],[-ww*.22,-hh/2],[ww*.1,-hh/2+2],[ww/2,-hh/2-2],[ww/2-3,hh/2],[ww*.1,hh/2-2],[-ww*.3,hh/2+2],[-ww/2+3,hh/2]],bg);ctx.shadowBlur=0;ctx.shadowOffsetY=0;text(ctx,s,0,0,sz,fg,900);ctx.restore()}
+export function roundedBox(ctx,x,y,w,h,r,fill,stroke){ctx.beginPath();ctx.roundRect(x,y,w,h,r);ctx.fillStyle=fill;ctx.fill();if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=2;ctx.stroke();}}

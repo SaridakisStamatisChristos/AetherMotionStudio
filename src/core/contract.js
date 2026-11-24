@@ -1,5 +1,5 @@
 export const FORMAT=Object.freeze({width:1080,height:1920,fps:30,seconds:12,frames:360});
-export const TEMPLATES=Object.freeze(['robot-treasure','orbit-explainer']);
+export const TEMPLATES=Object.freeze(['robot-treasure','orbit-explainer','robot-lab']);
 export const VOICES=Object.freeze(['af_heart','af_bella','af_nova','af_sarah','am_adam','am_michael','am_fenrir','bf_emma','bm_george']);
 const fail=(p,m)=>{throw new Error(p+': '+m)};
 const obj=(v,p,keys)=>{if(!v||typeof v!=='object'||Array.isArray(v))fail(p,'expected object');for(const k of Object.keys(v))if(!keys.includes(k))fail(p+'.'+k,'unknown field');for(const k of keys)if(!Object.hasOwn(v,k))fail(p+'.'+k,'required');};

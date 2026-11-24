@@ -1,0 +1,68 @@
+{
+  "version": 1,
+  "id": "robot-lab",
+  "template": "robot-lab",
+  "title": "The energy core",
+  "voice": "af_heart",
+  "copy": {
+    "kicker": "AETHER LAB / ROBOTICS",
+    "intro": [
+      "THE LITTLE",
+      "INVENTOR",
+      "A NEW EXPERIMENT"
+    ],
+    "question": "WILL IT WORK?",
+    "reveal": [
+      "ENERGY ONLINE",
+      "THE CORE AWAKENS"
+    ],
+    "outro": [
+      "ONE SMALL STEP",
+      "A NEW MACHINE"
+    ]
+  },
+  "narration": [
+    {
+      "start": 0.22,
+      "end": 2.64,
+      "text": "A robot built a new machine."
+    },
+    {
+      "start": 2.7,
+      "end": 5.3,
+      "text": "It began to charge."
+    },
+    {
+      "start": 5.42,
+      "end": 8.9,
+      "text": "The energy core came to life."
+    },
+    {
+      "start": 8.98,
+      "end": 11.8,
+      "text": "One small step for our inventor."
+    }
+  ],
+  "captions": [
+    [
+      0,
+      2.64,
+      "A ROBOT BUILDS A MACHINE"
+    ],
+    [
+      2.7,
+      5.3,
+      "IT BEGAN TO CHARGE"
+    ],
+    [
+      5.42,
+      8.9,
+      "THE CORE AWAKENS"
+    ],
+    [
+      8.98,
+      12,
+      "ONE SMALL STEP"
+    ]
+  ]
+}

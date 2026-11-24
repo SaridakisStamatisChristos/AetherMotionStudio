@@ -13,4 +13,4 @@
 | v0.9 | Local editor/UI | Preview, edit, render; no mandatory service |
 | v1.0 | One-click production | Reproducible release, install docs, real end-to-end evidence |
 
-Current gate: v0.1 implementation, CI evidence pending until observed. Do not claim SOTA or release readiness without matched benchmarks and quality review.
+Current gate: v0.2 implementation on feature branch. v0.1 baseline run 45344663253 remains an independent acceptance gate; v0.2 requires all three renders and unit tests. Do not claim release readiness without verified CI and visual review.

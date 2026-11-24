@@ -1,11 +1,11 @@
 // Original 2D motion-design template. Pure, frame-addressed canvas; no assets/network.
-const clamp=x=>Math.max(0,Math.min(1,x));
-const ease=(t,a,b)=>{const x=clamp((t-a)/(b-a));return x*x*(3-2*x)};
+import {clamp,ease} from '../core/motion.js';
+import {text as sharedText,roundedBox} from '../visual/primitives.js';
 export function draw(ctx,t,W,H,s){
  ctx.save();ctx.scale(W/720,H/1280);
  const g=ctx.createLinearGradient(0,0,720,1280);g.addColorStop(0,'#0b1023');g.addColorStop(.55,'#172d45');g.addColorStop(1,'#060e1b');ctx.fillStyle=g;ctx.fillRect(0,0,720,1280);
- function text(v,x,y,size,color='#e9f4fb',weight=800,max=620){ctx.font=weight+' '+size+'px Arial';ctx.textBaseline='middle';ctx.textAlign='center';ctx.fillStyle=color;ctx.fillText(v,x,y,max);}
- function box(x,y,w,h,r,fill,stroke){ctx.beginPath();ctx.roundRect(x,y,w,h,r);ctx.fillStyle=fill;ctx.fill();if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=2;ctx.stroke();}}
+ const text=(v,x,y,size,color='#e9f4fb',weight=800,max=620)=>sharedText(ctx,v,x,y,size,color,weight,'Arial',max);
+ const box=(...args)=>roundedBox(ctx,...args);
  for(let i=0;i<44;i++){let x=(i*137.5+t*(4+i%7))%720,y=(i*97.7)%1280;ctx.fillStyle='rgba(165,222,255,.17)';ctx.fillRect(x,y,2,2)}
  text(s.copy.kicker,360,76,15,'#74d6eb',700);
  const stage=t<3.2?0:t<5.45?1:t<9?2:3;

@@ -13,3 +13,6 @@ Scene JSON → validation → local Kokoro synthesis & score mix → Remotion co
 
 ## Next architecture
 Version the contract before expanding it. Extract geometry/rigs, camera paths, effects, typography and transitions into composable registries. Add a real Three.js backend alongside CPU Canvas; do not replace working baseline without visual comparison. Separate semantic storyboard generation from deterministic compilation; provider adapters remain optional. Add audio timing driven by measured phoneme/word alignment and a duration-aware planner. Preserve old examples as regressions.
+
+## v0.2 extraction
+Shared CPU mesh projection, registered asset emitters, pose parameters, motion keyframes and drawing primitives are now separate from template choreography. The fixed-format v1 contract still selects a complete template; arbitrary asset graphs remain a later gate. See ASSET_LIBRARY.md.

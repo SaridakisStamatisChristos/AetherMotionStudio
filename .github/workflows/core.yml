@@ -1,6 +1,7 @@
 name: Core - Remotion and Kokoro
 on:
   push:
+    branches: [main, 'feature/**']
   pull_request:
   workflow_dispatch:
 permissions:
@@ -25,7 +26,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        scene: [robot-treasure, blockchain-explainer]
+        scene: [robot-treasure, blockchain-explainer, robot-lab]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
