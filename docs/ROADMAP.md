@@ -16,4 +16,4 @@
 | v0.9 | Local editor/UI | Preview, edit, render; no mandatory service |
 | v1.0 | One-click production | Reproducible release, install docs, real end-to-end evidence |
 
-Current gate: v0.4.3 candidate, based on verified v0.4.2 commit 9339ed7 and scoped run 45352913631. Scoped CI: fast tests plus 45-second polished CPU cinematography only. All thirteen native fixtures and matched comparisons retained for final manual full suite. Next v0.5 director only after scoped acceptance; full Three.js native evidence deferred.
+Current gate: v0.5 candidate, based on scoped v0.4.3 commit fd6cbdd and run 45355048931 (45s, 1350 frames, full decode and Kokoro speech, 18 review stills, artifact 14902251836). User accepted current visual quality for forward development; advanced motion and visual refinement remain deferred. Scoped CI: fast tests and one 60-second offline Director-generated polished CPU film. All fifteen native fixtures and matched comparisons retained for final manual full suite. Next v0.6 identity/continuity after scoped acceptance.

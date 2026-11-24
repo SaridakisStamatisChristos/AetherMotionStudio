@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "id": "director-cpu-polished",
+  "topic": "How computers send messages across a network",
+  "seconds": 60,
+  "audience": "curious beginners",
+  "tone": "clear",
+  "style": "cinematic explainer",
+  "language": "en-us",
+  "voice": "af_heart",
+  "backend": "cpu",
+  "profile": "polished",
+  "seed": 0
+}

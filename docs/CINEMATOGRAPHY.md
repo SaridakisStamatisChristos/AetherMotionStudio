@@ -10,3 +10,6 @@ Predecessor: 9339ed77b43c257d5405211457dcb7eb2ed2d79d, scoped CI 45352913631 pas
 - 45-second six-shot sunlight-to-smart-city story, same guide, attachment, assembly, data and narrator. Matched CPU/Three JSON. Scoped push renders CPU only, all prior fixtures retained. Full pair comparator checks v0.4.2 and v0.4.3 independently. Review frames include shot start/middle/end, exact frame and audio checks.
 
 Commands: npm test; npm run validate -- examples/cinematography-cpu-polished.json; npm run render -- examples/cinematography-cpu-polished.json. Native Three.js acceptance and aesthetic review remain separate. Full suite is deferred by explicit user instruction. No changes to historical artifacts or baseline release.
+
+## Scoped acceptance record
+Commit fd6cbdd1f84837a586cf5bfaf22434e34ad0e218; run 45355048931; artifact 14902251836. Fast tests and 1350-frame 45-second native CPU film, full decode, Kokoro per-phrase audio and 18 review stills passed. User accepted current visuals for forward development, explicitly deferring greater motion/visual quality. Full Three.js, general mesh morphing, broader rig families and aesthetic refinement remain open. Historical evidence unchanged.

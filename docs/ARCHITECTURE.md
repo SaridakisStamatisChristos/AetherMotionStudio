@@ -25,3 +25,6 @@ One declarative shot produces backend-independent sampled state and asset box co
 
 ## v0.4.3 candidate
 Additive shared cinematography sampler, rig-aware actions, deterministic attachments, world-depth layers, and screen-space data overlays. See CINEMATOGRAPHY.md. Native verification pending; old contracts and both renderer implementations preserved.
+
+## v0.5 candidate
+Provider-neutral Director lives outside renderer. Versioned request and compact IR compile to the existing validated v2 graph. Retrieval uses current catalog IDs and conservative channels; no generated executable code. Optional measured global shot allocation preserves target frame count. See DIRECTOR.md.
