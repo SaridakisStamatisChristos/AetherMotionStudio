@@ -1,0 +1,140 @@
+name: AF09 - historical shared-audio recovery
+on:
+  push:
+    branches: ['feature/af-01-geometry-kernel']
+permissions:
+  contents: read
+  actions: read
+jobs:
+  repair:
+    if: github.event.before == '437604d69a8c28096e6f8d4b78fccf3067a71e8c' && github.event.head_commit.message == 'AF09 recover historical shared audio pairs'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        phase: [asset-showcase, director, speech, foundry-af01]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          ref: '202ee715012c0e857461ec56c4df733a438c1608'
+          path: frozen
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ github.token }}
+          run-id: 45423588804
+          name: aethermotion-${{ matrix.phase }}-cpu-polished
+          path: original/cpu
+      - uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ github.token }}
+          run-id: 45423588804
+          name: aethermotion-${{ matrix.phase }}-three-polished
+          path: original/three
+      - run: npm install --no-audit --no-fund
+        working-directory: frozen
+      - run: python -m pip install --disable-pip-version-check -r requirements.txt -r requirements-ci.txt
+        working-directory: frozen
+      - run: python scripts/ci_media_tools.py
+        working-directory: frozen
+      - name: Render exact archived CPU timeline with frozen Three renderer
+        working-directory: frozen
+        run: |
+          cp ../scripts/repair-legacy-pair.mjs scripts/repair-legacy-pair.mjs
+          node scripts/repair-legacy-pair.mjs "${{ matrix.phase }}" ../original/cpu ../original/three ../benchmarks/af09-legacy-recovery-inputs.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: repaired-legacy-${{ matrix.phase }}-three-polished
+          path: frozen/out/${{ matrix.phase }}-three-polished/
+          if-no-files-found: error
+          retention-days: 30
+  compare:
+    needs: repair
+    if: always() && github.event.before == '437604d69a8c28096e6f8d4b78fccf3067a71e8c' && github.event.head_commit.message == 'AF09 recover historical shared audio pairs' && needs.repair.result == 'success'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          ref: '202ee715012c0e857461ec56c4df733a438c1608'
+          path: frozen
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ github.token }}
+          run-id: 45423588804
+          pattern: aethermotion-*
+          path: frozen/comparison
+      - uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ github.token }}
+          run-id: 45433500593
+          name: repaired-foundry-af05-three-polished
+          path: frozen/repaired/05
+      - uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ github.token }}
+          run-id: 45433500593
+          name: repaired-foundry-af09-three-polished
+          path: frozen/repaired/09
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: repaired-legacy-*
+          path: frozen/legacy
+      - run: python -m pip install numpy==2.2.6 imageio-ffmpeg==0.6.0
+      - name: Revalidate exact source and shared audio for all six replacements
+        working-directory: frozen
+        run: |
+          test "$(git rev-parse HEAD)" = '202ee715012c0e857461ec56c4df733a438c1608'
+          python ../scripts/reconcile-foundry-provenance.py comparison repaired
+          for phase in asset-showcase director speech foundry-af01; do
+            mv "legacy/repaired-legacy-$phase-three-polished" "legacy/$phase"
+          done
+          python ../scripts/reconcile-legacy-pairs.py comparison legacy ../benchmarks/af09-legacy-recovery-inputs.json
+      - name: Execute all comparisons without short-circuit
+        working-directory: frozen
+        run: |
+          result=0
+          for script in compare_foundry_final compare_backends compare_fidelity; do
+            if python "scripts/$script.py" comparison > "comparison/$script.log" 2>&1; then
+              echo "$script PASS" | tee -a comparison/comparison-status.txt
+            else
+              echo "$script FAIL" | tee -a comparison/comparison-status.txt
+              result=1
+            fi
+            cat "comparison/$script.log"
+          done
+          if python ../scripts/compare_phase_pairs.py comparison > comparison/compare_phase_pairs.log 2>&1; then
+            echo "compare_phase_pairs PASS" | tee -a comparison/comparison-status.txt
+          else
+            echo "compare_phase_pairs FAIL" | tee -a comparison/comparison-status.txt
+            result=1
+          fi
+          cat comparison/compare_phase_pairs.log
+          exit "$result"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cinematic-backend-comparison-all-phases
+          path: |
+            frozen/comparison/comparison.json
+            frozen/comparison/fidelity-comparison.json
+            frozen/comparison/phase-pairs.json
+            frozen/comparison/phase-pair-failures.json
+            frozen/comparison/foundry-final-report.json
+            frozen/comparison/*-review.jpg
+            frozen/comparison/*repair-provenance-*.json
+            frozen/comparison/qualification-reported-*.json
+            frozen/comparison/*.log
+            frozen/comparison/comparison-status.txt
+          if-no-files-found: error

@@ -16,7 +16,7 @@ concurrency:
   cancel-in-progress: true
 jobs:
   test:
-    if: ${{ !(github.event_name == 'push' && github.ref == 'refs/heads/feature/af-01-geometry-kernel' && github.event.before == '202ee715012c0e857461ec56c4df733a438c1608' && github.event.head_commit.message == 'AF09 repair two shared audio lanes') && !(github.event_name == 'push' && github.ref == 'refs/heads/feature/af-01-geometry-kernel' && github.event.before == '1615e8d31195b5122cddf479b171826ac02a506f' && github.event.head_commit.message == 'AF09 compare verified artifacts only') }}
+    if: ${{ !(github.event_name == 'push' && github.ref == 'refs/heads/feature/af-01-geometry-kernel' && github.event.before == '202ee715012c0e857461ec56c4df733a438c1608' && github.event.head_commit.message == 'AF09 repair two shared audio lanes') && !(github.event_name == 'push' && github.ref == 'refs/heads/feature/af-01-geometry-kernel' && github.event.before == '1615e8d31195b5122cddf479b171826ac02a506f' && github.event.head_commit.message == 'AF09 compare verified artifacts only') && !(github.event_name == 'push' && github.ref == 'refs/heads/feature/af-01-geometry-kernel' && github.event.before == '437604d69a8c28096e6f8d4b78fccf3067a71e8c' && github.event.head_commit.message == 'AF09 recover historical shared audio pairs') }}
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4

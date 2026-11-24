@@ -1,0 +1,78 @@
+{
+  "sourceCommit": "202ee715012c0e857461ec56c4df733a438c1608",
+  "originalRun": 45423588804,
+  "phases": {
+    "asset-showcase": {
+      "frames": 960,
+      "cpu": {
+        "scene.json": "861d7be16542ede310b143004d8099a9107fc6b620c02bf63a08b9b9917e0c82",
+        "timeline.json": "d78ea6fe02cd2764b2bfb2244e02c39899b2dfea2082133eb5af412cb1f07bb5",
+        "voice-report.json": "bc3f32f574b6340458b97227a7b9606651b08e290982292bcf1c3d8601da889c",
+        "kokoro-narration.wav": "7914a6735ec70e88d597b956d4b9a8899582ea74c97aa73fd2c5ce35978dab71",
+        "film.mp4": "0d297e56f6a04cc3679deb9961a10ef5bb94b49f82ffc16c9b7770c7476c6c87"
+      },
+      "three": {
+        "scene.json": "395928ec00c45f45d8264e78d73e34e18e2064b1c666b1f902b2dfb1f248eb45",
+        "timeline.json": "b82b728f01bf1501caf7c0b762c322235fcc18e5d1975d1c48c9161568d6c61f",
+        "voice-report.json": "9880f5de18b2ec3ab2e0eb5902c5e9ab82a3685d3d5fe097ccf3b5e5bfa72396",
+        "kokoro-narration.wav": "7f95d3ee7fa32022841aba5cd07c38f8532e2bc2a54c501a2638f5a41d3ef181",
+        "film.mp4": "2f23b1c8463a55c4fca159d8f47c33005bd15f54eb3a41a31ca20c0d7fc2bd92"
+      }
+    },
+    "director": {
+      "frames": 1800,
+      "cpu": {
+        "scene.json": "0c3cb1bb5b08a11fadc6eb3070c1cccfaf56ea0212cbb2d4ad8c3f96ec8459ce",
+        "timeline.json": "7a27f74a0dbabc10e26116a0b7538aaed35cd3627a6e0ea5bb736a8552b9c8b5",
+        "voice-report.json": "737319ef150d6ecc08d95757ae5653c4c4def6455824a83c2f4583e9449c7c5a",
+        "kokoro-narration.wav": "ba7f3a988fac61f58310a69efa226070bb90046f8a5d6272818a567df44b0fdc",
+        "film.mp4": "71317a01518e540610b12a589895763c9f18c58c9d40181722973d5158e95e95"
+      },
+      "three": {
+        "scene.json": "4aefbdd411521d06e6267bccd909d61b44f9e9ce02e0b69c159f5db5a4cd45bf",
+        "timeline.json": "00fc0822a0958e8f00005136f07bfd6d249dcf116c5dbadc23574b4394669002",
+        "voice-report.json": "a2dc5d622752409f0f30231bb7ff82075174dee6fd8658c69053abc70e21de08",
+        "kokoro-narration.wav": "61fddd7f63152a54555e7aa9c26076e42ad9fa4256fcae71fb9c9c2ec1322e56",
+        "film.mp4": "679c13343a938460b36ec2d5dc9ddab221465dcd152befdc12d2d39eac5d9224"
+      }
+    },
+    "speech": {
+      "frames": 1800,
+      "cpu": {
+        "scene.json": "e0a568c7747ef7cccdaed4905480f92fefe820823eb4d968513ab0d910d01629",
+        "timeline.json": "ce3bb96aa2a3d1e3ca52a0f5711a730e73cc03e347c697ebd54c6b3c773d85a5",
+        "voice-report.json": "f1e8d2d0df930c8973084b96b5135ab0e0fb21d03271006b387597cb5f653647",
+        "kokoro-narration.wav": "d102fa39ab3675044479e46e35d93e7de2aac55ca4fa89a6e2016112a9622e28",
+        "film.mp4": "e2b0610f1dcab1e94f8ed9af1f412df5388203d42466a46837392f823b5c2728",
+        "mix.wav": "c732fe91f6aa5159334f1940efdfe4c961712c33b3dd15b5daaa495bc34d6847",
+        "speech-report.json": "92a0f1ec2f79acb5d3c1ad145f711e9e6a9df3672bcd52eee592f8ab21c792c4",
+        "captions.srt": "962baa3720e849a0f689c185f54bd38880990733a597f99578bac8286f0fdd69",
+        "captions.vtt": "98ae812e86deed76df8eddfc250bed1eaf60b2ae269f56e3539e4fd0a6592e04"
+      },
+      "three": {
+        "scene.json": "9e01e148778e323684ee732cd3e42c0bc180320ed50640934fc667a6e6a2b",
+        "timeline.json": "0183812a15d6818eb374912dbaab501d36618a5aa50fb0e0aaf6b4e715c8bd18",
+        "voice-report.json": "490aeca795f2af78ff86f44ee4eaee075a020a9533a63e14923ec65ce9bb69d4",
+        "kokoro-narration.wav": "4f56c6eab46681932fefffdea30819ecbe2ac29e1b91cb551ca9913475be0fb4",
+        "film.mp4": "96a54056c2e2ccbe80d2c81923111215a16a78887e540348c28bf1970d1f8e98"
+      }
+    },
+    "foundry-af01": {
+      "frames": 900,
+      "cpu": {
+        "scene.json": "86f3307f999ba8255c652bb8a4b5c628c1e24fdd212d1cf02ef1a5c602eb057a",
+        "timeline.json": "be3615cab4ead11f4fe7c74f10d74f5637ce1d2a540ea7dfd21433b7a0afef08",
+        "voice-report.json": "bb23f1fe1a92ed6f4ea71e3fd41c24f298e80a7da9e2637ef10afabed097fc9b",
+        "kokoro-narration.wav": "d0abeaa42eaa6866426032aa2366babfd60b0c1e2ed0ec49f49b914be3b490c5",
+        "film.mp4": "55e44c8c13ba0ceb1366889523e190f926acc7eb096d7eb4388902a554569cc3"
+      },
+      "three": {
+        "scene.json": "9d8ae3ad1c57d3f7af979f02880771c57209acf1918d0f0f1a24b312bd653188",
+        "timeline.json": "ac237e597eacb0283ac5cdc10d63169616d3022872cd4f894964177bc67fb1e5",
+        "voice-report.json": "7210c28a1393b159b7c273dafb6ffd8880408b7a1cb4830d439e51937ff3d0ae",
+        "kokoro-narration.wav": "b4a2aaac9d46042805211f202018d51926fec84a6e526ac4304d4e1006e069a4",
+        "film.mp4": "2917f324afefbc7a54dbaa1c2c3ffa7c0eda773454eef722d48b6b657fb622df"
+      }
+    }
+  }
+}
