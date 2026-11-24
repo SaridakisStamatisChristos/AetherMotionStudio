@@ -62,7 +62,10 @@ python3.11 scripts/release_setup.py
 npm run produce -- --topic "How a molecule is built" --seconds 30 --backend cpu
 # Matched pair with identical measured speech and timeline:
 npm run produce -- --request examples/release.request.json --backend both --repair
+# Matched pair from an existing authored v2 project (narration prepared once, no retiming):
+npm run produce -- --project examples/cinematic-cpu-polished.json --pair examples/cinematic-three-polished.json --backend both --id my-pair
 ```
+On Windows PowerShell, invoke `node scripts/produce.mjs ...` directly: PowerShell drops the bare `--` before npm sees it.
 For a single visual workflow use `npm run studio:local` then **Generate & render film**. CLI output is under `out/<id>-<backend>-<profile>/film.mp4`; `out/<id>-production/` contains plan, dependency/model evidence and comparison for a pair. No remote inference required. Existing provider-neutral CLI remains available. See [release guide](docs/RELEASE_1_0.md) for limitations and replay.
 
 ## Current CI and local render policy
