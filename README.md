@@ -31,7 +31,7 @@ First setup needs internet for dependencies, weights and Remotion's browser down
 The output is `out/<scene-id>/film.mp4` plus narration, report, probe and review frames. For Studio preview, run `npm run prepare-audio` before `npm run studio`. The default Studio composition uses Robot Treasure. CLI rendering accepts any registered template through JSON.
 
 ## Author new content
-Copy an example, give it a unique lowercase id, choose an allowed template and voice, and edit the copy, narration windows and captions. Run `npm run validate -- path/to/scene.json`, then render. No generated executable code is necessary for supported templates. Do not use the same ID concurrently. The v1.0 default workflow runs exactly two matched 30-second release films, CPU and Three.js, from one plan and one soundtrack. Manual suite=full retains all 23 earlier fixtures plus the release pair; do not run it without authorization.
+Copy an example, give it a unique lowercase id, choose an allowed template and voice, and edit the copy, narration windows and captions. Run `npm run validate -- path/to/scene.json`, then render. No generated executable code is necessary for supported templates. Do not use the same ID concurrently. Routine CI runs tests only. Manual suite=release-pair runs matched 30-second CPU and Three.js release films from one plan and soundtrack. Manual suite=full retains the full 48-job render matrix; do not run it without authorization.
 
 ## Architecture and status
 See [architecture](docs/ARCHITECTURE.md), [roadmap](docs/ROADMAP.md), [scene contract](docs/SCENE_V1.md), [agent instructions](AGENTS.md), and [provenance](docs/PROVENANCE.md).
@@ -64,3 +64,6 @@ npm run produce -- --topic "How a molecule is built" --seconds 30 --backend cpu
 npm run produce -- --request examples/release.request.json --backend both --repair
 ```
 For a single visual workflow use `npm run studio:local` then **Generate & render film**. CLI output is under `out/<id>-<backend>-<profile>/film.mp4`; `out/<id>-production/` contains plan, dependency/model evidence and comparison for a pair. No remote inference required. Existing provider-neutral CLI remains available. See [release guide](docs/RELEASE_1_0.md) for limitations and replay.
+
+## Current CI and local render policy
+Routine pushes run JavaScript and Python tests, syntax checks and the frozen Foundry protocol planner only. Native rendering is opt-in via Actions → Core - Remotion and Kokoro → Run workflow (CPU showcase, release-pair or full). The original 48 render jobs succeeded; the final nine-pair Foundry comparison passed, but full historical regression qualification is not yet established. See docs/foundry/STATUS.md. Archived one-off recovery workflows are under docs/foundry/ci-history/. Local development on a GPU-equipped PC is preferred for rendering and performance tests.

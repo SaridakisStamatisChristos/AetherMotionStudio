@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
     inputs:
       suite:
-        description: Render suite (Foundry CPU by default; release pair or full only with explicit authorization)
+        description: Optional native rendering suite (manual dispatch only)
         type: choice
         options: [release-pair, cpu-polished, full]
         default: cpu-polished
@@ -16,7 +16,6 @@ concurrency:
   cancel-in-progress: true
 jobs:
   test:
-    if: ${{ !(github.event_name == 'push' && github.ref == 'refs/heads/feature/af-01-geometry-kernel' && github.event.before == '202ee715012c0e857461ec56c4df733a438c1608' && github.event.head_commit.message == 'AF09 repair two shared audio lanes') && !(github.event_name == 'push' && github.ref == 'refs/heads/feature/af-01-geometry-kernel' && github.event.before == '1615e8d31195b5122cddf479b171826ac02a506f' && github.event.head_commit.message == 'AF09 compare verified artifacts only') && !(github.event_name == 'push' && github.ref == 'refs/heads/feature/af-01-geometry-kernel' && github.event.before == '437604d69a8c28096e6f8d4b78fccf3067a71e8c' && github.event.head_commit.message == 'AF09 recover historical shared audio pairs') && !(github.event_name == 'push' && github.ref == 'refs/heads/feature/af-01-geometry-kernel' && github.event.before == '84adce36777d40abde1d3c8cbd0dd67609984045' && github.event.head_commit.message == 'AF09 correct speech checksum and preserve completed recoveries') }}
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -36,13 +35,14 @@ jobs:
       - run: python -m py_compile scripts/*.py
       - run: PYTHONPATH=scripts python -m unittest discover -s tests -p 'test_*.py'
   render:
+    if: github.event_name == 'workflow_dispatch'
     needs: test
     runs-on: ubuntu-24.04
     timeout-minutes: 50
     strategy:
       fail-fast: false
       matrix:
-        scene: ${{ fromJSON((github.event_name == 'workflow_dispatch' && inputs.suite == 'full' || (github.event_name == 'push' && github.ref == 'refs/heads/feature/af-01-geometry-kernel' && github.event.before == '55e5c5536ec665badf069c9f9b646902db4bf27e' && github.event.head_commit.message == 'AF09 authorized final native full qualification')) && '["robot-treasure","blockchain-explainer","robot-lab","blockchain-60s","auto-robot","cinematic-cpu","cinematic-three","cinematic-cpu-polished","cinematic-three-polished","asset-showcase-cpu-polished","asset-showcase-three-polished","cinematography-cpu-polished","cinematography-three-polished","director-cpu-polished","director-three-polished","continuity-cpu-polished","continuity-three-polished","speech-cpu-polished","speech-three-polished","quality-cpu-polished","quality-three-polished","studio-cpu-polished","studio-three-polished","release-pair","foundry-af01-cpu-polished","foundry-af01-three-polished","foundry-af02-cpu-polished","foundry-af02-three-polished","foundry-af03-cpu-polished","foundry-af03-three-polished","foundry-af04-cpu-polished","foundry-af04-three-polished","foundry-af05-cpu-polished","foundry-af05-three-polished","foundry-af06-cpu-polished","foundry-af06-three-polished","foundry-af07-cpu-polished","foundry-af07-three-polished","foundry-af08-cpu-polished","foundry-af08-three-polished","foundry-af09-discovery-cpu-polished","foundry-af09-discovery-three-polished","foundry-af09-optimized-cpu-polished","foundry-af09-optimized-three-polished","foundry-af09-cpu-polished","foundry-af09-three-polished","foundry-af09-lab-cpu-polished","foundry-af09-lab-three-polished"]' || github.event_name == 'workflow_dispatch' && inputs.suite == 'release-pair' && '["release-pair"]' || '["foundry-af09-cpu-polished"]') }}
+        scene: ${{ fromJSON(github.event_name == 'workflow_dispatch' && inputs.suite == 'full' && '["robot-treasure","blockchain-explainer","robot-lab","blockchain-60s","auto-robot","cinematic-cpu","cinematic-three","cinematic-cpu-polished","cinematic-three-polished","asset-showcase-cpu-polished","asset-showcase-three-polished","cinematography-cpu-polished","cinematography-three-polished","director-cpu-polished","director-three-polished","continuity-cpu-polished","continuity-three-polished","speech-cpu-polished","speech-three-polished","quality-cpu-polished","quality-three-polished","studio-cpu-polished","studio-three-polished","release-pair","foundry-af01-cpu-polished","foundry-af01-three-polished","foundry-af02-cpu-polished","foundry-af02-three-polished","foundry-af03-cpu-polished","foundry-af03-three-polished","foundry-af04-cpu-polished","foundry-af04-three-polished","foundry-af05-cpu-polished","foundry-af05-three-polished","foundry-af06-cpu-polished","foundry-af06-three-polished","foundry-af07-cpu-polished","foundry-af07-three-polished","foundry-af08-cpu-polished","foundry-af08-three-polished","foundry-af09-discovery-cpu-polished","foundry-af09-discovery-three-polished","foundry-af09-optimized-cpu-polished","foundry-af09-optimized-three-polished","foundry-af09-cpu-polished","foundry-af09-three-polished","foundry-af09-lab-cpu-polished","foundry-af09-lab-three-polished"]' || github.event_name == 'workflow_dispatch' && inputs.suite == 'release-pair' && '["release-pair"]' || '["foundry-af09-cpu-polished"]') }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -125,7 +125,7 @@ jobs:
           if-no-files-found: warn
           retention-days: 30
   compare:
-    if: always() && (github.event_name == 'workflow_dispatch' && inputs.suite == 'full' || (github.event_name == 'push' && github.ref == 'refs/heads/feature/af-01-geometry-kernel' && github.event.before == '55e5c5536ec665badf069c9f9b646902db4bf27e' && github.event.head_commit.message == 'AF09 authorized final native full qualification'))
+    if: always() && github.event_name == 'workflow_dispatch' && inputs.suite == 'full'
     needs: render
     runs-on: ubuntu-24.04
     timeout-minutes: 10
@@ -151,5 +151,6 @@ jobs:
             comparison/comparison.json
             comparison/fidelity-comparison.json
             comparison/phase-pairs.json
+            comparison/phase-pair-failures.json
             comparison/foundry-final-report.json
             comparison/*-review.jpg

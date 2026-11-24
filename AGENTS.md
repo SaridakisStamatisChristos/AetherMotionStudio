@@ -46,3 +46,8 @@ AF07 verified at ba69402 (run 45409971516); default fast tests + AF08 pack accep
 
 ## AF09 successor
 AF08 verified at cd5ba5b (run 45415008666). Freeze benchmarks/foundry-final-v1.json before final native runs. Default tests + protocol evidence + AF09 CPU product. Manual suite=full only on explicit authorization. No merge/release. See docs/foundry/QUALIFICATION.md.
+
+## Current CI policy — local-first rendering (2026-11-24)
+User authorizes merging the Asset Foundry implementation with routine CI restricted to fast JavaScript and Python tests, protocol planning and Python syntax checks. No automatic native renders or comparisons on pushes to feature branches or main. Manual workflow dispatch retains CPU showcase, matched release pair and complete native matrix. Historical recovery workflows are archived as documentation, not active triggers. Both backends, all fixtures, all original comparison assertions and prior evidence remain intact. Green routine CI does not signify full native qualification. The original full matrix rendered all 48 jobs; final AF09 nine-pair comparison passed following two targeted audio repairs; historical regression remains pending final Speech recovery and comparison. Native visual/performance validation moves to local hardware. Future matched benchmark work must prepare shared narration once per pair. No automatic release publication.
+
+This current policy supersedes earlier default CI render scopes; do not reinstate automatic native renders without explicit authorization.
