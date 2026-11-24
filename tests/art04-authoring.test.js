@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {direct} from '../src/director/index.js';
 import {request} from '../src/director/schema.js';
-import {stageProject,stageShot,CHEAT,STAGING_MODES} from '../src/director/staging.js';
+import {stageProject,stageShot,CHEAT,STAGING_MODES} from '../src/core/staging.js';
 import {setStaging} from '../src/studio/model.js';
 import {validateProject} from '../src/core/timeline.js';
 import {evaluateGraph} from '../src/core/graph.js';
@@ -73,4 +73,18 @@ test('AF08 fix: an imported exact built-in generated revision appears once in se
  assert.equal(after.length,1);assert.match(after[0].revision,/^[0-9a-f]{64}$/);
  for(const q of ['canister','insulator'])assert.equal(searchRegistry({q},r).length,1,q);
  assert.ok(searchRegistry({kind:'hero',limit:300},r).length>=32,'hero rows unaffected');
+});
+
+test('Studio browser import graph only uses server-allowed source folders and no Node built-ins',()=>{
+ // Regression for an ART-04 defect caught by the headless UI exercise: a module outside the served
+ // allowlist (src/{core,visual,templates,studio,foundry}) 404s and breaks the whole Studio page.
+ const allowed=/^src\/(?:core|visual|templates|studio|foundry)\/[a-z0-9-]+\.js$/,server=readFileSync(new URL('../scripts/studio-server.mjs',import.meta.url),'utf8');
+ assert.ok(server.includes('(?:core|visual|templates|studio|foundry)'),'server allowlist unchanged');
+ const seen=new Set(),queue=[];const imports=src=>[...src.matchAll(/^\s*(?:import|export)\s+(?:[^;'"]*?\sfrom\s*)?['"]([^'"]+)['"]/gm)].map(m=>m[1]).filter(x=>!x.startsWith('three')&&!x.startsWith('remotion'));
+ const resolve=(spec,fromDir)=>spec.startsWith('/')?spec.slice(1):new URL(spec,'file:///'+fromDir+'/').pathname.slice(1);
+ for(const spec of imports(readFileSync(new URL('../studio/app.js',import.meta.url),'utf8')))queue.push(resolve(spec,'studio'));
+ while(queue.length){const p=queue.shift();if(seen.has(p))continue;seen.add(p);
+  assert.ok(!p.startsWith('node:'),'node built-in in browser graph: '+p);assert.match(p,allowed,'not served to the browser: '+p);
+  const dir=p.split('/').slice(0,-1).join('/');for(const spec of imports(readFileSync(new URL('../'+p,import.meta.url),'utf8')))queue.push(spec.startsWith('node:')?spec:resolve(spec,dir));}
+ assert.ok(seen.has('src/core/staging.js'));assert.ok(seen.size>10);
 });

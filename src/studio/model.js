@@ -1,7 +1,7 @@
 import {pinAsset} from '../foundry/packs.js';
 import {validateProject,validateTimeline} from '../core/timeline.js';
 import {FIDELITY_DEFAULTS} from '../core/fidelity.js';
-import {stageProject} from '../director/staging.js';
+import {stageProject} from '../core/staging.js';
 const fail=m=>{throw Error(m)};
 export function editProject(project,fn){
  const candidate=structuredClone(project);fn(candidate);validateProject(candidate);return candidate;

@@ -1,10 +1,10 @@
 // ART-04 opt-in staging pass 'art-v1': applies ART-01..ART-03 authoring features to a validated v2 project
 // deterministically — lighting parity, human detail 2, and character facing with a three-quarter cheat toward
 // the camera. Pure: returns a new project; never touches identity-pinned appearance or explicit authored choices.
-import {validateProject} from '../core/timeline.js';
+import {validateProject} from './timeline.js';
 import {recipeSpec,hasHands} from '../visual/catalog-rig.js';
-import {ACTIONS} from '../core/cinematography.js';
-import {resolveTracks} from '../core/presets.js';
+import {ACTIONS} from './cinematography.js';
+import {resolveTracks} from './presets.js';
 
 export const STAGING_MODES=Object.freeze(['art-v1']);
 export const CHEAT=.55; // radians turned back toward the camera while facing a partner (stage convention)
