@@ -31,3 +31,6 @@ Provider-neutral Director lives outside renderer. Versioned request and compact 
 
 ## v0.6 identity and continuity
 Versioned identity library is the source of truth; Director resolves compact identity references to graph bindings. Shared validation rejects appearance drift, unknown variants, untracked holds and unexplained state changes. Shared procedural hand transforms support retro and catalog robots/humans. JSON export/import is portable, not account memory. See IDENTITY.md.
+
+## v0.7 speech-first compiler
+Optional project speech v1 preserves legacy timing. Mixed fixed/automatic integer allocation after local synthesis, cache keyed by actual model and voice files, punctuation pauses, estimated word intervals inside measured phrases, canonical subtitle and caption export, explicit mix plan and deterministic speech-envelope action retiming. Browser contract independently checks coverage and bounds. See SPEECH.md.

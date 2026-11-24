@@ -14,7 +14,7 @@ const scenePath=join(out,'scene.json'),propsPath=join(out,'props.json');
 writeFileSync(scenePath,JSON.stringify(scene,null,2));
 const python=process.env.PYTHON|| (process.platform==='win32'?'python':'python3');
 function run(bin,args){const p=spawnSync(bin,args,{cwd:root,stdio:'inherit',env:process.env});if(p.error)throw p.error;if(p.status!==0)throw Error(bin+' failed: '+p.status);}
-if(flags.length&&(scene.version!==2||scene.shots.some(s=>s.durationFrames===null)))throw Error('director budget requires a fixed-duration v2 project');
+if(flags.length&&(scene.version!==2||!scene.speech&&scene.shots.some(s=>s.durationFrames===null)))throw Error('director budget requires a fixed-duration v2 project');
 run(python,[scene.version===2?'scripts/make_timeline_audio.py':'scripts/make_audio.py',scenePath,out,...flags]);
 if(flags.length)scene=validateProject(JSON.parse(readFileSync(scenePath,'utf8')));
 const timeline=scene.version===2?validateTimeline(scene,JSON.parse(readFileSync(join(out,'timeline.json'),'utf8'))):null;

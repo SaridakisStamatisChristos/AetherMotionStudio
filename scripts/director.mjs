@@ -13,12 +13,13 @@ import {validateProject,validateTimeline} from '../src/core/timeline.js';
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const args=process.argv.slice(2),opts={};
 const flags=new Set(['render','prepare','prompt-only','allow-remote']);
-const values=new Set(['request','topic','script','script-file','seconds','id','audience','tone','style','language','voice','backend','profile','seed','provider','model','endpoint','timeout','repairs','import','out','library','cast','story']);
+const values=new Set(['request','topic','script','script-file','seconds','id','audience','tone','style','language','voice','backend','profile','seed','provider','model','endpoint','timeout','repairs','import','out','library','cast','story','speech']);
 while(args.length){const flag=args.shift();if(!flag.startsWith('--'))throw Error('expected --option');const k=flag.slice(2);if(Object.hasOwn(opts,k))throw Error('duplicate option '+k);if(flags.has(k))opts[k]=true;else if(values.has(k)&&args.length&&!args[0].startsWith('--'))opts[k]=args.shift();else throw Error('unknown or missing option '+k);}
 const read=p=>safeJson(readFileSync(resolve(p),'utf8'));
 const explicit={};for(const k of ['topic','script','id','audience','tone','style','language','voice','backend','profile'])if(opts[k]!==undefined)explicit[k]=opts[k];
 for(const k of ['seconds','seed'])if(opts[k]!==undefined)explicit[k]=Number(opts[k]);
 if(opts['script-file']){if(opts.script!==undefined)throw Error('choose --script or --script-file');explicit.script=readFileSync(resolve(opts['script-file']),'utf8');}
+if(opts.speech)explicit.speech=read(opts.speech);
 if(opts.library)explicit.identityLibrary=read(opts.library);
 if(opts.cast)explicit.cast=opts.cast.split(',');if(opts.story)explicit.story=opts.story;
 const q=request({version:1,id:'director-film',seconds:60,...(opts.request?read(opts.request):{}),...explicit});
@@ -42,7 +43,8 @@ if(opts.render||opts.prepare){
  const m=result.manifest;
  if(proc.error||proc.status!==0){m.status='failed';m.failure='measured audio compilation or native rendering failed; inspect CLI diagnostics';write(join(dir,'director-manifest.json'),m);throw Error(m.failure);}
  const actual=validateProject(read(join(out,'scene.json'))),timeline=validateTimeline(actual,read(join(out,'timeline.json')));
- m.status=opts.render?'rendered':'prepared';m.durationErrorFrames=timeline.durationFrames-m.targetFrames;m.measuredFrames=timeline.durationFrames;m.timelineDigest=digest(timeline);m.compiledProjectDigest=digest(actual);m.shotDurationAdjustments=actual.shots.map((s,i)=>({id:s.id,planned:result.project.shots[i].durationFrames,measured:s.durationFrames}));m.maxSpeechSpeed=Math.max(...timeline.shots.flatMap(s=>s.segments.map(x=>x.speed)));
+ m.status=opts.render?'rendered':'prepared';m.durationErrorFrames=timeline.durationFrames-m.targetFrames;m.measuredFrames=timeline.durationFrames;m.timelineDigest=digest(timeline);m.compiledProjectDigest=digest(actual);m.shotDurationAdjustments=actual.shots.map((s,i)=>({id:s.id,planned:result.project.shots[i].durationFrames,measured:timeline.shots[i].endFrame-timeline.shots[i].startFrame}));m.maxSpeechSpeed=Math.max(...timeline.shots.flatMap(s=>s.segments.map(x=>x.speed)));
+ if(actual.speech){const speechReport=read(join(out,'speech-report.json'));m.alignment=speechReport.alignment;m.speechAllocation=speechReport.allocation;}
  if(m.durationErrorFrames!==0)throw Error('director duration mismatch');
  write(join(dir,'director-manifest.json'),m);write(join(dir,'compiled-project.json'),actual);
  const archive=join(out,'director');mkdirSync(archive,{recursive:true});for(const name of [...Object.keys(docs),'prompt.txt','compiled-project.json'])copyFileSync(join(dir,name),join(archive,name));copyFileSync(dest,join(archive,'planned-project.json'));

@@ -48,6 +48,21 @@ else:
   assert actual['end']<=requested['end']+1/48000 and actual['end']>actual['start']
   segment=samples[round(actual['start']*48000):round(actual['end']*48000)]
   assert np.sqrt(np.mean(segment**2))>.005
+if scene.get('speech') is not None:
+ from speech_plan import subtitles,caption_metrics
+ cfg=scene['speech'];sr=json.loads((out/'speech-report.json').read_text());assert timeline['durationFrames']==cfg['targetFrames']==sr['actualFrames'];assert sr['alignment']['phraseBoundaryErrorSamples']==0 and sr['alignment']['coverage']==1
+ assert caption_metrics(timeline['captions'],report['segments'],cfg['captions']['maxCps'])==sr['alignment']
+ labels={k:v['name'] for k,v in cfg['speakers'].items()}
+ if any(s['speaker']=='default' for s in report['segments']):labels['default']='Narrator'
+ srt,vtt=subtitles(timeline['captions'],labels);assert (out/'captions.srt').read_text()==srt and (out/'captions.vtt').read_text()==vtt
+ for x in sr['allocation']:
+  if x['mode']=='fixed':assert x['frames']==cfg['fixedShots'][x['shot']]
+ with wave.open(str(out/'mix.wav'),'rb') as f:
+  assert f.getframerate()==48000 and f.getnframes()==frames*1600 and f.getsampwidth()==2
+  pcm=np.frombuffer(f.readframes(f.getnframes()),dtype='<i2').astype(float)/32768
+ assert np.max(np.abs(pcm))<=cfg['mix']['peak']+1/32768 and sr['mix']['final']['clippedSamples']==0
+ for a in report['segments']:assert np.sqrt(np.mean(pcm[a['startSample']:a['endSample']]**2))>.005
+ print('PASS: exact speech allocation, caption sidecars, measured phrase coverage, sample peak limit and mixed audio activity')
 review=[(s['startFrame']+s['endFrame'])/60 for s in timeline['shots']] if timeline else [1,6,10]
 if timeline and any('cameraRig' in shot for shot in scene['shots']):
  review=sorted(set(review+[n/30 for s in timeline['shots'] for n in (s['startFrame'],s['endFrame']-1)]))
