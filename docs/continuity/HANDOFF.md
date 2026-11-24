@@ -1,6 +1,6 @@
 # Latest handoff — LOCAL-03 implemented + measured, awaiting owner acceptance
 Checkpoint: branch `feature/local-03-performance` from main 43e0c2e (LOCAL-01/02 merged via PR #14). Commits 4b01f2b (bench), d24a943 (glitch scanner, opt-in seam), 73ce93f (pre-reboot checkpoint), 4ed3e7d (clean-boot c4/c8), 56d8f82 (settled controls, reuse rejected), plus this checkpoint commit (NVENC, AF01, profile). Not pushed. Date 2026-11-25.
-Status: LOCAL-03 IMPLEMENTED + MEASURED (Phases A–C), awaiting owner acceptance. Not accepted, not pushed, no PR. Details: CURRENT_STATE.md "Active unit"; table + NVENC quality section docs/performance/local-03-bench-report.md; profile docs/continuity/LOCAL_DEVELOPMENT.md "Recommended local performance profile".
+Status: LOCAL-03 IMPLEMENTED + MEASURED (Phases A–C). Owner authorized push, PR and merge 2026-11-25: PR #15, test-only CI run 45500133921 on 9746236 green (test pass; render/compare skipped by policy). Merge commit recorded at next checkpoint. Formal acceptance of the profile values not separately stated beyond merge authorization. Details: CURRENT_STATE.md "Active unit"; table + NVENC quality section docs/performance/local-03-bench-report.md; profile docs/continuity/LOCAL_DEVELOPMENT.md "Recommended local performance profile".
 
 ## This session
 - Reboot: owner's first two "reboots" were Fast Startup resumes (Kernel-Boot event 27, boot type 0x1; HiberbootEnabled=1) keeping the 2.2 GB non-paged pool. True cold boot 2026-11-24 23:36:37 (0x0): non-paged pool 0.73 GB. Fast Startup setting left unchanged. Low-RAM explanation given to owner (Windows "free"≈0 normal, available incl. standby 6.7 GB; pre-boot ~5–6 GB kernel-side growth, culprit not identifiable retroactively; poolmon/RAMMap need owner permission).
@@ -13,8 +13,8 @@ Status: LOCAL-03 IMPLEMENTED + MEASURED (Phases A–C), awaiting owner acceptanc
 - Changed files: docs/performance/local-03-bench-report.md, docs/continuity/{CURRENT_STATE,HANDOFF,LOCAL_DEVELOPMENT,NEXT_UNITS}.md. No source changes this session.
 
 ## Next action
-1. Owner: review/accept the LOCAL-03 profile (or request changes). Optional human visual check of an NVENC film vs x264 (out/bench/c1-cin-cpu-c8-nvenc/run-01/film.mp4 vs out/local-02-cinematic-r2-cpu-polished/film.mp4).
-2. With explicit owner authorization only: push `feature/local-03-performance` for test-only CI; open PR; no merge without authorization.
+1. Optional human visual check of an NVENC film vs x264 (out/bench/c1-cin-cpu-c8-nvenc/run-01/film.mp4 vs out/local-02-cinematic-r2-cpu-polished/film.mp4).
+2. Done: pushed, PR #15, CI green, merge authorized.
 3. Then prepare ART-01 (input: LOW_PROJECTED_MOTION on AF01 `product` shot). Bootstrap/inspection first, no speculative rewrite.
 
 ## Environment (PowerShell, repo root)
