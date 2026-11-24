@@ -14,7 +14,8 @@ def reconcile(root,repairs,manifest):
         cpu=root/f'aethermotion-{phase}-cpu-polished';old=root/f'aethermotion-{phase}-three-polished';new=repairs/phase
         p=load(new/'legacy-repair-provenance.json')
         assert p['sourceCommit']==manifest['sourceCommit'] and p['originalRun']==manifest['originalRun'] and p['phase']==phase
-        assert p['repairRun']==os.environ['GITHUB_RUN_ID'] and p['orchestrationCommit']==os.environ['GITHUB_SHA']
+        expected_run,expected_commit=(os.environ['GITHUB_RUN_ID'],os.environ['GITHUB_SHA']) if phase=='speech' else ('45443297373','84adce36777d40abde1d3c8cbd0dd67609984045')
+        assert p['repairRun']==expected_run and p['orchestrationCommit']==expected_commit,(phase,'unexpected recovery provenance')
         assert p['originalInputs']==row
         for d,hashes in [(cpu,row['cpu']),(old,row['three']),(new,p['outputs'])]:
             for n,h in hashes.items():assert sha(d/n)==h,(phase,n)

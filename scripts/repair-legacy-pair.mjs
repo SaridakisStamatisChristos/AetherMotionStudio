@@ -9,6 +9,7 @@ import {renderNative,runChecked} from './native-render.mjs';
 const [phase,cpuDir,oldThreeDir,manifestPath]=process.argv.slice(2);
 const manifest=JSON.parse(readFileSync(manifestPath,'utf8'));
 const row=manifest.phases[phase];assert.ok(row);
+for(const [key,v] of Object.entries(manifest.phases))for(const side of ['cpu','three'])for(const [name,digest] of Object.entries(v[side]))assert.match(digest,/^[0-9a-f]{64}$/,key+' '+side+' '+name);
 const root=process.cwd(),cpu=resolve(cpuDir),oldThree=resolve(oldThreeDir),id=phase+'-three-polished',out=join(root,'out',id);
 const actual=execFileSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8'}).trim();assert.equal(actual,manifest.sourceCommit);
 const sha=p=>createHash('sha256').update(readFileSync(p)).digest('hex');
