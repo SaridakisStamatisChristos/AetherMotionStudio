@@ -1,3 +1,4 @@
+import {localArm} from './catalog-rig.js';
 import {RECIPES} from './catalog-data.js';
 import {add,rx,ry,rz} from './vectors.js';
 const PALETTES={teal:['#309b9b','#29475b','#b6fff2'],amber:['#cf943d','#67452d','#ffe1a0'],white:['#d9e0df','#677f8d','#8ee6f4'],orange:['#c16b3b','#4b3840','#ffe19b'],slate:['#62758b','#253344','#83d7ed'],lime:['#7eaa5a','#3c6342','#d5f49b'],blue:['#486ea9','#253854','#8ce9ff'],violet:['#9373bc','#433450','#d5bcff'],wood:['#b17c4b','#634334','#e8c18e'],red:['#bc544e','#60343f','#ffbd9d'],pine:['#4c8968','#355347','#a9d49b']};
@@ -37,14 +38,14 @@ const F={
  b(0,h*.5,0,w,h*.37,d,0);b(0,h*.52,d*.51,w*.62,h*.18,.04,1);b(0,h*.54,d*.54,w*.36,.045,.035,2,0,'z',true);
  if(legs){for(const s of [-1,1]){rod([s*w*.27,h*.36,0],[s*w*.28,.13,s*step*.17],w*.24,1);b(s*w*.28,.11,.12+s*step*.17,w*.38,.22,d*.66,0);}}
  else b(0,h*.17,0,w*1.13,h*.22,d*.95,1);
- for(const s of [-1,1]){const a=[s*w*.63,h*.64,0],c=[s*w*(.78+.28*open),h*(.35+.14*open),.08];rod(a,c,w*.22,0);b(...c,w*.28,.18,.22,3);}
+ for(const s of [-1,1]){const {shoulder:a,hand:c}=localArm('robot',[w,h],s,p);rod(a,c,w*.22,0);b(...c,w*.28,.18,.22,3);if(s===1&&p.grip!==undefined)for(const j of [-1,1])b(c[0]+j*(.09-.045*p.grip),c[1]-.12,c[2]+.05,.055,.13,.08,1);}
  b(0,h*.83,0,w*(1.05+kind*.035),h*.27,d*.96,3);b(0,h*.84,d*.49,w*.85,h*.17,.045,1);
  for(const s of [-1,1])b(s*w*.22,h*.85,d*.52,w*.14,h*.09*(p.blink??1),.035,2,0,'z',true);
  if(kind%2===0){rod([0,h*.97,0],[0,h*1.08,0],.045,1);b(0,h*1.08,0,.13,.13,.13,2,0,'z',true);}else for(const s of [-1,1])b(s*w*.58,h*.85,0,.13,.27,d*.5,0);
  if(kind>=3)b(0,h*.45,-d*.58,w*.65,h*.32,.24,1);
  },
  human({b,rod},[w,h,d,k],p){const walk=p.walking??0,open=p.open??0;
- for(const s of [-1,1]){const z=s*walk*.2;rod([s*w*.22,h*.48,0],[s*w*.24,.13,z],w*.25,1);b(s*w*.24,.09,z+.09,w*.34,.18,d*.65,4);rod([s*w*.57,h*.78,0],[s*w*(.65+open*.2),h*(.45+open*.2),.12],w*.2,0);b(s*w*(.65+open*.2),h*(.45+open*.2),.12,w*.22,.16,.19,3);}
+ for(const s of [-1,1]){const z=s*walk*.2;rod([s*w*.22,h*.48,0],[s*w*.24,.13,z],w*.25,1);b(s*w*.24,.09,z+.09,w*.34,.18,d*.65,4);const {shoulder:a,hand:c}=localArm('human',[w,h],s,p);rod(a,c,w*.2,0);b(...c,w*.22,.16,.19,3);if(s===1&&p.grip!==undefined)for(const j of [-1,1])b(c[0]+j*(.07-.035*p.grip),c[1]-.1,c[2]+.04,.045,.1,.07,3);}
  b(0,h*.64,0,w,h*.36,d,0);b(0,h*.89,0,w*.57,h*.19,d*.69,3);b(0,h*.96,0,w*.62,.13,d*.74,k===4?0:1);
  if([2,5].includes(k))b(0,h*.96,.08,w*.85,.14,d*.9,2);
  if(k===4){b(0,h*.89,d*.36,w*.49,.13,.045,6);b(0,h*.64,-d*.61,w*.68,h*.33,.3,1);}

@@ -2,6 +2,8 @@ import {readFileSync,writeFileSync,mkdirSync,existsSync,copyFileSync,renameSync}
 import {resolve,dirname,join,basename} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {spawnSync} from 'node:child_process';
+import {identityEvidence} from '../src/director/identity-evidence.js';
+import {continuityLedger} from '../src/core/identity.js';
 import {direct,buildPrompt} from '../src/director/index.js';
 import {request,safeJson} from '../src/director/schema.js';
 import {baseline} from '../src/director/offline.js';
@@ -11,12 +13,14 @@ import {validateProject,validateTimeline} from '../src/core/timeline.js';
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const args=process.argv.slice(2),opts={};
 const flags=new Set(['render','prepare','prompt-only','allow-remote']);
-const values=new Set(['request','topic','script','script-file','seconds','id','audience','tone','style','language','voice','backend','profile','seed','provider','model','endpoint','timeout','repairs','import','out']);
+const values=new Set(['request','topic','script','script-file','seconds','id','audience','tone','style','language','voice','backend','profile','seed','provider','model','endpoint','timeout','repairs','import','out','library','cast','story']);
 while(args.length){const flag=args.shift();if(!flag.startsWith('--'))throw Error('expected --option');const k=flag.slice(2);if(Object.hasOwn(opts,k))throw Error('duplicate option '+k);if(flags.has(k))opts[k]=true;else if(values.has(k)&&args.length&&!args[0].startsWith('--'))opts[k]=args.shift();else throw Error('unknown or missing option '+k);}
 const read=p=>safeJson(readFileSync(resolve(p),'utf8'));
 const explicit={};for(const k of ['topic','script','id','audience','tone','style','language','voice','backend','profile'])if(opts[k]!==undefined)explicit[k]=opts[k];
 for(const k of ['seconds','seed'])if(opts[k]!==undefined)explicit[k]=Number(opts[k]);
 if(opts['script-file']){if(opts.script!==undefined)throw Error('choose --script or --script-file');explicit.script=readFileSync(resolve(opts['script-file']),'utf8');}
+if(opts.library)explicit.identityLibrary=read(opts.library);
+if(opts.cast)explicit.cast=opts.cast.split(',');if(opts.story)explicit.story=opts.story;
 const q=request({version:1,id:'director-film',seconds:60,...(opts.request?read(opts.request):{}),...explicit});
 if([opts.render,opts.prepare,opts['prompt-only']].filter(Boolean).length>1)throw Error('choose render, prepare or prompt-only');
 const dest=resolve(opts.out??join(root,'out','director-plans',q.id,'project.json')),dir=dirname(dest);
@@ -30,6 +34,7 @@ let result;
 try{result=await direct(q,{adapter,imported,maxRepairs:opts.repairs===undefined?1:Number(opts.repairs)});}
 catch(e){write(join(dir,'director-failure.json'),e.report??{status:'failed',message:e.message});throw e;}
 const docs={'request.json':result.request,'director-ir.json':result.ir,'stages.json':result.stages,'catalog-selection.json':result.catalogSelection,'director-manifest.json':result.manifest};
+if(result.project.identityLibrary){docs['identity-library.json']=result.project.identityLibrary;docs['continuity-ledger.json']=continuityLedger(result.project);docs['identity-evidence.json']=identityEvidence(result.project);}
 write(dest,result.project);for(const [name,data] of Object.entries(docs))write(join(dir,name),data);writeFileSync(join(dir,'prompt.txt'),result.prompt);
 if(opts.render||opts.prepare){
  const cmd=opts.render?'render':'prepare',out=join(root,'out',q.id);

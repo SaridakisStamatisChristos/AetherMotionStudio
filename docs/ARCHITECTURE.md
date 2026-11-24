@@ -28,3 +28,6 @@ Additive shared cinematography sampler, rig-aware actions, deterministic attachm
 
 ## v0.5 candidate
 Provider-neutral Director lives outside renderer. Versioned request and compact IR compile to the existing validated v2 graph. Retrieval uses current catalog IDs and conservative channels; no generated executable code. Optional measured global shot allocation preserves target frame count. See DIRECTOR.md.
+
+## v0.6 identity and continuity
+Versioned identity library is the source of truth; Director resolves compact identity references to graph bindings. Shared validation rejects appearance drift, unknown variants, untracked holds and unexplained state changes. Shared procedural hand transforms support retro and catalog robots/humans. JSON export/import is portable, not account memory. See IDENTITY.md.

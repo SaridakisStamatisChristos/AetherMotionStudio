@@ -1,4 +1,6 @@
 import {fields,finite,choice,literal} from '../core/cinematography.js';
+import {compactIdentities,validateIdentityRequest} from '../core/identity.js';
+import {ACTIONS,supportedChannels} from '../core/cinematography.js';
 import {VOICES} from '../core/contract.js';
 export const REQUEST_VERSION=1,IR_VERSION=1,MAX_JSON_BYTES=262144;
 const bad=(p,m)=>{throw Error(p+': '+m)};
@@ -16,7 +18,7 @@ export function safeJson(raw){
 }
 export const normalize=s=>s.trim().replace(/\s+/g,' ');
 export function request(input){
- fields(input,['version','id','topic','script','seconds','audience','tone','style','language','voice','backend','profile','seed'], 'request',['version','id','topic','seconds']);
+ fields(input,['version','id','topic','script','seconds','audience','tone','style','language','voice','backend','profile','seed','identityLibrary','cast','story'], 'request',['version','id','topic','seconds']);
  const q={audience:'general audience',tone:'clear',style:'cinematic explainer',language:'en',voice:'af_heart',backend:'cpu',profile:'polished',seed:0,...input};
  if(q.version!==REQUEST_VERSION)bad('request.version','unsupported');
  if(typeof q.id!=='string'||!/^[a-z0-9][a-z0-9-]{0,47}$/.test(q.id)||/^(con|prn|aux|nul|com[1-9]|lpt[1-9])$/.test(q.id))bad('request.id','unsafe ID');
@@ -26,15 +28,17 @@ export function request(input){
  if(!Number.isSafeInteger(q.seed)||q.seed<0||q.seed>2147483647)bad('request.seed','invalid seed');
  choice(q.language,['en','en-us','en-gb'],'request.language');choice(q.voice,VOICES,'request.voice');
  if(q.language==='en-gb'&&!q.voice.startsWith('b')||q.language==='en-us'&&q.voice.startsWith('b'))bad('request.voice','language/voice mismatch');
- choice(q.backend,['cpu','three'],'request.backend');choice(q.profile,['original','polished'],'request.profile');return q;
+ choice(q.backend,['cpu','three'],'request.backend');choice(q.profile,['original','polished'],'request.profile');validateIdentityRequest(q);return q;
 }
 export function validateIR(ir,q,selection){
  fields(ir,['version','title','treatment','shots'],'ir',['version','title','treatment','shots']);
  if(ir.version!==IR_VERSION)bad('ir.version','unsupported');safeText(ir.title,100,'ir.title');safeText(ir.treatment,420,'ir.treatment');
+ const cast=new Map(compactIdentities(q).map(x=>[x.id,x]));
  if(!Array.isArray(ir.shots)||ir.shots.length!==selection.length)bad('ir.shots','required shot count '+selection.length);
  for(const [i,s] of ir.shots.entries()){
   const p='ir.shots['+i+']';
-  fields(s,['heading','subheading','narration','camera','environment','assets','effect','overlay'],p,['heading','subheading','narration','camera','environment','assets']);
+  fields(s,['heading','subheading','narration','camera','environment','assets','effect','overlay','location','events'],p,['heading','subheading','narration','camera','environment','assets']);
+  if(q.identityLibrary){if(cast.get(s.location)?.kind!=='environment'||!Array.isArray(s.events)||s.events.length>32)bad(p,'location and explicit events required');}else if(s.location!==undefined||s.events!==undefined)bad(p,'identity library required');
   safeText(s.heading,42,p+'.heading');safeText(s.subheading,64,p+'.subheading');
   if(!Array.isArray(s.narration)||s.narration.length<1||s.narration.length>8)bad(p+'.narration','1–8 phrases');
   s.narration.forEach((t,j)=>safeText(t,180,p+'.narration['+j+']'));
@@ -42,9 +46,23 @@ export function validateIR(ir,q,selection){
   const allowed=new Map(selection[i].map(o=>[o.id,o])),ids=new Set();
   for(const [j,a] of s.assets.entries()){
    const v=p+'.assets['+j+']';
-   fields(a,['asset','action','x','scale'],v,['asset']);
-   if(!allowed.has(a.asset)||ids.has(a.asset))bad(v+'.asset','unknown, unretrieved or duplicate asset');ids.add(a.asset);
-   if(a.action!==undefined)choice(a.action,allowed.get(a.asset).actions,v+'.action');
+   fields(a,['asset','identity','variant','hold','action','x','scale'],v);
+   let key,actions;
+   if(a.identity!==undefined){
+    const d=cast.get(a.identity);if(!d||d.kind==='environment'||a.asset!==undefined)bad(v,'unknown identity or conflicting asset');
+    choice(a.variant??'base',d.variants,v+'.variant');key='identity:'+d.id;
+    actions=Object.keys(ACTIONS).filter(n=>Object.keys(ACTIONS[n]).every(ch=>supportedChannels(d.asset).includes(ch)));
+    if(a.hold!==undefined){
+     if(d.kind!=='prop')bad(v,'only props may be held');
+     fields(a.hold,['holder','anchor','start','end','offset'],v+'.hold',['holder','anchor','start','end']);
+     const h=cast.get(a.hold.holder);if(h?.kind!=='character'||!['right-hand','left-hand'].includes(a.hold.anchor)||!h.rig.anchors.includes(a.hold.anchor))bad(v,'unknown holder or anchor');
+     finite(a.hold.start,0,1,v+'.hold.start');finite(a.hold.end,0,1,v+'.hold.end');if(a.hold.start>=a.hold.end)bad(v,'invalid hold window');
+    }
+   }else{
+    if(a.variant!==undefined||a.hold!==undefined||!allowed.has(a.asset))bad(v,'unknown asset or orphan identity fields');key='asset:'+a.asset;actions=allowed.get(a.asset).actions;
+   }
+   if(ids.has(key))bad(v,'duplicate identity or asset');ids.add(key);
+   if(a.action!==undefined)choice(a.action,actions,v+'.action');
    if(a.x!==undefined)finite(a.x,-2.4,2.4,v+'.x');if(a.scale!==undefined)finite(a.scale,.5,1.25,v+'.scale');
   }
   // The final shared graph validator is the source of truth for cameras, overlays and effects.
