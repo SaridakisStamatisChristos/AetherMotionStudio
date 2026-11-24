@@ -1,0 +1,162 @@
+{
+ "version": 2,
+ "id": "art02-product-three-polished",
+ "title": "ART-02 product hero framing",
+ "voice": "af_heart",
+ "shots": [
+  {
+   "id": "product",
+   "template": "cinematic-graph",
+   "backend": "three",
+   "durationFrames": 180,
+   "transitionFrames": 0,
+   "heading": "PRODUCT CASING",
+   "subheading": "A softened precision enclosure.",
+   "environment": "midnight",
+   "camera": {
+    "x": [
+     [
+      0,
+      1.2
+     ],
+     [
+      1,
+      -0.8
+     ]
+    ],
+    "y": [
+     [
+      0,
+      2.1
+     ],
+     [
+      1,
+      2.25
+     ]
+    ],
+    "z": [
+     [
+      0,
+      6.3
+     ],
+     [
+      1,
+      6
+     ]
+    ],
+    "zoom": [
+     [
+      0,
+      2000
+     ],
+     [
+      1,
+      2200
+     ]
+    ]
+   },
+   "assets": [
+    {
+     "id": "subject",
+     "asset": "smartphone",
+     "tracks": {
+      "yaw": [
+       [
+        0,
+        -1.2
+       ],
+       [
+        0.3,
+        0.15
+       ],
+       [
+        0.42,
+        -0.14
+       ],
+       [
+        0.78,
+        1.32
+       ],
+       [
+        0.9,
+        1.12
+       ],
+       [
+        1,
+        1.18
+       ]
+      ],
+      "x": [
+       [
+        0,
+        0.3
+       ],
+       [
+        0.42,
+        0.22
+       ],
+       [
+        1,
+        -0.32
+       ]
+      ]
+     },
+     "actions": [
+      {
+       "name": "settle-in",
+       "start": 0,
+       "end": 0.32
+      },
+      {
+       "name": "reveal-spin",
+       "start": 0,
+       "end": 0.3
+      },
+      {
+       "name": "emphasis",
+       "start": 0.62,
+       "end": 0.9,
+       "weight": 0.5
+      },
+      {
+       "name": "hover",
+       "start": 0.34,
+       "end": 1,
+       "mode": "loop",
+       "speed": 2,
+       "weight": 0.3,
+       "blend": 0.15
+      }
+     ]
+    }
+   ],
+   "effects": [],
+   "narration": [
+    "Curved edges change the silhouette of a familiar product."
+   ],
+   "fidelity": {
+    "bloom": 0.68,
+    "atmosphere": 0.52,
+    "contactShadow": 0.7,
+    "surfaceDetail": 0.65,
+    "depthOfField": 0.2,
+    "motionBlur": 0,
+    "grain": 0.18,
+    "grade": 0.48,
+    "particles": 0.75,
+    "typography": 1
+   },
+   "geometryProfile": "foundry-af01",
+   "cameraRig": {
+    "preset": "close-up",
+    "subject": "subject",
+    "framing": "close-up",
+    "strength": 0.5
+   },
+   "cameraInterpolation": {
+    "x": "flow",
+    "zoom": "flow"
+   }
+  }
+ ]
+}

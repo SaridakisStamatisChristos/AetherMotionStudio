@@ -35,7 +35,8 @@ export const CAMERA_RIGS=Object.freeze({
  medium:rig([1.4,3.1,8.8],[.8,3,8.2],1100,1150),
  'close-up':rig([.9,2.8,7],[.5,2.6,6.5],1350,1450)
 });
-export const RIG_CAMERA_LIMITS={x:[-5,5],y:[1.8,6],z:[6,12],zoom:[700,1550]};
+// ART-02: zoom ceiling raised 1550→2400 for authored telephoto product framing (validation widening only; auto-framing still clamps to 1550).
+export const RIG_CAMERA_LIMITS={x:[-5,5],y:[1.8,6],z:[6,12],zoom:[700,2400]};
 export function validateCameraRig(x,ids,p){
  fields(x,['preset','subject','framing','padding','targetOffset','strength'],p,['preset']);
  choice(x.preset,Object.keys(CAMERA_RIGS),p+'.preset');
