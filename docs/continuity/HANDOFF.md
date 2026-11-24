@@ -11,7 +11,7 @@ Status: ART-01 slices 1–3 IMPLEMENTED + TESTED + RENDERED locally. Slice 1 own
 - Renders: `art01-handoff-r1` passed all gates but was visually unreadable (agent review) → restaged → `art01-handoff-r2`: all gates PASS (verify, quality pass 0/0, compare_release, frame-glitch clean both).
 
 ## Next action
-1. Push, test-only CI, PR, merge (authorized by owner).
+1. Done: PR #16 merged as c8663e7 (head 3f83487 CI 45505372406, main CI 45505520943 green, test-only).
 2. Owner (optional): watch out/art01-handoff-r2-three-polished/film.mp4.
 3. Next proposed unit: ART-02 composition/framing/lighting (small product subject; engineer back-to-camera; small end wave). Open ART-01 follow-ups: identity ledger chains, director/Studio authoring of new fields, left-arm animation.
 
