@@ -1,32 +1,19 @@
-# Latest handoff — LOCAL-02 verified; LOCAL-03 prepared
-Checkpoint: branch `local-dev` (from main 1e0adcd). Commits: 5eba606 symlink test, 031a554 LOCAL-01 docs+lockfile, 19b20ec LOCAL-02, e1caa74 comparator fix, plus this checkpoint commit. Date 2026-11-24. Not pushed, not merged, no release.
-Status: LOCAL-01 and LOCAL-02 IMPLEMENTED + VERIFIED locally, awaiting owner acceptance. LOCAL-03 PLANNED (scope in NEXT_UNITS.md), not started.
+# Latest handoff — LOCAL-03 paused mid Phase B (owner memory cleanup / reboot)
+Checkpoint: branch `feature/local-03-performance` from main 43e0c2e (LOCAL-01/02 merged via PR #14). Commits 4b01f2b (bench), d24a943 (glitch scanner, opt-in seam), plus this checkpoint commit. Not pushed. Date 2026-11-24 ~22:00.
+Status: LOCAL-03 ACTIVE — Phase A done, Phase B concurrency sweep done (c8 to be re-measured), remaining experiments not started. Details and numbers: CURRENT_STATE.md "Active unit"; table docs/performance/local-03-bench-report.md.
 
-## LOCAL-01 (summary; details in CURRENT_STATE)
-Windows 11, Ryzen 9 7845HX, RTX 4060 Laptop + Radeon 610M. Python 3.11.9 (winget, owner-approved), release_setup OK, models verified. ffprobe from Remotion compositor via AETHER_FFPROBE. GPU: AETHER_GL=vulkan reaches RTX; angle → iGPU. Symlink test: capability-aware skip (win32+EPERM only). package-lock.json reviewed and committed.
+## Resume steps (after reboot)
+1. `git switch feature/local-03-performance`; `git status` clean expected.
+2. Check memory: free RAM should be well above 2 GB with Docker Desktop closed. Record it.
+3. Environment per run (PowerShell): PYTHON=.venv python; AETHER_FFMPEG=absolute path to .venv/Lib/site-packages/imageio_ffmpeg/binaries/ffmpeg-win-x86_64-v7.1.exe; AETHER_FFPROBE=absolute path to node_modules/@remotion/compositor-win32-x64-msvc/ffprobe.exe (absolute paths required: Windows CreateProcess rejects the relative form).
+4. Bench command form: `node scripts/perf-bench.mjs --source out/<matched-output-dir> --id <new-id> --concurrency N [--gl vulkan] --warmup 1 --runs 2`; report: `node scripts/perf-report.mjs [id-prefix...]`. Sources: out/local-02-cinematic-r2-{cpu,three}-polished, out/local-03-af01-{cpu,three}-polished (git-ignored, must still exist; else re-create with produce --project, new id).
+5. Next experiments, one variable at a time: (a) c8 rerun CPU and Three/vulkan on clean memory; (b) --reuse-browser at the best concurrency; (c) --hw-encode if-possible (NVENC) at best concurrency — judge by temporal glitch scan + PSNR/bitrate vs x264 reference, quality-affecting opt-in only; (d) confirm chosen settings on AF01 900 f.
+6. Phase C: choose by throughput, stability, memory, correctness (not GPU util). Expose only via AETHER_CONCURRENCY/AETHER_GL/AETHER_HW_ENCODE (already implemented, defaults unchanged); document profile in LOCAL_DEVELOPMENT.md; update CURRENT_STATE/HANDOFF/NEXT_UNITS; push feature branch for test-only CI; PR only with owner authorization; then prepare ART-01 (input: LOW_PROJECTED_MOTION on AF01 `product` shot).
 
-## LOCAL-02 changed files
-- scripts/production-options.mjs — `--project`/`--pair` authored mode; exactly one of --topic/--request/--project; rejects retiming options and normalized pair mismatch. Director-mode semantics preserved.
-- src/studio/production.js — matchedTargetFrames, projectProfile, SPEECH_SHARED/AUTHORED_SHARED, sharedArtifacts, verifyShared; matchedProject accepts fixed-budget authored projects, still requires measured timeline.
-- scripts/produce.mjs — authored planning path (no Director, prepare without --director-budget), mix.wav archive for non-speech, inputHashes, sourceDirty, frameAllocation, per-output shared-inputs.json, pre/post-render hash checks incl. public/audio soundtrack.
-- scripts/matched_inventory.py (new, stdlib) + scripts/compare_release.py (imports it; main() entry point).
-- tests/production.test.js (+4 tests), tests/test_compare_release.py (new, 11 tests incl. numpy-gated entry point).
-- README.md, docs/continuity/{CURRENT_STATE,HANDOFF,LOCAL_DEVELOPMENT,NEXT_UNITS}.md.
-
-## Commands and results
-- `npm test` → 164 tests, 163 pass, 0 fail, 1 skip (symlink, Windows).
-- `PYTHONPATH=scripts .venv/Scripts/python.exe -m unittest discover -s tests -p "test_*.py"` → 22 OK. Same on bare `py -3.11` (no numpy, CI-equivalent) → 22 OK, 1 skipped.
-- compileall scripts OK; `node scripts/foundry-qualify.mjs plan` → 9 pairs.
-- Controlled matched run (PowerShell; AETHER_FFPROBE set, AETHER_GL=vulkan):
-  `node scripts/produce.mjs --project examples/cinematic-cpu-polished.json --pair examples/cinematic-three-polished.json --backend both --id local-02-cinematic-r2`
-  → PASS: 1 preparation, 2 renders, quality pass 0/0 each, compare_release PASS, inventory verified; sourceCommit e1caa74, sourceDirty false. CPU 44.8 s; Three/vulkan 28.6 s, RTX peak 44% util / 424 MiB. Shared: timeline c6e3b42f…, narration f1bad798…, mix 69b75285…, voice-report 1beb081f… identical in both outputs and the three public/audio soundtracks. Films: cpu 45a364e0…, three 4b12d823… (byte-identical to LOCAL-01 renders).
-- Failed first attempt `local-02-cinematic` (comparator NameError after both renders passed) preserved under out/; fixed in e1caa74.
+## Current provisional recommendation (not yet accepted)
+CPU: AETHER_CONCURRENCY=4 (1.71x vs default, stable, bit-identical). Three: AETHER_GL=vulkan with AETHER_CONCURRENCY=4 (1.49x) or 8 (1.66x) pending clean-memory rerun. Defaults stay concurrency 2 / swangle.
 
 ## Unresolved risks
-- Only a single-shot pair rendered matched; multi-shot authored pairs covered by unit tests only.
-- Timings are single runs; not benchmarks. No human/audio review of LOCAL-02 films.
-- `npm run produce -- ...` loses `--` in PowerShell; use node directly (documented).
-- CI (Linux) not yet run on these commits; nothing pushed.
-
-## Next executable action
-Owner: accept LOCAL-01/02 (or request changes), decide push/PR of `local-dev`, and authorize LOCAL-03 (step 1 measurement first). Do not push/merge without authorization.
+- Rare Vulkan frame corruption observed once (serial-encode diagnostic); keep frame_glitch scan on any GPU-profile render until more evidence.
+- Three/vulkan output is not bit-exact across runs (≥56 dB); reproducibility gates for Three must use PSNR, not hashes.
+- Machine memory pressure (~5.7 GB unattributed + 2.2 GB non-paged pool) — environmental, owner action.
