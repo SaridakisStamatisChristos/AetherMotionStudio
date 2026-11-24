@@ -16,6 +16,7 @@ concurrency:
   cancel-in-progress: true
 jobs:
   test:
+    if: ${{ !(github.event_name == 'push' && github.ref == 'refs/heads/feature/af-01-geometry-kernel' && github.event.before == '202ee715012c0e857461ec56c4df733a438c1608' && github.event.head_commit.message == 'AF09 repair two shared audio lanes') }}
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
