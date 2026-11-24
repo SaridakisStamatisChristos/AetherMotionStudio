@@ -63,6 +63,17 @@ Remove-Item Env:AETHER_GL
 ```
 Check actual renderer/vendor via WebGL/Chromium diagnostics, driver and GPU usage/VRAM during render; distinguish SwiftShader from RTX. If GPU mode fails, record evidence and diagnose; no automatic substitution. On long runs monitor RAM/VRAM; Remotion documents potential ANGLE memory growth. Begin small; don't change concurrency, resolution, hardware encoding or rendering algorithm mid-benchmark. Candidate alternative modes only after verifying supported flags and target system. Do not interpret fast render alone as GPU evidence.
 
+### Verified owner PC profile (Windows 11, hybrid RTX 4060 Laptop + Radeon 610M) — LOCAL-01, 2026-11-24
+`npx remotion gpu` fails in headless shell 158 (chrome://gpu ERR_FAILED); identify GL via WebGL WEBGL_debug_renderer_info instead. On this hybrid laptop `angle` selects the AMD iGPU and `angle-egl` the Microsoft Basic Render Driver; only `vulkan` reached the RTX. Per-process environment used for verified renders (PowerShell, repo root):
+```powershell
+$env:PYTHON = (Resolve-Path .venv/Scripts/python.exe).Path
+$env:AETHER_FFMPEG = (Resolve-Path .venv/Lib/site-packages/imageio_ffmpeg/binaries/ffmpeg-win-x86_64-v7.1.exe).Path
+$env:AETHER_FFPROBE = (Resolve-Path node_modules/@remotion/compositor-win32-x64-msvc/ffprobe.exe).Path
+$env:AETHER_GL = "vulkan"   # opt-in RTX path for Three.js; omit for default swangle
+npm run render -- examples/cinematic-three-polished.json
+```
+Confirm GPU use each time with `nvidia-smi` (chrome-headless-shell.exe listed as C+G, nonzero utilization). The Windows per-app GPU preference route for `angle` was not tried (system setting). See CURRENT_STATE for measured evidence.
+
 ## Studio and authoring
 `npm run studio:local` → http://127.0.0.1:4173; local validated projects and native render jobs. `npm run studio` is Remotion Studio; `npm run prepare-audio -- examples/cinematic-cpu-polished.json` prepares audio before preview when appropriate. See docs/STUDIO.md and docs/DIRECTOR.md.
 ```bash
