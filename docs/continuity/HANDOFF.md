@@ -1,5 +1,5 @@
-# Latest handoff — LOCAL-03 implemented + measured, awaiting owner acceptance
-Checkpoint: branch `feature/local-03-performance` from main 43e0c2e (LOCAL-01/02 merged via PR #14). Commits 4b01f2b (bench), d24a943 (glitch scanner, opt-in seam), 73ce93f (pre-reboot checkpoint), 4ed3e7d (clean-boot c4/c8), 56d8f82 (settled controls, reuse rejected), plus this checkpoint commit (NVENC, AF01, profile). Not pushed. Date 2026-11-25.
+# Latest handoff — LOCAL-03 implemented + measured, PR #15 merge authorized
+Checkpoint: branch `feature/local-03-performance` from main 43e0c2e (LOCAL-01/02 merged via PR #14). Commits 4b01f2b (bench), d24a943 (glitch scanner, opt-in seam), 73ce93f (pre-reboot checkpoint), 4ed3e7d (clean-boot c4/c8), 56d8f82 (settled controls, reuse rejected), 9746236 (NVENC, AF01, profile), a547bf2 + this commit (PR/CI record). Pushed to origin; PR #15. Date 2026-11-25.
 Status: LOCAL-03 IMPLEMENTED + MEASURED (Phases A–C). Owner authorized push, PR and merge 2026-11-25: PR #15, test-only CI run 45500133921 on 9746236 green (test pass; render/compare skipped by policy). Merge commit recorded at next checkpoint. Formal acceptance of the profile values not separately stated beyond merge authorization. Details: CURRENT_STATE.md "Active unit"; table + NVENC quality section docs/performance/local-03-bench-report.md; profile docs/continuity/LOCAL_DEVELOPMENT.md "Recommended local performance profile".
 
 ## This session
