@@ -18,3 +18,6 @@ Source commit: `6e3e894e29ae30ba59e82a894760dabea9971b11`. GitHub Actions run: [
 
 ## v1.0 matched release scope (2026-11-24)
 User explicitly requests both backend videos at 30 seconds. Default v1.0 CI executes one shared plan and one shared narration preparation followed by exactly two native renders (CPU and Three.js); both must have 900 frames and identical timeline, narration/mix, subtitle and normalized scene hashes. The 23 earlier fixtures remain in manual full suite; a scoped release pair is not the full historical gate. Do not infer GPU performance from software GL timing or aesthetic superiority from RGB differences.
+
+## Asset Foundry scoped development
+After v1.0 acceptance, default development pushes return to fast tests and one polished AF-01 CPU fixture. Matched AF-01 Three.js fixture and all prior 25 native outputs remain in manual full suite (plus the new pair). Explicit manual release-pair is retained. Native Foundry WebGL evidence deferred.

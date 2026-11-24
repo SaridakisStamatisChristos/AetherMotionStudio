@@ -5,10 +5,10 @@ on:
   workflow_dispatch:
     inputs:
       suite:
-        description: Render suite (matched 30s release pair by default; full only with explicit authorization)
+        description: Render suite (Foundry CPU by default; release pair or full only with explicit authorization)
         type: choice
         options: [release-pair, cpu-polished, full]
-        default: release-pair
+        default: cpu-polished
 permissions:
   contents: read
 concurrency:
@@ -35,7 +35,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        scene: ${{ fromJSON(github.event_name == 'workflow_dispatch' && inputs.suite == 'full' && '["robot-treasure","blockchain-explainer","robot-lab","blockchain-60s","auto-robot","cinematic-cpu","cinematic-three","cinematic-cpu-polished","cinematic-three-polished","asset-showcase-cpu-polished","asset-showcase-three-polished","cinematography-cpu-polished","cinematography-three-polished","director-cpu-polished","director-three-polished","continuity-cpu-polished","continuity-three-polished","speech-cpu-polished","speech-three-polished","quality-cpu-polished","quality-three-polished","studio-cpu-polished","studio-three-polished","release-pair"]' || github.event_name == 'workflow_dispatch' && inputs.suite == 'cpu-polished' && '["studio-cpu-polished"]' || '["release-pair"]') }}
+        scene: ${{ fromJSON(github.event_name == 'workflow_dispatch' && inputs.suite == 'full' && '["robot-treasure","blockchain-explainer","robot-lab","blockchain-60s","auto-robot","cinematic-cpu","cinematic-three","cinematic-cpu-polished","cinematic-three-polished","asset-showcase-cpu-polished","asset-showcase-three-polished","cinematography-cpu-polished","cinematography-three-polished","director-cpu-polished","director-three-polished","continuity-cpu-polished","continuity-three-polished","speech-cpu-polished","speech-three-polished","quality-cpu-polished","quality-three-polished","studio-cpu-polished","studio-three-polished","release-pair","foundry-af01-cpu-polished","foundry-af01-three-polished"]' || github.event_name == 'workflow_dispatch' && inputs.suite == 'release-pair' && '["release-pair"]' || '["foundry-af01-cpu-polished"]') }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

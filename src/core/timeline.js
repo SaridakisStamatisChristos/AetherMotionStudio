@@ -18,7 +18,7 @@ export function validateProject(s){
  const ids=new Set();let minimum=0;
  for(const [i,x] of s.shots.entries()){
   const p='shots['+i+']',chapter=x?.template==='blockchain-chapter',graph=x?.template==='cinematic-graph';
-  fields(x,['id','template','durationFrames','transitionFrames','narration',...(chapter?['chapter','heading','subheading']:graph?['backend','heading','subheading','environment','camera','assets','effects']:['copy'])],p,graph?['fidelity','cameraRig','overlays','layers','transition','continuity']:[]);
+  fields(x,['id','template','durationFrames','transitionFrames','narration',...(chapter?['chapter','heading','subheading']:graph?['backend','heading','subheading','environment','camera','assets','effects']:['copy'])],p,graph?['fidelity','cameraRig','overlays','layers','transition','continuity','geometryProfile']:[]);
   slug(x.id,p+'.id');if(ids.has(x.id))fail(p,'duplicate ID');ids.add(x.id);
   if(x.durationFrames!==null)integer(x.durationFrames,60,MAX_SHOT,p+'.durationFrames');
   integer(x.transitionFrames,0,15,p+'.transitionFrames');if(i===0&&x.transitionFrames!==0)fail(p,'first shot must start without transition');if(Object.hasOwn(x,'transition')&&!['cut','fade','wipe','slide','match'].includes(x.transition))fail(p+'.transition','unknown transition');if(x.transition==='cut'&&x.transitionFrames!==0)fail(p,'cut requires zero transitionFrames');

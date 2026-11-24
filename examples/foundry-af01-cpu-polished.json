@@ -1,0 +1,380 @@
+{
+  "version": 2,
+  "id": "foundry-af01-cpu-polished",
+  "title": "Foundry geometry studies",
+  "voice": "af_heart",
+  "shots": [
+    {
+      "id": "robot",
+      "template": "cinematic-graph",
+      "backend": "cpu",
+      "durationFrames": 180,
+      "transitionFrames": 0,
+      "heading": "CURVED ROBOT",
+      "subheading": "Rounded head and layered face.",
+      "environment": "midnight",
+      "camera": {
+        "x": [
+          [
+            0,
+            2.8
+          ],
+          [
+            1,
+            -2.2
+          ]
+        ],
+        "y": [
+          [
+            0,
+            3.1
+          ],
+          [
+            1,
+            3.5
+          ]
+        ],
+        "z": [
+          [
+            0,
+            8
+          ],
+          [
+            1,
+            8
+          ]
+        ],
+        "zoom": [
+          [
+            0,
+            1150
+          ],
+          [
+            1,
+            1250
+          ]
+        ]
+      },
+      "assets": [
+        {
+          "id": "subject",
+          "asset": "retro-robot",
+          "tracks": {
+            "yaw": [
+              [
+                0,
+                -0.3
+              ],
+              [
+                1,
+                1.1
+              ]
+            ],
+            "scale": [
+              [
+                0,
+                1.15
+              ]
+            ]
+          }
+        }
+      ],
+      "effects": [],
+      "narration": [
+        "A rounded robot head retains its familiar identity."
+      ],
+      "fidelity": {
+        "bloom": 0.68,
+        "atmosphere": 0.52,
+        "contactShadow": 0.7,
+        "surfaceDetail": 0.65,
+        "depthOfField": 0.2,
+        "motionBlur": 0,
+        "grain": 0.18,
+        "grade": 0.48,
+        "particles": 0.75,
+        "typography": 1
+      },
+      "geometryProfile": "foundry-af01"
+    },
+    {
+      "id": "product",
+      "template": "cinematic-graph",
+      "backend": "cpu",
+      "durationFrames": 180,
+      "transitionFrames": 0,
+      "heading": "PRODUCT CASING",
+      "subheading": "A softened precision enclosure.",
+      "environment": "midnight",
+      "camera": {
+        "x": [
+          [
+            0,
+            2.8
+          ],
+          [
+            1,
+            -2.2
+          ]
+        ],
+        "y": [
+          [
+            0,
+            3.1
+          ],
+          [
+            1,
+            3.5
+          ]
+        ],
+        "z": [
+          [
+            0,
+            8
+          ],
+          [
+            1,
+            8
+          ]
+        ],
+        "zoom": [
+          [
+            0,
+            1150
+          ],
+          [
+            1,
+            1250
+          ]
+        ]
+      },
+      "assets": [
+        {
+          "id": "subject",
+          "asset": "smartphone",
+          "tracks": {
+            "yaw": [
+              [
+                0,
+                -0.3
+              ],
+              [
+                1,
+                1.1
+              ]
+            ],
+            "scale": [
+              [
+                0,
+                1.15
+              ]
+            ]
+          }
+        }
+      ],
+      "effects": [],
+      "narration": [
+        "Curved edges change the silhouette of a familiar product."
+      ],
+      "fidelity": {
+        "bloom": 0.68,
+        "atmosphere": 0.52,
+        "contactShadow": 0.7,
+        "surfaceDetail": 0.65,
+        "depthOfField": 0.2,
+        "motionBlur": 0,
+        "grain": 0.18,
+        "grade": 0.48,
+        "particles": 0.75,
+        "typography": 1
+      },
+      "geometryProfile": "foundry-af01"
+    },
+    {
+      "id": "architecture",
+      "template": "cinematic-graph",
+      "backend": "cpu",
+      "durationFrames": 180,
+      "transitionFrames": 0,
+      "heading": "ARCHITECTURAL DETAIL",
+      "subheading": "Columns and extruded cornice.",
+      "environment": "amber",
+      "camera": {
+        "x": [
+          [
+            0,
+            2.8
+          ],
+          [
+            1,
+            -2.2
+          ]
+        ],
+        "y": [
+          [
+            0,
+            3.1
+          ],
+          [
+            1,
+            3.5
+          ]
+        ],
+        "z": [
+          [
+            0,
+            8
+          ],
+          [
+            1,
+            8
+          ]
+        ],
+        "zoom": [
+          [
+            0,
+            1150
+          ],
+          [
+            1,
+            1250
+          ]
+        ]
+      },
+      "assets": [
+        {
+          "id": "subject",
+          "asset": "temple",
+          "tracks": {
+            "yaw": [
+              [
+                0,
+                -0.3
+              ],
+              [
+                1,
+                1.1
+              ]
+            ],
+            "scale": [
+              [
+                0,
+                1.15
+              ]
+            ]
+          }
+        }
+      ],
+      "effects": [],
+      "narration": [
+        "The temple combines cylindrical columns and extruded molding."
+      ],
+      "fidelity": {
+        "bloom": 0.68,
+        "atmosphere": 0.52,
+        "contactShadow": 0.7,
+        "surfaceDetail": 0.65,
+        "depthOfField": 0.2,
+        "motionBlur": 0,
+        "grain": 0.18,
+        "grade": 0.48,
+        "particles": 0.75,
+        "typography": 1
+      },
+      "geometryProfile": "foundry-af01"
+    },
+    {
+      "id": "science",
+      "template": "cinematic-graph",
+      "backend": "cpu",
+      "durationFrames": 180,
+      "transitionFrames": 0,
+      "heading": "SCIENTIFIC MODEL",
+      "subheading": "Spherical particles and orbital links.",
+      "environment": "midnight",
+      "camera": {
+        "x": [
+          [
+            0,
+            2.8
+          ],
+          [
+            1,
+            -2.2
+          ]
+        ],
+        "y": [
+          [
+            0,
+            3.1
+          ],
+          [
+            1,
+            3.5
+          ]
+        ],
+        "z": [
+          [
+            0,
+            8
+          ],
+          [
+            1,
+            8
+          ]
+        ],
+        "zoom": [
+          [
+            0,
+            1150
+          ],
+          [
+            1,
+            1250
+          ]
+        ]
+      },
+      "assets": [
+        {
+          "id": "subject",
+          "asset": "atom-model",
+          "tracks": {
+            "yaw": [
+              [
+                0,
+                -0.3
+              ],
+              [
+                1,
+                1.1
+              ]
+            ],
+            "scale": [
+              [
+                0,
+                1.15
+              ]
+            ]
+          }
+        }
+      ],
+      "effects": [],
+      "narration": [
+        "Spheres and curved forms make the scientific model more expressive."
+      ],
+      "fidelity": {
+        "bloom": 0.68,
+        "atmosphere": 0.52,
+        "contactShadow": 0.7,
+        "surfaceDetail": 0.65,
+        "depthOfField": 0.2,
+        "motionBlur": 0,
+        "grain": 0.18,
+        "grade": 0.48,
+        "particles": 0.75,
+        "typography": 1
+      },
+      "geometryProfile": "foundry-af01"
+    }
+  ]
+}
