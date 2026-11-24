@@ -2,10 +2,12 @@ name: Core - Remotion and Kokoro
 on:
   push:
     branches: [main, 'feature/**']
-  pull_request:
   workflow_dispatch:
 permissions:
   contents: read
+concurrency:
+  group: core-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   test:
     runs-on: ubuntu-24.04
@@ -35,16 +37,24 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - run: npm install --no-audit --no-fund
+          cache: pip
+          cache-dependency-path: |
+            requirements.txt
+            requirements-ci.txt
+      - name: Install pinned Remotion runtime
+        run: npm install --no-audit --no-fund
       - uses: actions/cache@v4
         with:
           path: models/kokoro
           key: kokoro-v1-int8-voices-v1
-      - run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq espeak-ng ffmpeg
-          python -m pip install -r requirements.txt
-          python scripts/setup_models.py
+      - name: Install Python wheels (no apt)
+        timeout-minutes: 5
+        run: python -m pip install --disable-pip-version-check -r requirements.txt -r requirements-ci.txt
+      - name: Select bundled media tools
+        run: python scripts/ci_media_tools.py
+      - name: Prepare Kokoro model cache
+        timeout-minutes: 4
+        run: python scripts/setup_models.py
       - name: Render and verify
         run: npm run render -- examples/${{ matrix.scene }}.json
       - uses: actions/upload-artifact@v4

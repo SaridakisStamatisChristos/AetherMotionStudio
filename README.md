@@ -27,3 +27,6 @@ Copy an example, give it a unique lowercase id, choose an allowed template and v
 ## Architecture and status
 See [architecture](docs/ARCHITECTURE.md), [roadmap](docs/ROADMAP.md), [scene contract](docs/SCENE_V1.md), [agent instructions](AGENTS.md), and [provenance](docs/PROVENANCE.md).
 The Remotion dependency has its own license; this repository does not relicense Remotion. No project license has been selected yet. Refer to https://www.remotion.dev/docs/license and the Kokoro/model licenses before redistribution or commercial deployment.
+
+### CI setup
+The feature/main workflow uses Python wheels (including Kokoro's bundled phonemizer), Remotion's packaged ffprobe and a separate imageio-ffmpeg binary for full decode and review stills. It does not invoke apt or sudo. System FFmpeg/ffprobe remain the default for local CLI verification unless AETHER_FFMPEG and AETHER_FFPROBE are configured. CI runs on main/feature pushes and manual dispatch, not again on every pull-request update; stale runs on the same ref are cancelled by workflow concurrency. Actual CI renders remain the acceptance gate.
