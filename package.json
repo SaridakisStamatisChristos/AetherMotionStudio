@@ -1,7 +1,7 @@
 {
   "name": "aethermotion-studio",
   "private": true,
-  "version": "0.8.0",
+  "version": "0.9.0",
   "scripts": {
     "test": "node --test tests/*.test.js",
     "validate": "node scripts/cli.mjs validate",
@@ -11,7 +11,8 @@
     "catalog": "node scripts/catalog.mjs",
     "director": "node scripts/director.mjs",
     "audit-assets": "node scripts/audit-assets.mjs",
-    "quality": "node scripts/quality.mjs"
+    "quality": "node scripts/quality.mjs",
+    "studio:local": "node scripts/studio-server.mjs"
   },
   "dependencies": {
     "@remotion/cli": "4.0.546",
