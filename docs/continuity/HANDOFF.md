@@ -1,17 +1,32 @@
-# Latest handoff — AF09 merged → local development
-Checkpoint: product merge 04e3491bb21b4ebc3d54755a2a211b1a7affb3fa; documentation handoff follows. Date 2026-11-24.
-Status: AF01–AF09 implemented and merged, fast CI verified, final Foundry nine-pair comparison verified on frozen source with validated recoveries; historical structural qualification passed for the frozen source and verified replacement set. Owner approved the viewed product and Speech films and authorized the test-only CI policy/merge. No release.
+# Latest handoff — LOCAL-02 verified; LOCAL-03 prepared
+Checkpoint: branch `local-dev` (from main 1e0adcd). Commits: 5eba606 symlink test, 031a554 LOCAL-01 docs+lockfile, 19b20ec LOCAL-02, e1caa74 comparator fix, plus this checkpoint commit. Date 2026-11-24. Not pushed, not merged, no release.
+Status: LOCAL-01 and LOCAL-02 IMPLEMENTED + VERIFIED locally, awaiting owner acceptance. LOCAL-03 PLANNED (scope in NEXT_UNITS.md), not started.
 
-## What to carry forward
-Read CURRENT_STATE.md for cumulative canon and evidence index; do not reread all past CI or old conversations. Source-level obligations in AGENTS.md and DUAL_BACKEND_POLICY remain binding; the latest test-only policy supersedes historical automatic render scopes. Preserve existing code, IDs, source evidence and both renderers. Use current git HEAD and cleanly isolate new local work.
+## LOCAL-01 (summary; details in CURRENT_STATE)
+Windows 11, Ryzen 9 7845HX, RTX 4060 Laptop + Radeon 610M. Python 3.11.9 (winget, owner-approved), release_setup OK, models verified. ffprobe from Remotion compositor via AETHER_FFPROBE. GPU: AETHER_GL=vulkan reaches RTX; angle → iGPU. Symlink test: capability-aware skip (win32+EPERM only). package-lock.json reviewed and committed.
 
-## Last checkpoint verification
-- PR #13 merged, main verified at 04e3491. Quick CI 45457656917: 158 JS, 11 Python, protocol plan, syntax; media jobs skipped intentionally.
-- Full 48 render jobs succeeded. Main final Foundry structural comparison passed; legacy exact audio drift diagnosed and targeted re-renders preserved. Speech rerender and final regression comparison both passed in 45447693269: all four comparison scripts successful, 9/9 final and 15/15 historical pairs; final report artifact 14950928618. See CURRENT_STATE and STATUS for exact runs.
-- Viewed films were satisfactory to owner. No claim GPU acceleration, subjective blanket approval, or a clean full rerender at current main.
+## LOCAL-02 changed files
+- scripts/production-options.mjs — `--project`/`--pair` authored mode; exactly one of --topic/--request/--project; rejects retiming options and normalized pair mismatch. Director-mode semantics preserved.
+- src/studio/production.js — matchedTargetFrames, projectProfile, SPEECH_SHARED/AUTHORED_SHARED, sharedArtifacts, verifyShared; matchedProject accepts fixed-budget authored projects, still requires measured timeline.
+- scripts/produce.mjs — authored planning path (no Director, prepare without --director-budget), mix.wav archive for non-speech, inputHashes, sourceDirty, frameAllocation, per-output shared-inputs.json, pre/post-render hash checks incl. public/audio soundtrack.
+- scripts/matched_inventory.py (new, stdlib) + scripts/compare_release.py (imports it; main() entry point).
+- tests/production.test.js (+4 tests), tests/test_compare_release.py (new, 11 tests incl. numpy-gated entry point).
+- README.md, docs/continuity/{CURRENT_STATE,HANDOFF,LOCAL_DEVELOPMENT,NEXT_UNITS}.md.
+
+## Commands and results
+- `npm test` → 164 tests, 163 pass, 0 fail, 1 skip (symlink, Windows).
+- `PYTHONPATH=scripts .venv/Scripts/python.exe -m unittest discover -s tests -p "test_*.py"` → 22 OK. Same on bare `py -3.11` (no numpy, CI-equivalent) → 22 OK, 1 skipped.
+- compileall scripts OK; `node scripts/foundry-qualify.mjs plan` → 9 pairs.
+- Controlled matched run (PowerShell; AETHER_FFPROBE set, AETHER_GL=vulkan):
+  `node scripts/produce.mjs --project examples/cinematic-cpu-polished.json --pair examples/cinematic-three-polished.json --backend both --id local-02-cinematic-r2`
+  → PASS: 1 preparation, 2 renders, quality pass 0/0 each, compare_release PASS, inventory verified; sourceCommit e1caa74, sourceDirty false. CPU 44.8 s; Three/vulkan 28.6 s, RTX peak 44% util / 424 MiB. Shared: timeline c6e3b42f…, narration f1bad798…, mix 69b75285…, voice-report 1beb081f… identical in both outputs and the three public/audio soundtracks. Films: cpu 45a364e0…, three 4b12d823… (byte-identical to LOCAL-01 renders).
+- Failed first attempt `local-02-cinematic` (comparator NameError after both renders passed) preserved under out/; fixed in e1caa74.
+
+## Unresolved risks
+- Only a single-shot pair rendered matched; multi-shot authored pairs covered by unit tests only.
+- Timings are single runs; not benchmarks. No human/audio review of LOCAL-02 films.
+- `npm run produce -- ...` loses `--` in PowerShell; use node directly (documented).
+- CI (Linux) not yet run on these commits; nothing pushed.
 
 ## Next executable action
-LOCAL-01: inspect actual machine and repo status; follow LOCAL_DEVELOPMENT.md. Verify Node/Python/ffmpeg/espeak/model/tool versions, fast tests; do not install globally or modify user data silently. Report any blockers. If authorized, run a small existing matched baseline with unique output ID and actual hardware GL evidence. Avoid a full matrix or rebuilding already merged pipeline. Then take user's next scoped development request, or propose earliest uncompleted unit from NEXT_UNITS.md. No automatic push/merge.
-
-## At session close
-Record source SHA, actual commands/results, media paths/hashes if relevant, machine profile without secrets, modifications, failures, remaining obligations and next unit. Update CURRENT_STATE.md and this file together; do not promote unverified state. Archive older handoff when material, not all log text.
+Owner: accept LOCAL-01/02 (or request changes), decide push/PR of `local-dev`, and authorize LOCAL-03 (step 1 measurement first). Do not push/merge without authorization.

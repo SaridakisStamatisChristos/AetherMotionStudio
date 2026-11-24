@@ -1,26 +1,14 @@
 """Independent matched native-output check; objective diagnostics, not aesthetic ranking."""
-import hashlib,json,os,sys,subprocess
+import json,os,sys,subprocess
 from pathlib import Path
 import numpy as np
-def load(p,n):return json.loads((p/n).read_text())
-def sha(p):
-    with p.open('rb') as f:return hashlib.file_digest(f,'sha256').hexdigest()
-def normalized(p,backend):
-    s=load(p,'scene.json');s.pop('id')
-    for x in s['shots']:
-        assert x.pop('backend')==backend
-    return s
+from matched_inventory import load,sha,normalized,check_shared,SPEECH_SHARED,AUTHORED_SHARED
 def frame(p,t):
     ff=os.environ.get('AETHER_FFMPEG','ffmpeg')
     data=subprocess.run([ff,'-v','error','-ss',str(t),'-i',str(p/'film.mp4'),'-frames:v','1','-vf','scale=180:320','-pix_fmt','rgb24','-f','rawvideo','-'],check=True,capture_output=True).stdout
     return np.frombuffer(data,dtype=np.uint8).astype(np.float32).reshape(320,180,3)
 def compare(a,b):
-    assert normalized(a,'cpu')==normalized(b,'three'),'different project'
-    t=load(a,'timeline.json');assert t==load(b,'timeline.json'),'different timeline'
-    total=t['durationFrames'];assert total==normalized(a,'cpu')['speech']['targetFrames']
-    shared={}
-    for name in ('timeline.json','kokoro-narration.wav','mix.wav','voice-report.json','speech-report.json','captions.srt','captions.vtt'):
-        x,y=sha(a/name),sha(b/name);assert x==y,'shared artifact differs: '+name;shared[name]=x
+    total,shared,inventory=check_shared(a,b);t=load(a,'timeline.json')
     outputs=[]
     for p,backend in ((a,'cpu'),(b,'three')):
         probe=load(p,'probe.json');v=next(x for x in probe['streams'] if x['codec_type']=='video');audio=next(x for x in probe['streams'] if x['codec_type']=='audio')
@@ -37,6 +25,8 @@ def compare(a,b):
             samples.append({'shot':s['id'],'second':second,'meanAbsRgbDifference':float(np.abs(x-y).mean()),'cpuStd':float(x.std()),'threeStd':float(y.std())})
     assert all(min(s['cpuStd'],s['threeStd'])>4 for s in samples),'flat sampled geometry'
     assert any(s['meanAbsRgbDifference']>1 for s in samples),'no meaningful sampled backend difference'
-    return {'version':1,'status':'pass','sameNormalizedProject':True,'sameTimeline':True,'sharedFileHashes':shared,'frames':total,'seconds':total/30,'outputs':outputs,'samples':samples,'threeToCpuRenderTimeRatio':outputs[1]['renderSeconds']/outputs[0]['renderSeconds'],'method':'sequential native renders on one runner, identical prepared assets/audio, same concurrency; CI software GL if swangle; not a dedicated hardware benchmark; no aesthetic superiority inferred'}
-if __name__=='__main__':
-    a,b,out=map(Path,sys.argv[1:]);result=compare(a,b);out.write_text(json.dumps(result,indent=2));print('PASS: matched native CPU / Three.js comparison,',result['frames'],'frames each, shared hashes exact')
+    return {'version':1,'status':'pass','sameNormalizedProject':True,'sameTimeline':True,'sharedInventoryVerified':inventory,'sharedFileHashes':shared,'frames':total,'seconds':total/30,'outputs':outputs,'samples':samples,'threeToCpuRenderTimeRatio':outputs[1]['renderSeconds']/outputs[0]['renderSeconds'],'method':'sequential native renders on one runner, identical prepared assets/audio, same concurrency; CI software GL if swangle; not a dedicated hardware benchmark; no aesthetic superiority inferred'}
+def main(argv,run=None):
+    a,b,out=map(Path,argv);result=(run or compare)(a,b);out.write_text(json.dumps(result,indent=2));print('PASS: matched native CPU / Three.js comparison,',result['frames'],'frames each, shared hashes exact')
+    return result
+if __name__=='__main__':main(sys.argv[1:])

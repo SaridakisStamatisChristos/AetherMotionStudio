@@ -7,7 +7,7 @@ import {direct} from '../src/director/index.js';
 import {digest} from '../src/director/catalog.js';
 import {validateProject,validateTimeline} from '../src/core/timeline.js';
 import {repairProject} from '../src/quality/preflight.js';
-import {matchedProject,normalizedProject} from '../src/studio/production.js';
+import {matchedProject,normalizedProject,sharedArtifacts,verifyShared} from '../src/studio/production.js';
 import {parseProduction} from './production-options.mjs';
 import {renderNative,runChecked} from './native-render.mjs';
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..'),outRoot=join(root,'out');
@@ -31,7 +31,7 @@ for(const p of [production,prep,...outputs])if(existsSync(p))throw Error('Output
 // Unique reservation and immutable planned artifacts; no reuse of stale outputs.
 mkdirSync(production);for(const p of outputs)mkdirSync(p);
 const write=(p,value)=>{const tmp=p+'.tmp';writeFileSync(tmp,JSON.stringify(value,null,2)+'\n');renameSync(tmp,p);};
-const manifest={version:1,release:'1.0.0',status:'planning',id:o.id,request:o.request,backends:o.backends,outputIds:o.ids,repair:o.repair,provider:'offline-or-imported',targetFrames:o.request.seconds*30,sourceCommit:env.GITHUB_SHA??null,results:[],renderInvocations:0,preparationInvocations:0};
+const manifest={version:1,release:'1.0.0',status:'planning',mode:o.mode,id:o.id,request:o.request,sources:o.sources,backends:o.backends,outputIds:o.ids,repair:o.repair,provider:o.mode==='project'?'authored':'offline-or-imported',targetFrames:o.targetFrames,sourceCommit:env.GITHUB_SHA??null,results:[],renderInvocations:0,preparationInvocations:0};
 const update=()=>write(join(production,'production.json'),manifest);
 update();
 try{
@@ -40,16 +40,35 @@ try{
  writeFileSync(join(production,'python-freeze.txt'),capture(python,['-m','pip','freeze'])+'\n');
  manifest.runtime={node:process.version,python:capture(python,['--version']),platform:process.platform,arch:process.arch,ffmpeg:capture(env.AETHER_FFMPEG??'ffmpeg',['-version']).split('\n')[0],ffprobe:capture(env.AETHER_FFPROBE??'ffprobe',['-version']).split('\n')[0]};
  if(!manifest.sourceCommit){try{manifest.sourceCommit=capture('git',['rev-parse','HEAD']);}catch{}}
- const plan=await direct({...o.request,id:prepareId},{imported:o.imported,maxRepairs:0});
- for(const [name,v] of Object.entries({'director-request.json':plan.request,'director-ir.json':plan.ir,'director-stages.json':plan.stages,'director-manifest.json':plan.manifest,'catalog-selection.json':plan.catalogSelection,'planned-project.json':plan.project}))write(join(production,name),v);
- writeFileSync(join(production,'prompt.txt'),plan.prompt);
- manifest.directorMode=plan.manifest.mode;manifest.provider=plan.manifest.provider;manifest.status='preparing';manifest.preparationInvocations++;update();
- runChecked(root,process.execPath,['scripts/cli.mjs','prepare',join(production,'planned-project.json'),'--director-budget'],env);
+ // Stale/dirty checkout evidence: tracked or untracked source changes not in sourceCommit.
+ try{manifest.sourceDirty=capture('git',['status','--porcelain']).length>0;}catch{manifest.sourceDirty=null;}
+ // Input checksums: locks plus exact authored source bytes.
+ manifest.inputHashes={'package-lock.json':manifest.npmLockSha256,'requirements-release.txt':sha(join(root,'requirements-release.txt')),'models-lock.json':sha(join(root,'models-lock.json'))};
+ if(o.mode==='project'){
+  // Authored v2 project: the validated file is the single scene definition; no Director, no retiming.
+  copyFileSync(resolve(o.sources.project),join(production,'authored-project.json'));manifest.inputHashes['authored-project.json']=sha(join(production,'authored-project.json'));
+  if(o.sources.pair){copyFileSync(resolve(o.sources.pair),join(production,'authored-pair.json'));manifest.inputHashes['authored-pair.json']=sha(join(production,'authored-pair.json'));}
+  const planned=validateProject({...structuredClone(o.project),id:prepareId});
+  write(join(production,'planned-project.json'),planned);
+  manifest.directorMode=null;manifest.status='preparing';manifest.preparationInvocations++;update();
+  runChecked(root,process.execPath,['scripts/cli.mjs','prepare',join(production,'planned-project.json')],env);
+ }else{
+  const plan=await direct({...o.request,id:prepareId},{imported:o.imported,maxRepairs:0});
+  for(const [name,v] of Object.entries({'director-request.json':plan.request,'director-ir.json':plan.ir,'director-stages.json':plan.stages,'director-manifest.json':plan.manifest,'catalog-selection.json':plan.catalogSelection,'planned-project.json':plan.project}))write(join(production,name),v);
+  writeFileSync(join(production,'prompt.txt'),plan.prompt);
+  manifest.directorMode=plan.manifest.mode;manifest.provider=plan.manifest.provider;manifest.status='preparing';manifest.preparationInvocations++;update();
+  runChecked(root,process.execPath,['scripts/cli.mjs','prepare',join(production,'planned-project.json'),'--director-budget'],env);
+ }
  const authored=validateProject(read(join(prep,'scene.json'))),timeline=validateTimeline(authored,read(join(prep,'timeline.json')));
  if(timeline.durationFrames!==manifest.targetFrames)throw Error('Exact target duration mismatch');
- const shared=['timeline.json','kokoro-narration.wav','mix.wav','voice-report.json','speech-report.json','captions.srt','captions.vtt'];
+ if(o.mode==='project'&&digest(normalizedProject(authored))!==digest(normalizedProject(o.project)))throw Error('Prepared scene differs from authored project');
+ // Non-speech preparation writes its lossless soundtrack only to public/audio; archive it beside the timeline.
+ if(!authored.speech)copyFileSync(join(root,'public','audio',prepareId+'.wav'),join(prep,'mix.wav'));
+ const shared=sharedArtifacts(authored);
+ manifest.sharedArtifacts=[...shared];
  manifest.sharedHashes=Object.fromEntries(shared.map(name=>[name,sha(join(prep,name))]));
- manifest.timelineDigest=digest(timeline);manifest.modelFingerprint=read(join(prep,'speech-report.json')).modelFingerprint;
+ manifest.timelineDigest=digest(timeline);manifest.frameAllocation=timeline.shots.map(s=>({id:s.id,startFrame:s.startFrame,endFrame:s.endFrame}));
+ manifest.modelFingerprint=existsSync(join(prep,'speech-report.json'))?read(join(prep,'speech-report.json')).modelFingerprint:null;
  const prepared=o.backends.map((backend,i)=>{
   const out=outputs[i],id=o.ids[i],before=matchedProject(authored,timeline,id,backend),r=repairProject(before,timeline,{enabled:o.repair});
   if(r.report.after.issues.some(x=>x.severity==='error'))throw Error('Blocking preflight issue for '+backend);
@@ -59,13 +78,22 @@ try{
   return {out,scene:r.project,backend,id};
  });
  if(prepared.length===2&&digest(normalizedProject(prepared[0].scene))!==digest(normalizedProject(prepared[1].scene)))throw Error('Backend parity failed before native rendering');
- manifest.normalizedProjectDigest=digest(normalizedProject(prepared[0].scene));manifest.status='rendering';update();
+ manifest.normalizedProjectDigest=digest(normalizedProject(prepared[0].scene));
+ // Per-output shared-input inventory; compare_release.py verifies both copies are identical and match the files.
+ const inventory={version:1,production:o.id,mode:o.mode,sourceCommit:manifest.sourceCommit,sourceDirty:manifest.sourceDirty,targetFrames:manifest.targetFrames,timelineDigest:manifest.timelineDigest,frameAllocation:manifest.frameAllocation,normalizedProjectDigest:manifest.normalizedProjectDigest,modelFingerprint:manifest.modelFingerprint,inputHashes:manifest.inputHashes,sharedHashes:manifest.sharedHashes};
+ for(const p of prepared)write(join(p.out,'shared-inputs.json'),inventory);
+ manifest.status='rendering';update();
+ const outputHash=out=>name=>existsSync(join(out,name))?sha(join(out,name)):null;
+ const soundtrack=id=>join(root,'public','audio',id+'.wav');
  // Deliberately sequential on one runner, same audio and timeline, same concurrency.
  for(const p of prepared){
   const row={id:p.id,backend:p.backend,status:'running'};manifest.results.push(row);manifest.renderInvocations++;update();
   try{
+   verifyShared(manifest.sharedHashes,outputHash(p.out),p.id);
+   if(sha(soundtrack(p.id))!==manifest.sharedHashes['mix.wav'])throw Error('Render soundtrack differs from shared mix: '+p.id);
    const timing=renderNative({root,out:p.out,scene:p.scene,timeline,quality:true,python,env});
-   for(const name of shared)if(sha(join(p.out,name))!==manifest.sharedHashes[name])throw Error('Shared artifact changed: '+name);
+   verifyShared(manifest.sharedHashes,outputHash(p.out),p.id);
+   if(sha(soundtrack(p.id))!==manifest.sharedHashes['mix.wav'])throw Error('Render soundtrack changed during render: '+p.id);
    const report=read(join(p.out,'quality-report.json'));if(report.errors!==0||timing.backend!==p.backend)throw Error('Native quality/backend gate failed');
    Object.assign(row,{status:'succeeded',renderSeconds:timing.renderSeconds,frames:timeline.durationFrames,gl:timing.gl,qualityStatus:report.status,warnings:report.warnings,filmSha256:sha(join(p.out,'film.mp4')),filmBytes:statSync(join(p.out,'film.mp4')).size});
   }catch(e){row.status='failed';row.error=String(e.message??e).slice(0,1200);console.error(p.backend+' production failed:',row.error);}

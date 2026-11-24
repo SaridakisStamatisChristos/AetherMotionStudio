@@ -44,7 +44,7 @@ npm run render -- examples/cinematic-cpu-polished.json
 # 30s matched CPU/Three release pair only after local baseline / user approval:
 npm run produce -- --request examples/release.request.json --backend both --repair --id local-baseline-01
 ```
-Check `scripts/produce.mjs` for exact flags before customizing. The production pair uses one prepared plan/audio; not all legacy fixtures use it yet. No routine full-suite re-render. Direct render CLI re-synthesizes independently, so its separate CPU and Three invocations are not controlled matched benchmarks. `npm run render -- examples/foundry-af09-cpu-polished.json` and corresponding Three fixture render the 30s product; output IDs are existing fixture IDs.
+Check `scripts/produce.mjs` for exact flags before customizing. The production pair uses one prepared plan/audio. Since LOCAL-02 authored v2 fixtures use it too: `node scripts/produce.mjs --project examples/<x>-cpu-polished.json --pair examples/<x>-three-polished.json --backend both --id <new-slug>` (PowerShell: call node directly; `npm run produce -- ...` loses `--`). Outputs: out/<id>-production/ (production.json, comparison.json, authored sources), out/<id>-<backend>-<profile>/ (film, shared files, shared-inputs.json). IDs must be new; existing outputs are refused. No routine full-suite re-render. Direct render CLI re-synthesizes independently, so its separate CPU and Three invocations are not controlled matched benchmarks. `npm run render -- examples/foundry-af09-cpu-polished.json` and corresponding Three fixture render the 30s product; output IDs are existing fixture IDs.
 
 ## GPU rendering (opt-in)
 Actual helper scripts/native-render.mjs uses `AETHER_GL || 'swangle'`, fixed concurrency 2 and passes --gl only for Three. Remotion v4 desktop ANGLE is a supported candidate; check [GL options](https://www.remotion.dev/docs/gl-options) and pinned CLI help, not v5 defaults. GPU use must be observed. Software swangle remains portable fallback chosen explicitly, not hidden. Do not modify backend defaults globally. On Linux:
@@ -62,6 +62,17 @@ npm run render -- examples/cinematic-three-polished.json
 Remove-Item Env:AETHER_GL
 ```
 Check actual renderer/vendor via WebGL/Chromium diagnostics, driver and GPU usage/VRAM during render; distinguish SwiftShader from RTX. If GPU mode fails, record evidence and diagnose; no automatic substitution. On long runs monitor RAM/VRAM; Remotion documents potential ANGLE memory growth. Begin small; don't change concurrency, resolution, hardware encoding or rendering algorithm mid-benchmark. Candidate alternative modes only after verifying supported flags and target system. Do not interpret fast render alone as GPU evidence.
+
+### Verified owner PC profile (Windows 11, hybrid RTX 4060 Laptop + Radeon 610M) — LOCAL-01, 2026-11-24
+`npx remotion gpu` fails in headless shell 158 (chrome://gpu ERR_FAILED); identify GL via WebGL WEBGL_debug_renderer_info instead. On this hybrid laptop `angle` selects the AMD iGPU and `angle-egl` the Microsoft Basic Render Driver; only `vulkan` reached the RTX. Per-process environment used for verified renders (PowerShell, repo root):
+```powershell
+$env:PYTHON = (Resolve-Path .venv/Scripts/python.exe).Path
+$env:AETHER_FFMPEG = (Resolve-Path .venv/Lib/site-packages/imageio_ffmpeg/binaries/ffmpeg-win-x86_64-v7.1.exe).Path
+$env:AETHER_FFPROBE = (Resolve-Path node_modules/@remotion/compositor-win32-x64-msvc/ffprobe.exe).Path
+$env:AETHER_GL = "vulkan"   # opt-in RTX path for Three.js; omit for default swangle
+npm run render -- examples/cinematic-three-polished.json
+```
+Confirm GPU use each time with `nvidia-smi` (chrome-headless-shell.exe listed as C+G, nonzero utilization). The Windows per-app GPU preference route for `angle` was not tried (system setting). See CURRENT_STATE for measured evidence.
 
 ## Studio and authoring
 `npm run studio:local` → http://127.0.0.1:4173; local validated projects and native render jobs. `npm run studio` is Remotion Studio; `npm run prepare-audio -- examples/cinematic-cpu-polished.json` prepares audio before preview when appropriate. See docs/STUDIO.md and docs/DIRECTOR.md.
