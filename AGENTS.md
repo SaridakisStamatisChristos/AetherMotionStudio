@@ -40,3 +40,6 @@ AF05 verified at 10d0432 (run 45400775233, 148 tests). Default fast tests + boun
 
 ## AF07 successor
 AF06 verified at d45e075 (run 45405168868). Default tests + AF07 generation evaluation and exactly one polished CPU film; matched native Three fixture retained for manual full. No automatic promotion, merge or release. See docs/foundry/GENERATOR.md.
+
+## AF08 successor
+AF07 verified at ba69402 (run 45409971516); default fast tests + AF08 pack acceptance evidence + one CPU polished film. Both renderers and all prior fixtures preserved. Native Three/full only on explicit authorization; no merge. See docs/foundry/PACKS.md.

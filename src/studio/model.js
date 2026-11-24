@@ -1,3 +1,4 @@
+import {pinAsset} from '../foundry/packs.js';
 import {validateProject,validateTimeline} from '../core/timeline.js';
 import {FIDELITY_DEFAULTS} from '../core/fidelity.js';
 const fail=m=>{throw Error(m)};
@@ -34,7 +35,7 @@ export function addAsset(project,index,asset){
 export function removeAsset(project,index,id){
  const s=project.shots?.[index];if(!s||s.template!=='cinematic-graph')fail('Select a graph shot');
  // Reject rather than silently remove references/identity constraints.
- return applyShotEdit(project,index,{assets:s.assets.filter(a=>a.id!==id)});
+ return editProject(project,p=>{const shot=p.shots[index];shot.assets=shot.assets.filter(a=>a.id!==id);if(shot.lodPolicy?.overrides)shot.lodPolicy.overrides=shot.lodPolicy.overrides.filter(x=>x.asset!==id);});
 }
 export function plannedTimeline(p){
  validateProject(p);if(p.version===1)return null;
@@ -63,4 +64,14 @@ export function previewState(project,prepared=null){
  if(prepared){validateProject(prepared.scene);if(prepared.scene.version===2)validateTimeline(prepared.scene,prepared.timeline);return {scene:prepared.scene,timeline:prepared.timeline,mode:'measured snapshot'};}
  // No invented speech cues in draft preview.
  return {scene:project,timeline:plannedTimeline(project),mode:'estimated draft (silent)'};
+}
+
+export function addFoundryAsset(project,index,entry,lod=0){
+ return editProject(project,p=>{
+  const s=p.shots?.[index];if(!s||s.template!=='cinematic-graph'||!['foundry-af04','foundry-af07'].includes(s.geometryProfile))fail('Select an AF04 or AF07 premium graph; legacy migration is explicit');
+  if(entry.kind==='generated'&&s.geometryProfile!=='foundry-af07')fail('Generated assets require AF07 profile');
+  if(s.lodPolicy?.selection!=='explicit')fail('Select explicit LOD before adding pinned assets');
+  const ids=new Set(s.assets.map(a=>a.id));let n=1;while(ids.has('object-'+n))n++;const id='object-'+n;
+  s.assets.push(pinAsset(entry,id,{x:[[0,0]],scale:[[0,.75]]}));s.lodPolicy.overrides.push({asset:id,level:lod});
+ });
 }

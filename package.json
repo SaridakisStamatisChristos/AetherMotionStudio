@@ -14,7 +14,8 @@
     "quality": "node scripts/quality.mjs",
     "studio:local": "node scripts/studio-server.mjs",
     "produce": "node scripts/produce.mjs",
-    "foundry:inspect": "node scripts/foundry-inspect.mjs"
+    "foundry:inspect": "node scripts/foundry-inspect.mjs",
+    "foundry:packs": "node scripts/foundry-packs.mjs"
   },
   "dependencies": {
     "@remotion/cli": "4.0.546",

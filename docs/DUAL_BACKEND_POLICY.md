@@ -31,3 +31,5 @@ AF05 default tests and one local-import CPU film; full matched AF05 pair generat
 AF06 default: structural checks and CPU still inspection sheets plus single selected AF06 CPU film. Matched AF06 native fixture retained in manual full gate. Inspector records the actual shader, including explicit relighting of older fixed-light geometry; native Three inspection deferred.
 
 AF07 default: fast tests and held-out generator evaluation, one AF07 CPU polished film. Both fixtures are generated deterministically from the same committed story request; native Three retained in manual full gate.
+
+AF08 default: pack roundtrip/negative evidence and one AF08 CPU polished film; native paired fixture generated from the same portable authored story, full matrix deferred.
