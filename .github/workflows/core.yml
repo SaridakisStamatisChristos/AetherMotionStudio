@@ -26,6 +26,12 @@ jobs:
         with:
           python-version: '3.11'
       - run: npm test
+      - run: node scripts/foundry-benchmark.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: foundry-af01-geometry-benchmark
+          path: out/foundry-af01-benchmark/report.json
+          if-no-files-found: error
       - run: python -m py_compile scripts/*.py
       - run: PYTHONPATH=scripts python -m unittest discover -s tests -p 'test_*.py'
   render:
