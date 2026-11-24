@@ -20,6 +20,10 @@ if(cmd==='render'){
  // Use the installed CLI, no npx auto-install or shell injection.
  const pkg=JSON.parse(readFileSync(join(root,'node_modules/@remotion/cli/package.json'),'utf8'));
  const bin=typeof pkg.bin==='string'?pkg.bin:pkg.bin.remotion;
- run(process.execPath,[join(root,'node_modules/@remotion/cli',bin),'render','src/index.jsx','AetherFilm',join(out,'film.mp4'),'--props='+propsPath,'--codec=h264','--concurrency=2']);
+ const start=performance.now();
+ const usesThree=scene.version===2&&scene.shots.some(s=>s.template==='cinematic-graph'&&s.backend==='three');
+ const gl=process.env.AETHER_GL||'swangle';
+ run(process.execPath,[join(root,'node_modules/@remotion/cli',bin),'render','src/index.jsx','AetherFilm',join(out,'film.mp4'),'--props='+propsPath,'--codec=h264','--concurrency=2',...(usesThree?['--gl='+gl]:[])]);
+ writeFileSync(join(out,'render-timing.json'),JSON.stringify({renderSeconds:(performance.now()-start)/1000,backend:usesThree?'three':'cpu',gl:usesThree?gl:null},null,2));
  run(python,['scripts/verify.py',out]);
 }

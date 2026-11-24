@@ -13,4 +13,4 @@
 | v0.9 | Local editor/UI | Preview, edit, render; no mandatory service |
 | v1.0 | One-click production | Reproducible release, install docs, real end-to-end evidence |
 
-Current gate: v0.3 candidate, based on verified v0.2 run 45346406933. Fresh tests and five native renders required. Do not claim release readiness without observed CI and visual review.
+Current gate: v0.4 candidate based on verified v0.3 run 45347442736. Seven renders and matched backend comparison required. Do not claim visual superiority or release readiness without evidence.

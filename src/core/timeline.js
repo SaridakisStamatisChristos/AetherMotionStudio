@@ -1,4 +1,5 @@
 import {FORMAT,TEMPLATES,VOICES,validateScene} from './contract.js';
+import {validateGraph} from './graph.js';
 export const FPS=30,SAMPLE_RATE=48000,SAMPLES_PER_FRAME=1600,MAX_FRAMES=9000,MAX_SHOT=3600;
 export const CHAPTERS=Object.freeze(['transactions','blocks','hashes','network','verification']);
 const fail=(p,m)=>{throw Error(p+': '+m)};
@@ -14,14 +15,15 @@ export function validateProject(s){
  if(!Array.isArray(s.shots)||s.shots.length<1||s.shots.length>60)fail('shots','1–60 required');
  const ids=new Set();let minimum=0;
  for(const [i,x] of s.shots.entries()){
-  const p='shots['+i+']',chapter=x?.template==='blockchain-chapter';
-  fields(x,['id','template','durationFrames','transitionFrames','narration',...(chapter?['chapter','heading','subheading']:['copy'])],p);
+  const p='shots['+i+']',chapter=x?.template==='blockchain-chapter',graph=x?.template==='cinematic-graph';
+  fields(x,['id','template','durationFrames','transitionFrames','narration',...(chapter?['chapter','heading','subheading']:graph?['backend','heading','subheading','environment','camera','assets','effects']:['copy'])],p);
   slug(x.id,p+'.id');if(ids.has(x.id))fail(p,'duplicate ID');ids.add(x.id);
   if(x.durationFrames!==null)integer(x.durationFrames,60,MAX_SHOT,p+'.durationFrames');
   integer(x.transitionFrames,0,15,p+'.transitionFrames');if(i===0&&x.transitionFrames!==0)fail(p,'first shot must start without transition');
   if(!Array.isArray(x.narration)||x.narration.length<1||x.narration.length>8)fail(p,'1–8 narration phrases required');
   x.narration.forEach((t,j)=>str(t,p+'.narration['+j+']',180));
   if(chapter){if(!CHAPTERS.includes(x.chapter))fail(p,'unknown chapter');str(x.heading,p+'.heading',42);str(x.subheading,p+'.subheading',64);}
+  else if(graph)validateGraph(x,p);
   else{if(!TEMPLATES.includes(x.template))fail(p,'unknown template');validateScene({version:1,id:x.id,template:x.template,title:s.title,voice:s.voice,copy:x.copy,narration:[{start:0,end:1,text:'Validation'}],captions:[]});}
   minimum+=x.durationFrames??60;
  }
