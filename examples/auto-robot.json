@@ -1,0 +1,36 @@
+{
+  "version": 2,
+  "id": "auto-robot",
+  "title": "Automatic shot duration",
+  "voice": "af_heart",
+  "shots": [
+    {
+      "id": "lab",
+      "template": "robot-lab",
+      "durationFrames": null,
+      "transitionFrames": 0,
+      "copy": {
+        "kicker": "AETHER LAB / MOTION",
+        "intro": [
+          "THE LITTLE",
+          "ROBOT",
+          "A NEW EXPERIMENT"
+        ],
+        "question": "WILL IT WORK?",
+        "reveal": [
+          "ENERGY ONLINE",
+          "THE CORE AWAKENS"
+        ],
+        "outro": [
+          "ONE SMALL STEP",
+          "A NEW MACHINE"
+        ]
+      },
+      "narration": [
+        "A little robot builds a machine.",
+        "The energy core begins to glow.",
+        "A new experiment is complete."
+      ]
+    }
+  ]
+}

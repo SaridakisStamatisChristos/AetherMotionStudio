@@ -16,3 +16,6 @@ Version the contract before expanding it. Extract geometry/rigs, camera paths, e
 
 ## v0.2 extraction
 Shared CPU mesh projection, registered asset emitters, pose parameters, motion keyframes and drawing primitives are now separate from template choreography. The fixed-format v1 contract still selects a complete template; arbitrary asset graphs remain a later gate. See ASSET_LIBRARY.md.
+
+## v0.3 timeline
+See TIMELINE_V2.md. V2 separates authored shot intent from measured speech/frame plan; the validated compiled timeline drives native Remotion metadata and exact frame addressing. Legacy scenes remain on their original renderer/audio path.

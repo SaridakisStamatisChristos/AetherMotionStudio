@@ -1,0 +1,78 @@
+{
+  "version": 2,
+  "id": "blockchain-60s",
+  "title": "Blockchain in sixty seconds",
+  "voice": "af_heart",
+  "shots": [
+    {
+      "id": "transactions",
+      "template": "blockchain-chapter",
+      "chapter": "transactions",
+      "heading": "01  TRANSACTIONS",
+      "subheading": "A digitally signed record",
+      "durationFrames": 360,
+      "transitionFrames": 0,
+      "narration": [
+        "Imagine Alice sends one digital coin to Bob.",
+        "Her wallet signs the transaction, proving she authorized it.",
+        "The network can check that signature without seeing her private key."
+      ]
+    },
+    {
+      "id": "blocks",
+      "template": "blockchain-chapter",
+      "chapter": "blocks",
+      "heading": "02  BLOCKS",
+      "subheading": "Records grouped together",
+      "durationFrames": 360,
+      "transitionFrames": 9,
+      "narration": [
+        "Transactions are collected into groups called blocks.",
+        "Each block contains records and extra information about them.",
+        "A new block becomes part of the ledger when the network accepts it."
+      ]
+    },
+    {
+      "id": "hashes",
+      "template": "blockchain-chapter",
+      "chapter": "hashes",
+      "heading": "03  HASHES",
+      "subheading": "A digital fingerprint",
+      "durationFrames": 360,
+      "transitionFrames": 9,
+      "narration": [
+        "A hash is like a digital fingerprint of data.",
+        "Even a small change produces a different fingerprint.",
+        "Each block refers to the previous block, linking their histories together."
+      ]
+    },
+    {
+      "id": "network",
+      "template": "blockchain-chapter",
+      "chapter": "network",
+      "heading": "04  THE NETWORK",
+      "subheading": "Many nodes, shared rules",
+      "durationFrames": 360,
+      "transitionFrames": 9,
+      "narration": [
+        "Instead of relying on one central server, many nodes maintain the ledger.",
+        "They check new blocks using shared rules.",
+        "A consensus mechanism helps them agree on the accepted history."
+      ]
+    },
+    {
+      "id": "verification",
+      "template": "blockchain-chapter",
+      "chapter": "verification",
+      "heading": "05  VERIFICATION",
+      "subheading": "Why changes are detectable",
+      "durationFrames": 360,
+      "transitionFrames": 9,
+      "narration": [
+        "Change a recorded block, and its hash no longer matches the next block.",
+        "Other nodes can detect invalid changes.",
+        "Security also depends on the network's consensus rules."
+      ]
+    }
+  ]
+}
