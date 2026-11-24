@@ -7,3 +7,5 @@ Three.js uses a real WebGL depth buffer, rounded box geometry, physically based 
 Matched CI acceptance: all five prior renders plus two matched graph renders; comparison checks non-flat geometry and different pixel outputs, reports render wall time, does not assert visual superiority. Human review is still required. v0.3 verified run 45347442736 is preserved.
 
 Local: npm install, npm run render -- examples/cinematic-cpu.json or examples/cinematic-three.json. Initial setup as in README. 
+
+Both renderers are permanent first-class backends under [DUAL_BACKEND_POLICY.md](DUAL_BACKEND_POLICY.md). The matched v0.4 benchmark passed all nine CI jobs in run 45348529087.

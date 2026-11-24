@@ -1,0 +1,74 @@
+name: Preserve verified v0.4 render baseline
+on:
+  push:
+    branches: [feature/v0.4-cinematic-graph]
+    paths: ['.github/workflows/archive-v04.yml']
+permissions:
+  actions: read
+  contents: write
+concurrency:
+  group: archive-v04-render-baseline
+  cancel-in-progress: false
+jobs:
+  archive:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      SOURCE_RUN: '45348529087'
+      SOURCE_SHA: '6e3e894e29ae30ba59e82a894760dabea9971b11'
+      RELEASE_TAG: v0.4-render-baseline
+    steps:
+      - name: Verify original run
+        run: |
+          gh api "repos/$GH_REPO/actions/runs/$SOURCE_RUN" > run.json
+          python - <<'PY'
+          import json,os
+          r=json.load(open('run.json'))
+          assert str(r['id'])==os.environ['SOURCE_RUN']
+          assert r['head_sha']==os.environ['SOURCE_SHA']
+          assert r['status']=='completed' and r['conclusion']=='success'
+          PY
+      - uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ github.token }}
+          run-id: 45348529087
+          pattern: aethermotion-cinematic-*
+          path: original
+      - uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ github.token }}
+          run-id: 45348529087
+          name: cinematic-backend-comparison
+          path: original/comparison
+      - name: Package exact baseline outputs
+        run: |
+          mkdir -p publish
+          python - <<'PY'
+          import json, pathlib, shutil, os, zipfile
+          root=pathlib.Path('original')
+          for mode in ('cpu','three'):
+              folder=root/f'aethermotion-cinematic-{mode}'
+              assert (folder/'film.mp4').stat().st_size>100000
+              probe=json.loads((folder/'probe.json').read_text())
+              v=[s for s in probe['streams'] if s['codec_type']=='video'][0]
+              assert (v['width'],v['height'],int(v['nb_frames']))==(1080,1920,360)
+              assert abs(float(probe['format']['duration'])-12)<.08
+              timing=json.loads((folder/'render-timing.json').read_text())
+              assert timing['backend']==mode
+              shutil.copyfile(folder/'film.mp4',f'publish/cinematic-{mode}-v04.mp4')
+              with zipfile.ZipFile(f'publish/cinematic-{mode}-evidence.zip','w',zipfile.ZIP_DEFLATED) as z:
+                  for f in sorted(folder.rglob('*')):
+                      if f.is_file(): z.write(f,f.relative_to(folder))
+          report=root/'comparison'/'comparison.json'
+          cmp=json.loads(report.read_text())
+          assert cmp['cpu']['backend']=='cpu' and cmp['three']['backend']=='three'
+          shutil.copyfile(report,'publish/comparison.json')
+          pathlib.Path('publish/provenance.json').write_text(json.dumps({'sourceRun':int(os.environ['SOURCE_RUN']),'sourceSha':os.environ['SOURCE_SHA'],'artifactIds':{'cpu':14898858288,'three':14899810419,'comparison':14899785482}},indent=2))
+          PY
+          (cd publish && sha256sum * > SHA256SUMS)
+      - name: Publish frozen baseline (never overwrite)
+        run: |
+          gh release create "$RELEASE_TAG" publish/* --target "$SOURCE_SHA" --prerelease --title "v0.4 — Dual rendering benchmark" --notes "Original verified CPU and Three.js outputs from run $SOURCE_RUN. Both backends are first-class. Includes exact MP4s, evidence archives, comparison and checksums. This is a benchmark archive, not a production-readiness claim."
+          gh release view "$RELEASE_TAG" --json tagName,url,assets
