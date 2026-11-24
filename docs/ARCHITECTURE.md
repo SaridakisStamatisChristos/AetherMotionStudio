@@ -34,3 +34,6 @@ Versioned identity library is the source of truth; Director resolves compact ide
 
 ## v0.7 speech-first compiler
 Optional project speech v1 preserves legacy timing. Mixed fixed/automatic integer allocation after local synthesis, cache keyed by actual model and voice files, punctuation pauses, estimated word intervals inside measured phrases, canonical subtitle and caption export, explicit mix plan and deterministic speech-envelope action retiming. Browser contract independently checks coverage and bounds. See SPEECH.md.
+
+## v0.8 quality layer
+Opt-in measured-timeline preflight uses sampled projected geometry with bounded camera-only search, then native rendering once and read-only decoded-media checks. Reports contain exact protected-content digest, accepted/rejected proposals, warnings, media hash, cost and human-review scope. No factual or aesthetic certification. See QUALITY.md.

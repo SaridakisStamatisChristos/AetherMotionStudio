@@ -1,0 +1,716 @@
+{
+  "version": 2,
+  "id": "quality-three-polished",
+  "title": "How a Forest Grows",
+  "voice": "af_heart",
+  "speech": {
+    "version": 1,
+    "targetFrames": 1500,
+    "fixedShots": {
+      "shot-1": 300
+    },
+    "speakers": {},
+    "shotSpeakers": {},
+    "pronunciations": {},
+    "captions": {
+      "mode": "both",
+      "highlight": true,
+      "maxChars": 32,
+      "maxLines": 2,
+      "maxCps": 18
+    },
+    "mix": {
+      "narration": 1,
+      "music": 0.55,
+      "ambience": 0.35,
+      "sfx": 0.45,
+      "duck": 0.35,
+      "fadeSeconds": 0.25,
+      "peak": 0.92
+    },
+    "cues": [
+      {
+        "shot": "shot-3",
+        "anchor": "shot-start",
+        "type": "whoosh",
+        "gain": 0.4
+      },
+      {
+        "shot": "shot-5",
+        "anchor": "speech-end",
+        "phrase": 0,
+        "type": "chime",
+        "gain": 0.5
+      }
+    ],
+    "syncActions": true
+  },
+  "shots": [
+    {
+      "id": "shot-1",
+      "template": "cinematic-graph",
+      "backend": "three",
+      "durationFrames": 300,
+      "transitionFrames": 0,
+      "transition": "cut",
+      "heading": "A FOREST BEGINS",
+      "subheading": "Plants need light, water and nutrients",
+      "environment": "laboratory",
+      "camera": {},
+      "cameraRig": {
+        "preset": "establishing",
+        "framing": "establishing",
+        "padding": 0.15
+      },
+      "assets": [
+        {
+          "id": "object-1",
+          "asset": "fern",
+          "tracks": {
+            "x": [
+              [
+                0,
+                0
+              ]
+            ],
+            "scale": [
+              [
+                0,
+                1.05
+              ]
+            ]
+          },
+          "actions": [
+            {
+              "name": "presentation-turn",
+              "start": 0.1,
+              "end": 0.9,
+              "blend": 0.15
+            }
+          ]
+        },
+        {
+          "id": "object-2",
+          "asset": "rock-cluster",
+          "tracks": {
+            "x": [
+              [
+                0,
+                -1.25
+              ]
+            ],
+            "scale": [
+              [
+                0,
+                0.75
+              ]
+            ]
+          },
+          "actions": [
+            {
+              "name": "idle",
+              "start": 0.1,
+              "end": 0.9,
+              "blend": 0.15
+            }
+          ]
+        },
+        {
+          "id": "object-3",
+          "asset": "grass-patch",
+          "tracks": {
+            "x": [
+              [
+                0,
+                1.25
+              ]
+            ],
+            "scale": [
+              [
+                0,
+                0.75
+              ]
+            ]
+          },
+          "actions": [
+            {
+              "name": "idle",
+              "start": 0.1,
+              "end": 0.9,
+              "blend": 0.15
+            }
+          ]
+        }
+      ],
+      "effects": [
+        {
+          "preset": "soft-halo",
+          "target": "object-1"
+        }
+      ],
+      "overlays": [
+        {
+          "type": "lower-third",
+          "slot": "lower",
+          "text": "Plants need light, water and nutrients",
+          "start": 0.2,
+          "end": 0.9,
+          "animation": "slide"
+        }
+      ],
+      "narration": [
+        "A forest starts with many small plants. Seeds can germinate when conditions such as water and temperature are suitable."
+      ],
+      "fidelity": {
+        "bloom": 0.6,
+        "atmosphere": 0.5,
+        "contactShadow": 0.65,
+        "surfaceDetail": 0.65,
+        "depthOfField": 0.25,
+        "motionBlur": 0.24,
+        "grain": 0.12,
+        "grade": 0.55,
+        "particles": 0.65,
+        "typography": 1
+      }
+    },
+    {
+      "id": "shot-2",
+      "template": "cinematic-graph",
+      "backend": "three",
+      "durationFrames": null,
+      "transitionFrames": 10,
+      "transition": "fade",
+      "heading": "REACHING FOR LIGHT",
+      "subheading": "Leaves capture sunlight",
+      "environment": "amber",
+      "camera": {},
+      "cameraRig": {
+        "preset": "dolly-in",
+        "framing": "establishing",
+        "padding": 0.15
+      },
+      "assets": [
+        {
+          "id": "object-1",
+          "asset": "oak-tree",
+          "tracks": {
+            "x": [
+              [
+                0,
+                0
+              ]
+            ],
+            "scale": [
+              [
+                0,
+                1.05
+              ]
+            ]
+          },
+          "actions": [
+            {
+              "name": "presentation-turn",
+              "start": 0.1,
+              "end": 0.9,
+              "blend": 0.15
+            }
+          ]
+        },
+        {
+          "id": "object-2",
+          "asset": "fern",
+          "tracks": {
+            "x": [
+              [
+                0,
+                -1.25
+              ]
+            ],
+            "scale": [
+              [
+                0,
+                0.75
+              ]
+            ]
+          },
+          "actions": [
+            {
+              "name": "idle",
+              "start": 0.1,
+              "end": 0.9,
+              "blend": 0.15
+            }
+          ]
+        },
+        {
+          "id": "object-3",
+          "asset": "water-bottle",
+          "tracks": {
+            "x": [
+              [
+                0,
+                1.25
+              ]
+            ],
+            "scale": [
+              [
+                0,
+                0.75
+              ]
+            ]
+          },
+          "actions": [
+            {
+              "name": "idle",
+              "start": 0.1,
+              "end": 0.9,
+              "blend": 0.15
+            }
+          ]
+        }
+      ],
+      "effects": [
+        {
+          "preset": "soft-halo",
+          "target": "object-1"
+        }
+      ],
+      "overlays": [
+        {
+          "type": "lower-third",
+          "slot": "lower",
+          "text": "Leaves capture sunlight",
+          "start": 0.2,
+          "end": 0.9,
+          "animation": "slide"
+        }
+      ],
+      "narration": [
+        "Green leaves use light energy to make sugars through photosynthesis. Roots take up water and mineral nutrients from the soil."
+      ],
+      "fidelity": {
+        "bloom": 0.6,
+        "atmosphere": 0.5,
+        "contactShadow": 0.65,
+        "surfaceDetail": 0.65,
+        "depthOfField": 0.25,
+        "motionBlur": 0.24,
+        "grain": 0.12,
+        "grade": 0.55,
+        "particles": 0.65,
+        "typography": 1
+      }
+    },
+    {
+      "id": "shot-3",
+      "template": "cinematic-graph",
+      "backend": "three",
+      "durationFrames": null,
+      "transitionFrames": 10,
+      "transition": "fade",
+      "heading": "ROOM TO GROW",
+      "subheading": "Young trees compete for resources",
+      "environment": "laboratory",
+      "camera": {
+        "x": [
+          [
+            0,
+            0
+          ]
+        ],
+        "y": [
+          [
+            0,
+            2.6
+          ]
+        ],
+        "z": [
+          [
+            0,
+            6
+          ]
+        ],
+        "zoom": [
+          [
+            0,
+            1550
+          ]
+        ]
+      },
+      "cameraRig": {
+        "preset": "close-up",
+        "subject": "object-1",
+        "framing": "close-up",
+        "padding": 0
+      },
+      "assets": [
+        {
+          "id": "object-1",
+          "asset": "pine-tree",
+          "tracks": {
+            "x": [
+              [
+                0,
+                0
+              ]
+            ],
+            "scale": [
+              [
+                0,
+                1.25
+              ]
+            ]
+          },
+          "actions": [
+            {
+              "name": "presentation-turn",
+              "start": 0.1,
+              "end": 0.9,
+              "blend": 0.15
+            }
+          ]
+        },
+        {
+          "id": "object-2",
+          "asset": "oak-tree",
+          "tracks": {
+            "x": [
+              [
+                0,
+                -2.4
+              ]
+            ],
+            "scale": [
+              [
+                0,
+                1.25
+              ]
+            ]
+          },
+          "actions": [
+            {
+              "name": "idle",
+              "start": 0.1,
+              "end": 0.9,
+              "blend": 0.15
+            }
+          ]
+        },
+        {
+          "id": "object-3",
+          "asset": "birch-tree",
+          "tracks": {
+            "x": [
+              [
+                0,
+                2.4
+              ]
+            ],
+            "scale": [
+              [
+                0,
+                1.25
+              ]
+            ]
+          },
+          "actions": [
+            {
+              "name": "idle",
+              "start": 0.1,
+              "end": 0.9,
+              "blend": 0.15
+            }
+          ]
+        }
+      ],
+      "effects": [
+        {
+          "preset": "soft-halo",
+          "target": "object-1"
+        }
+      ],
+      "overlays": [
+        {
+          "type": "lower-third",
+          "slot": "lower",
+          "text": "Young trees compete for resources",
+          "start": 0.2,
+          "end": 0.9,
+          "animation": "slide"
+        }
+      ],
+      "narration": [
+        "As trees grow, their branches reach toward available light. Neighboring plants compete for space, water and nutrients."
+      ],
+      "fidelity": {
+        "bloom": 0.6,
+        "atmosphere": 0.5,
+        "contactShadow": 0.65,
+        "surfaceDetail": 0.65,
+        "depthOfField": 0.25,
+        "motionBlur": 0.24,
+        "grain": 0.12,
+        "grade": 0.55,
+        "particles": 0.65,
+        "typography": 1
+      }
+    },
+    {
+      "id": "shot-4",
+      "template": "cinematic-graph",
+      "backend": "three",
+      "durationFrames": null,
+      "transitionFrames": 10,
+      "transition": "fade",
+      "heading": "A LIVING COMMUNITY",
+      "subheading": "Different plants occupy different spaces",
+      "environment": "amber",
+      "camera": {},
+      "cameraRig": {
+        "preset": "lateral-tracking",
+        "framing": "establishing",
+        "padding": 0.15
+      },
+      "assets": [
+        {
+          "id": "object-1",
+          "asset": "oak-tree",
+          "tracks": {
+            "x": [
+              [
+                0,
+                0
+              ]
+            ],
+            "scale": [
+              [
+                0,
+                1.05
+              ]
+            ]
+          },
+          "actions": [
+            {
+              "name": "presentation-turn",
+              "start": 0.1,
+              "end": 0.9,
+              "blend": 0.15
+            }
+          ]
+        },
+        {
+          "id": "object-2",
+          "asset": "bush",
+          "tracks": {
+            "x": [
+              [
+                0,
+                -1.25
+              ]
+            ],
+            "scale": [
+              [
+                0,
+                0.75
+              ]
+            ]
+          },
+          "actions": [
+            {
+              "name": "idle",
+              "start": 0.1,
+              "end": 0.9,
+              "blend": 0.15
+            }
+          ]
+        },
+        {
+          "id": "object-3",
+          "asset": "flower",
+          "tracks": {
+            "x": [
+              [
+                0,
+                1.25
+              ]
+            ],
+            "scale": [
+              [
+                0,
+                0.75
+              ]
+            ]
+          },
+          "actions": [
+            {
+              "name": "idle",
+              "start": 0.1,
+              "end": 0.9,
+              "blend": 0.15
+            }
+          ]
+        }
+      ],
+      "effects": [
+        {
+          "preset": "soft-halo",
+          "target": "object-1"
+        }
+      ],
+      "overlays": [
+        {
+          "type": "lower-third",
+          "slot": "lower",
+          "text": "Different plants occupy different spaces",
+          "start": 0.2,
+          "end": 0.9,
+          "animation": "slide"
+        }
+      ],
+      "narration": [
+        "A forest contains trees, shrubs and smaller plants. These different layers create habitats and support many interacting organisms."
+      ],
+      "fidelity": {
+        "bloom": 0.6,
+        "atmosphere": 0.5,
+        "contactShadow": 0.65,
+        "surfaceDetail": 0.65,
+        "depthOfField": 0.25,
+        "motionBlur": 0.24,
+        "grain": 0.12,
+        "grade": 0.55,
+        "particles": 0.65,
+        "typography": 1
+      }
+    },
+    {
+      "id": "shot-5",
+      "template": "cinematic-graph",
+      "backend": "three",
+      "durationFrames": null,
+      "transitionFrames": 10,
+      "transition": "fade",
+      "heading": "A FOREST CHANGES",
+      "subheading": "Growth and renewal continue",
+      "environment": "laboratory",
+      "camera": {},
+      "cameraRig": {
+        "preset": "pull-back",
+        "framing": "establishing",
+        "padding": 0.15
+      },
+      "assets": [
+        {
+          "id": "object-1",
+          "asset": "autumn-tree",
+          "tracks": {
+            "x": [
+              [
+                0,
+                0
+              ]
+            ],
+            "scale": [
+              [
+                0,
+                1.05
+              ]
+            ]
+          },
+          "actions": [
+            {
+              "name": "presentation-turn",
+              "start": 0.1,
+              "end": 0.9,
+              "blend": 0.15
+            }
+          ]
+        },
+        {
+          "id": "object-2",
+          "asset": "pine-tree",
+          "tracks": {
+            "x": [
+              [
+                0,
+                -1.25
+              ]
+            ],
+            "scale": [
+              [
+                0,
+                0.75
+              ]
+            ]
+          },
+          "actions": [
+            {
+              "name": "idle",
+              "start": 0.1,
+              "end": 0.9,
+              "blend": 0.15
+            }
+          ]
+        },
+        {
+          "id": "object-3",
+          "asset": "fern",
+          "tracks": {
+            "x": [
+              [
+                0,
+                1.25
+              ]
+            ],
+            "scale": [
+              [
+                0,
+                0.75
+              ]
+            ]
+          },
+          "actions": [
+            {
+              "name": "idle",
+              "start": 0.1,
+              "end": 0.9,
+              "blend": 0.15
+            }
+          ]
+        }
+      ],
+      "effects": [
+        {
+          "preset": "soft-halo",
+          "target": "object-1"
+        }
+      ],
+      "overlays": [
+        {
+          "type": "lower-third",
+          "slot": "lower",
+          "text": "Growth and renewal continue",
+          "start": 0.2,
+          "end": 0.9,
+          "animation": "slide"
+        }
+      ],
+      "narration": [
+        "Over time, trees die and new plants establish themselves. A forest is a changing community, not a single unchanging object."
+      ],
+      "fidelity": {
+        "bloom": 0.6,
+        "atmosphere": 0.5,
+        "contactShadow": 0.65,
+        "surfaceDetail": 0.65,
+        "depthOfField": 0.25,
+        "motionBlur": 0.24,
+        "grain": 0.12,
+        "grade": 0.55,
+        "particles": 0.65,
+        "typography": 1
+      }
+    }
+  ]
+}
