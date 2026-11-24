@@ -90,7 +90,10 @@ export function searchRegistry(query={},registry=new PackRegistry()){
  // Ordinary search never loads geometry; generated built-in revisions are derived on demand for details.
  const builtGenerated=generatedIds.map(id=>({id,name:id.replaceAll('-',' '),kind:'generated',category:id==='specimen-canister'?'science':'technology',tags:['generated','static',...id.split('-')],pack:'generated-lab',revision:null,quality:'staged',license:'project-policy',backends:['cpu','three'],lods:[0],motion:['root'],materials:null}));
  const imported=registry.entries().map(({pack,entry:e})=>({...e.kind==='hero'?heroMeta.find(x=>x.id===e.id):generatedMeta(e),pack}));
- const rows=[...legacy,...heroMeta,...builtGenerated,...imported],seen=new Set(),out=[];
+ // ART-04 fix (AF08 open issue): an imported entry that is exactly the built-in generated revision supersedes the
+ // unresolved built-in placeholder (revision null), so the shortlist lists that asset once. Other revisions stay distinct.
+ const exactBuiltin=new Set(imported.filter(e=>e.kind==='generated'&&generatedIds.includes(e.id)&&e.revision===getGenerated(e.id).revision).map(e=>e.id+':'+e.pack));
+ const rows=[...legacy,...heroMeta,...builtGenerated.filter(e=>!exactBuiltin.has(e.id+':'+e.pack)),...imported],seen=new Set(),out=[];
  const terms=(query.q??'').toLowerCase().replace(/\bcell phone\b/g,'smartphone').replace(/\bportable computer\b/g,'laptop').split(/[^a-z0-9]+/).filter(Boolean);
  for(const a of rows){
   const hay=[a.id,a.name,...a.tags].join(' ').toLowerCase();if(!terms.every(t=>hay.includes(t)))continue;
