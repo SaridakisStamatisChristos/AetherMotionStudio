@@ -10,8 +10,8 @@ export const STAGING_MODES=Object.freeze(['art-v1']);
 export const CHEAT=.55; // radians turned back toward the camera while facing a partner (stage convention)
 const human=a=>recipeSpec(a.asset)?.family==='human';
 const character=a=>hasHands(a.asset);
-// Facing would fight authored yaw motion, so assets that already drive yaw are left alone.
-const drivesYaw=a=>Object.hasOwn(resolveTracks(a),'yaw')&&resolveTracks(a).yaw.length>1||(a.actions??[]).some(x=>Object.hasOwn(ACTIONS[x.name]??{},'yaw'))||a.face!==undefined;
+// Any authored yaw (static or animated, track or action) and any existing face is an explicit choice: left alone.
+const drivesYaw=a=>Object.hasOwn(resolveTracks(a),'yaw')||(a.actions??[]).some(x=>Object.hasOwn(ACTIONS[x.name]??{},'yaw'))||a.face!==undefined;
 const x0=a=>a.tracks?.x?.[0]?.[1]??0;
 const cheatFor=(self,target)=>x0(self)<=x0(target)?-CHEAT:CHEAT;
 

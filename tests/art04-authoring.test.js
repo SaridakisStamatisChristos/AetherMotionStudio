@@ -27,7 +27,7 @@ test('director: staging absent keeps output identical; art-v1 stages every graph
 
 test('staging pairs two characters face-to-face with a three-quarter cheat toward the camera',()=>{
  const s=read('art01-handoff-cpu-polished').shots[0],bare=structuredClone(s);for(const a of bare.assets){delete a.face;}
- bare.assets.find(a=>a.id==='receiver').tracks.yaw=[[0,0]];
+ delete bare.assets.find(a=>a.id==='receiver').tracks.yaw;
  const out=stageShot(bare),g=out.assets.find(a=>a.id==='giver'),r=out.assets.find(a=>a.id==='receiver'),w=out.assets.find(a=>a.id==='watcher');
  assert.equal(g.face.target,'receiver');assert.equal(r.face.target,'giver');assert.equal(w.face.target,'giver');
  assert.equal(g.face.offset,-CHEAT,'left character cheats toward camera');assert.equal(r.face.offset,CHEAT,'right character cheats toward camera');
@@ -87,4 +87,10 @@ test('Studio browser import graph only uses server-allowed source folders and no
   assert.ok(!p.startsWith('node:'),'node built-in in browser graph: '+p);assert.match(p,allowed,'not served to the browser: '+p);
   const dir=p.split('/').slice(0,-1).join('/');for(const spec of imports(readFileSync(new URL('../'+p,import.meta.url),'utf8')))queue.push(spec.startsWith('node:')?spec:resolve(spec,dir));}
  assert.ok(seen.has('src/core/staging.js'));assert.ok(seen.size>10);
+});
+
+test('staging leaves any authored yaw (even a static single key) alone',()=>{
+ const s=structuredClone(read('art01-handoff-cpu-polished').shots[0]);for(const a of s.assets)delete a.face;
+ s.assets.find(a=>a.id==='receiver').tracks.yaw=[[0,.2]];const out=stageShot(s);
+ assert.equal(out.assets.find(a=>a.id==='receiver').face,undefined);assert.equal(out.assets.find(a=>a.id==='giver').face.target,'receiver');
 });
