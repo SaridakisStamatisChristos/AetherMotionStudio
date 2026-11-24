@@ -4,6 +4,7 @@ import {createProjection,createMesh} from '../visual/mesh.js';
 import {polygon,glow,star,text,r} from '../visual/primitives.js';
 import {evaluateGraph,emitGraph} from '../core/graph.js';
 import {shutterSamples} from '../core/fidelity.js';
+import {floorStops,castShadow,PARITY} from './lighting-parity.js';
 import {beginFilm,finishFilm,atmosphere,contactShadows,detailedFace,particleTrails,polishedType} from './fidelity-effects.js';
 const TAU=Math.PI*2;
 function world(ctx,p,W,H,s,three){
@@ -14,11 +15,22 @@ function world(ctx,p,W,H,s,three){
   if(!three)throw Error('Three.js backend unavailable; select cpu explicitly to use the fallback');
   ctx.drawImage(three.render(state,W,H),0,0,720,1280);
  }else{
+  if(state.lighting==='parity-v1'){
+   // ART-02 opt-in: solid sky + lit, fogged floor plane like the Three.js stage.
+   ctx.fillStyle=env.background;ctx.fillRect(0,0,720,1280);
+   const {top,stops}=floorStops(c,env);
+   if(stops.length){const g=ctx.createLinearGradient(0,top,0,1280);for(const x of stops)g.addColorStop(x.offset,x.color);ctx.fillStyle=g;ctx.fillRect(0,top,720,1280-top);}
+  }else{
   const bg=ctx.createLinearGradient(0,0,0,1280);bg.addColorStop(0,env.background);bg.addColorStop(1,'#070c13');ctx.fillStyle=bg;ctx.fillRect(0,0,720,1280);
+  }
   glow(ctx,360,700,400,env.accent+'22');
   ctx.strokeStyle=env.accent+'20';ctx.lineWidth=1;
   for(let i=-6;i<=6;i++)for(const pair of [[[i,0,-5],[i,0,5]],[[-6,0,i],[6,0,i]]]){
    const a=project(pair[0]),b=project(pair[1]);if(a[2]>.5&&b[2]>.5){ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);ctx.stroke()}
+  }
+  if(state.lighting==='parity-v1')for(const a of state.assets){
+   const sh=castShadow(a);if(!sh)continue;const pts=sh.polygon.map(project);if(pts.some(q=>q[2]<=.1))continue;
+   ctx.save();ctx.filter='blur('+Math.max(2,Math.round(6*a.pose.scale))+'px)';ctx.fillStyle='rgba(0,0,0,'+PARITY.shadowAlpha+')';ctx.beginPath();pts.forEach((q,i)=>i?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1]));ctx.closePath();ctx.fill();ctx.restore();
   }
   for(const a of state.assets){const q=project(a.pose.origin);ctx.save();ctx.translate(q[0],q[1]);ctx.scale(1,.24);glow(ctx,0,0,105*a.pose.scale,'rgba(0,0,0,.6)');ctx.restore()}
   const {box,faces}=createMesh(c.position,project,.3);if(!state.geometryProfile)emitGraph(state,box);

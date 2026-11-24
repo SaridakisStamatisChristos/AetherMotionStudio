@@ -15,6 +15,7 @@ import {interpolate,INTERPOLATIONS,smooth,clamp,mix} from './motion.js';
 import {validateFidelity,fidelity} from './fidelity.js';
 const limits=Object.freeze({x:[-2.4,2.4],y:[0,.7],z:[-1.2,1.2],yaw:[-8,8],scale:[.5,1.25],walking:[-1,1],open:[0,1],headRoll:[-.5,.5],headYaw:[-.8,.8],blink:[.1,1],pulse:[-1,1],armPitch:[-2.8,1],armSpread:[-.4,.9],grip:[0,1]});
 const defaults=Object.freeze({x:0,y:0,z:0,yaw:0,scale:1,walking:0,open:0,headRoll:0,headYaw:0,blink:1,pulse:0});
+export const LIGHTING_PROFILES=Object.freeze(['parity-v1']);
 const cameraLimits={x:[-3.5,3.5],y:[2.5,4.5],z:[7,11],zoom:[850,1350]};
 const cameraDefaults={x:1.8,y:3.5,z:8.4,zoom:1100};
 const fail=(p,m)=>{throw Error(p+': '+m)};
@@ -28,6 +29,8 @@ export function validateGraph(s,p='shot'){
  text(s.heading,p+'.heading',42);text(s.subheading,p+'.subheading',64);
  if(!['laboratory','midnight','amber'].includes(s.environment))fail(p+'.environment','unknown environment');
  tracks(s.camera,s.cameraRig?RIG_CAMERA_LIMITS:cameraLimits,p+'.camera');
+ // ART-02 opt-in lighting profile; absent = historical look on both backends.
+ if(Object.hasOwn(s,'lighting')&&!LIGHTING_PROFILES.includes(s.lighting))fail(p+'.lighting','unknown lighting profile');
  if(Object.hasOwn(s,'cameraInterpolation'))interpolationMap(s.cameraInterpolation,s.camera,p+'.cameraInterpolation');
  if(!Array.isArray(s.assets)||s.assets.length<1||s.assets.length>8)fail(p+'.assets','1–8 assets required');
  const ids=new Set();
@@ -73,7 +76,7 @@ function evaluateGraphRaw(s,p){
  }
  const assets=s.assets.some(a=>a.attachment)?resolveAttachments(s.assets,p,sampleAsset):s.assets.map(a=>sampleAsset(a,p));
  const camera=s.cameraRig?frameCamera(sampleCameraRig(s.cameraRig,p,s.camera,s.cameraInterpolation),s.cameraRig,assets,s.camera):{position:[c.x,c.y,c.z],target:[0,1.2,0],zoom:c.zoom};
- return {camera,assets,...([HERO_PROFILE,IMPORT_PROFILE,GENERATED_PROFILE].includes(s.geometryProfile)?{materialProfile:{version:1,lighting:'studio',assignments:[],heroKey:s.assets.map(a=>a.generatedRef?.digest??a.importBundle?.digest??a.asset).join(':')},backend:s.backend}:s.materialProfile?{materialProfile:s.materialProfile,backend:s.backend}:{}),...(s.geometryProfile?{geometryProfile:s.geometryProfile}:{}),...(s.layers?{layers:s.layers}:{}),environment:ENVIRONMENTS[s.environment],effects:s.effects.map(resolveEffect).map(e=>({...e,strength:p>=e.start&&p<=e.end?Math.min(1,(p-e.start)*12,(e.end-p)*12):0})),progress:p,fidelity:fidelity(s.fidelity)};
+ return {camera,assets,...([HERO_PROFILE,IMPORT_PROFILE,GENERATED_PROFILE].includes(s.geometryProfile)?{materialProfile:{version:1,lighting:'studio',assignments:[],heroKey:s.assets.map(a=>a.generatedRef?.digest??a.importBundle?.digest??a.asset).join(':')},backend:s.backend}:s.materialProfile?{materialProfile:s.materialProfile,backend:s.backend}:{}),...(s.geometryProfile?{geometryProfile:s.geometryProfile}:{}),...(s.layers?{layers:s.layers}:{}),...(s.lighting?{lighting:s.lighting}:{}),environment:ENVIRONMENTS[s.environment],effects:s.effects.map(resolveEffect).map(e=>({...e,strength:p>=e.start&&p<=e.end?Math.min(1,(p-e.start)*12,(e.end-p)*12):0})),progress:p,fidelity:fidelity(s.fidelity)};
 }
 export function evaluateGraph(s,p){const state=evaluateGraphRaw(s,p);if(![LOD_PROFILE,HERO_PROFILE,IMPORT_PROFILE,GENERATED_PROFILE].includes(s.geometryProfile))return state;const plan=planLOD(s,t=>evaluateGraphRaw(s,t));state.lodSelection=plan.selected;state.lodReport=plan;enforceBudget(resourceUsage(meshCommands(state)),plan.budget);return state}
 // Both backends consume exactly the same emitted box commands, in the same order.
