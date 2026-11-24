@@ -1,6 +1,7 @@
 import {FORMAT,TEMPLATES,VOICES,validateScene} from './contract.js';
 import {validateGraph} from './graph.js';
 import {continuityLedger} from './identity.js';
+import {validateSpeechConfig,validateSpeechTimeline} from './speech.js';
 export const FPS=30,SAMPLE_RATE=48000,SAMPLES_PER_FRAME=1600,MAX_FRAMES=9000,MAX_SHOT=3600;
 export const CHAPTERS=Object.freeze(['transactions','blocks','hashes','network','verification']);
 const fail=(p,m)=>{throw Error(p+': '+m)};
@@ -10,7 +11,7 @@ function integer(x,min,max,p){if(!Number.isSafeInteger(x)||x<min||x>max)fail(p,'
 function slug(x,p){if(typeof x!=='string'||!/^[a-z0-9][a-z0-9-]{0,47}$/.test(x)||/^(con|prn|aux|nul|com[1-9]|lpt[1-9])$/.test(x))fail(p,'unsafe ID');}
 export function validateProject(s){
  if(s?.version===1)return validateScene(s);
- fields(s,['version','id','title','voice','shots'],'film',['identityLibrary']);
+ fields(s,['version','id','title','voice','shots'],'film',['identityLibrary','speech']);
  if(s.version!==2)fail('version','only 1 or 2 supported');
  slug(s.id,'id');str(s.title,'title',100);if(!VOICES.includes(s.voice))fail('voice','unsupported');
  if(!Array.isArray(s.shots)||s.shots.length<1||s.shots.length>60)fail('shots','1–60 required');
@@ -29,12 +30,12 @@ export function validateProject(s){
   minimum+=x.durationFrames??60;
  }
  if(minimum>MAX_FRAMES)fail('shots','film exceeds maximum 300 seconds');
- continuityLedger(s);
+ continuityLedger(s);if(s.speech!==undefined)validateSpeechConfig(s.speech,s.shots);
  return s;
 }
 export function validateTimeline(s,t){
  validateProject(s);if(s.version!==2)fail('timeline','requires v2 project');
- fields(t,['version','fps','sampleRate','durationFrames','shots'],'timeline');
+ fields(t,['version','fps','sampleRate','durationFrames','shots'],'timeline',['captions','alignment']);
  if(t.version!==1||t.fps!==FPS||t.sampleRate!==SAMPLE_RATE)fail('timeline','unsupported timebase');
  integer(t.durationFrames,60,MAX_FRAMES,'durationFrames');
  if(!Array.isArray(t.shots)||t.shots.length!==s.shots.length)fail('timeline.shots','length mismatch');
@@ -48,7 +49,7 @@ export function validateTimeline(s,t){
   if(!Array.isArray(x.segments)||x.segments.length!==y.narration.length)fail(p,'speech count mismatch');
   let last=x.startFrame*SAMPLES_PER_FRAME;
   for(const [j,a] of x.segments.entries()){
-   fields(a,['text','startSample','endSample','speed'],p+'.segments['+j+']');
+   fields(a,['text','startSample','endSample','speed'],p+'.segments['+j+']',['speaker','voice','language']);
    if(a.text!==y.narration[j])fail(p,'speech text mismatch');
    integer(a.startSample,last,x.endFrame*SAMPLES_PER_FRAME-1,p+'.startSample');
    integer(a.endSample,a.startSample+1,x.endFrame*SAMPLES_PER_FRAME,p+'.endSample');
@@ -58,6 +59,7 @@ export function validateTimeline(s,t){
   previous=x.endFrame;
  });
  if(previous!==t.durationFrames)fail('timeline','total length mismatch');
+ validateSpeechTimeline(s,t);
  return t;
 }
 export function shotAt(t,frame){

@@ -1,0 +1,121 @@
+{
+  "version": 1,
+  "id": "speech-cpu-polished",
+  "topic": "A message travels across a network",
+  "seconds": 60,
+  "audience": "curious beginners",
+  "tone": "clear",
+  "style": "cinematic explainer",
+  "language": "en-us",
+  "voice": "af_heart",
+  "backend": "cpu",
+  "profile": "polished",
+  "seed": 2,
+  "speech": {
+    "version": 1,
+    "targetFrames": 1800,
+    "fixedShots": {
+      "shot-1": 300
+    },
+    "speakers": {
+      "guide": {
+        "name": "Guide",
+        "voice": "af_heart",
+        "language": "en-us"
+      },
+      "explorer": {
+        "name": "Explorer",
+        "voice": "am_adam",
+        "language": "en-us"
+      }
+    },
+    "shotSpeakers": {
+      "shot-1": [
+        "guide",
+        "guide"
+      ],
+      "shot-2": [
+        "explorer",
+        "explorer"
+      ],
+      "shot-3": [
+        "guide",
+        "guide"
+      ],
+      "shot-4": [
+        "explorer",
+        "explorer"
+      ],
+      "shot-5": [
+        "guide",
+        "guide"
+      ],
+      "shot-6": [
+        "explorer",
+        "explorer"
+      ]
+    },
+    "pronunciations": {
+      "Wi-Fi": "why fie"
+    },
+    "captions": {
+      "mode": "both",
+      "highlight": true,
+      "maxChars": 32,
+      "maxLines": 2,
+      "maxCps": 18
+    },
+    "mix": {
+      "narration": 1,
+      "music": 0.65,
+      "ambience": 0.4,
+      "sfx": 0.65,
+      "duck": 0.35,
+      "fadeSeconds": 0.25,
+      "peak": 0.92
+    },
+    "cues": [
+      {
+        "shot": "shot-1",
+        "anchor": "shot-start",
+        "type": "chime",
+        "gain": 0.65
+      },
+      {
+        "shot": "shot-2",
+        "anchor": "speech-start",
+        "phrase": 0,
+        "type": "tick",
+        "gain": 0.4
+      },
+      {
+        "shot": "shot-3",
+        "anchor": "shot-start",
+        "type": "whoosh",
+        "gain": 0.7
+      },
+      {
+        "shot": "shot-4",
+        "anchor": "speech-end",
+        "phrase": 0,
+        "type": "chime",
+        "gain": 0.5
+      },
+      {
+        "shot": "shot-5",
+        "anchor": "shot-start",
+        "type": "whoosh",
+        "gain": 0.5
+      },
+      {
+        "shot": "shot-6",
+        "anchor": "speech-end",
+        "phrase": 0,
+        "type": "chime",
+        "gain": 0.7
+      }
+    ],
+    "syncActions": true
+  },
+  "script": "A message begins on your computer. The computer turns words into digital data. That data is divided into packets. Each packet carries information about its destination. Routers forward packets across the network. Different packets may follow different paths. Wireless links such as Wi-Fi carry signals between devices. Wired links carry signals too. At the destination, transport protocols can help recover missing data. They can also restore the correct order. Your message arrives as a complete conversation. Many devices and shared standards make this possible."
+}

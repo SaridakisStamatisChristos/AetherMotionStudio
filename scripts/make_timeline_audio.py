@@ -13,6 +13,10 @@ scene=json.loads(Path(sys.argv[1]).read_text(encoding='utf-8'))
 out=Path(sys.argv[2]);out.mkdir(parents=True,exist_ok=True)
 model_dir=Path(os.environ.get('KOKORO_MODEL_DIR',root/'models'/'kokoro'))
 kokoro=Kokoro(str(model_dir/'kokoro-v1.0.int8.onnx'),str(model_dir/'voices-v1.0.bin'))
+if scene.get('speech') is not None:
+    from speech_pipeline import compile_speech
+    compile_speech(scene,out,root,model_dir,kokoro)
+    sys.exit(0)
 voice=scene['voice']
 lang='en-gb' if voice.startswith('b') else 'en-us'
 highpass=butter(2,90,btype='highpass',fs=R,output='sos')
