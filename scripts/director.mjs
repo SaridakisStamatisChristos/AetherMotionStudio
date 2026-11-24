@@ -12,7 +12,7 @@ import {provider} from '../src/director/providers.js';
 import {validateProject,validateTimeline} from '../src/core/timeline.js';
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const args=process.argv.slice(2),opts={};
-const flags=new Set(['render','prepare','prompt-only','allow-remote']);
+const flags=new Set(['render','prepare','prompt-only','allow-remote','quality','repair']);
 const values=new Set(['request','topic','script','script-file','seconds','id','audience','tone','style','language','voice','backend','profile','seed','provider','model','endpoint','timeout','repairs','import','out','library','cast','story','speech']);
 while(args.length){const flag=args.shift();if(!flag.startsWith('--'))throw Error('expected --option');const k=flag.slice(2);if(Object.hasOwn(opts,k))throw Error('duplicate option '+k);if(flags.has(k))opts[k]=true;else if(values.has(k)&&args.length&&!args[0].startsWith('--'))opts[k]=args.shift();else throw Error('unknown or missing option '+k);}
 const read=p=>safeJson(readFileSync(resolve(p),'utf8'));
@@ -39,12 +39,13 @@ if(result.project.identityLibrary){docs['identity-library.json']=result.project.
 write(dest,result.project);for(const [name,data] of Object.entries(docs))write(join(dir,name),data);writeFileSync(join(dir,'prompt.txt'),result.prompt);
 if(opts.render||opts.prepare){
  const cmd=opts.render?'render':'prepare',out=join(root,'out',q.id);
- const proc=spawnSync(process.execPath,[join(root,'scripts','cli.mjs'),cmd,dest,'--director-budget'],{cwd:root,stdio:'inherit',env:process.env});
+ const proc=spawnSync(process.execPath,[join(root,'scripts','cli.mjs'),cmd,dest,'--director-budget',...(opts.quality?['--quality']:[]),...(opts.repair?['--repair']:[])],{cwd:root,stdio:'inherit',env:process.env});
  const m=result.manifest;
  if(proc.error||proc.status!==0){m.status='failed';m.failure='measured audio compilation or native rendering failed; inspect CLI diagnostics';write(join(dir,'director-manifest.json'),m);throw Error(m.failure);}
  const actual=validateProject(read(join(out,'scene.json'))),timeline=validateTimeline(actual,read(join(out,'timeline.json')));
  m.status=opts.render?'rendered':'prepared';m.durationErrorFrames=timeline.durationFrames-m.targetFrames;m.measuredFrames=timeline.durationFrames;m.timelineDigest=digest(timeline);m.compiledProjectDigest=digest(actual);m.shotDurationAdjustments=actual.shots.map((s,i)=>({id:s.id,planned:result.project.shots[i].durationFrames,measured:timeline.shots[i].endFrame-timeline.shots[i].startFrame}));m.maxSpeechSpeed=Math.max(...timeline.shots.flatMap(s=>s.segments.map(x=>x.speed)));
  if(actual.speech){const speechReport=read(join(out,'speech-report.json'));m.alignment=speechReport.alignment;m.speechAllocation=speechReport.allocation;}
+ if(opts.quality||opts.repair){const pre=read(join(out,'quality-preflight.json'));m.quality={acceptedRepairs:pre.accepted.length,candidateEvaluations:pre.candidateEvaluations,preflightIssues:pre.after.issues.length,...(opts.render?{mediaStatus:read(join(out,'quality-report.json')).status}:{})};}
  if(m.durationErrorFrames!==0)throw Error('director duration mismatch');
  write(join(dir,'director-manifest.json'),m);write(join(dir,'compiled-project.json'),actual);
  const archive=join(out,'director');mkdirSync(archive,{recursive:true});for(const name of [...Object.keys(docs),'prompt.txt','compiled-project.json'])copyFileSync(join(dir,name),join(archive,name));copyFileSync(dest,join(archive,'planned-project.json'));

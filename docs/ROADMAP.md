@@ -16,4 +16,4 @@
 | v0.9 | Local editor/UI | Preview, edit, render; no mandatory service |
 | v1.0 | One-click production | Reproducible release, install docs, real end-to-end evidence |
 
-Current gate: v0.7 candidate; v0.6 scoped checkpoint 24210f9a41bb44c655a5865c153b8f44528e1b45, run 45359000856, artifact 14902619722 (1500 frames, full decode, Kokoro, user approved continuation). Default CI: fast tests and one 60-second speech-first CPU film. All nineteen fixtures retained; Three.js full native comparison deferred. Next v0.8 quality evaluation and bounded repair after scoped MP4/subtitle acceptance.
+Current gate: v0.8 candidate; v0.7 scoped predecessor d8816f535339fcab2cd0adcbab6c9bda1e32981c, run 45361307457, artifact 14904319584 (1800 frames, full decode, subtitle export verification; 5 reading-speed outliers). User approved continuation. Default CI: fast tests plus one 50-second quality CPU film; 21 fixtures retained. Native Three.js comparison deferred. Next v0.9 local editor after quality acceptance.
