@@ -14,7 +14,7 @@ export function retroRobot(box,{origin,yaw=0,scale=1,walking=0,open=0,headRoll=0
 }
 export function treasureChest(box,{origin,yaw=0,scale=1,open=0}){
  const chest=transformAt(origin,yaw,scale);
- const wood='#a85e32',wood2='#8e4828',gold='#e5ac45';
+ const wood='#a85e32',wood2='#8e4828',gold='#e5ac45',dark='#364657';
  box([0,.16,0],[1.66,.25,1.17],wood2,chest);box([0,.50,.55],[1.66,.68,.15],wood,chest);box([0,.50,-.55],[1.66,.68,.15],wood2,chest);for(const s of [-1,1]){box([s*.76,.50,0],[.15,.68,1.08],wood,chest);box([s*.58,.51,.635],[.13,.70,.035],gold,chest);box([s*.58,.51,-.635],[.13,.70,.035],gold,chest)}box([0,.84,.55],[1.74,.09,.18],gold,chest);box([0,.84,-.55],[1.74,.09,.18],gold,chest);for(const s of [-1,1])box([s*.76,.84,0],[.18,.09,1.1],gold,chest);box([0,.59,.645],[.26,.28,.07],gold,chest);box([0,.58,.69],[.07,.11,.022],dark,chest);
  const lid=p=>chest(add(rx(p,-open*1.93),[0,.89,-.57]));box([0,.09,.55],[1.76,.22,1.25],wood,lid);box([0,.22,.55],[1.63,.085,1.11],wood2,lid);for(const s of [-1,1])box([s*.58,.25,.55],[.14,.065,1.26],gold,lid);box([0,.08,1.19],[1.77,.19,.06],gold,lid);box([0,-.035,.55],[1.48,.04,1.04],'#ffe29a',lid,true);
 
