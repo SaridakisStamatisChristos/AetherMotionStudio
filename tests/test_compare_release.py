@@ -59,4 +59,13 @@ class MatchedOutputs(unittest.TestCase):
         for p in (self.a,self.b):self.inv(p,frameAllocation=[{'id':'a','startFrame':0,'endFrame':80},{'id':'b','startFrame':80,'endFrame':150}])
         with self.assertRaisesRegex(AssertionError,'frame allocation'):check_shared(self.a,self.b)
 
+import importlib.util
+@unittest.skipUnless(importlib.util.find_spec('numpy'),'compare_release needs numpy (release venv); bare CI test job has none')
+class ComparatorEntryPoint(unittest.TestCase):
+    def test_main_writes_report(self):
+        import compare_release
+        with tempfile.TemporaryDirectory() as d:
+            out=Path(d)/'comparison.json';compare_release.main([d,d,str(out)],run=lambda a,b:{'frames':3,'status':'pass'})
+            self.assertEqual(json.loads(out.read_text()),{'frames':3,'status':'pass'})
+
 if __name__=='__main__':unittest.main()

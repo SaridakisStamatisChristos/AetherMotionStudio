@@ -1,5 +1,5 @@
 """Independent matched native-output check; objective diagnostics, not aesthetic ranking."""
-import os,sys,subprocess
+import json,os,sys,subprocess
 from pathlib import Path
 import numpy as np
 from matched_inventory import load,sha,normalized,check_shared,SPEECH_SHARED,AUTHORED_SHARED
@@ -26,5 +26,7 @@ def compare(a,b):
     assert all(min(s['cpuStd'],s['threeStd'])>4 for s in samples),'flat sampled geometry'
     assert any(s['meanAbsRgbDifference']>1 for s in samples),'no meaningful sampled backend difference'
     return {'version':1,'status':'pass','sameNormalizedProject':True,'sameTimeline':True,'sharedInventoryVerified':inventory,'sharedFileHashes':shared,'frames':total,'seconds':total/30,'outputs':outputs,'samples':samples,'threeToCpuRenderTimeRatio':outputs[1]['renderSeconds']/outputs[0]['renderSeconds'],'method':'sequential native renders on one runner, identical prepared assets/audio, same concurrency; CI software GL if swangle; not a dedicated hardware benchmark; no aesthetic superiority inferred'}
-if __name__=='__main__':
-    a,b,out=map(Path,sys.argv[1:]);result=compare(a,b);out.write_text(json.dumps(result,indent=2));print('PASS: matched native CPU / Three.js comparison,',result['frames'],'frames each, shared hashes exact')
+def main(argv,run=None):
+    a,b,out=map(Path,argv);result=(run or compare)(a,b);out.write_text(json.dumps(result,indent=2));print('PASS: matched native CPU / Three.js comparison,',result['frames'],'frames each, shared hashes exact')
+    return result
+if __name__=='__main__':main(sys.argv[1:])
