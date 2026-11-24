@@ -12,6 +12,7 @@ export function validateAssetParams(id,params){
  if(!Object.hasOwn(recipes,id))throw Error('asset params unsupported for '+id);
  if(!params||typeof params!=='object'||Array.isArray(params))throw Error('params object required');
  for(const [k,v] of Object.entries(params)){if(['primary','secondary','accent'].includes(k)){if(typeof v!=='string'||!/^#[0-9a-fA-F]{6}$/.test(v))throw Error('invalid asset color: '+k);}
+ else if(k==='detail'){if(v!==1&&v!==2)throw Error('invalid asset detail: '+v);if(v===2&&recipes[id].family!=='human')throw Error('asset detail 2 unsupported for '+id);}
  else if(['width','height','depth'].includes(k)){if(typeof v!=='number'||!Number.isFinite(v)||v<.7||v>1.3)throw Error('invalid asset dimension: '+k);}else throw Error('unknown asset param: '+k);}
  return params;
 }
@@ -52,6 +53,23 @@ const F={
  if(k===6)b(0,h*.65,-d*.61,w*.83,h*.33,.28,2);
  if(k===1||k===3)b(0,h*.66,d*.51,w*.1,h*.23,.03,2);
  if(k===7)b(0,h*.69,d*.51,w*.85,.11,.025,2);
+ // ART-03 opt-in detail 2: front cues (face, ears, collar) so facing reads at a glance; absent = recipe v1 geometry.
+ if(p.params?.detail===2){
+  const z0=d*.69/2;
+  if(k===4)b(-w*.12,h*.92,d*.36+.03,w*.1,h*.03,.02,6,0,'z',true);
+  else{
+   for(const s of [-1,1]){
+    b(s*w*.12,h*.905,z0+.012,w*.085,h*.032,.03,4);
+    b(s*w*.12+w*.02,h*.912,z0+.03,w*.025,h*.011,.012,6,0,'z',true);
+    b(s*w*.12,h*.935,z0+.012,w*.11,h*.012,.028,1);
+    b(s*(w*.285+.015),h*.89,0,.05,h*.06,d*.14,3);
+   }
+   b(0,h*.885,z0+.03,w*.06,h*.035,.07,3);
+   b(0,h*.852,z0+.012,w*.15,h*.012,.028,5);
+  }
+  b(0,h*.805,d*.505,w*.34,h*.03,.025,k===4?1:3);
+  if([2,5,6].includes(k))for(let i=0;i<3;i++)b(0,h*(.75-.06*i),d*.51,w*.05,w*.05,.02,4);
+ }
  },
  animal({b,rod},[l,h,d,tail,k],p){b(0,h*.57,0,l*.72,h*.36,d,0);b(l*.38,h*.8,0,l*.33,h*.31,d*.76,1);b(l*.53,h*.82,0,.15,.1,d*.62,2,0,'z',true);for(const x of [-1,1])for(const z of [-1,1])rod([x*l*.25,h*.48,z*d*.35],[x*l*.25+(p.walking??0)*x*.11,.06,z*d*.35],.13,1);rod([-l*.36,h*.64,0],[-l*.36-tail*.6,h*.95,0],.09,0);
  if(k===2){for(const z of [-1,1])b(l*.37,h*.99,z*d*.22,.16,.19,.13,0);}if(k===3)rod([l*.22,h*.6,0],[l*.4,h*.92,0],.26,0);if(k===4){for(const s of [-1,1])b(0,h*.67,s*d*.64,.42,.09,d*.86,2,0,'z');}},

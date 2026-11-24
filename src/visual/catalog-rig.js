@@ -7,7 +7,7 @@ export function localArm(family,args,s,pose){
  const [w,h]=args,open=pose.open??0;
  const shoulder=family==='robot'?[s*w*.63,h*.64,0]:[s*w*.57,h*.78,0];
  const rest=family==='robot'?[s*w*(.78+.28*open),h*(.35+.14*open),.08]:[s*w*(.65+open*.2),h*(.45+open*.2),.12];
- const pitch=s===1?(pose.armPitch??0):0,spread=s===1?(pose.armSpread??0):0;
+ const pitch=s===1?(pose.armPitch??0):(pose.leftArmPitch??0),spread=s===1?(pose.armSpread??0):(pose.leftArmSpread??0);
  return {shoulder,hand:pitch||spread?add(rz(rx(rest.map((v,i)=>v-shoulder[i]),pitch),spread),shoulder):rest};
 }
 export function catalogHandAnchor(id,pose,s=1){
