@@ -13,3 +13,10 @@ Commands: npm test; npm run validate -- examples/cinematography-cpu-polished.jso
 
 ## Scoped acceptance record
 Commit fd6cbdd1f84837a586cf5bfaf22434e34ad0e218; run 45355048931; artifact 14902251836. Fast tests and 1350-frame 45-second native CPU film, full decode, Kokoro per-phrase audio and 18 review stills passed. User accepted current visuals for forward development, explicitly deferring greater motion/visual quality. Full Three.js, general mesh morphing, broader rig families and aesthetic refinement remain open. Historical evidence unchanged.
+
+## ART-01 choreography authoring pattern (2026-11-25)
+Fixture pair `examples/art01-product-{cpu,three}-polished.json` re-choreographs the AF01 `product` shot (same smartphone, copy, environment, fidelity, geometry profile, 180 frames) using only existing tracks, presets and action modes — no engine change. Tests: tests/art01-choreography.test.js.
+- **Primary arc in tracks.** Anticipation and overshoot are extra keyframes (counter-turn before the main turn; overshoot then settle). Each keyframe segment is smoothstep-eased, so velocity is zero at every keyframe — natural at extremes (anticipation/overshoot), but a multi-key path that should flow through a keyframe will visibly pause there.
+- **Layered actions on free channels.** `composePose` skips an action channel the asset's `tracks` already define. A `once` action stops contributing when its window closes, so the channel snaps back to the base pose: only end an action window on the channel's base value (e.g. `settle-in`, `reveal-spin` scale, `emphasis`), or use `blend` to fade it. The test suite pins this snap (negative test) so a future engine change is noticed.
+- **Secondary motion.** `hover` in `loop` mode with `weight` < 1 and `blend` gives a soft bob that fades in and lands back at contact.
+- Result: preflight meanProjectedCenterMotion 0.83 → 19.8 (LOW_PROJECTED_MOTION cleared, no new issues); the AF01 fixture and its finding are unchanged. Known limitation: subject stays small in frame (AF01 camera distance; zoom near limit) — composition belongs to ART-02.
