@@ -25,3 +25,5 @@ After v1.0 acceptance, default development pushes return to fast tests and one p
 AF-03 scoped default: fast tests, six-asset LOD benchmark and one AF03 CPU film. AF01/02/03 matched pairs retained in manual full gate; native WebGL evidence remains outstanding.
 
 AF04 development scope: fast tests and per-asset inspection evidence plus one narrative CPU film. All matching native Three.js scenes preserved; full gate remains deferred.
+
+AF05 default tests and one local-import CPU film; full matched AF05 pair generated deterministically from the authored corpus by CI, previous fixtures retained. Native Three deferred.

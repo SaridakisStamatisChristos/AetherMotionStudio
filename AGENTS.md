@@ -31,3 +31,6 @@ AF02 accepted for continuation at 81b10e6, CI 45389538842, 132 tests. Default fa
 
 ## AF-04 successor
 AF03 accepted for continuation at 7fd75bc (run 45391188524, 137 tests). Default tests + AF04 inspection sheets and single narrative CPU film. Preserve original 250 IDs, explicit premium-only new IDs, AF01–03 and matched Three. No aesthetic acceptance from automation alone; see docs/foundry/HERO_ASSETS.md.
+
+## AF-05 successor
+AF04 verified at 477a3fa (run 45396749173, 143 tests). Default tests + local import corpus + one AF05 CPU polished film. Source import only through bounded local staging; no network/archive/executable input; quarantine uncertain licenses; no silent unsupported feature conversion. Preserve previous fixtures and both renderers.
