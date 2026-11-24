@@ -40,3 +40,6 @@ Opt-in measured-timeline preflight uses sampled projected geometry with bounded 
 
 ## v0.9 local Studio
 Node loopback HTTP service and browser ES modules, no new dependency. Validated JSON project files with atomic writes and revision conflicts. Shared drawing code for reduced-resolution preview; estimated silent draft versus measured immutable job snapshot. One native job at a time, unique output IDs, bounded logs and explicit failures, allowlisted artifacts and byte-range video/audio. Offline Director, geometry inspection and CLI production reuse existing modules. See STUDIO.md.
+
+## v1.0 release orchestration
+One-click `produce` validates a request and builds one Director project, invokes existing speech preparation once, validates exact measured timebase, materializes per-backend camera-only repaired projects, enforces normalized parity before invoking shared native-render helper, then verifies both encoded movies and exact shared WAV/timeline/caption hashes. Sequential render timing is recorded without aesthetic inference. Release setup verifies pinned Kokoro hashes, exact Python dependencies, and captures resolved npm lock/freeze in production evidence. No new media renderer or mandatory cloud service.

@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "id": "release",
+  "topic": "How a molecule is built",
+  "seconds": 30,
+  "seed": 1,
+  "voice": "af_heart",
+  "backend": "cpu",
+  "profile": "polished"
+}

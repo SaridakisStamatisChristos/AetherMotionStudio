@@ -1,2 +1,4 @@
 # Provenance
 Original Robot Treasure scene and Kokoro mixer ported from SaridakisStamatisChristos/Stickman-Studio commit 9e343662df72abb22f6c2eb9610da8961ad47eef. Prior successful native workflow: https://github.com/SaridakisStamatisChristos/Stickman-Studio/actions/runs/45343416680. This historical evidence does not replace fresh CI for the port. No third-party scene assets copied. Remotion, Kokoro and runtime dependencies retain their own licenses.
+
+Release model lock: exact SHA-256 observed in the v0.9 verified native speech-report (run 45364949340, artifact 14906287274). Upstream weights from kokoro-onnx model-files-v1.0. Python release versions from the successful setup logs; generated npm lock and Python freeze captured per production. No new project license chosen; see RELEASE_1_0.md.

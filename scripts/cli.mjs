@@ -2,6 +2,7 @@ import {readFileSync,writeFileSync,mkdirSync} from 'node:fs';
 import {resolve,join,dirname} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {spawnSync} from 'node:child_process';
+import {renderNative} from './native-render.mjs';
 import {repairProject} from '../src/quality/preflight.js';
 import {validateProject,validateTimeline} from '../src/core/timeline.js';
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
@@ -30,15 +31,4 @@ if(quality){
  if(result.report.after.issues.some(x=>x.severity==='error'))throw Error('Quality preflight blocking defect; inspect report');
 }
 writeFileSync(propsPath,JSON.stringify({scene,timeline}));
-if(cmd==='render'){
- // Use the installed CLI, no npx auto-install or shell injection.
- const pkg=JSON.parse(readFileSync(join(root,'node_modules/@remotion/cli/package.json'),'utf8'));
- const bin=typeof pkg.bin==='string'?pkg.bin:pkg.bin.remotion;
- const start=performance.now();
- const usesThree=scene.version===2&&scene.shots.some(s=>s.template==='cinematic-graph'&&s.backend==='three');
- const gl=process.env.AETHER_GL||'swangle';
- run(process.execPath,[join(root,'node_modules/@remotion/cli',bin),'render','src/index.jsx','AetherFilm',join(out,'film.mp4'),'--props='+propsPath,'--codec=h264','--concurrency=2',...(usesThree?['--gl='+gl]:[])]);
- writeFileSync(join(out,'render-timing.json'),JSON.stringify({renderSeconds:(performance.now()-start)/1000,backend:usesThree?'three':'cpu',gl:usesThree?gl:null},null,2));
- run(python,['scripts/verify.py',out]);
- if(quality)run(python,['scripts/quality_media.py',out]);
-}
+if(cmd==='render')renderNative({root,out,scene,timeline,quality,python});

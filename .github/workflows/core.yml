@@ -5,10 +5,10 @@ on:
   workflow_dispatch:
     inputs:
       suite:
-        description: Render suite (full only for final head-to-head)
+        description: Render suite (matched 30s release pair by default; full only with explicit authorization)
         type: choice
-        options: [cpu-polished, full]
-        default: cpu-polished
+        options: [release-pair, cpu-polished, full]
+        default: release-pair
 permissions:
   contents: read
 concurrency:
@@ -31,11 +31,11 @@ jobs:
   render:
     needs: test
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
+    timeout-minutes: 50
     strategy:
       fail-fast: false
       matrix:
-        scene: ${{ fromJSON(github.event_name == 'workflow_dispatch' && inputs.suite == 'full' && '["robot-treasure","blockchain-explainer","robot-lab","blockchain-60s","auto-robot","cinematic-cpu","cinematic-three","cinematic-cpu-polished","cinematic-three-polished","asset-showcase-cpu-polished","asset-showcase-three-polished","cinematography-cpu-polished","cinematography-three-polished","director-cpu-polished","director-three-polished","continuity-cpu-polished","continuity-three-polished","speech-cpu-polished","speech-three-polished","quality-cpu-polished","quality-three-polished","studio-cpu-polished","studio-three-polished"]' || '["studio-cpu-polished"]') }}
+        scene: ${{ fromJSON(github.event_name == 'workflow_dispatch' && inputs.suite == 'full' && '["robot-treasure","blockchain-explainer","robot-lab","blockchain-60s","auto-robot","cinematic-cpu","cinematic-three","cinematic-cpu-polished","cinematic-three-polished","asset-showcase-cpu-polished","asset-showcase-three-polished","cinematography-cpu-polished","cinematography-three-polished","director-cpu-polished","director-three-polished","continuity-cpu-polished","continuity-three-polished","speech-cpu-polished","speech-three-polished","quality-cpu-polished","quality-three-polished","studio-cpu-polished","studio-three-polished","release-pair"]' || github.event_name == 'workflow_dispatch' && inputs.suite == 'cpu-polished' && '["studio-cpu-polished"]' || '["release-pair"]') }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -48,33 +48,64 @@ jobs:
           cache-dependency-path: |
             requirements.txt
             requirements-ci.txt
+            requirements-release.txt
       - name: Install pinned Remotion runtime
+        if: matrix.scene != 'release-pair'
         run: npm install --no-audit --no-fund
       - uses: actions/cache@v4
         with:
           path: models/kokoro
           key: kokoro-v1-int8-voices-v1
+      - name: Clean release setup (no apt)
+        if: matrix.scene == 'release-pair'
+        timeout-minutes: 10
+        run: python scripts/release_setup.py --ci
       - name: Install Python wheels (no apt)
+        if: matrix.scene != 'release-pair'
         timeout-minutes: 5
         run: python -m pip install --disable-pip-version-check -r requirements.txt -r requirements-ci.txt
       - name: Select bundled media tools
         run: python scripts/ci_media_tools.py
       - name: Prepare Kokoro model cache
+        if: matrix.scene != 'release-pair'
         timeout-minutes: 4
         run: python scripts/setup_models.py
       - name: Render and verify
         run: |
           case "${{ matrix.scene }}" in
+            release-pair) npm run produce -- --request examples/release.request.json --backend both --repair ;;
             studio-*) node scripts/studio-acceptance.mjs "${{ matrix.scene }}" ;;
             quality-*) npm run render -- examples/${{ matrix.scene }}.json --quality --repair ;;
             director-*|continuity-*|speech-*) npm run director -- --request examples/${{ matrix.scene }}.request.json --render ;;
             *) npm run render -- examples/${{ matrix.scene }}.json ;;
           esac
       - uses: actions/upload-artifact@v4
+        if: matrix.scene != 'release-pair'
         with:
           name: aethermotion-${{ matrix.scene }}
           path: out/${{ matrix.scene }}/
           if-no-files-found: error
+          retention-days: 30
+      - uses: actions/upload-artifact@v4
+        if: always() && matrix.scene == 'release-pair'
+        with:
+          name: aethermotion-release-production
+          path: out/release-production/
+          if-no-files-found: warn
+          retention-days: 30
+      - uses: actions/upload-artifact@v4
+        if: always() && matrix.scene == 'release-pair'
+        with:
+          name: aethermotion-release-cpu-polished
+          path: out/release-cpu-polished/
+          if-no-files-found: warn
+          retention-days: 30
+      - uses: actions/upload-artifact@v4
+        if: always() && matrix.scene == 'release-pair'
+        with:
+          name: aethermotion-release-three-polished
+          path: out/release-three-polished/
+          if-no-files-found: warn
           retention-days: 30
   compare:
     if: github.event_name == 'workflow_dispatch' && inputs.suite == 'full'
