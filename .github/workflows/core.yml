@@ -35,7 +35,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        scene: ${{ fromJSON(github.event_name == 'workflow_dispatch' && inputs.suite == 'full' && '["robot-treasure","blockchain-explainer","robot-lab","blockchain-60s","auto-robot","cinematic-cpu","cinematic-three","cinematic-cpu-polished","cinematic-three-polished","asset-showcase-cpu-polished","asset-showcase-three-polished","cinematography-cpu-polished","cinematography-three-polished","director-cpu-polished","director-three-polished"]' || '["director-cpu-polished"]') }}
+        scene: ${{ fromJSON(github.event_name == 'workflow_dispatch' && inputs.suite == 'full' && '["robot-treasure","blockchain-explainer","robot-lab","blockchain-60s","auto-robot","cinematic-cpu","cinematic-three","cinematic-cpu-polished","cinematic-three-polished","asset-showcase-cpu-polished","asset-showcase-three-polished","cinematography-cpu-polished","cinematography-three-polished","director-cpu-polished","director-three-polished","continuity-cpu-polished","continuity-three-polished"]' || '["continuity-cpu-polished"]') }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -65,7 +65,7 @@ jobs:
       - name: Render and verify
         run: |
           case "${{ matrix.scene }}" in
-            director-*) npm run director -- --request examples/${{ matrix.scene }}.request.json --render ;;
+            director-*|continuity-*) npm run director -- --request examples/${{ matrix.scene }}.request.json --render ;;
             *) npm run render -- examples/${{ matrix.scene }}.json ;;
           esac
       - uses: actions/upload-artifact@v4

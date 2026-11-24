@@ -1,6 +1,7 @@
 import {smooth,clamp,keyframes,mix} from './motion.js';
 import {MOTION_PRESETS} from './presets.js';
 import {add,sub,dot,cross,norm,ry} from '../visual/vectors.js';
+import {catalogHandAnchor,recipeRig} from '../visual/catalog-rig.js';
 import {emitAsset,robotHandAnchor} from '../visual/assets.js';
 import {createProjection} from '../visual/mesh.js';
 
@@ -92,12 +93,8 @@ const actions={
  carry:{armPitch:k([0,-.9],[1,-.9]),grip:k([0,1],[1,1])}
 };
 export const ACTIONS=Object.freeze({...MOTION_PRESETS,...actions});
-const root=['x','y','z','yaw','scale'];
-export function supportedChannels(asset){
- // Deliberately conservative: legacy non-articulated objects only advertise implemented channels.
- return asset==='retro-robot'?[...root,'walking','open','headRoll','headYaw','blink','armPitch','armSpread','grip']:
- asset==='treasure-chest'?[...root,'open']:asset==='energy-core'?[...root,'pulse']:root;
-}
+export function supportedChannels(asset){return recipeRig(asset).channels;}
+export function handAnchor(asset,pose,side=1){return asset==='retro-robot'?robotHandAnchor(pose,side):catalogHandAnchor(asset,pose,side);}
 export function validateActions(a,p){
  if(!Array.isArray(a.actions)||a.actions.length<1||a.actions.length>16)fail(p+'.actions','1–16 actions required');
  const channels=supportedChannels(a.asset);
@@ -131,11 +128,12 @@ export function validateAttachments(assets,p){
  const byId=new Map(assets.map(a=>[a.id,a]));
  for(const a of assets){
   const x=a.attachment;if(x===undefined)continue;
-  const q=p+'.'+a.id+'.attachment';fields(x,['parent','anchor','start','end','offset'],q,['parent','anchor','start','end']);
+  const q=p+'.'+a.id+'.attachment';fields(x,['parent','anchor','start','end','offset','blendIn'],q,['parent','anchor','start','end']);
   const parent=byId.get(x.parent);
-  if(!parent||parent.asset!=='retro-robot')fail(q,'parent must be a retro-robot');
+  if(!parent||!recipeRig(parent.asset).anchors.includes('right-hand'))fail(q,'parent must have a supported hand rig');
   choice(x.anchor,['right-hand','left-hand'],q+'.anchor');window(x,q);
   if(x.offset!==undefined)vector(x.offset,-1,1,q+'.offset');
+  if(x.blendIn!==undefined)finite(x.blendIn,0,Math.min(.2,x.end-x.start),q+'.blendIn');
   const seen=new Set([a.id]);let at=parent;
   while(at){if(seen.has(at.id))fail(q,'attachment cycle');seen.add(at.id);at=at.attachment?byId.get(at.attachment.parent):null;}
  }
@@ -146,11 +144,12 @@ export function resolveAttachments(authored,p,sample){
   const item=sample(a,t),x=a.attachment;
   if(!x||t<x.start)return item;
   const time=Math.min(t,x.end),parent=at(byId.get(x.parent),time);
-  const anchor=robotHandAnchor(parent.pose,x.anchor==='right-hand'?1:-1);
+  const anchor=handAnchor(parent.asset,parent.pose,x.anchor==='right-hand'?1:-1);
   const offset=ry((x.offset??[0,0,0]).map(v=>v*parent.pose.scale),parent.pose.yaw);
   // World pose freezes at detach; no previous-frame dependency.
   const local=sample(a,time).pose;
-  item.pose={...item.pose,origin:add(anchor,offset),yaw:local.yaw+parent.pose.yaw};
+  const blend=x.blendIn?smooth(clamp((time-x.start)/x.blendIn)):1;
+  item.pose={...item.pose,origin:blend===1?add(anchor,offset):lerp3(local.origin,add(anchor,offset),blend),yaw:local.yaw+parent.pose.yaw*blend};
   return item;
  }
  return authored.map(a=>at(a,p));

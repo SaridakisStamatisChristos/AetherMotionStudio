@@ -16,4 +16,4 @@
 | v0.9 | Local editor/UI | Preview, edit, render; no mandatory service |
 | v1.0 | One-click production | Reproducible release, install docs, real end-to-end evidence |
 
-Current gate: v0.5 candidate, based on scoped v0.4.3 commit fd6cbdd and run 45355048931 (45s, 1350 frames, full decode and Kokoro speech, 18 review stills, artifact 14902251836). User accepted current visual quality for forward development; advanced motion and visual refinement remain deferred. Scoped CI: fast tests and one 60-second offline Director-generated polished CPU film. All fifteen native fixtures and matched comparisons retained for final manual full suite. Next v0.6 identity/continuity after scoped acceptance.
+Current gate: v0.6 candidate, based on scoped v0.5 commit 8217443f14621769982802ee78de7eaf9e0e7e2e and run 45356660809 (1800 frames, artifact 14902667298; user accepted continuation). Default CI: fast tests and one 50-second offline Director-generated identity continuity film. Seventeen native fixtures retained, including matched Three.js deferred. Next v0.7 speech-driven timeline/captions only after scoped acceptance.

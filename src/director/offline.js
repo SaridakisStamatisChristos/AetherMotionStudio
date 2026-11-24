@@ -1,3 +1,4 @@
+import {deliveryBeats,applyIdentityStory} from './identity-story.js';
 import {retrieveAssets} from './catalog.js';
 const beat=(heading,subheading,narration,assets)=>({heading,subheading,narration:[narration],assets});
 // Finite, explicitly authored knowledge patterns; no claim of universal topic comprehension.
@@ -42,7 +43,8 @@ export function baseline(q){
  const nominal=Math.max(2,Math.min(30,Math.round(q.seconds/10)));
  let beats,kind='generic-question-outline';
  const pattern=patterns.find(p=>p.match.test(q.topic));
- if(q.script!==undefined){
+ if(q.story==='delivery'){beats=deliveryBeats(q);kind='identity-delivery-story';}
+ else if(q.script!==undefined){
   const phrases=splitScript(q.script),n=Math.max(1,Math.min(nominal,phrases.length));
   if(phrases.length>n*8)throw Error('request.script: too many phrases for requested duration');
   beats=group(phrases,n).map((narration,i)=>({heading:trunc(roles[Math.min(roles.length-1,Math.floor(i*roles.length/n))].toUpperCase(),42),subheading:trunc(narration[0],64),narration,assets:[]}));
@@ -61,11 +63,12 @@ export function baseline(q){
 const cameras=['establishing','dolly-in','lateral-tracking','orbit','crane','reveal'];
 export function offlineIR(q,plan){
  const n=plan.beats.length;
- return {version:1,title:trunc(q.topic,100),treatment:'A '+q.tone+' '+q.style+' for '+q.audience+'. '+(plan.kind==='generic-question-outline'?'Question-led outline, not factual topic synthesis.':'A structured sequence of explanatory beats.'),shots:plan.beats.map((b,i)=>{
+ const ir={version:1,title:trunc(q.topic,100),treatment:'A '+q.tone+' '+q.style+' for '+q.audience+'. '+(plan.kind==='generic-question-outline'?'Question-led outline, not factual topic synthesis.':'A structured sequence of explanatory beats.'),shots:plan.beats.map((b,i)=>{
   const selected=plan.selection[i],preferred=b.assets.filter((v,j,a)=>a.indexOf(v)===j);
   const objects=(preferred.length?preferred:selected.filter(o=>o.id!=='retro-robot').slice(0,1).map(o=>o.id)).slice(0,2);
   const assets=objects.map((asset,j)=>({asset,action:j===0?'presentation-turn':'idle',scale:objects.length===1?1.15:.86,x:objects.length===1?.5:j===0?-.1:1.35}));
   assets.push({asset:'retro-robot',action:i===0?'wave':i%2?'point':'inspect',x:-1.5,scale:.72});
   return {heading:b.heading,subheading:b.subheading,narration:b.narration,camera:cameras[(i+q.seed%cameras.length)%cameras.length],environment:q.style.toLowerCase().includes('warm')?'amber':i%2?'midnight':'laboratory',assets,effect:i%2?'cyan-aura':'gold-sparks',overlay:{type:'lower-third',slot:'lower',text:trunc(b.subheading,56),animation:'slide',start:.18,end:.93}};
  })};
+ return q.identityLibrary?applyIdentityStory(q,plan,ir):ir;
 }

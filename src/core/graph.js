@@ -1,4 +1,4 @@
-import {RIG_CAMERA_LIMITS,validateCameraRig,sampleCameraRig,frameCamera,validateActions,composePose,validateAttachments,resolveAttachments,validateAssembly,emitCinematicAsset,LAYERED_ENVIRONMENTS,emitEnvironment} from './cinematography.js';
+import {supportedChannels,RIG_CAMERA_LIMITS,validateCameraRig,sampleCameraRig,frameCamera,validateActions,composePose,validateAttachments,resolveAttachments,validateAssembly,emitCinematicAsset,LAYERED_ENVIRONMENTS,emitEnvironment} from './cinematography.js';
 import {validateOverlays} from './overlays.js';
 import {validateAssetParams} from '../visual/catalog.js';
 import {MOTION_PRESETS,resolveTracks,resolveEffect} from './presets.js';
@@ -22,7 +22,7 @@ export function validateGraph(s,p='shot'){
  tracks(s.camera,s.cameraRig?RIG_CAMERA_LIMITS:cameraLimits,p+'.camera');
  if(!Array.isArray(s.assets)||s.assets.length<1||s.assets.length>8)fail(p+'.assets','1–8 assets required');
  const ids=new Set();
- for(const [i,a] of s.assets.entries()){const q=p+'.assets['+i+']';object(a,['id','asset','tracks','params','motion','actions','attachment','assembly'],q,['id','asset','tracks']);if(typeof a.id!=='string'||!/^[a-z0-9][a-z0-9-]{0,31}$/.test(a.id)||ids.has(a.id))fail(q+'.id','unique safe ID required');ids.add(a.id);if(!Object.hasOwn(ASSETS,a.asset))fail(q+'.asset','unknown asset');if(Object.hasOwn(a,'params'))validateAssetParams(a.asset,a.params);if(Object.hasOwn(a,'motion')&&!Object.hasOwn(MOTION_PRESETS,a.motion))fail(q+'.motion','unknown motion');tracks(resolveTracks(a),limits,q+'.tracks');if(a.asset!=='retro-robot'&&['armPitch','armSpread','grip'].some(k=>Object.hasOwn(a.tracks,k)))fail(q,'unsupported articulated channel');if(Object.hasOwn(a,'actions'))validateActions(a,q);if(Object.hasOwn(a,'assembly'))validateAssembly(a,q+'.assembly');}
+ for(const [i,a] of s.assets.entries()){const q=p+'.assets['+i+']';object(a,['id','asset','tracks','params','motion','actions','attachment','assembly','identity','variant','identityPose'],q,['id','asset','tracks']);if(typeof a.id!=='string'||!/^[a-z0-9][a-z0-9-]{0,31}$/.test(a.id)||ids.has(a.id))fail(q+'.id','unique safe ID required');ids.add(a.id);if(!Object.hasOwn(ASSETS,a.asset))fail(q+'.asset','unknown asset');if(Object.hasOwn(a,'params'))validateAssetParams(a.asset,a.params);if(Object.hasOwn(a,'motion')&&!Object.hasOwn(MOTION_PRESETS,a.motion))fail(q+'.motion','unknown motion');tracks(resolveTracks(a),limits,q+'.tracks');if(['armPitch','armSpread','grip'].some(k=>Object.hasOwn(a.tracks,k)&&!supportedChannels(a.asset).includes(k)))fail(q,'unsupported articulated channel');if(Object.hasOwn(a,'actions'))validateActions(a,q);if(Object.hasOwn(a,'assembly'))validateAssembly(a,q+'.assembly');}
  if(Object.hasOwn(s,'cameraRig'))validateCameraRig(s.cameraRig,ids,p+'.cameraRig');validateAttachments(s.assets,p+'.assets');if(Object.hasOwn(s,'overlays'))validateOverlays(s.overlays,p+'.overlays');if(Object.hasOwn(s,'layers')&&!LAYERED_ENVIRONMENTS.includes(s.layers))fail(p+'.layers','unknown environment layer preset');
  if(!Array.isArray(s.effects)||s.effects.length>4)fail(p+'.effects','0–4 effects required');
  const fx=new Set();for(const [i,raw] of s.effects.entries()){const q=p+'.effects['+i+']';if(raw&&Object.hasOwn(raw,'preset'))object(raw,['preset','target'],q);else object(raw,['type','target','color','start','end'],q);const e=resolveEffect(raw);if(!['orbit','sparkles','glow'].includes(e.type))fail(q+'.type','unknown effect');if(!ids.has(e.target))fail(q+'.target','unknown target');if(typeof e.color!=='string'||!/^#[0-9a-fA-F]{6}$/.test(e.color))fail(q+'.color','hex color required');number(e.start,0,1,q+'.start');number(e.end,0,1,q+'.end');if(e.start>=e.end)fail(q,'invalid effect window');const key=e.type+':'+e.target;if(fx.has(key))fail(q,'duplicate effect');fx.add(key);}
@@ -38,9 +38,9 @@ export function evaluateGraph(s,p){
  if(!Number.isFinite(p)||p<0||p>1)fail('progress','out of range');
  const c=sample(s.camera,cameraDefaults,p);
  function sampleAsset(a,t){
-  const d={...defaults};for(const ch of ['armPitch','armSpread','grip'])if(Object.hasOwn(a.tracks,ch)||(a.actions??[]).some(x=>['point','wave','reach','grasp','release','carry'].includes(x.name)))d[ch]=0;
+  const d={...defaults,...a.identityPose};for(const ch of ['armPitch','armSpread','grip'])if(Object.hasOwn(a.tracks,ch)||(a.actions??[]).some(x=>['point','wave','reach','grasp','release','carry'].includes(x.name)))d[ch]=d[ch]??0;
   const {x,y,z,...pose}=composePose(a,sample(resolveTracks(a),d,t),t,limits);
-  return {id:a.id,asset:a.asset,pose:{origin:[x,y,z],...pose,...(a.params?{params:a.params}:{})},...(a.assembly?{assembly:a.assembly,progress:t}:{})};
+  return {id:a.id,asset:a.asset,...(a.identity?{identity:a.identity,variant:a.variant}:{}),pose:{origin:[x,y,z],...pose,...(a.params?{params:a.params}:{})},...(a.assembly?{assembly:a.assembly,progress:t}:{})};
  }
  const assets=s.assets.some(a=>a.attachment)?resolveAttachments(s.assets,p,sampleAsset):s.assets.map(a=>sampleAsset(a,p));
  const camera=s.cameraRig?frameCamera(sampleCameraRig(s.cameraRig,p,s.camera),s.cameraRig,assets,s.camera):{position:[c.x,c.y,c.z],target:[0,1.2,0],zoom:c.zoom};

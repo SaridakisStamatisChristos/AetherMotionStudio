@@ -1,0 +1,64 @@
+{
+  "version": 1,
+  "definitions": [
+    {
+      "id": "orion",
+      "name": "Orion",
+      "kind": "character",
+      "recipeVersion": 1,
+      "asset": "explorer-robot",
+      "appearance": {
+        "primary": "#368baf",
+        "secondary": "#24364a",
+        "accent": "#ffcf74",
+        "width": 1.08,
+        "height": 1.08,
+        "depth": 1
+      },
+      "variants": [
+        {
+          "id": "active",
+          "appearance": {
+            "accent": "#8ef5be"
+          }
+        }
+      ],
+      "defaultPose": {
+        "scale": 1,
+        "blink": 1
+      }
+    },
+    {
+      "id": "repair-tool",
+      "name": "the repair tool",
+      "kind": "prop",
+      "recipeVersion": 1,
+      "asset": "wrench",
+      "appearance": {
+        "primary": "#e1ab4e",
+        "secondary": "#3b4556",
+        "accent": "#fff1a1"
+      },
+      "variants": [],
+      "defaultPose": {
+        "scale": 0.6
+      }
+    },
+    {
+      "id": "launch-lab",
+      "name": "Launch Laboratory",
+      "kind": "environment",
+      "recipeVersion": 1,
+      "environment": "laboratory",
+      "layers": "energy-hub"
+    },
+    {
+      "id": "city-station",
+      "name": "City Station",
+      "kind": "environment",
+      "recipeVersion": 1,
+      "environment": "midnight",
+      "layers": "city-dusk"
+    }
+  ]
+}

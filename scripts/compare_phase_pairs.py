@@ -9,7 +9,7 @@ def frame(p,t):
     r=subprocess.run([imageio_ffmpeg.get_ffmpeg_exe(),'-v','error','-ss',str(t),'-i',str(p/'film.mp4'),'-frames:v','1','-vf','scale=180:320','-pix_fmt','rgb24','-f','rawvideo','-'],check=True,capture_output=True)
     return np.frombuffer(r.stdout,dtype=np.uint8).astype(float).reshape(320,180,3)
 out={}
-for phase in ('asset-showcase','cinematography','director'):
+for phase in ('asset-showcase','cinematography','director','continuity'):
     a,b=[root/f'aethermotion-{phase}-{backend}-polished' for backend in ('cpu','three')]
     sa,sb=load(a,'scene.json'),load(b,'scene.json')
     sa['id']=sb['id']
