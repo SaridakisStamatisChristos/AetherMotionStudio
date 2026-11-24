@@ -1,8 +1,10 @@
 import {createProjection,createMesh} from '../visual/mesh.js';
 import {polygon,glow,star,text,r} from '../visual/primitives.js';
 import {evaluateGraph,emitGraph} from '../core/graph.js';
+import {shutterSamples} from '../core/fidelity.js';
+import {beginFilm,finishFilm,atmosphere,contactShadows,detailedFace,particleTrails,polishedType} from './fidelity-effects.js';
 const TAU=Math.PI*2;
-export function drawGraph(ctx,p,W,H,s,three){
+function world(ctx,p,W,H,s,three){
  const state=evaluateGraph(s,p),{camera:c,environment:env}=state;
  const project=createProjection(c.position,c.target,c.zoom,[360,640]);
  ctx.save();ctx.scale(W/720,H/1280);
@@ -18,8 +20,10 @@ export function drawGraph(ctx,p,W,H,s,three){
   }
   for(const a of state.assets){const q=project(a.pose.origin);ctx.save();ctx.translate(q[0],q[1]);ctx.scale(1,.24);glow(ctx,0,0,105*a.pose.scale,'rgba(0,0,0,.6)');ctx.restore()}
   const {box,faces}=createMesh(c.position,project,.3);emitGraph(state,box);
-  for(const f of faces.sort((a,b)=>b.z-a.z))polygon(ctx,f.p,f.color,f.edge);
+  if(state.fidelity)contactShadows(ctx,state,project,state.fidelity);
+  for(const f of faces.sort((a,b)=>b.z-a.z)){polygon(ctx,f.p,f.color,f.edge);if(state.fidelity)detailedFace(ctx,f,state.fidelity.surfaceDetail);}
  }
+ if(state.fidelity){atmosphere(ctx,state,project,state.fidelity);particleTrails(ctx,state,project,state.fidelity);}
  // Shared screen-space cinematic effects; no randomness or wall clock.
  for(const e of state.effects){
   if(e.strength<=0)continue;
@@ -31,8 +35,23 @@ export function drawGraph(ctx,p,W,H,s,three){
   ctx.restore();
  }
  const vignette=ctx.createRadialGradient(360,640,270,360,640,800);vignette.addColorStop(0,'transparent');vignette.addColorStop(1,'rgba(2,6,15,.57)');ctx.fillStyle=vignette;ctx.fillRect(0,0,720,1280);
+ ctx.restore();
+}
+export function drawGraph(ctx,p,W,H,s,three,frames=360){
+ const state=evaluateGraph(s,p),env=state.environment,f=state.fidelity;
+ if(!f)world(ctx,p,W,H,s,three);
+ else{
+  const a=beginFilm(ctx,W,H,shutterSamples(p,frames,f.motionBlur),(x,t)=>world(x,t,W,H,s,three));
+  const project=createProjection(state.camera.position,state.camera.target,state.camera.zoom,[360,640]),focus=project(state.camera.target);
+  finishFilm(ctx,a,f,focus,Math.round(p*(frames-1)));
+ }
+ ctx.save();ctx.scale(W/720,H/1280);
+ if(f&&f.typography>0)polishedType(ctx,s,env,p,f.typography);
+ else{
  text(ctx,'AETHER LAB / CINEMATIC STUDIES',360,77,15,env.accent,700);
  text(ctx,s.heading,360,194,58,'#f4efe5',900);text(ctx,s.subheading,360,274,27,env.accent,700);
+
+ }
  ctx.fillStyle=env.accent+'35';ctx.fillRect(54,1212,612,3);ctx.fillStyle=env.accent;ctx.fillRect(54,1212,612*p,3);
  ctx.restore();
 }

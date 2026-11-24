@@ -7,7 +7,7 @@ Read README, docs/ROADMAP.md, docs/ARCHITECTURE.md and the nearest relevant sour
 
 ## Commands
 `npm test`; `npm run validate -- examples/robot-treasure.json`; `npm run render -- examples/robot-treasure.json`.
-Python scripts need a venv, requirements, FFmpeg, eSpeak NG and Kokoro models. CI renders all seven canonical examples, including both matched cinematic backends. Use the same tests for new template changes. Keep models, generated audio/video, node_modules and secrets out of git.
+Python scripts need a venv, requirements, FFmpeg, eSpeak NG and Kokoro models. CI renders all nine canonical examples, including both matched cinematic backends. Use the same tests for new template changes. Keep models, generated audio/video, node_modules and secrets out of git.
 
 ## Engineering invariants
 - Scene JSON is untrusted; validate before using IDs/paths or rendering.
@@ -16,6 +16,6 @@ Python scripts need a venv, requirements, FFmpeg, eSpeak NG and Kokoro models. C
 - Do not claim native rendering from an alternative renderer.
 - Add adversarial tests for contract changes; separate structural validation from visual/audio quality evaluation.
 - Do not expose credentials, introduce paid API requirements or change project licensing without authorization.
-- Both CPU Canvas and Three.js WebGL are mandatory first-class backends. Follow [binding dual-backend preservation policy](docs/DUAL_BACKEND_POLICY.md). GPU-specific features must remain optional; no backend may be removed without explicit user authorization.
+- Both CPU Canvas and Three.js WebGL are mandatory first-class backends. Follow [binding dual-backend preservation policy](docs/DUAL_BACKEND_POLICY.md). Preserve original and polished fidelity profiles and matched regression fixtures. GPU-specific features must remain optional; no backend may be removed without explicit user authorization.
 - Do not copy entire upstream repositories into this project.
 - When adding agent guidance, link official Remotion skills (https://github.com/remotion-dev/skills); don't claim installed skills unless actually installed.

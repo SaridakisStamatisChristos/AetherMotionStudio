@@ -1,0 +1,11 @@
+import {test} from 'node:test';import assert from 'node:assert/strict';import {readFileSync} from 'node:fs';
+import {validateProject} from '../src/core/timeline.js';
+import {fidelity,shutterSamples,highlightMask,hashNoise} from '../src/core/fidelity.js';
+import {evaluateGraph} from '../src/core/graph.js';
+const load=id=>JSON.parse(readFileSync(new URL('../examples/'+id+'.json',import.meta.url),'utf8'));
+test('legacy profile absent, polished profile opt-in, same authored scene',()=>{for(const backend of ['cpu','three']){const a=load('cinematic-'+backend),b=load('cinematic-'+backend+'-polished');validateProject(a);validateProject(b);assert.equal(evaluateGraph(a.shots[0],.5).fidelity,null);assert.ok(evaluateGraph(b.shots[0],.5).fidelity.bloom>0);delete b.shots[0].fidelity;b.id=a.id;assert.deepEqual(a,b)}});
+test('defaults and zero controls',()=>{assert.equal(fidelity(undefined),null);assert.equal(fidelity({bloom:0}).bloom,0);assert.equal(fidelity({}).motionBlur,.35)});
+for(const [name,value] of [['null',null],['array',[]],['unknown',{fake:1}],['negative',{grade:-.1}],['over',{bloom:1.1}],['NaN',{grain:NaN}],['string',{particles:'1'}]])test('reject '+name,()=>{let a=load('cinematic-cpu');a.shots[0].fidelity=value;assert.throws(()=>validateProject(a))});
+test('shutter samples bounded, symmetric and normalized',()=>{for(let frame=0;frame<360;frame++){const p=frame/359,s=shutterSamples(p,360,.8);assert.equal(s.reduce((a,b)=>a+b[1],0),1);assert.ok(s.every(([t])=>t>=0&&t<=1));if(frame>0&&frame<359)assert.ok(Math.abs((s[0][0]+s[1][0])/2-p)<1e-12)}assert.deepEqual(shutterSamples(.5,360,0),[[.5,1]]);assert.throws(()=>shutterSamples(.5,1,1))});
+test('highlight threshold retains hue and rejects dark pixels',()=>{const x=new Uint8ClampedArray([0,0,0,255,255,255,255,255,170,160,150,255]);highlightMask(x);assert.equal(x[3],0);assert.equal(x[7],255);assert.ok(x[11]>0&&x[11]<255);assert.deepEqual([...x.slice(8,11)],[170,160,150])});
+test('noise deterministic, bounded and changes by frame',()=>{const a=Array.from({length:128},(_,i)=>hashNoise(i,12,4));assert.deepEqual(a,Array.from({length:128},(_,i)=>hashNoise(i,12,4)));assert.ok(a.every(x=>x>=0&&x<=1));assert.notEqual(hashNoise(1,2,3),hashNoise(1,2,4))});
