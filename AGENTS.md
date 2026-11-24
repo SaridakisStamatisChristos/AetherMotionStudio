@@ -7,7 +7,7 @@ Read README, docs/ROADMAP.md, docs/ARCHITECTURE.md and the nearest relevant sour
 
 ## Commands
 `npm test`; `npm run validate -- examples/robot-treasure.json`; `npm run render -- examples/robot-treasure.json`.
-Python scripts need a venv, requirements, FFmpeg, eSpeak NG and Kokoro models. During v0.4.3 development, CI runs all fast tests but renders only cinematography-cpu-polished. v0.4.2 predecessor 9339ed7, run 45352913631, verified. Do not begin v0.5 until v0.4.3 scoped CI and MP4 evidence pass. Preserve all prior fixtures and Three.js; manual suite=full restores complete matched render gate at the end. Use the same tests for new template changes. Keep models, generated audio/video, node_modules and secrets out of git.
+Python scripts need a venv, requirements, FFmpeg, eSpeak NG and Kokoro models. During v0.5 development, CI runs all fast tests but renders only the offline Director-generated director-cpu-polished. v0.4.3 scoped predecessor fd6cbdd, run 45355048931, artifact 14902251836, passed; user accepted current visual quality for forward development. Defer advanced motion and artistic polish. Do not begin v0.6 until v0.5 scoped tests and real MP4 pass. Preserve all prior fixtures and Three.js; manual suite=full restores complete matched render gate at the end. Use the same tests for new template changes. Keep models, generated audio/video, node_modules and secrets out of git.
 
 ## Engineering invariants
 - Scene JSON is untrusted; validate before using IDs/paths or rendering.

@@ -6,7 +6,7 @@ import numpy as np
 from scipy.io import wavfile
 from scipy.signal import resample_poly, butter, sosfilt
 from kokoro_onnx import Kokoro
-from timeline_plan import RATE,SPF,MAX_FRAMES,allocate,required_samples
+from timeline_plan import RATE,SPF,MAX_FRAMES,allocate,required_samples,allocate_global
 R=RATE
 root=Path(__file__).resolve().parents[1]
 scene=json.loads(Path(sys.argv[1]).read_text(encoding='utf-8'))
@@ -36,10 +36,25 @@ def synth(text,speed):
 
 compiled={'version':1,'fps':30,'sampleRate':R,'durationFrames':0,'shots':[]}
 pieces=[];offset=0
-for shot in scene['shots']:
-    speed=1.0;budget=shot['durationFrames']
+measured=None
+if '--director-budget' in sys.argv[3:]:
+    budgets=[s['durationFrames'] for s in scene['shots']]
+    speed=1.0
     for attempt in range(4):
-        waves=[synth(text,speed) for text in shot['narration']]
+        measured=[[synth(text,speed) for text in shot['narration']] for shot in scene['shots']]
+        lengths=[[len(v) for v in waves] for waves in measured]
+        try:
+            allocation=allocate_global(lengths,budgets)
+            break
+        except ValueError as e:
+            if attempt==3 or speed>=1.25: raise RuntimeError('Director narration cannot fit measured global budget; revise script or duration') from e
+            speed=min(1.25,max(speed+.05,speed*sum(required_samples(x) for x in lengths)/(sum(budgets)*SPF)*1.03))
+    global_speed=speed
+    for shot,frames in zip(scene['shots'],allocation): shot['durationFrames']=frames
+for shot_index,shot in enumerate(scene['shots']):
+    speed=global_speed if measured is not None else 1.0;budget=shot['durationFrames']
+    for attempt in range(4):
+        waves=measured[shot_index] if measured is not None else [synth(text,speed) for text in shot['narration']]
         lengths=[len(v) for v in waves]
         try:
             frames,slots=allocate(lengths,budget)
@@ -56,6 +71,9 @@ for shot in scene['shots']:
     compiled['shots'].append(entry);offset+=frames
     print('Compiled',shot['id'],frames,'frames at speed',speed,flush=True)
 compiled['durationFrames']=offset
+if measured is not None:
+    scene_path=Path(sys.argv[1]);tmp=scene_path.with_suffix('.tmp')
+    tmp.write_text(json.dumps(scene,indent=2,ensure_ascii=False),encoding='utf-8');tmp.replace(scene_path)
 N=offset*SPF;seconds=N/R
 t=np.arange(N,dtype=float)/R
 music=np.zeros(N);speech=np.zeros(N);duck=np.ones(N)
