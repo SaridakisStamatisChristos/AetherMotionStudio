@@ -35,7 +35,7 @@ export const SPEECH_SHARED=Object.freeze(['timeline.json','kokoro-narration.wav'
 // Authored non-speech path: captions are the timeline's measured text segments; mix.wav archives the lossless soundtrack.
 export const AUTHORED_SHARED=Object.freeze(['timeline.json','kokoro-narration.wav','mix.wav','voice-report.json']);
 export const sharedArtifacts=p=>p.speech?SPEECH_SHARED:AUTHORED_SHARED;
-// Throws on any missing, extra or changed shared artifact; hashOf(name) returns the actual sha256 or null if absent.
+// Throws on any missing or changed shared artifact (extra files are not inspected); hashOf(name) returns the actual sha256 or null if absent.
 export function verifyShared(expected,hashOf,where='output'){
  const names=Object.keys(expected??{});if(!names.length)throw Error('Empty shared inventory');
  for(const name of names){const actual=hashOf(name);if(actual==null)throw Error('Shared artifact missing in '+where+': '+name);if(actual!==expected[name])throw Error('Shared artifact changed in '+where+': '+name)}
