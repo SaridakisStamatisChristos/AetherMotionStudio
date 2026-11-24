@@ -129,32 +129,54 @@ export function composePose(a,base,p,limits){
  }
  return out;
 }
+// ART-01: `attachment` is one window (historical) or an opt-in handoff chain of 2–4 sequential windows.
+const attachmentWindows=x=>Array.isArray(x)?x:[x];
 export function validateAttachments(assets,p){
  const byId=new Map(assets.map(a=>[a.id,a]));
  for(const a of assets){
-  const x=a.attachment;if(x===undefined)continue;
-  const q=p+'.'+a.id+'.attachment';fields(x,['parent','anchor','start','end','offset','blendIn'],q,['parent','anchor','start','end']);
-  const parent=byId.get(x.parent);
-  if(!parent||!recipeRig(parent.asset).anchors.includes('right-hand'))fail(q,'parent must have a supported hand rig');
-  choice(x.anchor,['right-hand','left-hand'],q+'.anchor');window(x,q);
-  if(x.offset!==undefined)vector(x.offset,-1,1,q+'.offset');
-  if(x.blendIn!==undefined)finite(x.blendIn,0,Math.min(.2,x.end-x.start),q+'.blendIn');
-  const seen=new Set([a.id]);let at=parent;
-  while(at){if(seen.has(at.id))fail(q,'attachment cycle');seen.add(at.id);at=at.attachment?byId.get(at.attachment.parent):null;}
+  const raw=a.attachment;if(raw===undefined)continue;
+  const q=p+'.'+a.id+'.attachment',chain=Array.isArray(raw),list=attachmentWindows(raw);
+  if(chain&&(list.length<2||list.length>4))fail(q,'handoff chain requires 2–4 windows');
+  list.forEach((x,i)=>{
+   const r=chain?q+'['+i+']':q;fields(x,['parent','anchor','start','end','offset','blendIn','release'],r,['parent','anchor','start','end']);
+   const parent=byId.get(x.parent);
+   if(!parent||!recipeRig(parent.asset).anchors.includes('right-hand'))fail(r,'parent must have a supported hand rig');
+   choice(x.anchor,['right-hand','left-hand'],r+'.anchor');window(x,r);
+   if(x.offset!==undefined)vector(x.offset,-1,1,r+'.offset');
+   if(x.blendIn!==undefined)finite(x.blendIn,0,Math.min(.2,x.end-x.start),r+'.blendIn');
+   if(i>0&&x.start<list[i-1].end)fail(r,'handoff windows must be sequential');
+   if(x.release!==undefined){if(i!==list.length-1)fail(r+'.release','only the last window may release');validateRelease(x.release,x.end,r+'.release');}
+  });
+  const seen=new Set(),stack=list.map(x=>x.parent);
+  while(stack.length){const id=stack.pop();if(id===a.id)fail(q,'attachment cycle');if(seen.has(id))continue;seen.add(id);const b=byId.get(id);if(b?.attachment)stack.push(...attachmentWindows(b.attachment).map(x=>x.parent));}
  }
+}
+function validateRelease(x,end,q){
+ fields(x,['mode','duration','to'],q,['mode','duration']);choice(x.mode,['drop','place'],q+'.mode');finite(x.duration,.02,.5,q+'.duration');
+ if(end+x.duration>1+1e-9)fail(q,'release must complete within the shot');
+ if(x.mode==='place'){vector(x.to,-2.4,2.4,q+'.to');finite(x.to[1],0,1.5,q+'.to');}else if(x.to!==undefined)fail(q+'.to','drop lands on the floor; use place for a target');
 }
 export function resolveAttachments(authored,p,sample){
  const byId=new Map(authored.map(a=>[a.id,a]));
- function at(a,t){
-  const item=sample(a,t),x=a.attachment;
-  if(!x||t<x.start)return item;
-  const time=Math.min(t,x.end),parent=at(byId.get(x.parent),time);
+ // World pose of `a` held in window k at `time` (inside the window). Window 0 is the historical formula.
+ function held(a,k,time){
+  const ws=attachmentWindows(a.attachment),x=ws[k],parent=at(byId.get(x.parent),time);
   const anchor=handAnchor(parent.asset,parent.pose,x.anchor==='right-hand'?1:-1);
-  const offset=ry((x.offset??[0,0,0]).map(v=>v*parent.pose.scale),parent.pose.yaw);
-  // World pose freezes at detach; no previous-frame dependency.
-  const local=sample(a,time).pose;
-  const blend=x.blendIn?smooth(clamp((time-x.start)/x.blendIn)):1;
-  item.pose={...item.pose,origin:blend===1?add(anchor,offset):lerp3(local.origin,add(anchor,offset),blend),yaw:local.yaw+parent.pose.yaw*blend};
+  const offset=ry((x.offset??[0,0,0]).map(v=>v*parent.pose.scale),parent.pose.yaw),target=add(anchor,offset);
+  const local=sample(a,time).pose,blend=x.blendIn?smooth(clamp((time-x.start)/x.blendIn)):1;
+  if(k===0)return {origin:blend===1?target:lerp3(local.origin,target,blend),yaw:local.yaw+parent.pose.yaw*blend};
+  // Handoff: the receiver grips the prop as handed over (world yaw kept), then it turns with the new holder.
+  const from=held(a,k-1,ws[k-1].end),keep=from.yaw-at(byId.get(x.parent),x.start).pose.yaw;
+  return {origin:blend===1?target:lerp3(from.origin,target,blend),yaw:mix(from.yaw,parent.pose.yaw+keep,blend)};
+ }
+ function at(a,t){
+  const item=sample(a,t);if(a.attachment===undefined)return item;
+  const ws=attachmentWindows(a.attachment);if(t<ws[0].start)return item;
+  let k=0;for(let i=1;i<ws.length;i++)if(t>=ws[i].start)k=i;
+  // World pose freezes at detach; no previous-frame dependency. Opt-in release drops or places it.
+  const x=ws[k];let pose=held(a,k,Math.min(t,x.end));
+  if(x.release&&t>x.end){const u=clamp((t-x.end)/x.release.duration);pose=x.release.mode==='drop'?{...pose,origin:[pose.origin[0],pose.origin[1]*(1-u*u),pose.origin[2]]}:{...pose,origin:lerp3(pose.origin,x.release.to,smooth(u))};}
+  item.pose={...item.pose,...pose};
   return item;
  }
  return authored.map(a=>at(a,p));

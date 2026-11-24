@@ -1,6 +1,6 @@
 import {validateProject,validateTimeline} from '../core/timeline.js';
 import {evaluateGraph} from '../core/graph.js';
-import {emitCinematicAsset} from '../core/cinematography.js';
+import {emitCinematicAsset,handAnchor} from '../core/cinematography.js';
 import {createProjection} from '../visual/mesh.js';
 import {speechDrivenShot} from '../core/speech.js';
 import {canonical} from '../core/identity.js';
@@ -9,6 +9,7 @@ export const QUALITY_VERSION='quality-v1';
 export const digest=x=>createHash('sha256').update(canonical(x)).digest('hex');
 const times=[0,.125,.25,.375,.5,.625,.75,.875,1];
 const rounded=v=>Math.round(v*1e6)/1e6;
+export const HANDOFF_GAP_LIMIT=.3;
 const issue=(code,severity,shot,detail)=>({code,severity,shot,detail});
 export function inspectShot(source,timing=null,speech=null){
  const s=timing?speechDrivenShot(source,timing,speech):source;
@@ -52,6 +53,12 @@ export function inspectShot(source,timing=null,speech=null){
  if(metrics.safeOutsideFraction>.12)issues.push(issue('SAFE_ZONE_RISK','warning',s.id,metrics.safeOutsideFraction));
  if(small)issues.push(issue('SMALL_SUBJECT','warning',s.id,small));
  if(metrics.meanProjectedCenterMotion<1)issues.push(issue('LOW_PROJECTED_MOTION','review',s.id,metrics.meanProjectedCenterMotion));
+ // ART-01: only opt-in handoff chains are checked, so historical reports are unchanged.
+ for(const a of s.assets)if(Array.isArray(a.attachment))for(let k=1;k<a.attachment.length;k++){
+  const x=a.attachment[k-1],y=a.attachment[k],state=evaluateGraph(s,y.start),pose=id=>state.assets.find(b=>b.id===id);
+  const from=pose(x.parent),to=pose(y.parent),gap=Math.hypot(...[0,1,2].map(i=>handAnchor(from.asset,from.pose,x.anchor==='right-hand'?1:-1)[i]-handAnchor(to.asset,to.pose,y.anchor==='right-hand'?1:-1)[i]));
+  if(gap>HANDOFF_GAP_LIMIT)issues.push(issue('HANDOFF_GAP','warning',s.id,{prop:a.id,at:y.start,from:x.parent,to:y.parent,gap:rounded(gap)}));
+ }
  return {shot:s.id,scope:'sampled-projected-asset-geometry',metrics,observations,issues};
 }
 function contentChecks(project){

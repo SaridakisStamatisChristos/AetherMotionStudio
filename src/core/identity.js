@@ -98,6 +98,7 @@ export function continuityLedger(project){
   for(const [prop,h] of held)if(!seen.has(prop)||!seen.has(h.holder))fail(p,'held prop or holder disappeared');
   const startHeld=new Map(held),intervals=[];
   for(const a of s.assets){
+   if(Array.isArray(a.attachment)&&(a.identity||a.attachment.some(x=>byLocal.get(x.parent)?.identity)))fail(p,'handoff chains are not yet supported by the identity continuity ledger');
    if(!a.identity){if(a.attachment&&byLocal.get(a.attachment.parent)?.identity)fail(p,'untracked prop on tracked character');continue;}
    const def=map.get(a.identity),old=held.get(a.identity),x=a.attachment;
    if(!x){if(old)fail(p,'held prop detached without release');continue;}
