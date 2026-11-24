@@ -16,7 +16,7 @@ test('AF08 compact pack digest, portable dependencies, no silent conflict',()=>{
  const other=makePack(p.id,p.entries.slice(0,1),p.revision);assert.throws(()=>registry.import(other),/conflict/);
  const bad=structuredClone(p);bad.entries[0].digest='a'.repeat(64);const {digest,...body}=bad;bad.digest=generatedDigest(body);assert.throws(()=>verifyPack(bad),/dependency/);
  assert.throws(()=>makePack('../unsafe',p.entries));assert.throws(()=>makePack('duplicate',[p.entries[0],p.entries[0]]));assert.throws(()=>verifyPack({...p,extra:'x'}));
- assert.deepEqual(registry.get(p.id),p);
+ assert.deepEqual(registry.get(p.id),p);assert.throws(()=>registry.get(p.id,'2.0.0'),/revision/);assert.throws(()=>new PackRegistry().import(other),/conflict/);
 });
 test('AF08 indexed search filters and compact Director shortlist',()=>{
  const r=new PackRegistry();r.import(packs[1]);const rows=searchRegistry({kind:'hero',category:'characters',pack:'retro-lab',backend:'cpu',lod:1});assert.ok(rows.some(x=>x.id==='retro-robot'));assert.ok(rows.every(x=>x.category==='characters'));
@@ -46,4 +46,12 @@ test('AF08 Studio HTTP pack persistence across restart and on-demand preview',as
  const preview=await (await fetch(origin+'/api/foundry/asset?kind=generated&id=survey-beacon')).json();assert.ok(preview.preview.startsWith('data:image/bmp;base64,'));assert.ok(preview.info.metrics.visiblePixels>0);
  assert.equal((await fetch(origin+'/api/foundry/asset?kind=generated&id=../bad')).status,400);
  }finally{if(s)await s.close();await rm(dir,{recursive:true,force:true});}
+});
+
+test('AF08 portable pack pins reject substitutions even when replacement manifest is valid',()=>{
+ const pinned={...story,packPins:packs.map(({id,revision,digest})=>({id,revision,digest}))};
+ const replacement=makePack(packs[0].id,packs[0].entries.filter(e=>e.id==='retro-robot'),'2.0.0');
+ assert.throws(()=>compilePackedStory(pinned,[replacement,packs[1]]),/pinned pack dependency/);
+ for(const mutate of [x=>x.packs.pop(),x=>x.packs[0].entries[0].digest='0'.repeat(64),x=>x.story.shots[0].prop='unknown',x=>x.packs[1].digest='1'.repeat(64)]){const x=structuredClone({story:pinned,packs});mutate(x);assert.throws(()=>compilePackedStory(x.story,x.packs));}
+ assert.ok(packedDirectorSelection({},new PackRegistry()).length);
 });

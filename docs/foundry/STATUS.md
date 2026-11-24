@@ -37,3 +37,5 @@ AF07 verified at ba69402c56956f59ec3e0dee14ce9530db617237, [run 45409971516](htt
 
 ## AF08 — candidate
 Compact versioned JSON packs with digest-pinned built-in hero dependencies and embedded original generated recipes, local registry/search, on-demand CPU still preview, CLI, existing Studio browser/HTTP integration, explicit pack/asset revision resolution and pinned premium project assets. Independent two-pack six-shot story with recurring robot and relay, portable export/reopen and matched generated fixtures. Scoped tests, pack acceptance evidence and single CPU film pending CI. Native Three deferred. No merge or release.
+
+AF08 initial candidate 190b711f2ee4e596d373b0b4aa116b1cb175bc82, run 45412250640: all 154 JS tests passed; independent acceptance script failed missing expected exception at line 27, render skipped. Repair: independently pin exported story pack revisions/digests, reject duplicate pack identities and unresolved props, reject missing pack revision and built-in revision substitution, label all malformed-input cases without relaxing them; add regression. Reverification required.

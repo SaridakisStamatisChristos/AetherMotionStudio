@@ -8,7 +8,7 @@ import {EFFECT_PRESETS} from '../core/presets.js';
 import {directorCatalog,digest} from './catalog.js';
 import {request,validateIR,safeJson} from './schema.js';
 import {baseline,offlineIR} from './offline.js';
-export function foundryShortlist(query,registry){return searchRegistry({...query,limit:Math.min(query.limit??8,20)},registry).filter(x=>x.kind!=='legacy').map(({id,kind,revision,category,pack,quality,backends,lods,motion})=>({id,kind,revision,category,pack,quality,backends,lods,motion}));}
+export function foundryShortlist(query,registry){return searchRegistry({...query,limit:300},registry).filter(x=>x.kind!=='legacy').slice(0,Math.min(query.limit??8,20)).map(({id,kind,revision,category,pack,quality,backends,lods,motion})=>({id,kind,revision,category,pack,quality,backends,lods,motion}));}
 export const PROMPT_VERSION='director-ir-v1.1';
 const profile={bloom:.6,atmosphere:.5,contactShadow:.65,surfaceDetail:.65,depthOfField:.25,motionBlur:.24,grain:.12,grade:.55,particles:.65,typography:1};
 const words=s=>s.trim().split(/\s+/).length;

@@ -61,12 +61,13 @@ export class PackRegistry{
  #packs=new Map();
  import(pack){
   verifyPack(pack);const key=pack.id+'@'+pack.revision,prior=this.#packs.get(key);
+  if(BUILTIN_PACKS.includes(pack.id)&&pack.revision==='1.0.0'&&builtinPack(pack.id).digest!==pack.digest)fail('built-in pack revision conflict');
   if(prior&&prior.digest!==pack.digest)fail('pack revision conflict');
   for(const e of pack.entries)for(const p of this.#packs.values())for(const old of p.entries)if(old.id===e.id&&old.revision===e.revision&&old.digest!==e.digest)fail('asset revision conflict');
   if(!prior&&this.#packs.size>=PACK_LIMITS.packs)fail('registry capacity');
   this.#packs.set(key,structuredClone(pack));return {key,digest:pack.digest,reused:!!prior};
  }
- get(id,revision='1.0.0'){const p=this.#packs.get(id+'@'+revision);return p?structuredClone(p):builtinPack(id)}
+ get(id,revision='1.0.0'){const p=this.#packs.get(id+'@'+revision);if(p)return structuredClone(p);if(revision!=='1.0.0')fail('missing pack revision');return builtinPack(id)}
  list(){return [...this.#packs.values()].map(p=>({id:p.id,revision:p.revision,digest:p.digest,assets:p.entries.length})).sort((a,b)=>a.id.localeCompare(b.id))}
  entries(){return [...this.#packs.values()].flatMap(p=>p.entries.map(e=>({pack:p.id,entry:structuredClone(e)})))}
 }
