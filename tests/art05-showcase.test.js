@@ -38,5 +38,8 @@ test('story beats: robot wakes, walks while watched, receives and places the too
  assert.ok(Math.hypot(...handAnchor(m.giver.asset,m.giver.pose,1).map((v,i)=>v-handAnchor(m.receiver.asset,m.receiver.pose,1)[i]))<.1,'hands meet');
  assert.equal(m.watcher.asset,'scientist');assert.ok(Math.abs(pose(sh.handoff,'tool',1).origin[1]-.792)<1e-3,'tool rests on the table');
  assert.ok(pose(sh.together,'engineer',.66).leftArmPitch<-2&&pose(sh.together,'scientist',.7).armPitch<-2&&pose(sh.together,'robot',.7).armPitch<-2,'everyone waves');
+ const h=evaluateGraph(sh.together,.7).assets.find(a=>a.id==='robot'),R=handAnchor('service-robot',h.pose,1),L=handAnchor('service-robot',h.pose,-1);
+ assert.ok(R[0]-L[0]>1.2&&R[2]>h.pose.origin[2]&&L[2]>h.pose.origin[2],'robot hands raised wide and in front (visible)');
+ const sc=evaluateGraph(sh.together,.6).assets.find(a=>a.id==='scientist'),sR=handAnchor('scientist',sc.pose,1);assert.ok(sR[0]>sc.pose.origin[0]-.1,'scientist waves outward, not across the face');
  for(const s of read('cpu').shots)for(const a of s.assets)if(['engineer','scientist'].includes(a.asset))assert.equal(a.params?.detail,2,s.id+':'+a.id);
 });

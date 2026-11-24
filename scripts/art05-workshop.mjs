@@ -7,6 +7,7 @@ import {inspectProject} from '../src/quality/preflight.js';
 import {compositionReport} from '../src/quality/composition.js';
 
 const FIDELITY={bloom:.6,atmosphere:.5,contactShadow:.75,surfaceDetail:.6,depthOfField:.15,motionBlur:0,grain:.15,grade:.45,particles:.4,typography:1};
+// Raised-arm convention on catalog rigs: right armSpread -0.4 and left leftArmSpread +0.4 swing hands outward.
 const D2={detail:2},CHEAT=.55;
 const human=(id,asset,x,z,extra={})=>({id,asset,tracks:{x:[[0,x]],z:[[0,z]]},params:D2,...extra});
 const shot=(id,frames,environment,heading,subheading,narration,body)=>({id,template:'cinematic-graph',backend:'cpu',durationFrames:frames,transitionFrames:id==='workshop'?0:12,transition:id==='workshop'?'cut':'fade',heading,subheading,environment,lighting:'parity-v1',...body,effects:body.effects??[],narration:[narration],fidelity:FIDELITY});
@@ -14,7 +15,7 @@ const shot=(id,frames,environment,heading,subheading,narration,body)=>({id,templ
 function shots(){
  const handoff=JSON.parse(readFileSync(new URL('../examples/art01-handoff-cpu-polished.json',import.meta.url),'utf8')).shots[0];
  const s5=structuredClone(handoff);
- const watcher=s5.assets.find(a=>a.id==='watcher');Object.assign(watcher,{id:'watcher',asset:'scientist',tracks:{...watcher.tracks,scale:[[0,.9]]},params:D2,actions:[{name:'wave',start:.84,end:1,blend:.2}]});
+ const watcher=s5.assets.find(a=>a.id==='watcher');Object.assign(watcher,{id:'watcher',asset:'scientist',tracks:{...watcher.tracks,scale:[[0,.9]],armPitch:[[0,0],[.84,0],[.9,-2.6],[.94,-2.2],[.98,-2.6],[1,-2.45]],armSpread:[[0,0],[.9,-.4]]},params:D2});delete watcher.actions;
  s5.assets.find(a=>a.id==='giver').params=D2;
  return [
   shot('workshop',210,'amber','THE WORKSHOP','Two makers, one unfinished robot.','In a small workshop, two makers prepare a new robot.',{
@@ -44,9 +45,9 @@ function shots(){
   shot('together',180,'midnight','BUILT TOGETHER','Ready for what comes next.','Built together, and ready for whatever comes next.',{
    cameraRig:{preset:'medium',subject:'robot',framing:'medium',strength:.5},camera:{x:[[0,.4],[1,-.3]],y:[[0,2.7]],z:[[0,7.8],[1,7.3]],zoom:[[0,1250],[1,1450]]},cameraInterpolation:{x:'flow',zoom:'flow'},
    assets:[
-    {id:'robot',asset:'service-robot',tracks:{x:[[0,0]],z:[[0,.35]],yaw:[[0,0]],armPitch:[[0,0],[.3,0],[.45,-2.5],[.85,-2.5],[1,-2.3]],leftArmPitch:[[0,0],[.3,0],[.45,-2.5],[.85,-2.5],[1,-2.3]],armSpread:[[0,0],[.45,.5]],leftArmSpread:[[0,0],[.45,.5]]},interpolation:{armPitch:'flow',leftArmPitch:'flow'}},
+    {id:'robot',asset:'service-robot',tracks:{x:[[0,0]],z:[[0,.35]],yaw:[[0,0]],armPitch:[[0,0],[.3,0],[.45,-2.6],[.85,-2.6],[1,-2.4]],leftArmPitch:[[0,0],[.3,0],[.45,-2.6],[.85,-2.6],[1,-2.4]],armSpread:[[0,0],[.45,-.4]],leftArmSpread:[[0,0],[.45,.4]]},interpolation:{armPitch:'flow',leftArmPitch:'flow'}},
     human('engineer','engineer',-1.15,.15,{tracks:{x:[[0,-1.15]],z:[[0,.15]],yaw:[[0,.35]],leftArmPitch:[[0,0],[.4,0],[.5,-2.5],[.58,-2.2],[.66,-2.5],[.74,-2.2],[.82,-2.5],[.95,-.3]],leftArmSpread:[[0,0],[.5,.45]]}}),
-    human('scientist','scientist',1.15,.15,{tracks:{x:[[0,1.15]],z:[[0,.15]],yaw:[[0,-.35]]},actions:[{name:'wave',start:.45,end:.97,blend:.15}]})]})
+    human('scientist','scientist',1.15,.15,{tracks:{x:[[0,1.15]],z:[[0,.15]],yaw:[[0,-.35]],armPitch:[[0,0],[.42,0],[.52,-2.6],[.6,-2.2],[.68,-2.6],[.76,-2.2],[.84,-2.6],[.96,-.3]],armSpread:[[0,0],[.52,-.4]]}})]})
  ];
 }
 export function build(backend){
