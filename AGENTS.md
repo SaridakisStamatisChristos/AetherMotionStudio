@@ -28,3 +28,6 @@ AF-01 accepted for continuation at 4e0a2eb (run 45387263982, 125 tests, artifact
 
 ## AF-03 successor
 AF02 accepted for continuation at 81b10e6, CI 45389538842, 132 tests. Default fast tests + AF03 benchmark + one CPU polished film. No automatic LOD downgrades on budget failure; selected detail must be shot-stable and reported. Preserve prior fixtures and native Three. See docs/foundry/LOD.md and STATUS.md.
+
+## AF-04 successor
+AF03 accepted for continuation at 7fd75bc (run 45391188524, 137 tests). Default tests + AF04 inspection sheets and single narrative CPU film. Preserve original 250 IDs, explicit premium-only new IDs, AF01–03 and matched Three. No aesthetic acceptance from automation alone; see docs/foundry/HERO_ASSETS.md.

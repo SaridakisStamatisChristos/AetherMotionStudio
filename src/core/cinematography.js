@@ -1,3 +1,4 @@
+import {emitHeroBoxes,heroBounds} from '../foundry/hero.js';
 import {smooth,clamp,keyframes,mix} from './motion.js';
 import {MOTION_PRESETS} from './presets.js';
 import {add,sub,dot,cross,norm,ry} from '../visual/vectors.js';
@@ -50,11 +51,11 @@ export function sampleCameraRig(x,p,tracks){
 }
 export function geometryBounds(assets){
  const lo=[Infinity,Infinity,Infinity],hi=[-Infinity,-Infinity,-Infinity];
- for(const a of assets)emitCinematicAsset(a,(c,s,color,tf=q=>q)=>{
+ for(const a of assets){if(a.heroRevision){const b=heroBounds(a);for(let i=0;i<3;i++){lo[i]=Math.min(lo[i],b.lo[i]);hi[i]=Math.max(hi[i],b.hi[i]);}continue;}emitCinematicAsset(a,(c,s,color,tf=q=>q)=>{
   for(const x of [-1,1])for(const y of [-1,1])for(const z of [-1,1]){
    const q=tf(c.map((v,i)=>v+s[i]*[x,y,z][i]/2));q.forEach((v,i)=>{lo[i]=Math.min(lo[i],v);hi[i]=Math.max(hi[i],v)});
   }
- });
+ });}
  if(!lo.every(Number.isFinite)||!hi.every(Number.isFinite))return null;
  return {lo,hi,center:lerp3(lo,hi,.5)};
 }
@@ -163,6 +164,7 @@ export function validateAssembly(a,p){
  if(x.color!==undefined&&!/^#[0-9a-fA-F]{6}$/.test(x.color))fail(p+'.color','hex color required');
 }
 export function emitCinematicAsset(a,box){
+ if(a.heroRevision)return emitHeroBoxes(a,box);
  const x=a.assembly;
  if(!x)return emitAsset(a.asset,box,a.pose);
  const t=smooth(clamp((a.progress-x.start)/(x.end-x.start))),parts=[];

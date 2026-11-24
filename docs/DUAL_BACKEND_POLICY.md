@@ -23,3 +23,5 @@ User explicitly requests both backend videos at 30 seconds. Default v1.0 CI exec
 After v1.0 acceptance, default development pushes return to fast tests and one polished AF-01 CPU fixture. Matched AF-01 Three.js fixture and all prior 25 native outputs remain in manual full suite (plus the new pair). Explicit manual release-pair is retained. Native Foundry WebGL evidence deferred.
 
 AF-03 scoped default: fast tests, six-asset LOD benchmark and one AF03 CPU film. AF01/02/03 matched pairs retained in manual full gate; native WebGL evidence remains outstanding.
+
+AF04 development scope: fast tests and per-asset inspection evidence plus one narrative CPU film. All matching native Three.js scenes preserved; full gate remains deferred.
