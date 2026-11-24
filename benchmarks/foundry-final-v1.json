@@ -1,0 +1,109 @@
+{
+  "version": 1,
+  "id": "foundry-final-v1",
+  "parent": "cd5ba5b9c7f41a30b32a9f4f65c594461a1e60c2",
+  "dimensions": [
+    1080,
+    1920
+  ],
+  "fps": 30,
+  "concurrency": 2,
+  "repetitions": 1,
+  "pairs": [
+    {
+      "key": "legacy-original",
+      "cpu": "cinematic-cpu",
+      "three": "cinematic-three",
+      "kind": "matched-legacy",
+      "frames": 360
+    },
+    {
+      "key": "legacy-polished",
+      "cpu": "cinematic-cpu-polished",
+      "three": "cinematic-three-polished",
+      "kind": "matched-legacy",
+      "frames": 360
+    },
+    {
+      "key": "premium-discovery",
+      "cpu": "foundry-af09-discovery-cpu-polished",
+      "three": "foundry-af09-discovery-three-polished",
+      "kind": "matched-lod",
+      "frames": 360
+    },
+    {
+      "key": "optimized-discovery",
+      "cpu": "foundry-af09-optimized-cpu-polished",
+      "three": "foundry-af09-optimized-three-polished",
+      "kind": "backend-optimized",
+      "frames": 360
+    },
+    {
+      "key": "product",
+      "cpu": "foundry-af09-cpu-polished",
+      "three": "foundry-af09-three-polished",
+      "kind": "matched-lod",
+      "frames": 900
+    },
+    {
+      "key": "laboratory",
+      "cpu": "foundry-af09-lab-cpu-polished",
+      "three": "foundry-af09-lab-three-polished",
+      "kind": "matched-lod",
+      "frames": 1350
+    },
+    {
+      "key": "imported",
+      "cpu": "foundry-af05-cpu-polished",
+      "three": "foundry-af05-three-polished",
+      "kind": "matched-lod",
+      "frames": 900
+    },
+    {
+      "key": "generated",
+      "cpu": "foundry-af07-cpu-polished",
+      "three": "foundry-af07-three-polished",
+      "kind": "matched-lod",
+      "frames": 900
+    },
+    {
+      "key": "portable",
+      "cpu": "foundry-af08-cpu-polished",
+      "three": "foundry-af08-three-polished",
+      "kind": "matched-lod",
+      "frames": 900
+    }
+  ],
+  "sampling": [
+    0,
+    0.25,
+    0.5,
+    0.75,
+    1
+  ],
+  "assetQualityComparisons": [
+    [
+      "legacy-polished",
+      "premium-discovery"
+    ]
+  ],
+  "humanRubric": [
+    "silhouette",
+    "materials",
+    "composition",
+    "continuity",
+    "detail",
+    "typography",
+    "perceived-motion"
+  ],
+  "requiredArtifacts": [
+    "film.mp4",
+    "scene.json",
+    "timeline.json",
+    "probe.json",
+    "render-timing.json",
+    "kokoro-narration.wav",
+    "qualification.json"
+  ],
+  "authorization": "Manual suite=full only. Default AF09 CPU product. Release and merge separately authorized."
+}

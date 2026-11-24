@@ -18,3 +18,23 @@ Source commit: `6e3e894e29ae30ba59e82a894760dabea9971b11`. GitHub Actions run: [
 
 ## v1.0 matched release scope (2026-11-24)
 User explicitly requests both backend videos at 30 seconds. Default v1.0 CI executes one shared plan and one shared narration preparation followed by exactly two native renders (CPU and Three.js); both must have 900 frames and identical timeline, narration/mix, subtitle and normalized scene hashes. The 23 earlier fixtures remain in manual full suite; a scoped release pair is not the full historical gate. Do not infer GPU performance from software GL timing or aesthetic superiority from RGB differences.
+
+## Asset Foundry scoped development
+After v1.0 acceptance, default development pushes return to fast tests and one polished AF-01 CPU fixture. Matched AF-01 Three.js fixture and all prior 25 native outputs remain in manual full suite (plus the new pair). Explicit manual release-pair is retained. Native Foundry WebGL evidence deferred.
+
+AF-03 scoped default: fast tests, six-asset LOD benchmark and one AF03 CPU film. AF01/02/03 matched pairs retained in manual full gate; native WebGL evidence remains outstanding.
+
+AF04 development scope: fast tests and per-asset inspection evidence plus one narrative CPU film. All matching native Three.js scenes preserved; full gate remains deferred.
+
+AF05 default tests and one local-import CPU film; full matched AF05 pair generated deterministically from the authored corpus by CI, previous fixtures retained. Native Three deferred.
+
+AF06 default: structural checks and CPU still inspection sheets plus single selected AF06 CPU film. Matched AF06 native fixture retained in manual full gate. Inspector records the actual shader, including explicit relighting of older fixed-light geometry; native Three inspection deferred.
+
+AF07 default: fast tests and held-out generator evaluation, one AF07 CPU polished film. Both fixtures are generated deterministically from the same committed story request; native Three retained in manual full gate.
+
+AF08 default: pack roundtrip/negative evidence and one AF08 CPU polished film; native paired fixture generated from the same portable authored story, full matrix deferred.
+
+AF09 frozen protocol v1: default new CPU product only, full manual native matrix includes nine final pairs plus all old regression fixtures. Matched and optimized comparisons separated. Authorization and human review required before final acceptance.
+
+## Current CI policy — local-first rendering (2026-11-24)
+User authorizes merging the Asset Foundry implementation with routine CI restricted to fast JavaScript and Python tests, protocol planning and Python syntax checks. No automatic native renders or comparisons on pushes to feature branches or main. Manual workflow dispatch retains CPU showcase, matched release pair and complete native matrix. Historical recovery workflows are archived as documentation, not active triggers. Both backends, all fixtures, all original comparison assertions and prior evidence remain intact. Green routine CI does not signify full native qualification. The original full matrix rendered all 48 jobs; final AF09 nine-pair comparison passed following two targeted audio repairs; historical regression remains pending final Speech recovery and comparison. Native visual/performance validation moves to local hardware. Future matched benchmark work must prepare shared narration once per pair. No automatic release publication.

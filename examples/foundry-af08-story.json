@@ -1,0 +1,60 @@
+{
+  "version": 1,
+  "id": "foundry-af08",
+  "title": "The Observatory Relay",
+  "voice": "af_heart",
+  "packs": [
+    "retro-lab",
+    "generated-lab"
+  ],
+  "shots": [
+    {
+      "heading": "ARRIVAL AT THE RELAY",
+      "subheading": "The explorer locates a silent beacon.",
+      "narration": "The explorer finds the silent relay.",
+      "prop": "survey-beacon",
+      "environment": "midnight",
+      "yaw": -0.25
+    },
+    {
+      "heading": "READ THE SIGNAL",
+      "subheading": "A steady glow marks the signal source.",
+      "narration": "A blue signal marks the location.",
+      "prop": "survey-beacon",
+      "environment": "laboratory",
+      "yaw": 0.35
+    },
+    {
+      "heading": "CHECK THE INSULATOR",
+      "subheading": "The relay has a ceramic component.",
+      "narration": "Ceramic ribs surround the relay terminal.",
+      "prop": "ceramic-insulator",
+      "environment": "amber",
+      "yaw": 0.15
+    },
+    {
+      "heading": "COLLECT THE SAMPLE",
+      "subheading": "A sealed vessel carries the specimen.",
+      "narration": "The explorer collects a sealed sample.",
+      "prop": "specimen-canister",
+      "environment": "laboratory",
+      "yaw": -0.3
+    },
+    {
+      "heading": "RETURN TO THE BEACON",
+      "subheading": "The same relay guides the explorer.",
+      "narration": "The beacon guides the explorer back.",
+      "prop": "survey-beacon",
+      "environment": "midnight",
+      "yaw": 0.4
+    },
+    {
+      "heading": "SIGNAL RESTORED",
+      "subheading": "The relay and sample are secured.",
+      "narration": "The relay is ready for inspection.",
+      "prop": "survey-beacon",
+      "environment": "amber",
+      "yaw": 0
+    }
+  ]
+}

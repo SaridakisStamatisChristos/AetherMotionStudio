@@ -1,3 +1,4 @@
+import {drawFoundry} from '../foundry/canvas.js';
 import {drawOverlays} from './draw-overlays.js';
 import {createProjection,createMesh} from '../visual/mesh.js';
 import {polygon,glow,star,text,r} from '../visual/primitives.js';
@@ -20,9 +21,10 @@ function world(ctx,p,W,H,s,three){
    const a=project(pair[0]),b=project(pair[1]);if(a[2]>.5&&b[2]>.5){ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);ctx.stroke()}
   }
   for(const a of state.assets){const q=project(a.pose.origin);ctx.save();ctx.translate(q[0],q[1]);ctx.scale(1,.24);glow(ctx,0,0,105*a.pose.scale,'rgba(0,0,0,.6)');ctx.restore()}
-  const {box,faces}=createMesh(c.position,project,.3);emitGraph(state,box);
+  const {box,faces}=createMesh(c.position,project,.3);if(!state.geometryProfile)emitGraph(state,box);
   if(state.fidelity)contactShadows(ctx,state,project,state.fidelity);
-  for(const f of faces.sort((a,b)=>b.z-a.z)){polygon(ctx,f.p,f.color,f.edge);if(state.fidelity)detailedFace(ctx,f,state.fidelity.surfaceDetail);}
+  if(state.geometryProfile)drawFoundry(ctx,state);
+  else for(const f of faces.sort((a,b)=>b.z-a.z)){polygon(ctx,f.p,f.color,f.edge);if(state.fidelity)detailedFace(ctx,f,state.fidelity.surfaceDetail);}
  }
  if(state.fidelity){atmosphere(ctx,state,project,state.fidelity);particleTrails(ctx,state,project,state.fidelity);}
  // Shared screen-space cinematic effects; no randomness or wall clock.

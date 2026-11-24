@@ -19,3 +19,35 @@ Python scripts need a venv, requirements, FFmpeg, eSpeak NG and Kokoro models. v
 - Both CPU Canvas and Three.js WebGL are mandatory first-class backends. Follow [binding dual-backend preservation policy](docs/DUAL_BACKEND_POLICY.md). Preserve original and polished fidelity profiles and matched regression fixtures. The user-authorized temporary CPU-only render scope is documented in DUAL_BACKEND_POLICY.md. GPU-specific features must remain optional; no backend may be removed without explicit user authorization.
 - Do not copy entire upstream repositories into this project.
 - When adding agent guidance, link official Remotion skills (https://github.com/remotion-dev/skills); don't claim installed skills unless actually installed.
+
+## Foundry campaign AF-01
+Successor to accepted v1.0 main db54822d6b785375f47f18f50555ffccbf9eef16 (CI 45375807857). Use docs/foundry/STATUS.md as the forward-only checkpoint. Default pushes: fast tests + one polished AF-01 CPU film only. Manual release-pair/full remain runnable; no native Three.js Foundry render without authorization. Legacy geometry/profile unaffected by opt-in geometryProfile. No automatic merge.
+
+## Foundry AF-02 successor
+AF-01 accepted for continuation at 4e0a2eb (run 45387263982, 125 tests, artifact 14916512944). Default scope now AF-02 fast tests and one polished CPU material study; retain AF-01 evidence and manual full native gate. Use docs/foundry/MATERIALS.md and STATUS.md. No auto merge.
+
+## AF-03 successor
+AF02 accepted for continuation at 81b10e6, CI 45389538842, 132 tests. Default fast tests + AF03 benchmark + one CPU polished film. No automatic LOD downgrades on budget failure; selected detail must be shot-stable and reported. Preserve prior fixtures and native Three. See docs/foundry/LOD.md and STATUS.md.
+
+## AF-04 successor
+AF03 accepted for continuation at 7fd75bc (run 45391188524, 137 tests). Default tests + AF04 inspection sheets and single narrative CPU film. Preserve original 250 IDs, explicit premium-only new IDs, AF01–03 and matched Three. No aesthetic acceptance from automation alone; see docs/foundry/HERO_ASSETS.md.
+
+## AF-05 successor
+AF04 verified at 477a3fa (run 45396749173, 143 tests). Default tests + local import corpus + one AF05 CPU polished film. Source import only through bounded local staging; no network/archive/executable input; quarantine uncertain licenses; no silent unsupported feature conversion. Preserve previous fixtures and both renderers.
+
+## AF06 successor
+AF05 verified at 10d0432 (run 45400775233, 148 tests). Default fast tests + bounded still inspection batch + one AF06 CPU film. Human review requires explicit scores and matching content/evidence digests, never automated approval. Native Three and full gate deferred. See docs/foundry/INSPECTOR.md.
+
+## AF07 successor
+AF06 verified at d45e075 (run 45405168868). Default tests + AF07 generation evaluation and exactly one polished CPU film; matched native Three fixture retained for manual full. No automatic promotion, merge or release. See docs/foundry/GENERATOR.md.
+
+## AF08 successor
+AF07 verified at ba69402 (run 45409971516); default fast tests + AF08 pack acceptance evidence + one CPU polished film. Both renderers and all prior fixtures preserved. Native Three/full only on explicit authorization; no merge. See docs/foundry/PACKS.md.
+
+## AF09 successor
+AF08 verified at cd5ba5b (run 45415008666). Freeze benchmarks/foundry-final-v1.json before final native runs. Default tests + protocol evidence + AF09 CPU product. Manual suite=full only on explicit authorization. No merge/release. See docs/foundry/QUALIFICATION.md.
+
+## Current CI policy — local-first rendering (2026-11-24)
+User authorizes merging the Asset Foundry implementation with routine CI restricted to fast JavaScript and Python tests, protocol planning and Python syntax checks. No automatic native renders or comparisons on pushes to feature branches or main. Manual workflow dispatch retains CPU showcase, matched release pair and complete native matrix. Historical recovery workflows are archived as documentation, not active triggers. Both backends, all fixtures, all original comparison assertions and prior evidence remain intact. Green routine CI does not signify full native qualification. The original full matrix rendered all 48 jobs; final AF09 nine-pair comparison passed following two targeted audio repairs; historical regression remains pending final Speech recovery and comparison. Native visual/performance validation moves to local hardware. Future matched benchmark work must prepare shared narration once per pair. No automatic release publication.
+
+This current policy supersedes earlier default CI render scopes; do not reinstate automatic native renders without explicit authorization.

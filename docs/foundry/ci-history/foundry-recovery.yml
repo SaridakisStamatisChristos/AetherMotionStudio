@@ -1,0 +1,114 @@
+name: AF09 - targeted shared-audio recovery
+on:
+  push:
+    branches: ['feature/af-01-geometry-kernel']
+permissions:
+  contents: read
+  actions: read
+jobs:
+  repair:
+    if: github.event.before == '202ee715012c0e857461ec56c4df733a438c1608' && github.event.head_commit.message == 'AF09 repair two shared audio lanes'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 50
+    strategy:
+      fail-fast: false
+      matrix:
+        phase: ['05', '09']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          ref: '202ee715012c0e857461ec56c4df733a438c1608'
+          path: frozen
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ github.token }}
+          run-id: 45423588804
+          name: aethermotion-foundry-af${{ matrix.phase }}-cpu-polished
+          path: original/cpu
+      - uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ github.token }}
+          run-id: 45423588804
+          name: aethermotion-foundry-af${{ matrix.phase }}-three-polished
+          path: original/three
+      - run: npm install --no-audit --no-fund
+        working-directory: frozen
+      - run: python -m pip install --disable-pip-version-check -r requirements.txt -r requirements-ci.txt
+        working-directory: frozen
+      - run: python scripts/ci_media_tools.py
+        working-directory: frozen
+      - name: Re-render only mismatched Three lane at frozen source
+        working-directory: frozen
+        env:
+          REPAIR_ORCHESTRATION_SHA: ${{ github.sha }}
+          GITHUB_SHA: '202ee715012c0e857461ec56c4df733a438c1608'
+        run: |
+          cp ../scripts/repair-paired-render.mjs scripts/repair-paired-render.mjs
+          id=foundry-af${{ matrix.phase }}-three-polished
+          mkdir -p "out/$id"
+          /usr/bin/time -f 'elapsed_seconds=%e\nmaximum_rss_kib=%M' -o "out/$id/qualification-process.txt" node scripts/repair-paired-render.mjs "${{ matrix.phase }}" ../original/cpu ../original/three
+          node scripts/foundry-qualify.mjs measure "$id"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: repaired-foundry-af${{ matrix.phase }}-three-polished
+          path: frozen/out/foundry-af${{ matrix.phase }}-three-polished/
+          if-no-files-found: error
+          retention-days: 30
+  compare:
+    needs: repair
+    if: always() && github.event.before == '202ee715012c0e857461ec56c4df733a438c1608' && github.event.head_commit.message == 'AF09 repair two shared audio lanes' && needs.repair.result == 'success'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: '202ee715012c0e857461ec56c4df733a438c1608'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ github.token }}
+          run-id: 45423588804
+          pattern: aethermotion-*
+          path: comparison
+      - uses: actions/download-artifact@v4
+        with:
+          name: repaired-foundry-af05-three-polished
+          path: repaired/05
+      - uses: actions/download-artifact@v4
+        with:
+          name: repaired-foundry-af09-three-polished
+          path: repaired/09
+      - name: Select replacements without touching original run artifacts
+        run: |
+          for phase in 05 09; do
+            id="foundry-af${phase}-three-polished"
+            mv "comparison/aethermotion-$id" "repaired/original-$phase"
+            mv "repaired/$phase" "comparison/aethermotion-$id"
+            cp "comparison/aethermotion-$id/repair-provenance.json" "comparison/repair-provenance-$phase.json"
+          done
+      - run: python -m pip install numpy==2.2.6 imageio-ffmpeg==0.6.0
+      - run: python scripts/compare_foundry_final.py comparison
+      - run: python scripts/compare_backends.py comparison
+      - run: python scripts/compare_fidelity.py comparison
+      - run: python scripts/compare_phase_pairs.py comparison
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cinematic-backend-comparison-recovered
+          path: |
+            comparison/comparison.json
+            comparison/fidelity-comparison.json
+            comparison/phase-pairs.json
+            comparison/foundry-final-report.json
+            comparison/*-review.jpg
+            comparison/repair-provenance-*.json
+          if-no-files-found: error

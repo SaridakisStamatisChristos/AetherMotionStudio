@@ -1,0 +1,770 @@
+{
+  "version": 2,
+  "id": "foundry-af09-cpu-polished",
+  "title": "Precision in Motion",
+  "voice": "af_heart",
+  "shots": [
+    {
+      "id": "camera-intro",
+      "template": "cinematic-graph",
+      "backend": "cpu",
+      "durationFrames": 150,
+      "transitionFrames": 0,
+      "heading": "PRECISION IN MOTION",
+      "subheading": "A camera built from curved surfaces.",
+      "environment": "midnight",
+      "camera": {
+        "x": [
+          [
+            0,
+            1.3
+          ],
+          [
+            1,
+            -0.8
+          ]
+        ],
+        "y": [
+          [
+            0,
+            3.2
+          ],
+          [
+            1,
+            2.8
+          ]
+        ],
+        "z": [
+          [
+            0,
+            8
+          ],
+          [
+            1,
+            7.3
+          ]
+        ],
+        "zoom": [
+          [
+            0,
+            1260
+          ],
+          [
+            1,
+            1500
+          ]
+        ]
+      },
+      "assets": [
+        {
+          "id": "camera",
+          "asset": "dslr-camera",
+          "tracks": {
+            "x": [
+              [
+                0,
+                0
+              ]
+            ],
+            "z": [
+              [
+                0,
+                0
+              ]
+            ],
+            "scale": [
+              [
+                0,
+                1.25
+              ]
+            ],
+            "yaw": [
+              [
+                0,
+                -0.5
+              ],
+              [
+                1,
+                0.3
+              ]
+            ]
+          }
+        }
+      ],
+      "effects": [],
+      "narration": [
+        "A precision camera combines glass and metal."
+      ],
+      "fidelity": {
+        "bloom": 0.15,
+        "atmosphere": 0.15,
+        "contactShadow": 0.7,
+        "surfaceDetail": 0.65,
+        "depthOfField": 0.04,
+        "motionBlur": 0,
+        "grain": 0.08,
+        "grade": 0.25,
+        "particles": 0,
+        "typography": 1
+      },
+      "geometryProfile": "foundry-af04",
+      "cameraRig": {
+        "preset": "medium",
+        "framing": "medium",
+        "strength": 0.85,
+        "padding": 0.15
+      },
+      "lodPolicy": {
+        "version": 1,
+        "quality": "cinematic",
+        "selection": "explicit",
+        "overrides": [
+          {
+            "asset": "camera",
+            "level": 1
+          }
+        ],
+        "budget": {
+          "maxTriangles": 50000,
+          "maxDrawCalls": 256
+        }
+      },
+      "transition": "cut"
+    },
+    {
+      "id": "camera-detail",
+      "template": "cinematic-graph",
+      "backend": "cpu",
+      "durationFrames": 150,
+      "transitionFrames": 0,
+      "heading": "THE LENS",
+      "subheading": "A closer look at the optical assembly.",
+      "environment": "laboratory",
+      "camera": {
+        "x": [
+          [
+            0,
+            1.3
+          ],
+          [
+            1,
+            -0.8
+          ]
+        ],
+        "y": [
+          [
+            0,
+            3.2
+          ],
+          [
+            1,
+            2.8
+          ]
+        ],
+        "z": [
+          [
+            0,
+            8
+          ],
+          [
+            1,
+            7.3
+          ]
+        ],
+        "zoom": [
+          [
+            0,
+            1260
+          ],
+          [
+            1,
+            1500
+          ]
+        ]
+      },
+      "assets": [
+        {
+          "id": "camera",
+          "asset": "dslr-camera",
+          "tracks": {
+            "x": [
+              [
+                0,
+                0
+              ]
+            ],
+            "z": [
+              [
+                0,
+                0
+              ]
+            ],
+            "scale": [
+              [
+                0,
+                1.25
+              ]
+            ],
+            "yaw": [
+              [
+                0,
+                0.15
+              ],
+              [
+                1,
+                0.7
+              ]
+            ]
+          }
+        }
+      ],
+      "effects": [],
+      "narration": [
+        "The lens reveals concentric curves and fine details."
+      ],
+      "fidelity": {
+        "bloom": 0.15,
+        "atmosphere": 0.15,
+        "contactShadow": 0.7,
+        "surfaceDetail": 0.65,
+        "depthOfField": 0.04,
+        "motionBlur": 0,
+        "grain": 0.08,
+        "grade": 0.25,
+        "particles": 0,
+        "typography": 1
+      },
+      "geometryProfile": "foundry-af04",
+      "cameraRig": {
+        "preset": "medium",
+        "framing": "medium",
+        "strength": 0.85,
+        "padding": 0.15
+      },
+      "lodPolicy": {
+        "version": 1,
+        "quality": "cinematic",
+        "selection": "explicit",
+        "overrides": [
+          {
+            "asset": "camera",
+            "level": 1
+          }
+        ],
+        "budget": {
+          "maxTriangles": 50000,
+          "maxDrawCalls": 256
+        }
+      },
+      "transition": "cut"
+    },
+    {
+      "id": "watch-intro",
+      "template": "cinematic-graph",
+      "backend": "cpu",
+      "durationFrames": 150,
+      "transitionFrames": 0,
+      "heading": "MECHANICAL DESIGN",
+      "subheading": "A watch with a detailed circular dial.",
+      "environment": "amber",
+      "camera": {
+        "x": [
+          [
+            0,
+            1.3
+          ],
+          [
+            1,
+            -0.8
+          ]
+        ],
+        "y": [
+          [
+            0,
+            4.1
+          ],
+          [
+            1,
+            3.8
+          ]
+        ],
+        "z": [
+          [
+            0,
+            7.1
+          ],
+          [
+            1,
+            7
+          ]
+        ],
+        "zoom": [
+          [
+            0,
+            1260
+          ],
+          [
+            1,
+            1500
+          ]
+        ]
+      },
+      "assets": [
+        {
+          "id": "watch",
+          "asset": "mechanical-watch",
+          "tracks": {
+            "x": [
+              [
+                0,
+                0
+              ]
+            ],
+            "z": [
+              [
+                0,
+                0
+              ]
+            ],
+            "scale": [
+              [
+                0,
+                1.25
+              ]
+            ],
+            "yaw": [
+              [
+                0,
+                -0.55
+              ],
+              [
+                1,
+                0.15
+              ]
+            ]
+          }
+        }
+      ],
+      "effects": [],
+      "narration": [
+        "A mechanical watch balances metal and glass."
+      ],
+      "fidelity": {
+        "bloom": 0.15,
+        "atmosphere": 0.15,
+        "contactShadow": 0.7,
+        "surfaceDetail": 0.65,
+        "depthOfField": 0.04,
+        "motionBlur": 0,
+        "grain": 0.08,
+        "grade": 0.25,
+        "particles": 0,
+        "typography": 1
+      },
+      "geometryProfile": "foundry-af04",
+      "cameraRig": {
+        "preset": "medium",
+        "framing": "medium",
+        "strength": 0.85,
+        "padding": 0.15
+      },
+      "lodPolicy": {
+        "version": 1,
+        "quality": "cinematic",
+        "selection": "explicit",
+        "overrides": [
+          {
+            "asset": "watch",
+            "level": 1
+          }
+        ],
+        "budget": {
+          "maxTriangles": 50000,
+          "maxDrawCalls": 256
+        }
+      },
+      "transition": "cut"
+    },
+    {
+      "id": "watch-detail",
+      "template": "cinematic-graph",
+      "backend": "cpu",
+      "durationFrames": 150,
+      "transitionFrames": 0,
+      "heading": "THE DIAL",
+      "subheading": "Curved surfaces catch the changing light.",
+      "environment": "midnight",
+      "camera": {
+        "x": [
+          [
+            0,
+            1.3
+          ],
+          [
+            1,
+            -0.8
+          ]
+        ],
+        "y": [
+          [
+            0,
+            4.1
+          ],
+          [
+            1,
+            3.8
+          ]
+        ],
+        "z": [
+          [
+            0,
+            7.1
+          ],
+          [
+            1,
+            7
+          ]
+        ],
+        "zoom": [
+          [
+            0,
+            1260
+          ],
+          [
+            1,
+            1500
+          ]
+        ]
+      },
+      "assets": [
+        {
+          "id": "watch",
+          "asset": "mechanical-watch",
+          "tracks": {
+            "x": [
+              [
+                0,
+                0
+              ]
+            ],
+            "z": [
+              [
+                0,
+                0
+              ]
+            ],
+            "scale": [
+              [
+                0,
+                1.25
+              ]
+            ],
+            "yaw": [
+              [
+                0,
+                0.25
+              ],
+              [
+                1,
+                -0.5
+              ]
+            ]
+          }
+        }
+      ],
+      "effects": [],
+      "narration": [
+        "Light moves across the bezel and dial."
+      ],
+      "fidelity": {
+        "bloom": 0.15,
+        "atmosphere": 0.15,
+        "contactShadow": 0.7,
+        "surfaceDetail": 0.65,
+        "depthOfField": 0.04,
+        "motionBlur": 0,
+        "grain": 0.08,
+        "grade": 0.25,
+        "particles": 0,
+        "typography": 1
+      },
+      "geometryProfile": "foundry-af04",
+      "cameraRig": {
+        "preset": "medium",
+        "framing": "medium",
+        "strength": 0.85,
+        "padding": 0.15
+      },
+      "lodPolicy": {
+        "version": 1,
+        "quality": "cinematic",
+        "selection": "explicit",
+        "overrides": [
+          {
+            "asset": "watch",
+            "level": 1
+          }
+        ],
+        "budget": {
+          "maxTriangles": 50000,
+          "maxDrawCalls": 256
+        }
+      },
+      "transition": "cut"
+    },
+    {
+      "id": "camera-return",
+      "template": "cinematic-graph",
+      "backend": "cpu",
+      "durationFrames": 150,
+      "transitionFrames": 0,
+      "heading": "SURFACE FINISH",
+      "subheading": "The camera returns in a new light.",
+      "environment": "amber",
+      "camera": {
+        "x": [
+          [
+            0,
+            1.3
+          ],
+          [
+            1,
+            -0.8
+          ]
+        ],
+        "y": [
+          [
+            0,
+            3.2
+          ],
+          [
+            1,
+            2.8
+          ]
+        ],
+        "z": [
+          [
+            0,
+            8
+          ],
+          [
+            1,
+            7.3
+          ]
+        ],
+        "zoom": [
+          [
+            0,
+            1260
+          ],
+          [
+            1,
+            1500
+          ]
+        ]
+      },
+      "assets": [
+        {
+          "id": "camera",
+          "asset": "dslr-camera",
+          "tracks": {
+            "x": [
+              [
+                0,
+                0
+              ]
+            ],
+            "z": [
+              [
+                0,
+                0
+              ]
+            ],
+            "scale": [
+              [
+                0,
+                1.25
+              ]
+            ],
+            "yaw": [
+              [
+                0,
+                0.8
+              ],
+              [
+                1,
+                -0.3
+              ]
+            ]
+          }
+        }
+      ],
+      "effects": [],
+      "narration": [
+        "The finish changes as the camera turns."
+      ],
+      "fidelity": {
+        "bloom": 0.15,
+        "atmosphere": 0.15,
+        "contactShadow": 0.7,
+        "surfaceDetail": 0.65,
+        "depthOfField": 0.04,
+        "motionBlur": 0,
+        "grain": 0.08,
+        "grade": 0.25,
+        "particles": 0,
+        "typography": 1
+      },
+      "geometryProfile": "foundry-af04",
+      "cameraRig": {
+        "preset": "medium",
+        "framing": "medium",
+        "strength": 0.85,
+        "padding": 0.15
+      },
+      "lodPolicy": {
+        "version": 1,
+        "quality": "cinematic",
+        "selection": "explicit",
+        "overrides": [
+          {
+            "asset": "camera",
+            "level": 1
+          }
+        ],
+        "budget": {
+          "maxTriangles": 50000,
+          "maxDrawCalls": 256
+        }
+      },
+      "transition": "cut"
+    },
+    {
+      "id": "watch-finish",
+      "template": "cinematic-graph",
+      "backend": "cpu",
+      "durationFrames": 150,
+      "transitionFrames": 0,
+      "heading": "THE FINAL DETAIL",
+      "subheading": "The watch completes the product study.",
+      "environment": "laboratory",
+      "camera": {
+        "x": [
+          [
+            0,
+            1.3
+          ],
+          [
+            1,
+            -0.8
+          ]
+        ],
+        "y": [
+          [
+            0,
+            4.1
+          ],
+          [
+            1,
+            3.8
+          ]
+        ],
+        "z": [
+          [
+            0,
+            7.1
+          ],
+          [
+            1,
+            7
+          ]
+        ],
+        "zoom": [
+          [
+            0,
+            1260
+          ],
+          [
+            1,
+            1500
+          ]
+        ]
+      },
+      "assets": [
+        {
+          "id": "watch",
+          "asset": "mechanical-watch",
+          "tracks": {
+            "x": [
+              [
+                0,
+                0
+              ]
+            ],
+            "z": [
+              [
+                0,
+                0
+              ]
+            ],
+            "scale": [
+              [
+                0,
+                1.25
+              ]
+            ],
+            "yaw": [
+              [
+                0,
+                -0.2
+              ],
+              [
+                1,
+                0.55
+              ]
+            ]
+          }
+        }
+      ],
+      "effects": [],
+      "narration": [
+        "A final view brings the design into focus."
+      ],
+      "fidelity": {
+        "bloom": 0.15,
+        "atmosphere": 0.15,
+        "contactShadow": 0.7,
+        "surfaceDetail": 0.65,
+        "depthOfField": 0.04,
+        "motionBlur": 0,
+        "grain": 0.08,
+        "grade": 0.25,
+        "particles": 0,
+        "typography": 1
+      },
+      "geometryProfile": "foundry-af04",
+      "cameraRig": {
+        "preset": "medium",
+        "framing": "medium",
+        "strength": 0.85,
+        "padding": 0.15
+      },
+      "lodPolicy": {
+        "version": 1,
+        "quality": "cinematic",
+        "selection": "explicit",
+        "overrides": [
+          {
+            "asset": "watch",
+            "level": 1
+          }
+        ],
+        "budget": {
+          "maxTriangles": 50000,
+          "maxDrawCalls": 256
+        }
+      },
+      "transition": "cut"
+    }
+  ]
+}

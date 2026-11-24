@@ -1,3 +1,4 @@
+import {evaluateGraph} from '../src/core/graph.js';
 import {readFileSync,writeFileSync,mkdirSync} from 'node:fs';
 import {resolve,join,dirname} from 'node:path';
 import {fileURLToPath} from 'node:url';
@@ -30,5 +31,6 @@ if(quality){
  console.log('Quality preflight:',result.report.accepted.length,'accepted camera repairs;',result.report.candidateEvaluations,'candidate evaluations');
  if(result.report.after.issues.some(x=>x.severity==='error'))throw Error('Quality preflight blocking defect; inspect report');
 }
+if(scene.version===2&&scene.shots.some(s=>s.lodPolicy)){const reports=scene.shots.filter(s=>s.lodPolicy).map(s=>({shot:s.id,...evaluateGraph(s,0).lodReport}));writeFileSync(join(out,'lod-report.json'),JSON.stringify({version:1,output:{width:1080,height:1920},reports},null,2));}
 writeFileSync(propsPath,JSON.stringify({scene,timeline}));
 if(cmd==='render')renderNative({root,out,scene,timeline,quality,python});

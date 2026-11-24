@@ -1,0 +1,146 @@
+[
+  {
+    "id": "H1",
+    "request": "cell phone",
+    "expected": "reuse",
+    "rationale": "exact synonym"
+  },
+  {
+    "id": "H2",
+    "request": "portable computer",
+    "expected": "reuse",
+    "rationale": "exact synonym"
+  },
+  {
+    "id": "H3",
+    "request": "retro robot",
+    "expected": "reuse",
+    "rationale": "canonical identity"
+  },
+  {
+    "id": "H4",
+    "request": "temple",
+    "expected": "reuse",
+    "rationale": "architecture"
+  },
+  {
+    "id": "H5",
+    "request": "microscope",
+    "expected": "reuse",
+    "rationale": "science"
+  },
+  {
+    "id": "H6",
+    "request": "compact car",
+    "expected": "reuse",
+    "rationale": "vehicle"
+  },
+  {
+    "id": "H7",
+    "request": "oak tree",
+    "expected": "reuse",
+    "rationale": "nature"
+  },
+  {
+    "id": "H8",
+    "request": "mechanical watch",
+    "expected": "reuse",
+    "rationale": "premium only"
+  },
+  {
+    "id": "H9",
+    "request": "survey beacon",
+    "expected": "generate",
+    "rationale": "missing technology prop"
+  },
+  {
+    "id": "H10",
+    "request": "field signal beacon",
+    "expected": "generate",
+    "rationale": "exact supported alias"
+  },
+  {
+    "id": "H11",
+    "request": "ceramic insulator",
+    "expected": "generate",
+    "rationale": "missing industrial prop"
+  },
+  {
+    "id": "H12",
+    "request": "high voltage insulator",
+    "expected": "generate",
+    "rationale": "exact supported alias"
+  },
+  {
+    "id": "H13",
+    "request": "specimen canister",
+    "expected": "generate",
+    "rationale": "missing laboratory prop"
+  },
+  {
+    "id": "H14",
+    "request": "sample capsule",
+    "expected": "generate",
+    "rationale": "exact supported alias"
+  },
+  {
+    "id": "H15",
+    "request": "instrument",
+    "expected": "clarify",
+    "rationale": "underspecified"
+  },
+  {
+    "id": "H16",
+    "request": "tool",
+    "expected": "clarify",
+    "rationale": "underspecified"
+  },
+  {
+    "id": "H17",
+    "request": "articulated octopus",
+    "expected": "unsupported",
+    "rationale": "complex rig"
+  },
+  {
+    "id": "H18",
+    "request": "photorealistic human face",
+    "expected": "unsupported",
+    "rationale": "detailed anatomy"
+  },
+  {
+    "id": "H19",
+    "request": "operating mechanical clock",
+    "expected": "unsupported",
+    "rationale": "mechanism"
+  },
+  {
+    "id": "H20",
+    "request": "https://example.com/model.glb",
+    "expected": "reject",
+    "rationale": "remote reference"
+  },
+  {
+    "id": "H21",
+    "request": "<script>evil</script>",
+    "expected": "reject",
+    "rationale": "executable markup"
+  },
+  {
+    "id": "H22",
+    "request": "../mesh",
+    "expected": "reject",
+    "rationale": "path escape"
+  },
+  {
+    "id": "H23",
+    "request": "survey beacon and specimen canister",
+    "expected": "clarify",
+    "rationale": "multiple identities"
+  },
+  {
+    "id": "H24",
+    "request": "unknown alien sculpture",
+    "expected": "unsupported",
+    "rationale": "unknown geometry family"
+  }
+]

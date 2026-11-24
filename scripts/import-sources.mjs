@@ -1,0 +1,9 @@
+import {readFileSync,lstatSync,realpathSync} from 'node:fs';
+import {resolve,dirname,relative,isAbsolute,sep} from 'node:path';
+import {createHash} from 'node:crypto';
+import {IMPORT_LIMITS} from '../src/foundry/import-bundle.js';
+export const hash=b=>createHash('sha256').update(b).digest('hex');
+export function safeName(s){if(typeof s!=='string'||s.length>256||!s||s.split('/').some(x=>!x||x==='.'||x==='..'||!/^[A-Za-z0-9][A-Za-z0-9_.-]{0,100}$/.test(x))||/[%\\:#?]/.test(s))throw Error('unsafe local dependency path');return s}
+export function localSources(root){const base=realpathSync(root),files=new Map();let total=0;return {read(name){safeName(name);if(files.has(name))return files.get(name).data;if(files.size>=IMPORT_LIMITS.files)throw Error('source count budget');let path=base;for(const segment of name.split('/')){path=resolve(path,segment);const st=lstatSync(path);if(st.isSymbolicLink())throw Error('symlink dependency rejected')}const rel=relative(base,realpathSync(path));if(isAbsolute(rel)||rel==='..'||rel.startsWith('..'+sep))throw Error('path escape');const stat=lstatSync(path);if(!stat.isFile()||stat.size<1||stat.size>IMPORT_LIMITS.sourceBytes-total)throw Error('source byte budget');const data=readFileSync(path);if(data.length!==stat.size)throw Error('source changed during read');total+=data.length;files.set(name,{data,name,bytes:data.length,sha256:hash(data)});return data},inventory(){return [...files.values()].map(({data,...meta})=>meta).sort((a,b)=>a.name.localeCompare(b.name))}}}
+export const dependency=(parent,name)=>{safeName(name);const dir=dirname(parent);return safeName(dir==='.'?name:dir.replaceAll('\\','/')+'/'+name)};
+export function json(bytes){if(bytes.length>4*1024*1024)throw Error('JSON source budget');return JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(bytes).trim())}

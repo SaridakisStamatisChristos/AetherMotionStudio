@@ -1,3 +1,5 @@
+import {PackRegistry,BUILTIN_PACKS,searchRegistry,assetEntry,verifyPack,PACK_LIMITS} from '../src/foundry/packs.js';
+import {previewAsset,bmp} from '../src/foundry/pack-preview.js';
 import {createServer} from 'node:http';
 import {readFile,writeFile,mkdir,readdir,rename,stat,realpath,unlink} from 'node:fs/promises';
 import {createReadStream} from 'node:fs';
@@ -58,6 +60,9 @@ export function nativeRunner({root,job,snapshot,flags,log}){
 export async function createStudio({root=ROOT,dataDir=join(root,'studio-data'),runner=nativeRunner}={}){
  const projectsDir=join(dataDir,'projects'),snapshots=join(dataDir,'jobs'),outputDir=join(root,'out');
  await Promise.all([mkdir(projectsDir,{recursive:true}),mkdir(snapshots,{recursive:true}),mkdir(outputDir,{recursive:true})]);
+ const packsDir=join(dataDir,'packs');await mkdir(packsDir,{recursive:true});const registry=new PackRegistry();let packWriting=false;
+ const packFiles=(await readdir(packsDir)).filter(n=>/^[a-f0-9]{64}\.json$/.test(n));if(packFiles.length>PACK_LIMITS.packs)throw Error('pack storage capacity');
+ for(const name of packFiles){const p=await inside(packsDir,join(packsDir,name));if((await stat(p)).size>PACK_LIMITS.bytes)throw Error('pack file too large');const manifest=await json(p);if(manifest.digest!==name.slice(0,-5))throw Error('pack filename digest mismatch');registry.import(manifest);}
  const jobs=new Map();let active=null,writing=false,planning=false,origin=null;
  const projectPath=id=>join(projectsDir,safeId(id)+'.json');
  async function getProject(id){
@@ -122,6 +127,21 @@ export async function createStudio({root=ROOT,dataDir=join(root,'studio-data'),r
    const path=u.pathname,method=req.method;
    if(!['GET','HEAD','POST','PUT'].includes(method))throw status(405,'Method not allowed');
    if(['POST','PUT'].includes(method)&&req.headers['x-aether-studio']!=='1')throw status(403,'Studio request header required');
+   if(method==='GET'&&path==='/api/foundry/search'){
+    const q=Object.fromEntries(u.searchParams);for(const k of ['lod','maxHeight','limit'])if(q[k]!==undefined)q[k]=Number(q[k]);return send(res,200,{assets:searchRegistry(q,registry)});
+   }
+   if(method==='GET'&&path==='/api/foundry/packs')return send(res,200,{builtins:BUILTIN_PACKS,installed:registry.list()});
+   if(method==='GET'&&path==='/api/foundry/pack')return send(res,200,{pack:registry.get(u.searchParams.get('id'),u.searchParams.get('revision')??'1.0.0')});
+   if(method==='POST'&&path==='/api/foundry/pack'){
+    if(packWriting)throw status(409,'Another pack write is active');packWriting=true;
+    try{const x=await body(req);keys(x,['pack']);const p=verifyPack(x.pack);const trial=new PackRegistry();for(const row of registry.list())trial.import(registry.get(row.id,row.revision));const result=trial.import(p);
+    if(!result.reused)await atomic(join(packsDir,p.digest+'.json'),JSON.stringify(p));registry.import(p);return send(res,200,result);}finally{packWriting=false;}
+   }
+   if(method==='GET'&&path==='/api/foundry/asset'){
+    const kind=u.searchParams.get('kind'),id=u.searchParams.get('id'),revision=u.searchParams.get('revision')||undefined,entry=assetEntry(kind,id,revision,registry);
+    const lod=Number(u.searchParams.get('lod')??0),view=u.searchParams.get('view')??'three-quarter',lighting=u.searchParams.get('lighting')??'studio';
+    const {raster,...info}=previewAsset(entry,{lod,view,lighting});return send(res,200,{entry,info,preview:'data:image/bmp;base64,'+Buffer.from(bmp(raster)).toString('base64')});
+   }
    if(method==='GET'&&path==='/api/catalog')return send(res,200,{catalog:directorCatalog(),voices:VOICES,cameras:Object.keys(CAMERA_RIGS),actions:Object.keys(ACTIONS),motions:Object.keys(MOTION_PRESETS),effects:Object.keys(EFFECT_PRESETS)});
    if(method==='GET'&&path==='/api/projects'){
     const files=(await readdir(projectsDir)).filter(x=>/^[a-z0-9][a-z0-9-]{0,47}\.json$/.test(x)).sort().slice(0,500),items=[];
@@ -147,7 +167,7 @@ export async function createStudio({root=ROOT,dataDir=join(root,'studio-data'),r
    if(['GET','HEAD'].includes(method)&&match){const j=jobs.get(match[1]);if(!j||!j.files.includes(match[2])||!FILES.has(match[2]))throw status(404,'Artifact not available');return await serveFile(req,res,outputDir,join(outputDir,j.id,match[2]),{download:u.searchParams.get('download')==='1'});}
    if(!['GET','HEAD'].includes(method))throw status(404,'Unknown API route');
    if(path==='/'||['/app.js','/style.css'].includes(path))return await serveFile(req,res,join(root,'studio'),join(root,'studio',path==='/'?'index.html':path.slice(1)));
-   if(/^\/src\/(?:core|visual|templates|studio)\/[a-z0-9-]+\.js$/.test(path))return await serveFile(req,res,join(root,'src'),join(root,path.slice(1)));
+   if(/^\/src\/(?:core|visual|templates|studio|foundry)\/[a-z0-9-]+\.js$/.test(path))return await serveFile(req,res,join(root,'src'),join(root,path.slice(1)));
    if(/^\/vendor\/three\/(?:build|examples\/jsm)\/(?:[A-Za-z0-9_-]+\/)*[A-Za-z0-9_.-]+\.js$/.test(path))return await serveFile(req,res,join(root,'node_modules','three'),join(root,'node_modules','three',path.slice('/vendor/three/'.length)));
    throw status(404,'Not found');
   }catch(e){if(res.headersSent){res.destroy();return;}send(res,e.status??(e.code==='ENOENT'?404:400),{error:String(e.message??e).slice(0,1000)});}
