@@ -27,3 +27,5 @@ AF-03 scoped default: fast tests, six-asset LOD benchmark and one AF03 CPU film.
 AF04 development scope: fast tests and per-asset inspection evidence plus one narrative CPU film. All matching native Three.js scenes preserved; full gate remains deferred.
 
 AF05 default tests and one local-import CPU film; full matched AF05 pair generated deterministically from the authored corpus by CI, previous fixtures retained. Native Three deferred.
+
+AF06 default: structural checks and CPU still inspection sheets plus single selected AF06 CPU film. Matched AF06 native fixture retained in manual full gate. Inspector records the actual shader, including explicit relighting of older fixed-light geometry; native Three inspection deferred.

@@ -34,3 +34,6 @@ AF03 accepted for continuation at 7fd75bc (run 45391188524, 137 tests). Default 
 
 ## AF-05 successor
 AF04 verified at 477a3fa (run 45396749173, 143 tests). Default tests + local import corpus + one AF05 CPU polished film. Source import only through bounded local staging; no network/archive/executable input; quarantine uncertain licenses; no silent unsupported feature conversion. Preserve previous fixtures and both renderers.
+
+## AF06 successor
+AF05 verified at 10d0432 (run 45400775233, 148 tests). Default fast tests + bounded still inspection batch + one AF06 CPU film. Human review requires explicit scores and matching content/evidence digests, never automated approval. Native Three and full gate deferred. See docs/foundry/INSPECTOR.md.
