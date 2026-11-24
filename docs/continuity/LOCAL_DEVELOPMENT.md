@@ -47,7 +47,7 @@ npm run produce -- --request examples/release.request.json --backend both --repa
 Check `scripts/produce.mjs` for exact flags before customizing. The production pair uses one prepared plan/audio. Since LOCAL-02 authored v2 fixtures use it too: `node scripts/produce.mjs --project examples/<x>-cpu-polished.json --pair examples/<x>-three-polished.json --backend both --id <new-slug>` (PowerShell: call node directly; `npm run produce -- ...` loses `--`). Outputs: out/<id>-production/ (production.json, comparison.json, authored sources), out/<id>-<backend>-<profile>/ (film, shared files, shared-inputs.json). IDs must be new; existing outputs are refused. No routine full-suite re-render. Direct render CLI re-synthesizes independently, so its separate CPU and Three invocations are not controlled matched benchmarks. `npm run render -- examples/foundry-af09-cpu-polished.json` and corresponding Three fixture render the 30s product; output IDs are existing fixture IDs.
 
 ## GPU rendering (opt-in)
-Actual helper scripts/native-render.mjs uses `AETHER_GL || 'swangle'`, fixed concurrency 2 and passes --gl only for Three. Remotion v4 desktop ANGLE is a supported candidate; check [GL options](https://www.remotion.dev/docs/gl-options) and pinned CLI help, not v5 defaults. GPU use must be observed. Software swangle remains portable fallback chosen explicitly, not hidden. Do not modify backend defaults globally. On Linux:
+Actual helper scripts/native-render.mjs uses `AETHER_GL || 'swangle'`, `AETHER_CONCURRENCY || 2` and `AETHER_HW_ENCODE || 'disable'` (strictly validated; defaults reproduce the historical CLI args exactly, test-pinned) and passes --gl only for Three. Settings used are recorded in each output's render-timing.json. Remotion v4 desktop ANGLE is a supported candidate; check [GL options](https://www.remotion.dev/docs/gl-options) and pinned CLI help, not v5 defaults. GPU use must be observed. Software swangle remains portable fallback chosen explicitly, not hidden. Do not modify backend defaults globally. On Linux:
 ```bash
 nvidia-smi
 npx --no-install remotion gpu --gl=angle
@@ -73,6 +73,20 @@ $env:AETHER_GL = "vulkan"   # opt-in RTX path for Three.js; omit for default swa
 npm run render -- examples/cinematic-three-polished.json
 ```
 Confirm GPU use each time with `nvidia-smi` (chrome-headless-shell.exe listed as C+G, nonzero utilization). The Windows per-app GPU preference route for `angle` was not tried (system setting). See CURRENT_STATE for measured evidence.
+
+### Recommended local performance profile (owner PC) — LOCAL-03, 2026-11-25, provisional until owner acceptance
+Measured on a settled machine after a true cold boot; full table and conditions in [local-03-bench-report.md](../performance/local-03-bench-report.md).
+```powershell
+$env:AETHER_CONCURRENCY = "8"   # opt-in; default 2
+$env:AETHER_GL = "vulkan"       # opt-in RTX path for Three.js; default swangle
+# AETHER_HW_ENCODE stays unset (x264). "required" = NVENC draft/preview only, see below.
+node scripts/produce.mjs --project examples/cinematic-cpu-polished.json --pair examples/cinematic-three-polished.json --backend both --id <new-slug>
+```
+- Gains vs default (c2): cinematic 360 f CPU 22.1 s@c4 → 15.5–15.9 s@c8; Three/vulkan 11.0 → 8.9 s. AF01 900 f CPU 78.6 → 33.5 s (2.35x), Three/vulkan 44.6 → 21.8 s (2.05x). End-to-end `produce` pair at c8: 44.9 s total incl. speech preparation, CPU film byte-identical to the c2 reference.
+- Cost: render RAM Δ ≈2.4–2.6 GB at c8 (≈1.9 GB at c4), VRAM ≈1.4 GB. Use `AETHER_CONCURRENCY=4` when available RAM is < ~4 GB; c8 was unstable under memory pressure.
+- Correctness: CPU output bit-identical at every concurrency. Three/vulkan not bit-exact run-to-run (≥56 dB vs reference); gate Three by PSNR, and run `python scripts/frame_glitch.py <film> [reference]` on any GPU-profile render (one corrupted frame was seen once, in a non-candidate serial-encode diagnostic).
+- Not adopted: `--reuse-browser` (no measurable gain). NVENC (`AETHER_HW_ENCODE=required`): 11–17% faster but 2.06 vs 5.1 Mbps and −1.4 dB avg / −1.8 dB min PSNR vs x264 against a near-lossless reference — quality-affecting, drafts/previews only, never for qualification. Use `required`, not `if-possible`, so a missing encoder fails visibly.
+- Measure on a settled machine: after a real restart (Start → Restart or `shutdown /r /t 0`; "Shut down" with Fast Startup keeps kernel state), wait ~15 min. Free RAM near 0 is normal on Windows; watch *available* memory and non-paged pool (≈0.7 GB healthy; 2.2 GB was seen after 4.8 days uptime).
 
 ## Studio and authoring
 `npm run studio:local` → http://127.0.0.1:4173; local validated projects and native render jobs. `npm run studio` is Remotion Studio; `npm run prepare-audio -- examples/cinematic-cpu-polished.json` prepares audio before preview when appropriate. See docs/STUDIO.md and docs/DIRECTOR.md.

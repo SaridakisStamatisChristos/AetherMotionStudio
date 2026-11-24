@@ -25,6 +25,18 @@
 | b4-cin-three-vk-c4-ctrl | three | 360 | vulkan | 4 | disable | n | n | 2/0 | 11.0 (0.12) | 10.5 | 0.33 | 32.85 | 0.15 | 0.64 | 0.52 | 10.8 | 859 | 27.2 | 1.69 | 139 | 1 | NO |
 | b4-cin-three-vk-c8-ctrl | three | 360 | vulkan | 8 | disable | n | n | 2/0 | 8.9 (0.00) | 8.5 | 0.32 | 40.40 | 0.15 | 0.65 | 0.53 | 13.8 | 1364 | 35.2 | 1.97 | – | 1 | NO |
 | b4-cin-three-vk-c8-reuse | three | 360 | vulkan | 8 | disable | y | n | 2/0 | 9.8 (0.01) | 9.4 | 0.32 | 36.62 | – | 0.65 | 0.53 | 27.2 | 1351 | 34.3 | 1.71 | – | 2 | NO |
+| c1-cin-cpu-c8-nvenc | cpu | 360 | – | 8 | required | n | n | 2/0 | 13.1 (0.30) | 12.7 | 0.31 | 27.43 | 0.15 | 0.59 | 0.49 | 1.2 | 232 | 33.7 | 1.67 | 151 | 1 | NO |
+| c1-cin-three-vk-c8-nvenc | three | 360 | vulkan | 8 | required | n | n | 2/0 | 7.9 (0.11) | 7.5 | 0.32 | 45.58 | 0.15 | 0.59 | 0.48 | 18.2 | 1564 | 21.1 | 1.38 | 155 | 1 | NO |
 | smoke-three-c2 | three | 360 | vulkan | 2 | disable | n | n | 1/0 | 21.0 (0.00) | 20.1 | 0.73 | 17.15 | 0.65 | 1.11 | 0.92 | 27.5 | 568 | 30.3 | 0.67 | 148 | 1 | yes |
 
-Conditions: a*/b1/b2/smoke rows measured 2026-11-24 under memory pressure (≈13 GB of 15.2 GB idle, non-paged pool ≈2.2 GB, Fast Startup kept kernel state across "shutdowns"). b3 rows measured 2026-11-24 23:41–23:50, 5–15 min after a true cold boot (boot type 0x0, 23:36:37; non-paged pool 0.73 GB) — machine still settling, c8 rows in b3 ran first and are pessimistic. b4 rows measured 2026-11-24/25 on the settled machine (available ≈7.1 GB, non-paged pool ≈0.7 GB), with no-reuse controls interleaved with reuse runs; compare concurrency and reuse only within b4. Every b3/b4 run: verify PASS, quality pass, frame-glitch clean; Three/vulkan min PSNR vs reference 56.26–56.31 dB.
+Conditions: a*/b1/b2/smoke rows measured 2026-11-24 under memory pressure (≈13 GB of 15.2 GB idle, non-paged pool ≈2.2 GB, Fast Startup kept kernel state across "shutdowns"). b3 rows measured 2026-11-24 23:41–23:50, 5–15 min after a true cold boot (boot type 0x0, 23:36:37; non-paged pool 0.73 GB) — machine still settling, c8 rows in b3 ran first and are pessimistic. b4 and c1 rows measured 2026-11-25 on the settled machine (available ≈7.1 GB, non-paged pool ≈0.7 GB), with no-reuse controls interleaved with reuse runs; compare concurrency/reuse/encoder only within b4+c1. Every b3/b4/c1 run: verify PASS, quality pass, frame-glitch clean; Three/vulkan min PSNR vs reference 56.26–56.31 dB (x264 rows).
+
+## NVENC encode quality (c1, `--hw-encode required`, cinematic 1080×1920, 360 f)
+frame_glitch.py compares at 90×160 grayscale (corruption detector, not an encode-quality metric), so encode quality was measured at full resolution with ffmpeg psnr/ssim (YUV 4:2:0). Reference: near-lossless CPU render `out/bench/c1-lossless-cpu-ref` (Remotion CLI, x264 `--crf=1`; CRF 0 is refused by Remotion 4.0.546 for h264), valid because CPU frames are bit-deterministic.
+
+| encode | profile | bitrate | PSNR avg / min vs CRF1 | SSIM all | render c8 |
+|---|---|---|---|---|---|
+| x264 default (reference film) | High | 5.10 Mbps | 49.34 / 47.69 dB | 0.99579 | 15.5–15.9 s |
+| NVENC (Remotion default, no crf) | Main | 2.06 Mbps | 47.90 / 45.85 dB | 0.99361 | 13.1 s |
+
+NVENC vs x264 reference directly: CPU 48.45 dB avg (min 47.69), SSIM 0.99489; Three/vulkan 47.61 dB avg (min 46.59), SSIM 0.99394, 2.05 vs 6.94 Mbps, 7.9 s vs 8.9 s. Verdict: NVENC is a measurable quality/bitrate trade (−1.4 dB avg, −1.8 dB min, 40% bitrate) for 11–17% faster renders; opt-in draft/preview profile only, x264 stays default for qualification. Not human-reviewed.
