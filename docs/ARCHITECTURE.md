@@ -22,3 +22,6 @@ See TIMELINE_V2.md. V2 separates authored shot intent from measured speech/frame
 
 ## v0.4 graph
 One declarative shot produces backend-independent sampled state and asset box commands. CPU and WebGL consumers share the graph, timeline and overlay. See CINEMATIC_GRAPH.md.
+
+## v0.4.3 candidate
+Additive shared cinematography sampler, rig-aware actions, deterministic attachments, world-depth layers, and screen-space data overlays. See CINEMATOGRAPHY.md. Native verification pending; old contracts and both renderer implementations preserved.

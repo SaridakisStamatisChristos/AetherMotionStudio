@@ -1,0 +1,723 @@
+{
+  "version": 2,
+  "id": "cinematography-three-polished",
+  "title": "From sunlight to a smart city",
+  "voice": "af_heart",
+  "shots": [
+    {
+      "id": "sun",
+      "template": "cinematic-graph",
+      "backend": "three",
+      "durationFrames": 225,
+      "transitionFrames": 0,
+      "transition": "cut",
+      "heading": "FROM SUNLIGHT",
+      "subheading": "A city begins with a photon",
+      "environment": "amber",
+      "layers": "solar-field",
+      "camera": {},
+      "cameraRig": {
+        "preset": "establishing",
+        "subject": "panel",
+        "framing": "medium",
+        "padding": 0.1
+      },
+      "assets": [
+        {
+          "id": "guide",
+          "asset": "retro-robot",
+          "tracks": {
+            "x": [
+              [
+                0,
+                -1.45
+              ]
+            ],
+            "scale": [
+              [
+                0,
+                0.8
+              ]
+            ]
+          },
+          "actions": [
+            {
+              "name": "wave",
+              "start": 0.05,
+              "end": 0.65
+            }
+          ]
+        },
+        {
+          "id": "panel",
+          "asset": "solar-panel",
+          "tracks": {
+            "x": [
+              [
+                0,
+                0.65
+              ]
+            ],
+            "scale": [
+              [
+                0,
+                1.1
+              ]
+            ]
+          }
+        }
+      ],
+      "effects": [
+        {
+          "preset": "sunrise-glow",
+          "target": "panel"
+        }
+      ],
+      "overlays": [
+        {
+          "type": "title",
+          "slot": "lower",
+          "text": "The energy journey begins",
+          "animation": "slide",
+          "start": 0.12,
+          "end": 0.96
+        }
+      ],
+      "narration": [
+        "Every smart city needs energy.",
+        "Sunlight arrives for free, but we need a way to capture it."
+      ],
+      "fidelity": {
+        "bloom": 0.6,
+        "atmosphere": 0.55,
+        "contactShadow": 0.65,
+        "surfaceDetail": 0.65,
+        "depthOfField": 0.25,
+        "motionBlur": 0.24,
+        "grain": 0.12,
+        "grade": 0.55,
+        "particles": 0.65,
+        "typography": 1
+      }
+    },
+    {
+      "id": "capture",
+      "template": "cinematic-graph",
+      "backend": "three",
+      "durationFrames": 225,
+      "transitionFrames": 10,
+      "transition": "wipe",
+      "heading": "CAPTURE",
+      "subheading": "Solar cells turn light into current",
+      "environment": "amber",
+      "layers": "solar-field",
+      "camera": {},
+      "cameraRig": {
+        "preset": "dolly-in",
+        "subject": "panel",
+        "framing": "medium",
+        "padding": 0.1
+      },
+      "assets": [
+        {
+          "id": "panel",
+          "asset": "solar-panel",
+          "tracks": {
+            "x": [
+              [
+                0,
+                0
+              ]
+            ],
+            "scale": [
+              [
+                0,
+                1.2
+              ]
+            ]
+          },
+          "assembly": {
+            "type": "assemble",
+            "start": 0,
+            "end": 0.7,
+            "distance": 0.8
+          }
+        },
+        {
+          "id": "guide",
+          "asset": "retro-robot",
+          "tracks": {
+            "x": [
+              [
+                0,
+                -1.75
+              ]
+            ],
+            "scale": [
+              [
+                0,
+                0.67
+              ]
+            ]
+          },
+          "actions": [
+            {
+              "name": "point",
+              "start": 0.15,
+              "end": 0.8
+            }
+          ]
+        }
+      ],
+      "effects": [],
+      "overlays": [
+        {
+          "type": "equation",
+          "slot": "lower",
+          "text": "Light to electricity",
+          "animation": "stagger",
+          "start": 0.12,
+          "end": 0.96,
+          "data": [
+            "Sunlight",
+            "Cells",
+            "Current"
+          ]
+        }
+      ],
+      "narration": [
+        "Solar cells convert part of the incoming light into electricity.",
+        "Their connected cells form a panel."
+      ],
+      "fidelity": {
+        "bloom": 0.6,
+        "atmosphere": 0.55,
+        "contactShadow": 0.65,
+        "surfaceDetail": 0.65,
+        "depthOfField": 0.25,
+        "motionBlur": 0.24,
+        "grain": 0.12,
+        "grade": 0.55,
+        "particles": 0.65,
+        "typography": 1
+      }
+    },
+    {
+      "id": "storage",
+      "template": "cinematic-graph",
+      "backend": "three",
+      "durationFrames": 225,
+      "transitionFrames": 10,
+      "transition": "fade",
+      "heading": "STORE THE SURPLUS",
+      "subheading": "Battery storage shifts energy in time",
+      "environment": "midnight",
+      "layers": "energy-hub",
+      "camera": {},
+      "cameraRig": {
+        "preset": "lateral-tracking",
+        "subject": "battery",
+        "framing": "medium",
+        "padding": 0.1
+      },
+      "assets": [
+        {
+          "id": "guide",
+          "asset": "retro-robot",
+          "tracks": {
+            "x": [
+              [
+                0,
+                -1.05
+              ]
+            ],
+            "scale": [
+              [
+                0,
+                0.85
+              ]
+            ]
+          },
+          "actions": [
+            {
+              "name": "reach",
+              "start": 0,
+              "end": 0.3
+            },
+            {
+              "name": "carry",
+              "start": 0.3,
+              "end": 0.88
+            },
+            {
+              "name": "release",
+              "start": 0.88,
+              "end": 1
+            }
+          ]
+        },
+        {
+          "id": "tool",
+          "asset": "wrench",
+          "tracks": {
+            "x": [
+              [
+                0,
+                0.1
+              ]
+            ],
+            "scale": [
+              [
+                0,
+                0.5
+              ]
+            ]
+          },
+          "attachment": {
+            "parent": "guide",
+            "anchor": "right-hand",
+            "start": 0.28,
+            "end": 0.88,
+            "offset": [
+              0,
+              -0.08,
+              0.12
+            ]
+          }
+        },
+        {
+          "id": "battery",
+          "asset": "battery-stack",
+          "tracks": {
+            "x": [
+              [
+                0,
+                1.05
+              ]
+            ],
+            "scale": [
+              [
+                0,
+                1.05
+              ]
+            ]
+          }
+        }
+      ],
+      "effects": [
+        {
+          "preset": "charging-rings",
+          "target": "battery"
+        }
+      ],
+      "overlays": [
+        {
+          "type": "bar",
+          "slot": "lower",
+          "text": "Illustrative daily energy",
+          "animation": "slide",
+          "start": 0.12,
+          "end": 0.96,
+          "data": [
+            {
+              "label": "Morning",
+              "value": 20
+            },
+            {
+              "label": "Noon",
+              "value": 60
+            },
+            {
+              "label": "Evening",
+              "value": 20
+            }
+          ],
+          "unit": "kWh",
+          "axis": "Generation"
+        }
+      ],
+      "narration": [
+        "Generation peaks near midday.",
+        "A battery stores some of that surplus for later use."
+      ],
+      "fidelity": {
+        "bloom": 0.6,
+        "atmosphere": 0.55,
+        "contactShadow": 0.65,
+        "surfaceDetail": 0.65,
+        "depthOfField": 0.25,
+        "motionBlur": 0.24,
+        "grain": 0.12,
+        "grade": 0.55,
+        "particles": 0.65,
+        "typography": 1
+      }
+    },
+    {
+      "id": "network",
+      "template": "cinematic-graph",
+      "backend": "three",
+      "durationFrames": 225,
+      "transitionFrames": 10,
+      "transition": "match",
+      "heading": "COORDINATE",
+      "subheading": "Sensors and controls balance demand",
+      "environment": "laboratory",
+      "layers": "energy-hub",
+      "camera": {},
+      "cameraRig": {
+        "preset": "orbit",
+        "subject": "network",
+        "framing": "medium",
+        "padding": 0.1
+      },
+      "assets": [
+        {
+          "id": "network",
+          "asset": "network-switch",
+          "tracks": {
+            "x": [
+              [
+                0,
+                0.5
+              ]
+            ],
+            "scale": [
+              [
+                0,
+                1.15
+              ]
+            ]
+          }
+        },
+        {
+          "id": "guide",
+          "asset": "retro-robot",
+          "tracks": {
+            "x": [
+              [
+                0,
+                -1.25
+              ]
+            ],
+            "scale": [
+              [
+                0,
+                0.8
+              ]
+            ]
+          },
+          "actions": [
+            {
+              "name": "inspect",
+              "start": 0.1,
+              "end": 0.8
+            }
+          ]
+        }
+      ],
+      "effects": [
+        {
+          "preset": "cyan-orbit",
+          "target": "network"
+        }
+      ],
+      "overlays": [
+        {
+          "type": "network",
+          "slot": "lower",
+          "text": "Signals connect the system",
+          "animation": "stagger",
+          "start": 0.12,
+          "end": 0.96,
+          "data": [
+            "Solar",
+            "Battery",
+            "Grid",
+            "Homes"
+          ],
+          "edges": [
+            [
+              0,
+              1
+            ],
+            [
+              1,
+              2
+            ],
+            [
+              2,
+              3
+            ]
+          ]
+        }
+      ],
+      "narration": [
+        "Sensors report how much power is available.",
+        "Controllers decide when to store, distribute, or draw energy."
+      ],
+      "fidelity": {
+        "bloom": 0.6,
+        "atmosphere": 0.55,
+        "contactShadow": 0.65,
+        "surfaceDetail": 0.65,
+        "depthOfField": 0.25,
+        "motionBlur": 0.24,
+        "grain": 0.12,
+        "grade": 0.55,
+        "particles": 0.65,
+        "typography": 1
+      }
+    },
+    {
+      "id": "homes",
+      "template": "cinematic-graph",
+      "backend": "three",
+      "durationFrames": 225,
+      "transitionFrames": 10,
+      "transition": "slide",
+      "heading": "POWER THE HOMES",
+      "subheading": "Supply follows changing demand",
+      "environment": "midnight",
+      "layers": "city-dusk",
+      "camera": {},
+      "cameraRig": {
+        "preset": "crane",
+        "subject": "home",
+        "framing": "medium",
+        "padding": 0.1
+      },
+      "assets": [
+        {
+          "id": "home",
+          "asset": "cottage",
+          "tracks": {
+            "x": [
+              [
+                0,
+                0.75
+              ]
+            ],
+            "scale": [
+              [
+                0,
+                1.1
+              ]
+            ]
+          }
+        },
+        {
+          "id": "office",
+          "asset": "office-building",
+          "tracks": {
+            "x": [
+              [
+                0,
+                -1.3
+              ]
+            ],
+            "scale": [
+              [
+                0,
+                0.85
+              ]
+            ]
+          }
+        },
+        {
+          "id": "guide",
+          "asset": "retro-robot",
+          "tracks": {
+            "x": [
+              [
+                0,
+                0
+              ]
+            ],
+            "scale": [
+              [
+                0,
+                0.65
+              ]
+            ]
+          },
+          "actions": [
+            {
+              "name": "point",
+              "start": 0.1,
+              "end": 0.8
+            }
+          ]
+        }
+      ],
+      "effects": [],
+      "overlays": [
+        {
+          "type": "line",
+          "slot": "lower",
+          "text": "Illustrative household demand",
+          "animation": "slide",
+          "start": 0.12,
+          "end": 0.96,
+          "data": [
+            {
+              "label": "06:00",
+              "value": 15
+            },
+            {
+              "label": "12:00",
+              "value": 20
+            },
+            {
+              "label": "18:00",
+              "value": 45
+            },
+            {
+              "label": "00:00",
+              "value": 10
+            }
+          ],
+          "unit": "kW",
+          "axis": "Demand"
+        }
+      ],
+      "narration": [
+        "Homes and businesses use power at different times.",
+        "Smart controls can shift flexible demand toward cleaner hours."
+      ],
+      "fidelity": {
+        "bloom": 0.6,
+        "atmosphere": 0.55,
+        "contactShadow": 0.65,
+        "surfaceDetail": 0.65,
+        "depthOfField": 0.25,
+        "motionBlur": 0.24,
+        "grain": 0.12,
+        "grade": 0.55,
+        "particles": 0.65,
+        "typography": 1
+      }
+    },
+    {
+      "id": "transport",
+      "template": "cinematic-graph",
+      "backend": "three",
+      "durationFrames": 225,
+      "transitionFrames": 10,
+      "transition": "wipe",
+      "heading": "KEEP MOVING",
+      "subheading": "Charge vehicles when power is plentiful",
+      "environment": "laboratory",
+      "layers": "city-dusk",
+      "camera": {},
+      "cameraRig": {
+        "preset": "reveal",
+        "subject": "car",
+        "framing": "medium",
+        "padding": 0.1
+      },
+      "assets": [
+        {
+          "id": "car",
+          "asset": "compact-car",
+          "tracks": {
+            "scale": [
+              [
+                0,
+                1.1
+              ]
+            ],
+            "x": [
+              [
+                0,
+                1.4
+              ],
+              [
+                1,
+                0.1
+              ]
+            ]
+          },
+          "motion": "entrance-right"
+        },
+        {
+          "id": "guide",
+          "asset": "retro-robot",
+          "tracks": {
+            "x": [
+              [
+                0,
+                -1.25
+              ]
+            ],
+            "scale": [
+              [
+                0,
+                0.8
+              ]
+            ]
+          },
+          "actions": [
+            {
+              "name": "walk",
+              "start": 0,
+              "end": 0.7,
+              "mode": "loop",
+              "speed": 3
+            }
+          ]
+        },
+        {
+          "id": "dock",
+          "asset": "charging-dock",
+          "tracks": {
+            "x": [
+              [
+                0,
+                1.5
+              ]
+            ],
+            "scale": [
+              [
+                0,
+                0.75
+              ]
+            ]
+          }
+        }
+      ],
+      "effects": [],
+      "overlays": [
+        {
+          "type": "timeline",
+          "slot": "lower",
+          "text": "A flexible charging schedule",
+          "animation": "stagger",
+          "start": 0.12,
+          "end": 0.96,
+          "data": [
+            "Generate",
+            "Store",
+            "Charge"
+          ]
+        }
+      ],
+      "narration": [
+        "Electric vehicles can charge when surplus power is available.",
+        "Timing helps reduce pressure on the grid."
+      ],
+      "fidelity": {
+        "bloom": 0.6,
+        "atmosphere": 0.55,
+        "contactShadow": 0.65,
+        "surfaceDetail": 0.65,
+        "depthOfField": 0.25,
+        "motionBlur": 0.24,
+        "grain": 0.12,
+        "grade": 0.55,
+        "particles": 0.65,
+        "typography": 1
+      }
+    }
+  ]
+}

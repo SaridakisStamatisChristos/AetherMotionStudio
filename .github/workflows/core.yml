@@ -35,7 +35,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        scene: ${{ fromJSON(github.event_name == 'workflow_dispatch' && inputs.suite == 'full' && '["robot-treasure","blockchain-explainer","robot-lab","blockchain-60s","auto-robot","cinematic-cpu","cinematic-three","cinematic-cpu-polished","cinematic-three-polished","asset-showcase-cpu-polished","asset-showcase-three-polished"]' || '["asset-showcase-cpu-polished"]') }}
+        scene: ${{ fromJSON(github.event_name == 'workflow_dispatch' && inputs.suite == 'full' && '["robot-treasure","blockchain-explainer","robot-lab","blockchain-60s","auto-robot","cinematic-cpu","cinematic-three","cinematic-cpu-polished","cinematic-three-polished","asset-showcase-cpu-polished","asset-showcase-three-polished","cinematography-cpu-polished","cinematography-three-polished"]' || '["cinematography-cpu-polished"]') }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -82,14 +82,16 @@ jobs:
           python-version: '3.11'
       - uses: actions/download-artifact@v4
         with:
-          pattern: aethermotion-cinematic-*
+          pattern: aethermotion-*
           path: comparison
       - run: python -m pip install numpy==2.2.6 imageio-ffmpeg==0.6.0
       - run: python scripts/compare_backends.py comparison
       - run: python scripts/compare_fidelity.py comparison
+      - run: python scripts/compare_phase_pairs.py comparison
       - uses: actions/upload-artifact@v4
         with:
           name: cinematic-backend-comparison
           path: |
             comparison/comparison.json
             comparison/fidelity-comparison.json
+            comparison/phase-pairs.json

@@ -1,3 +1,4 @@
+import {drawOverlays} from './draw-overlays.js';
 import {createProjection,createMesh} from '../visual/mesh.js';
 import {polygon,glow,star,text,r} from '../visual/primitives.js';
 import {evaluateGraph,emitGraph} from '../core/graph.js';
@@ -52,6 +53,7 @@ export function drawGraph(ctx,p,W,H,s,three,frames=360){
  text(ctx,s.heading,360,194,58,'#f4efe5',900);text(ctx,s.subheading,360,274,27,env.accent,700);
 
  }
+ drawOverlays(ctx,s.overlays,p);
  ctx.fillStyle=env.accent+'35';ctx.fillRect(54,1212,612,3);ctx.fillStyle=env.accent;ctx.fillRect(54,1212,612*p,3);
  ctx.restore();
 }
