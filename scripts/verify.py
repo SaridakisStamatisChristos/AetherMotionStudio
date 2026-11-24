@@ -49,6 +49,8 @@ else:
   segment=samples[round(actual['start']*48000):round(actual['end']*48000)]
   assert np.sqrt(np.mean(segment**2))>.005
 review=[(s['startFrame']+s['endFrame'])/60 for s in timeline['shots']] if timeline else [1,6,10]
+if timeline and any('cameraRig' in shot for shot in scene['shots']):
+ review=sorted(set(review+[n/30 for s in timeline['shots'] for n in (s['startFrame'],s['endFrame']-1)]))
 for second in review:
  run([ffmpeg,'-v','error','-y','-ss',str(second),'-i',str(film),'-frames:v','1',str(out/f'frame-{second}.jpg')])
 (out/'probe.json').write_text(json.dumps(d,indent=2))

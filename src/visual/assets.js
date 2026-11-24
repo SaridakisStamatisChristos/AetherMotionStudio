@@ -3,12 +3,17 @@ import {add,rx,ry,rz} from './vectors.js';
 export function transformAt(origin,yaw=0,scale=1){
  return p=>add(ry(p.map(x=>x*scale),yaw),origin);
 }
-export function retroRobot(box,{origin,yaw=0,scale=1,walking=0,open=0,headRoll=0,headYaw=0,blink=1}){
+function robotArm(p,s,pose){
+ const {origin,yaw=0,scale=1,walking=0,open=0,armPitch=0,armSpread=0}=pose;
+ return transformAt(origin,yaw,scale)(add(rz(rx(p,-.22*s*walking-.52*open*(s===1?1:0)+(s===1?armPitch:0)),s*(.19+.25*open+(s===1?armSpread:0))),[s*.49,1.18,0]));
+}
+export const robotHandAnchor=(pose,s=1)=>robotArm([0,-.48,.02],s,pose);
+export function retroRobot(box,{origin,yaw=0,scale=1,walking=0,open=0,headRoll=0,headYaw=0,blink=1,armPitch=0,armSpread=0,grip}){
  const robot=transformAt(origin,yaw,scale);
  const metal='#b9c7c9',dark='#364657',coral='#b6523e',cream='#e5d9bd';
  for(const s of [-1,1]){const swing=s*walking*.4,leg=p=>robot(add(rx(p,swing),[s*.22,.62,0]));box([0,-.21,0],[.27,.55,.29],dark,leg);box([0,-.47,.11],[.38,.19,.55],metal,leg)}
  box([0,.91,0],[.78,.68,.57],coral,robot);box([0,.93,.30],[.46,.32,.04],dark,robot);box([0,.98,.33],[.22,.035,.025],'#54e5da',robot,true);box([0,1.29,0],[.34,.15,.33],dark,robot);
- for(const s of [-1,1]){const arm=p=>robot(add(rz(rx(p,-.22*s*walking-.52*open*(s===1?1:0)),s*(.19+.25*open)),[s*.49,1.18,0]));box([0,-.20,0],[.23,.45,.25],metal,arm);box([0,-.48,.02],[.28,.23,.28],cream,arm)}
+ for(const s of [-1,1]){const arm=p=>robotArm(p,s,{origin,yaw,scale,walking,open,armPitch,armSpread});box([0,-.20,0],[.23,.45,.25],metal,arm);box([0,-.48,.02],[.28,.23,.28],cream,arm);if(s===1&&grip!==undefined)for(const j of [-1,1])box([j*(.13-.055*grip),-.63,.07],[.07,.16,.09],dark,arm)}
  const head=p=>robot(add(ry(rz(p,headRoll),headYaw),[0,1.81,0]));
  box([0,0,0],[1.08,.86,.88],cream,head);box([0,0,.45],[.93,.72,.045],dark,head,false,.25);box([0,0,.48],[.80,.60,.032],coral,head,false,.5);box([-.21,.105,.505],[.115,.25*blink,.018],'#bffdf5',head,true,.8);box([.21,.105,.505],[.115,.25,.018],'#bffdf5',head,true,.8);box([0,-.15,.505],[.42,.115,.018],dark,head,false,.8);for(let i=0;i<5;i++)box([-.16+i*.08,-.145,.52],[.055,.047,.014],cream,head,true,1.1);box([-.575,.06,-.05],[.085,.29,.36],coral,head);box([.1,.49,-.07],[.055,.21,.055],metal,head);box([.1,.61,-.07],[.12,.12,.12],'#ffd076',head,true);
 
