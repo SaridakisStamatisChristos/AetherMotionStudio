@@ -19,3 +19,6 @@ Shared CPU mesh projection, registered asset emitters, pose parameters, motion k
 
 ## v0.3 timeline
 See TIMELINE_V2.md. V2 separates authored shot intent from measured speech/frame plan; the validated compiled timeline drives native Remotion metadata and exact frame addressing. Legacy scenes remain on their original renderer/audio path.
+
+## v0.4 graph
+One declarative shot produces backend-independent sampled state and asset box commands. CPU and WebGL consumers share the graph, timeline and overlay. See CINEMATIC_GRAPH.md.

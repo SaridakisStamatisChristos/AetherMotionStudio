@@ -1,0 +1,11 @@
+# Cinematic graph v0.4
+
+A new cinematic-graph shot in the existing v2 timeline accepts backend (cpu or three), heading, subheading, environment, camera, assets and effects. See examples/cinematic-three.json and cinematic-cpu.json: same authored scene, different rendering backends. Asset IDs reference the existing shared asset emitters. Animation tracks are arrays of [normalized progress, value] with strict ordering. Camera and placement ranges are intentionally bounded for this first graph format. Supported asset kinds: retro-robot, treasure-chest, energy-core. Effects: glow, orbit and sparkles, targeted at an asset with a color and active window. Environments: laboratory, midnight, amber. No generated executable code or external asset URLs.
+
+Three.js uses a real WebGL depth buffer, rounded box geometry, physically based materials, directional and hemisphere lights, shadow maps, fog and shared screen-space VFX. No full postprocessing bloom, raytraced reflections or physical depth of field yet. Meshes/materials are reused and disposed on unmount; frame state is sampled without time accumulation. The CPU renderer uses the previous projected mesh implementation and the same camera, assets, poses and effects. Backend selection is explicit; WebGL errors fail instead of quietly rendering Canvas. CI selects software GL (swangle); AETHER_GL may override on suitable local systems. GPU speed and portability are not yet measured.
+
+Matched CI acceptance: all five prior renders plus two matched graph renders; comparison checks non-flat geometry and different pixel outputs, reports render wall time, does not assert visual superiority. Human review is still required. v0.3 verified run 45347442736 is preserved.
+
+Local: npm install, npm run render -- examples/cinematic-cpu.json or examples/cinematic-three.json. Initial setup as in README. 
+
+Both renderers are permanent first-class backends under [DUAL_BACKEND_POLICY.md](DUAL_BACKEND_POLICY.md). The matched v0.4 benchmark passed all nine CI jobs in run 45348529087.
