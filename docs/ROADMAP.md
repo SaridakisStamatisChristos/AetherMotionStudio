@@ -16,4 +16,4 @@
 | v0.9 | Local editor/UI | Preview, edit, render; no mandatory service |
 | v1.0 | One-click production | Reproducible release, install docs, real end-to-end evidence |
 
-Current gate: v0.8 candidate; v0.7 scoped predecessor d8816f535339fcab2cd0adcbab6c9bda1e32981c, run 45361307457, artifact 14904319584 (1800 frames, full decode, subtitle export verification; 5 reading-speed outliers). User approved continuation. Default CI: fast tests plus one 50-second quality CPU film; 21 fixtures retained. Native Three.js comparison deferred. Next v0.9 local editor after quality acceptance.
+Current gate: v0.9 candidate; v0.8 predecessor d17e90c248fa8b274728980fc2043238d212c945, run 45363159018, artifact 14905862385 (1500 frames, 1 accepted camera repair, 0 blocking errors and warnings, review findings). User approved continuation. Default CI: fast tests and one 50-second Studio HTTP/native CPU acceptance film. 23 fixtures retained; native Three.js deferred. Next v1.0 reproducible one-click release after scoped acceptance.

@@ -37,3 +37,6 @@ Optional project speech v1 preserves legacy timing. Mixed fixed/automatic intege
 
 ## v0.8 quality layer
 Opt-in measured-timeline preflight uses sampled projected geometry with bounded camera-only search, then native rendering once and read-only decoded-media checks. Reports contain exact protected-content digest, accepted/rejected proposals, warnings, media hash, cost and human-review scope. No factual or aesthetic certification. See QUALITY.md.
+
+## v0.9 local Studio
+Node loopback HTTP service and browser ES modules, no new dependency. Validated JSON project files with atomic writes and revision conflicts. Shared drawing code for reduced-resolution preview; estimated silent draft versus measured immutable job snapshot. One native job at a time, unique output IDs, bounded logs and explicit failures, allowlisted artifacts and byte-range video/audio. Offline Director, geometry inspection and CLI production reuse existing modules. See STUDIO.md.
