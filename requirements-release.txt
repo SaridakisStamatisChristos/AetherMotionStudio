@@ -1,0 +1,20 @@
+# Exact Python distribution versions observed in successful v0.9 Ubuntu CI.
+# Target CPython 3.11 on Linux x86_64; no claim of other OS wheel compatibility.
+numpy==2.2.6
+scipy==1.15.3
+kokoro-onnx==0.6.1
+espeakng-loader==0.2.4
+onnxruntime==1.32.0
+soundfile==0.14.0
+imageio-ffmpeg==0.6.0
+attrs==26.1.0
+cffi==2.1.1
+cloudpickle==3.1.3
+dlinfo==2.0.0
+flatbuffers==25.12.19
+joblib==1.6.0
+packaging==26.4
+phonemizer==3.6.0
+protobuf==7.36.2
+pycparser==3.12
+typing-extensions==4.16.0

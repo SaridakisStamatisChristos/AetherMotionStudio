@@ -2,7 +2,7 @@
 
 Local-first procedural video production with native Remotion 4.0.546 and Kokoro ONNX. The LLM writes scene data rather than rendering frames. No paid inference API is required by the core.
 
-## v0.9 (candidate)
+## v1.0 (release candidate)
 Three original templates, a strict compact JSON scene contract, frame-addressed canvas rendering, local neural narration, procedural score/SFX, music ducking, a one-command renderer, tests and CI artifacts. The first template preserves the previously verified Robot Treasure choreography; the second is an independent blockchain explainer. Robot Lab reuses the robot rig and adds a new energy-core asset with independent cinematic choreography. See [asset library](docs/ASSET_LIBRARY.md). The original v1 format remains fixed at 12 seconds. New v2 films support multiple shots, frame-exact durations up to 300 seconds, or automatic durations measured from Kokoro; captions follow measured phrase boundaries. See [timeline](docs/TIMELINE_V2.md). A new composable cinematic graph supports explicit CPU and Three.js WebGL backends, shared assets, camera keyframes and effects. Both backends are permanent first-class options; see [dual-backend policy](docs/DUAL_BACKEND_POLICY.md). Optional fidelity controls add shared cinematic post effects and enhanced materials; see [visual fidelity](docs/VISUAL_FIDELITY.md). The [universal asset catalog](docs/UNIVERSAL_ASSETS.md) adds 250 procedural object presets, 50 motion presets and 30 effect presets. The additive [cinematography engine](docs/CINEMATOGRAPHY.md) adds shared camera rigs, bounded character actions, attachments, panel component animation, world layers, and data overlays. The [provider-neutral Director](docs/DIRECTOR.md) compiles a topic or supplied script into validated cinematic data. Offline planning is deterministic, curated and not an LLM; optional local and opt-in remote adapters or imported IR support model-assisted authorship. See [cinematic graph](docs/CINEMATIC_GRAPH.md).
 
 ## Local installation (Ubuntu, Node 22, Python 3.11)
@@ -31,7 +31,7 @@ First setup needs internet for dependencies, weights and Remotion's browser down
 The output is `out/<scene-id>/film.mp4` plus narration, report, probe and review frames. For Studio preview, run `npm run prepare-audio` before `npm run studio`. The default Studio composition uses Robot Treasure. CLI rendering accepts any registered template through JSON.
 
 ## Author new content
-Copy an example, give it a unique lowercase id, choose an allowed template and voice, and edit the copy, narration windows and captions. Run `npm run validate -- path/to/scene.json`, then render. No generated executable code is necessary for supported templates. Do not use the same ID concurrently. The GitHub workflow runs only the 50-second Studio HTTP/native CPU showcase on development pushes; manual suite=full runs all twenty-three examples and publishes downloadable artifacts on success.
+Copy an example, give it a unique lowercase id, choose an allowed template and voice, and edit the copy, narration windows and captions. Run `npm run validate -- path/to/scene.json`, then render. No generated executable code is necessary for supported templates. Do not use the same ID concurrently. The v1.0 default workflow runs exactly two matched 30-second release films, CPU and Three.js, from one plan and one soundtrack. Manual suite=full retains all 23 earlier fixtures plus the release pair; do not run it without authorization.
 
 ## Architecture and status
 See [architecture](docs/ARCHITECTURE.md), [roadmap](docs/ROADMAP.md), [scene contract](docs/SCENE_V1.md), [agent instructions](AGENTS.md), and [provenance](docs/PROVENANCE.md).
@@ -54,3 +54,13 @@ The feature/main workflow uses Python wheels (including Kokoro's bundled phonemi
 
 ## Local visual Studio
 After the normal local install, run `npm run studio:local` and open http://127.0.0.1:4173. Projects, offline Director, asset browser, editable shots, silent draft preview, measured audio preparation, native CPU/Three.js render jobs and quality/export reports share existing production contracts. `npm run studio` remains the original Remotion Studio. See [Local Studio](docs/STUDIO.md).
+
+## One-click production (v1.0)
+On a clean Linux x86_64 checkout with Node 22 and Python 3.11:
+```bash
+python3.11 scripts/release_setup.py
+npm run produce -- --topic "How a molecule is built" --seconds 30 --backend cpu
+# Matched pair with identical measured speech and timeline:
+npm run produce -- --request examples/release.request.json --backend both --repair
+```
+For a single visual workflow use `npm run studio:local` then **Generate & render film**. CLI output is under `out/<id>-<backend>-<profile>/film.mp4`; `out/<id>-production/` contains plan, dependency/model evidence and comparison for a pair. No remote inference required. Existing provider-neutral CLI remains available. See [release guide](docs/RELEASE_1_0.md) for limitations and replay.
