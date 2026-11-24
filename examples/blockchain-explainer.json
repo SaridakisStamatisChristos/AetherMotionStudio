@@ -1,0 +1,68 @@
+{
+  "version": 1,
+  "id": "blockchain-explainer",
+  "template": "orbit-explainer",
+  "title": "How blockchains link",
+  "voice": "af_heart",
+  "copy": {
+    "kicker": "AETHER LAB / TECH EXPLAINED",
+    "intro": [
+      "THE POWER",
+      "OF LINKS",
+      "A BLOCKCHAIN IN MOTION"
+    ],
+    "question": "HOW DOES IT WORK?",
+    "reveal": [
+      "01 → 02 → 03",
+      "LINKED BY HASHES"
+    ],
+    "outro": [
+      "CHANGE ONE",
+      "BREAK THE CHAIN"
+    ]
+  },
+  "narration": [
+    {
+      "start": 0.22,
+      "end": 2.64,
+      "text": "Every block has a fingerprint."
+    },
+    {
+      "start": 2.7,
+      "end": 5.3,
+      "text": "The next records that hash."
+    },
+    {
+      "start": 5.42,
+      "end": 8.9,
+      "text": "Together, they form a linked chain."
+    },
+    {
+      "start": 8.98,
+      "end": 11.8,
+      "text": "Change one, and the link breaks."
+    }
+  ],
+  "captions": [
+    [
+      0,
+      2.65,
+      "A BLOCK HAS A HASH"
+    ],
+    [
+      2.7,
+      5.3,
+      "THE NEXT RECORDS IT"
+    ],
+    [
+      5.42,
+      8.9,
+      "LINKED BY HASHES"
+    ],
+    [
+      8.98,
+      12,
+      "CHANGES BREAK LINKS"
+    ]
+  ]
+}

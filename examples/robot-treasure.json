@@ -1,0 +1,88 @@
+{
+  "version": 1,
+  "id": "robot-treasure",
+  "template": "robot-treasure",
+  "title": "Robot Treasure",
+  "voice": "af_heart",
+  "copy": {
+    "kicker": "AETHER LAB / MOTION STUDIES",
+    "intro": [
+      "THE LITTLE",
+      "ROBOT",
+      "FOUND SOMETHING."
+    ],
+    "question": "WHAT’S INSIDE?",
+    "reveal": [
+      "250,000",
+      "GITHUB STARS"
+    ],
+    "outro": [
+      "BUILT WITH",
+      "PURE CODE"
+    ]
+  },
+  "narration": [
+    {
+      "start": 0.22,
+      "end": 2.64,
+      "text": "A little robot found a chest."
+    },
+    {
+      "start": 2.7,
+      "end": 5.3,
+      "text": "But inside, something shone."
+    },
+    {
+      "start": 5.42,
+      "end": 8.9,
+      "text": "Two hundred fifty thousand stars."
+    },
+    {
+      "start": 8.98,
+      "end": 11.8,
+      "text": "No AI video. Just code."
+    }
+  ],
+  "captions": [
+    [
+      0,
+      0.9,
+      "A LITTLE ROBOT"
+    ],
+    [
+      0.9,
+      2.5,
+      "FOUND A CHEST."
+    ],
+    [
+      2.5,
+      3.45,
+      "BUT INSIDE…"
+    ],
+    [
+      3.45,
+      5.1,
+      "SOMETHING SHONE."
+    ],
+    [
+      5.1,
+      6.8,
+      "TWO HUNDRED FIFTY"
+    ],
+    [
+      6.8,
+      8.85,
+      "THOUSAND STARS."
+    ],
+    [
+      8.85,
+      10.1,
+      "NO AI VIDEO."
+    ],
+    [
+      10.1,
+      12,
+      "JUST CODE."
+    ]
+  ]
+}

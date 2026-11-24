@@ -1,0 +1,2 @@
+# Provenance
+Original Robot Treasure scene and Kokoro mixer ported from SaridakisStamatisChristos/Stickman-Studio commit 9e343662df72abb22f6c2eb9610da8961ad47eef. Prior successful native workflow: https://github.com/SaridakisStamatisChristos/Stickman-Studio/actions/runs/45343416680. This historical evidence does not replace fresh CI for the port. No third-party scene assets copied. Remotion, Kokoro and runtime dependencies retain their own licenses.
