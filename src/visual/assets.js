@@ -1,3 +1,4 @@
+import {CATALOG_ASSETS} from './catalog.js';
 import {add,rx,ry,rz} from './vectors.js';
 export function transformAt(origin,yaw=0,scale=1){
  return p=>add(ry(p.map(x=>x*scale),yaw),origin);
@@ -32,7 +33,7 @@ export function energyCore(box,{origin,yaw=0,scale=1,pulse=0}){
  }
  return tf;
 }
-export const ASSETS=Object.freeze({'retro-robot':retroRobot,'treasure-chest':treasureChest,'energy-core':energyCore});
+export const ASSETS=Object.freeze({'retro-robot':retroRobot,'treasure-chest':treasureChest,'energy-core':energyCore,...CATALOG_ASSETS});
 export function emitAsset(id,box,pose){
  if(!Object.hasOwn(ASSETS,id))throw Error('Unknown asset: '+id);
  return ASSETS[id](box,pose);
