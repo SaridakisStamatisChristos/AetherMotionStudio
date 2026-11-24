@@ -1,3 +1,4 @@
+import {directFoundry} from './foundry.js';
 import {performance} from 'node:perf_hooks';
 import {compactIdentities,compileIdentityAssets,identityLocation,continuityLedger,restoreLibrary} from '../core/identity.js';
 import {validateProject,FPS} from '../core/timeline.js';
@@ -38,10 +39,11 @@ export function buildPrompt(q,plan,feedback=null){
  'Request: '+JSON.stringify(promptRequest),'Retrieved assets per shot: '+JSON.stringify(compact),...(feedback?['Previous output failed validation. Return corrected JSON only. Error: '+feedback]:[])].join('\n');
 }
 function errorInfo(e){return {code:e.code??'validation',message:String(e.message??e).slice(0,300)};}
-export async function direct(input,{adapter=null,imported=null,maxRepairs=1}={}){
+export async function direct(input,{adapter=null,imported=null,maxRepairs=1,foundryRequests=null}={}){
  const started=performance.now(),q=request(input);
  if(!Number.isInteger(maxRepairs)||maxRepairs<0||maxRepairs>2)throw Error('maxRepairs: 0–2 required');
  if(adapter&&imported!==null)throw Error('choose provider or imported IR, not both');
+ if(foundryRequests!==null){if(imported!==null)throw Error('AF07 imported IR unsupported');return directFoundry(q,{foundryRequests,adapter,maxRepairs});}
  const plan=baseline(q),cat=directorCatalog(),attempts=[],initialPrompt=buildPrompt(q,plan);
  let ir,project,feedback=null;
  for(let i=0;i<=(adapter?maxRepairs:0);i++){

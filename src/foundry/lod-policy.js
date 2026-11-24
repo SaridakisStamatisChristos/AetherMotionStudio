@@ -1,3 +1,4 @@
+import {GENERATED_ID} from './generator.js';
 import {IMPORT_ID} from './import-bundle.js';
 import {LOD_PROFILE,LOD_SUPPORTED,LOD_LEVELS,lodCacheStats} from './lod-meshes.js';
 import {meshCommands} from './instances.js';
@@ -12,7 +13,7 @@ const defaults=Object.freeze({maxTriangles:50000,maxDrawCalls:256,maxGeometryByt
 function fields(o,keys){if(!o||typeof o!=='object'||Array.isArray(o))throw Error('LOD object required');for(const k of Object.keys(o))if(!keys.includes(k))throw Error('unknown LOD field '+k)}
 export function validateLODPolicy(x,assets){fields(x,['version','quality','selection','overrides','budget']);if(x.version!==1||!Object.hasOwn(QUALITY_FLOOR,x.quality)||!['auto','explicit'].includes(x.selection))throw Error('invalid LOD policy');
  const overrides=x.overrides??[];if(!Array.isArray(overrides)||overrides.length>8)throw Error('LOD override budget');const ids=new Set(assets.map(a=>a.id)),seen=new Set();
- for(const o of overrides){fields(o,['asset','level']);if(!ids.has(o.asset)||seen.has(o.asset)||!LOD_LEVELS.includes(o.level))throw Error('invalid LOD override');if(assets.find(a=>a.id===o.asset)?.asset===IMPORT_ID&&o.level!==0)throw Error('imported asset has only LOD0');seen.add(o.asset)}
+ for(const o of overrides){fields(o,['asset','level']);if(!ids.has(o.asset)||seen.has(o.asset)||!LOD_LEVELS.includes(o.level))throw Error('invalid LOD override');if([IMPORT_ID,GENERATED_ID].includes(assets.find(a=>a.id===o.asset)?.asset)&&o.level!==0)throw Error('imported asset has only LOD0');seen.add(o.asset)}
  if(x.selection==='explicit'&&seen.size!==ids.size)throw Error('explicit LOD requires every asset');
  const budget=x.budget??{};fields(budget,Object.keys(HARD_BUDGET));for(const [k,v] of Object.entries(budget))if(!Number.isInteger(v)||v<1||v>HARD_BUDGET[k])throw Error('LOD resource budget '+k);
  return {quality:x.quality,selection:x.selection,overrides:new Map(overrides.map(o=>[o.asset,o.level])),budget:{...defaults,...budget}}
@@ -31,9 +32,9 @@ const plans=new WeakMap();
 export function planLOD(shot,sample){const sig=JSON.stringify(shot),cached=plans.get(shot);if(cached?.sig===sig)return cached.plan;
  const policy=validateLODPolicy(shot.lodPolicy,shot.assets),times=points(shot),states=times.map(sample),sizes=new Map(shot.assets.map(a=>[a.id,0]));
  for(const s of states)for(const a of s.assets)sizes.set(a.id,Math.max(sizes.get(a.id),projectedPixels(a,s.camera)));
- const selected=Object.freeze(Object.fromEntries(shot.assets.map(a=>[a.id,a.asset===IMPORT_ID?0:policy.overrides.get(a.id)??automaticLevel(sizes.get(a.id),policy.quality)])));
+ const selected=Object.freeze(Object.fromEntries(shot.assets.map(a=>[a.id,[IMPORT_ID,GENERATED_ID].includes(a.asset)?0:policy.overrides.get(a.id)??automaticLevel(sizes.get(a.id),policy.quality)])));
  const peak={triangles:0,drawCalls:0,geometryBytes:0,textureBytes:0};for(const state of states){const usage=enforceBudget(resourceUsage(meshCommands({...state,lodSelection:selected})),policy.budget);for(const k of Object.keys(peak))peak[k]=Math.max(peak[k],usage[k])}
- const plan=Object.freeze({version:1,quality:policy.quality,selection:policy.selection,selected,budget:Object.freeze(policy.budget),sampleCount:times.length,peakSampled:Object.freeze(peak),assets:Object.freeze(shot.assets.map(a=>Object.freeze({asset:a.id,identity:a.asset,level:selected[a.id],reason:a.asset===IMPORT_ID?'imported-static-only':policy.overrides.has(a.id)?'explicit':'maximum-sampled-projected-size',maxProjectedPixels:Math.round(sizes.get(a.id))})))});
+ const plan=Object.freeze({version:1,quality:policy.quality,selection:policy.selection,selected,budget:Object.freeze(policy.budget),sampleCount:times.length,peakSampled:Object.freeze(peak),assets:Object.freeze(shot.assets.map(a=>Object.freeze({asset:a.id,identity:a.asset,level:selected[a.id],reason:a.asset===GENERATED_ID?'generated-static-only':a.asset===IMPORT_ID?'imported-static-only':policy.overrides.has(a.id)?'explicit':'maximum-sampled-projected-size',maxProjectedPixels:Math.round(sizes.get(a.id))})))});
  plans.set(shot,{sig,plan});return plan
 }
 export function bundleAt(asset,pose={origin:[0,0,0],scale:1,yaw:0}){if(!LOD_SUPPORTED.includes(asset))throw Error('unsupported LOD identity');

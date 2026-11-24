@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "id": "foundry-af07",
+  "topic": "The Explorer's Signal Laboratory",
+  "seconds": 30,
+  "voice": "af_heart",
+  "profile": "polished",
+  "foundryRequests": [
+    "survey beacon",
+    "ceramic insulator",
+    "specimen canister"
+  ]
+}

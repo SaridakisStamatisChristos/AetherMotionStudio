@@ -37,3 +37,6 @@ AF04 verified at 477a3fa (run 45396749173, 143 tests). Default tests + local imp
 
 ## AF06 successor
 AF05 verified at 10d0432 (run 45400775233, 148 tests). Default fast tests + bounded still inspection batch + one AF06 CPU film. Human review requires explicit scores and matching content/evidence digests, never automated approval. Native Three and full gate deferred. See docs/foundry/INSPECTOR.md.
+
+## AF07 successor
+AF06 verified at d45e075 (run 45405168868). Default tests + AF07 generation evaluation and exactly one polished CPU film; matched native Three fixture retained for manual full. No automatic promotion, merge or release. See docs/foundry/GENERATOR.md.
