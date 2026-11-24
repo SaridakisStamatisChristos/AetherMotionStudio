@@ -43,3 +43,6 @@ AF06 verified at d45e075 (run 45405168868). Default tests + AF07 generation eval
 
 ## AF08 successor
 AF07 verified at ba69402 (run 45409971516); default fast tests + AF08 pack acceptance evidence + one CPU polished film. Both renderers and all prior fixtures preserved. Native Three/full only on explicit authorization; no merge. See docs/foundry/PACKS.md.
+
+## AF09 successor
+AF08 verified at cd5ba5b (run 45415008666). Freeze benchmarks/foundry-final-v1.json before final native runs. Default tests + protocol evidence + AF09 CPU product. Manual suite=full only on explicit authorization. No merge/release. See docs/foundry/QUALIFICATION.md.

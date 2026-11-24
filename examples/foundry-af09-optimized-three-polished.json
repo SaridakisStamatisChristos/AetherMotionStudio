@@ -1,0 +1,350 @@
+{
+  "version": 2,
+  "id": "foundry-af09-optimized-three-polished",
+  "title": "The discovery",
+  "voice": "af_heart",
+  "shots": [
+    {
+      "id": "discovery",
+      "template": "cinematic-graph",
+      "backend": "three",
+      "durationFrames": 360,
+      "transitionFrames": 0,
+      "heading": "THE DISCOVERY",
+      "subheading": "One robot. One extraordinary machine.",
+      "environment": "midnight",
+      "camera": {
+        "x": [
+          [
+            0,
+            2.8
+          ],
+          [
+            0.5,
+            1.2
+          ],
+          [
+            1,
+            -1.9
+          ]
+        ],
+        "y": [
+          [
+            0,
+            3.9
+          ],
+          [
+            1,
+            3.1
+          ]
+        ],
+        "z": [
+          [
+            0,
+            9.1
+          ],
+          [
+            1,
+            8
+          ]
+        ],
+        "zoom": [
+          [
+            0,
+            1050
+          ],
+          [
+            0.62,
+            1240
+          ],
+          [
+            1,
+            1100
+          ]
+        ]
+      },
+      "assets": [
+        {
+          "id": "robot",
+          "asset": "retro-robot",
+          "tracks": {
+            "x": [
+              [
+                0,
+                -2.1
+              ],
+              [
+                0.3,
+                -1.3
+              ]
+            ],
+            "yaw": [
+              [
+                0,
+                0.28
+              ],
+              [
+                0.45,
+                0.65
+              ],
+              [
+                1,
+                0.12
+              ]
+            ],
+            "scale": [
+              [
+                0,
+                1
+              ]
+            ],
+            "walking": [
+              [
+                0,
+                0.8
+              ],
+              [
+                0.15,
+                -0.7
+              ],
+              [
+                0.25,
+                0.6
+              ],
+              [
+                0.34,
+                0
+              ]
+            ],
+            "open": [
+              [
+                0,
+                0
+              ],
+              [
+                0.35,
+                0
+              ],
+              [
+                0.7,
+                1
+              ]
+            ],
+            "headRoll": [
+              [
+                0,
+                0
+              ],
+              [
+                0.6,
+                -0.12
+              ]
+            ],
+            "blink": [
+              [
+                0,
+                1
+              ],
+              [
+                0.45,
+                1
+              ],
+              [
+                0.46,
+                0.12
+              ],
+              [
+                0.48,
+                1
+              ]
+            ]
+          }
+        },
+        {
+          "id": "chest",
+          "asset": "treasure-chest",
+          "tracks": {
+            "x": [
+              [
+                0,
+                0.65
+              ]
+            ],
+            "z": [
+              [
+                0,
+                0.12
+              ]
+            ],
+            "yaw": [
+              [
+                0,
+                -0.18
+              ]
+            ],
+            "scale": [
+              [
+                0,
+                0.85
+              ]
+            ],
+            "open": [
+              [
+                0,
+                0
+              ],
+              [
+                0.3,
+                0
+              ],
+              [
+                0.55,
+                1
+              ]
+            ]
+          }
+        },
+        {
+          "id": "core",
+          "asset": "energy-core",
+          "tracks": {
+            "x": [
+              [
+                0,
+                1.95
+              ]
+            ],
+            "z": [
+              [
+                0,
+                -0.65
+              ]
+            ],
+            "scale": [
+              [
+                0,
+                0.62
+              ]
+            ],
+            "yaw": [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                5.7
+              ]
+            ],
+            "pulse": [
+              [
+                0,
+                0
+              ],
+              [
+                0.55,
+                0
+              ],
+              [
+                0.7,
+                1
+              ],
+              [
+                0.85,
+                -1
+              ],
+              [
+                1,
+                0
+              ]
+            ]
+          }
+        }
+      ],
+      "effects": [
+        {
+          "type": "glow",
+          "target": "core",
+          "color": "#6defff",
+          "start": 0.35,
+          "end": 1
+        },
+        {
+          "type": "orbit",
+          "target": "core",
+          "color": "#7af5ed",
+          "start": 0.43,
+          "end": 1
+        },
+        {
+          "type": "sparkles",
+          "target": "chest",
+          "color": "#ffd784",
+          "start": 0.4,
+          "end": 1
+        }
+      ],
+      "narration": [
+        "The little robot discovered something extraordinary.",
+        "A hidden chest opened, revealing a source of energy.",
+        "A new invention was about to come to life."
+      ],
+      "fidelity": {
+        "bloom": 0.68,
+        "atmosphere": 0.52,
+        "contactShadow": 0.7,
+        "surfaceDetail": 0.65,
+        "depthOfField": 0.46,
+        "motionBlur": 0.55,
+        "grain": 0.18,
+        "grade": 0.48,
+        "particles": 0.75,
+        "typography": 1
+      },
+      "geometryProfile": "foundry-af03",
+      "lodPolicy": {
+        "version": 1,
+        "quality": "cinematic",
+        "selection": "explicit",
+        "overrides": [
+          {
+            "asset": "robot",
+            "level": 0
+          },
+          {
+            "asset": "chest",
+            "level": 0
+          },
+          {
+            "asset": "core",
+            "level": 0
+          }
+        ],
+        "budget": {
+          "maxTriangles": 100000,
+          "maxDrawCalls": 512,
+          "maxGeometryBytes": 67108864
+        }
+      },
+      "materialProfile": {
+        "version": 1,
+        "lighting": "sweep",
+        "assignments": [
+          {
+            "asset": "robot",
+            "material": {
+              "preset": "brushed-steel",
+              "texture": {
+                "seed": 23,
+                "resolution": 512,
+                "normal": true,
+                "occlusion": true
+              }
+            },
+            "includeEmissive": false
+          }
+        ]
+      }
+    }
+  ]
+}

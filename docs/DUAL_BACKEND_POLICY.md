@@ -33,3 +33,5 @@ AF06 default: structural checks and CPU still inspection sheets plus single sele
 AF07 default: fast tests and held-out generator evaluation, one AF07 CPU polished film. Both fixtures are generated deterministically from the same committed story request; native Three retained in manual full gate.
 
 AF08 default: pack roundtrip/negative evidence and one AF08 CPU polished film; native paired fixture generated from the same portable authored story, full matrix deferred.
+
+AF09 frozen protocol v1: default new CPU product only, full manual native matrix includes nine final pairs plus all old regression fixtures. Matched and optimized comparisons separated. Authorization and human review required before final acceptance.
