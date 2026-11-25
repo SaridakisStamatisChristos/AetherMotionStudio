@@ -1,6 +1,6 @@
 # Forward-only handoff — after GEN-10/11 (owner types only "fod continue")
 
-Unit: GEN-10 (estimated mouth shapes) and GEN-11 (idle weight shift) are IMPLEMENTED + TESTED + RENDERED (agent-reviewed) on `feature/gen-10-11`, which is stacked on `feature/gen-04-09` (PR #29). PR #29 also got the owner-requested revisions: Reels captions low at normal size, and GEN-05b readable captions. **Nothing is merged.**
+Unit: GEN-10 (estimated mouth shapes) and GEN-11 (idle weight shift) are IMPLEMENTED + TESTED + RENDERED (agent-reviewed) on `feature/gen-10-11`, which is stacked on `feature/gen-04-09` (PR #29). PR #29 also got the owner-requested revisions: Reels captions low at normal size, and GEN-05b readable captions. **Update: PR #29 and PR #30 are MERGED (5668031, main CI success). The CPU robot mouth fix is on `fix/cpu-robot-mouth` (owner approved the fix; the merge still needs the owner's word). The Instagram test upload is deferred to the end (owner).**
 Checkpoint: the head of `feature/gen-10-11` (code at be66483 plus this checkpoint); `feature/gen-04-09` is at 33e576f; main is still 4f588e3.
 Authorized by: owner, 2026-11-25: "the cap[tions must be generalized in speed not only from the sample video. also lets do it seriallized. Gen10 and onwards." Reels: "if on top it will cover the face.... so i think bottom is prefered."
 Date: 2026-11-25
