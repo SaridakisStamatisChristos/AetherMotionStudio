@@ -2,7 +2,7 @@
 
 Unit: POLISH-03
 Checkpoint: branch `feature/polish-03`, stacked on `feature/polish-02` (PR #20, POLISH-02 items 1–10, not merged). Commits: 3dd64e6 (code, tests, film), plus this checkpoint commit. Pushed; PR opened with base `feature/polish-02`. If #20 merges first, retarget this PR to main. Not merged.
-Status: IMPLEMENTED + TESTED + RENDERED; review was by measurement and agent only.
+Status: MERGED. PR #20 (POLISH-02) → main 9054c7e; PR #21 (POLISH-03, retargeted to main) → main 01051f1; main CI 45585521976 test PASS on 01051f1. Owner accepted ("ok eferything fine . merge it 20 and 21", 2026-11-25), including the drafted lines.
 Approved by: owner asked what to do about bed-only gaps and missing mix-v2 for speech projects; Claude proposed; owner: "yes do it" (2026-11-25). The extra narration lines were drafted by Claude and are open to the owner's edits.
 Date: 2026-11-25
 
@@ -49,5 +49,5 @@ Date: 2026-11-25
 - The extra lines are agent-written copy and need owner approval.
 
 ## Next action
-- Owner: listen to out/workshop-extended-r7-cpu-polished/film.mp4. Decide on PR #20, then this PR, in that order. Edit the new lines if wanted.
+- Done: owner accepted and both PRs are merged; this record lives on branch `chore/record-polish-02-03`.
 - Then: the TALK track (TALK-01 speaking faces). Mix-v2 per-speaker levelling is ready for dialogue.
