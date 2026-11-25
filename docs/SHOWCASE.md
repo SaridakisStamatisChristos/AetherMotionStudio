@@ -103,3 +103,21 @@ A 75 s dialogue film. The engineer (af_heart), the scientist (bf_emma, en-gb) an
   - Films: CPU d64de6b7e882ab0e…, Three f76eb7828a1ad92a….
   - The conversation shots are group-framed. r6 was the ±0.75 version and is superseded.
 - Review status: agent stills review only.
+
+## GEN-03 renders (2026-11-25), both from clean commit d31a34a
+- **`gen03-interview-r2`**:
+  - Gates: all PASS; frame-glitch clean; checks 0 and 0 on both backends.
+  - −16.0 LUFS. Camera peaks: pan 6.2°/s, zoom 0 %/s.
+  - Render time CPU 116.3 s, Three 51.8 s (RTX util peak 59 %).
+  - Films: CPU a6f80ab51e4550c7…, Three 04bfd6d5e747d06b….
+  - r1 (48706ee) passed every gate, but its first lines were spent on the group and the move. Superseded by the opening rule.
+- **`talk05-first-words-r9`**: all gates PASS, checks 0 and 0, −16.0 LUFS.
+  - Camera peaks: pan 3°/s, zoom 2.9 %/s.
+  - Films: CPU 82bf1f6d407e69e7…, Three 8952815a187e48df…. r8 is superseded.
+- Look: during a line the speaker is large and the listener is partly cut at the frame edge, a common framing for a conversation shot close.
+- Review status: agent stills review only.
+- **Owner review of `gen03-interview-r2`:** characters went out of the screen during camera moves. Fixed in 0054e76 (docs/CINEMATOGRAPHY.md GEN-03). Re-renders from clean 0054e76, all gates PASS, checks 0/0, the most any character goes outside the frame is 0, −16.0 LUFS:
+  - `gen03-interview-r3`: films CPU c74bb6949c2147cb… (byte-identical to gen02-interview-r2: no follow move with two speakers), Three c1d8b13474561dd8….
+  - `gen03-network-r1`: the TALK-04 network request with three speakers; follow pushes in (zoom ≤ 18.8 %/s, pan 1.4°/s). Films CPU 498b77769f2acd4f…, Three 098e51b58d6f138e….
+  - `talk05-first-words-r10`: films CPU a4a6d54dd56b80ba…, Three 52d41653e9d5d0a6….
+  - Agent review of a still at the middle of every line on the Three films: every character fully in frame.

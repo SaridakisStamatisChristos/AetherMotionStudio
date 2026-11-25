@@ -92,7 +92,7 @@ function stageTalk(out,speech){
   // Frame the speakers, not the whole set (only an automatic rig without a single authored subject).
   if(out.cameraRig&&out.cameraRig.subject===undefined)out.cameraRig={...out.cameraRig,framing:'group',subjects:[...chars,...(PROP_IN_GROUP[chars.length]?pieces:[])].slice(0,4).map(a=>a.id)};
  }
- if(out.dialogue===undefined&&chars.length>=2&&chars.every(a=>a.face===undefined))out.dialogue={listen:true,turn:TALK_STAGE.turn,cheat:TALK_STAGE.cheat};
+ if(out.dialogue===undefined&&chars.length>=2&&chars.every(a=>a.face===undefined))out.dialogue={listen:true,turn:TALK_STAGE.turn,cheat:TALK_STAGE.cheat,...(out.cameraRig?.framing==='group'?{camera:'follow'}:{})}; // GEN-03: camera follows the speaker
  if(out.bodyLanguage===undefined)out.bodyLanguage={beats:true,nods:true,blinks:true,sway:true};
  if(out.lighting===undefined)out.lighting='parity-v1';
  return out;

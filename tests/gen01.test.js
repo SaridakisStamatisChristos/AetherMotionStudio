@@ -21,15 +21,17 @@ const examples=readdirSync(new URL('../examples/',import.meta.url)).filter(f=>f.
 // Known findings in older accepted films (preserved unchanged; recorded, not hidden). New examples must add none.
 const KNOWN_MOTION=new Set(['art01-handoff/handoff/receiver','art02-studio/handoff/receiver','art05-workshop/handoff/receiver','workshop-extended/toolbox/scientist','workshop-extended/steps/robot','workshop-extended/teach/robot','workshop-extended/shelf/robot','workshop-extended/handoff/receiver']);
 const KNOWN_HIDDEN=new Set(['talk02-dialogue/meeting/table','talk03-body/meeting/table']);
+// GEN-03 OFF_FRAME (characters partly outside the frame) in older accepted films, recorded unchanged.
+const KNOWN_OFF_FRAME=new Set(['art01-handoff/handoff/watcher','art02-studio/handoff/watcher','art05-workshop/plan/robot','art05-workshop/together/engineer','art05-workshop/together/scientist','cinematography/capture/guide','foundry-af04/instrument/robot','foundry-af09-lab/instrument/robot','talk01-faces/hello/engineer','talk02-dialogue/meeting/engineer','talk03-body/meeting/engineer','workshop-extended/plan/robot','workshop-extended/toolbox/scientist','workshop-extended/together/engineer','workshop-extended/together/scientist']);
 const base=n=>n.replace(/-(cpu|three)(-polished)?$/,'');
 
 test('motion-speed-v1 and visibility-v1 on every example: only the recorded historical findings',()=>{
  assert.equal(MOTION_POLICY.version,'motion-speed-v1');assert.equal(VISIBILITY_POLICY.version,'visibility-v1');
- const motion=new Set(),hidden=new Set();
+ const motion=new Set(),hidden=new Set(),off=new Set();
  for(const n of examples){const p=read(n);
-  for(const w of motionCheck(p,est(p)).warnings)motion.add(base(n)+'/'+w.shot+'/'+w.asset);
+  for(const w of motionCheck(p,est(p)).warnings)(w.code==='OFF_FRAME'?off:motion).add(base(n)+'/'+w.shot+'/'+w.asset);
   for(const w of visibilityCheck(p).warnings)hidden.add(base(n)+'/'+w.shot+'/'+w.asset);}
- assert.deepEqual([...motion].sort(),[...KNOWN_MOTION].sort());assert.deepEqual([...hidden].sort(),[...KNOWN_HIDDEN].sort());
+ assert.deepEqual([...motion].sort(),[...KNOWN_MOTION].sort());assert.deepEqual([...off].sort(),[...KNOWN_OFF_FRAME].sort());assert.deepEqual([...hidden].sort(),[...KNOWN_HIDDEN].sort());
  assert.ok(examples.length>=40,String(examples.length));
 });
 test('checks flag the TALK-04 r1 hidden set piece and a fast authored turn; estimated vs measured is labelled',async()=>{

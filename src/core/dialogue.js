@@ -5,12 +5,17 @@
 // toward the camera by `cheat` radians. Deterministic: derived only from the shot and the measured timeline.
 const fail=(p,m)=>{throw Error(p+': '+m)};
 export const DIALOGUE_LIMITS=Object.freeze({turn:[.1,1.5],defaultTurn:.35,cheat:[0,1],defaultCheat:.5});
+// GEN-03 speaker follow (dialogue.camera 'follow', needs cameraRig.framing 'group'): calm by construction.
+// establish: seconds on the whole group first; minLine: lines shorter than this do not move the camera; transition:
+// seconds per move, starting lead seconds before the line; consecutive lines by the same speaker hold.
+export const FOLLOW_PLAN=Object.freeze({establish:1.2,minLine:1.5,transition:1.8,lead:.5});
 export function validateDialogue(project){
  project.shots.forEach((s,i)=>{
   if(s.dialogue===undefined)return;
   const p='shots['+i+'].dialogue',x=s.dialogue;
   if(!x||typeof x!=='object'||Array.isArray(x))fail(p,'object required');
-  for(const k of Object.keys(x))if(!['listen','turn','cheat'].includes(k))fail(p+'.'+k,'unknown field');
+  for(const k of Object.keys(x))if(!['listen','turn','cheat','camera'].includes(k))fail(p+'.'+k,'unknown field');
+  if(x.camera!==undefined&&(x.camera!=='follow'||s.cameraRig?.framing!=='group'))fail(p+'.camera','follow requires cameraRig.framing group');
   if(x.listen!==true)fail(p+'.listen','true required');
   if(x.turn!==undefined&&!(typeof x.turn==='number'&&x.turn>=DIALOGUE_LIMITS.turn[0]&&x.turn<=DIALOGUE_LIMITS.turn[1]))fail(p+'.turn','seconds 0.1–1.5 required');
   if(x.cheat!==undefined&&!(typeof x.cheat==='number'&&x.cheat>=DIALOGUE_LIMITS.cheat[0]&&x.cheat<=DIALOGUE_LIMITS.cheat[1]))fail(p+'.cheat','radians 0–1 required');
@@ -46,13 +51,26 @@ export function phraseAims(s,t){
   const b=a.aim.blend??0,start=Math.max(0,(g.startSample-base)/n-b),end=Math.min(1,(g.endSample-base)/n+b);
   return end-start>1e-6?{...a,aim:{...a.aim,start:+start.toFixed(6),end:+end.toFixed(6)}}:a;})};
 }
+// Camera focus entries for dialogue.camera 'follow' from the measured lines of timeline shot t.
+export function followPlan(s,t){
+ const bound=s.speakerAssets??{},frames=t.endFrame-t.startFrame,seconds=frames/30,n=frames*1600,base=t.startFrame*1600,P=FOLLOW_PLAN,blend=Math.min(.5,P.transition/seconds),out=[];
+ for(const g of t.segments){const who=bound[g.speaker??'default'];if(!who||!s.cameraRig.subjects.includes(who)||(g.endSample-g.startSample)/48000<P.minLine)continue;
+  if(out.at(-1)?.subject===who)continue;
+  // r1 stills: the first line of each shot was spent on the group and the move. A first line that starts before the
+  // establishing beat plus one move opens the shot already framed on its speaker (at 0: no move).
+  if(!out.length&&(g.startSample-base)/48000<P.establish+P.transition){out.push({at:0,subject:who,blend:+blend.toFixed(6)});continue;}
+  let at=Math.max(P.establish/seconds,(g.startSample-base)/n-P.lead/seconds);const prev=out.at(-1);if(prev)at=Math.max(at,prev.at+prev.blend);
+  if(at+blend>1)continue;out.push({at:+at.toFixed(6),subject:who,blend:+blend.toFixed(6)});}
+ return out;
+}
 // Returns the shot with generated `face` (single window or chain) on every bound character; unchanged without dialogue.
 export function dialogueShot(s,t){
  s=phraseAims(s,t);
  if(!s?.dialogue?.listen||s.template!=='cinematic-graph'||!t?.segments)return s;
  const seconds=(t.endFrame-t.startFrame)/30,turn=s.dialogue.turn??DIALOGUE_LIMITS.defaultTurn,cheat=s.dialogue.cheat??DIALOGUE_LIMITS.defaultCheat;
  const plan=focusPlan(s,t),byId=new Map(s.assets.map(a=>[a.id,a]));
- return {...s,assets:s.assets.map(a=>{
+ const follow=s.dialogue.camera==='follow'&&s.cameraRig?.framing==='group'?followPlan(s,t):[];
+ return {...s,...(follow.length?{cameraRig:{...s.cameraRig,focus:follow}}:{}),assets:s.assets.map(a=>{
   const list=plan[a.id];if(!list)return a;
   const windows=list.map((f,k)=>{const end=k+1<list.length?list[k+1].at:1,span=Math.max(1e-6,end-f.at);
    const dx=firstX(byId.get(f.target))-firstX(a);

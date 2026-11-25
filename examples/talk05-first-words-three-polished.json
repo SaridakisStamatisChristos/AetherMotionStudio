@@ -177,7 +177,8 @@
    "dialogue": {
     "listen": true,
     "turn": 0.8,
-    "cheat": 1
+    "cheat": 1,
+    "camera": "follow"
    },
    "bodyLanguage": {
     "beats": true,
@@ -822,7 +823,8 @@
    "dialogue": {
     "listen": true,
     "turn": 0.8,
-    "cheat": 1
+    "cheat": 1,
+    "camera": "follow"
    },
    "bodyLanguage": {
     "beats": true,
@@ -944,7 +946,8 @@
    "dialogue": {
     "listen": true,
     "turn": 0.8,
-    "cheat": 1
+    "cheat": 1,
+    "camera": "follow"
    },
    "bodyLanguage": {
     "beats": true,
@@ -1066,7 +1069,8 @@
    "dialogue": {
     "listen": true,
     "turn": 0.8,
-    "cheat": 1
+    "cheat": 1,
+    "camera": "follow"
    },
    "bodyLanguage": {
     "beats": true,

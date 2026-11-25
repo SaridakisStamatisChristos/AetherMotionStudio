@@ -37,7 +37,7 @@ test('talk05: composition gate passes with listener turns applied; calm defaults
   sh.segments=s.narration.map((text,j)=>({text,startSample:Math.round(a+len*(.1+.8*j/n)),endSample:Math.round(a+len*(.1+.8*(j+.9)/n)),speaker:p.speech.shotSpeakers[s.id][j]}));
   const d=dialogueShot(s,sh);assert.deepEqual(compositionGate(d).warnings,[],s.id);
   for(const v of Object.values(compositionReport(d).characters))assert.equal(v.backToCameraSamples,0,s.id);
-  if(s.dialogue){assert.deepEqual(s.dialogue,{listen:true,turn:.8,cheat:1});assert.deepEqual(s.bodyLanguage,{beats:true,nods:true,blinks:true,sway:true});}}
+  if(s.dialogue){assert.deepEqual(s.dialogue,{listen:true,turn:.8,cheat:1,...(s.cameraRig.framing==='group'?{camera:'follow'}:{})});assert.deepEqual(s.bodyLanguage,{beats:true,nods:true,blinks:true,sway:true});}}
  assert.equal(p.shots.filter(s=>s.dialogue).length,5);
  const tools=p.shots[1].assets.find(a=>a.id==='robot');assert.equal(tools.aim.target,'toolbox');
  assert.equal(p.shots[2].assets.find(a=>a.id==='robot').params.reach,1.8,'high-shelf reach reused');

@@ -1,4 +1,38 @@
-# Forward-only handoff — GEN-01 + GEN-02 (group framing) in PR #27; owner said merge after GEN-02
+# Forward-only handoff — GEN-03 (speaker follow) PR awaiting the owner
+
+Unit: GEN-03 (implemented, tested and rendered; PR open, not merged)
+Checkpoint: `feature/gen-03` (48706ee, d31a34a plus docs) on `chore/record-gen-01-02` (main 23f4198 + record 6612699).
+Status: owner "do 1" (2026-11-25). Agent-reviewed only.
+Date: 2026-11-25
+
+## Owner review fix
+- Owner: "the camera move makes characters out of screen. this must be fixed".
+- Fixed in 0054e76: the follow constraint plus the OFF_FRAME check. See CURRENT_STATE.
+
+## Next action
+- Ask the owner to watch on a phone: out/gen03-interview-r3-three-polished/film.mp4, out/gen03-network-r1-three-polished/film.mp4 and out/talk05-first-words-r10-three-polished/film.mp4.
+- Then ask the owner to say merge.
+- On "merge": merge the PR, watch main CI on the merge commit, and record the merge on a new record branch.
+- Remaining candidates (not authorized):
+  - a caption-speed decision;
+  - make the composition overlap metric count every catalog character.
+
+## Previous handoff, kept for reference
+
+Unit: none (await the owner)
+Checkpoint: main 23f4198 (GEN-01 + GEN-02 merge, PR #27); record branch `chore/record-gen-01-02`.
+Status: MERGED; main CI 45622734798 test PASS.
+Date: 2026-11-25
+
+## Next action
+- Ask the owner what is next.
+- Candidates (none authorized):
+  - speaker-follow camera, so each speaker is larger during their line;
+  - a caption-speed decision: slower dialogue speech or captions lingering briefly;
+  - make the composition overlap metric count every catalog character;
+  - owner review of out/gen02-interview-r2-* and out/talk05-first-words-r7-*.
+
+## Previous handoff, kept for reference
 
 Unit: GEN-01 (implemented, tested and rendered; PR open, not merged)
 Checkpoint: `feature/gen-01` (commits 07a8df7, 55c41a6, e98fda2, da76b77, 1e89fdb plus docs) on `chore/record-talk-04-05` (main bf032ff + record 219278a).

@@ -19,7 +19,25 @@ Updated 2026-11-25 (handoff to TALK-04/05; TALK-01..03 merged). Authoritative ro
 6. Source and approved decisions authoritative. This summary cannot discard binding facts; consult the source-specific contract when the task touches it. Keep state and handoff synchronized. No new native render runs on GitHub or release without authorization.
 
 ## Active unit
-GEN-02 — group framing for vertical (9:16) social video, added to the GEN-01 branch/PR #27 at the owner's request ("lets do this first and then merge. if the videos are posted for example in instagram the charachers are samll", 2026-11-25). Status IMPLEMENTED + TESTED + RENDERED (agent-reviewed).
+GEN-03 — speaker follow camera. Owner: "do 1" (2026-11-25). Owner review of gen03-interview-r2: "the camera move makes characters out of screen. this must be fixed" → fixed in 0054e76: follow keeps every character fully in the safe area (two-speaker shots no longer move; three-speaker shots +13 %), and a new OFF_FRAME check (motion-speed-v1) runs on every production. Renders gen03-interview-r3, gen03-network-r1 and talk05-first-words-r10 from clean 0054e76: all gates PASS, checks 0/0, max off-frame 0; `npm test` 318 tests, 317 pass, 0 fail, 1 skip. r2 is superseded (owner-rejected). Status IMPLEMENTED + TESTED + RENDERED (agent-reviewed) on `feature/gen-03` (from `chore/record-gen-01-02` 6612699 on main 23f4198); PR pending owner merge.
+- Done:
+  - opt-in `dialogue.camera:'follow'` + generated `cameraRig.focus` from measured lines (calm: ≥1.5 s lines, 1.8 s pans, push ≤1.25×, open on an early first speaker);
+  - camera pan/zoom rates in motion-speed-v1;
+  - talk-v1 enables follow.
+- Speaker height while speaking: interview 0.447 → 0.556, network 0.372 → 0.464, TALK-05 0.486 → 0.563.
+- Evidence:
+  - `npm test` 317 tests, 316 pass, 0 fail, 1 skip; defaults identical.
+  - Renders from clean d31a34a, all gates PASS, checks 0/0, camera ≤6.2°/s pan: `gen03-interview-r2` (CPU a6f80ab51e4550c7…, Three 04bfd6d5e747d06b…) and `talk05-first-words-r9` (CPU 82bf1f6d407e69e7…, Three 8952815a187e48df…).
+  - r1/r8 are superseded.
+
+Previous: GEN-01 + GEN-02 MERGED to main as 23f4198 via PR #27 (owner: "lets do this first and then merge", 2026-11-25); main CI 45622734798 test PASS (render/compare skipped by policy). Agent-reviewed only; no human review of the GEN renders yet.
+- Candidate follow-ups (not authorized):
+  - count every catalog character in the composition overlap metric;
+  - a caption-speed option (owner decision);
+  - speaker-follow camera (bigger characters during each line);
+  - mesh-accurate visibility.
+
+Previous: GEN-02 — group framing for vertical (9:16) social video, added to the GEN-01 branch/PR #27 at the owner's request ("lets do this first and then merge. if the videos are posted for example in instagram the charachers are samll", 2026-11-25). Status IMPLEMENTED + TESTED + RENDERED (agent-reviewed).
 - Done:
   - opt-in `cameraRig.framing:'group'` + `subjects` (rest-pose bounds, one zoom per shot, 9:16 safe area);
   - talk-v1 uses it with a tighter line;
