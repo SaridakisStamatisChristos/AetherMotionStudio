@@ -19,7 +19,22 @@ Updated 2026-11-25 (handoff to TALK-04/05; TALK-01..03 merged). Authoritative ro
 6. Source and approved decisions authoritative. This summary cannot discard binding facts; consult the source-specific contract when the task touches it. Keep state and handoff synchronized. No new native render runs on GitHub or release without authorization.
 
 ## Active unit
-None authorized yet. Proposed next: GEN-01 (generalize the TALK/POLISH lessons into automatic checks and staging for every project; NEXT_UNITS "GEN-01"), awaiting the owner's go.
+GEN-01 — generalize the TALK/POLISH lessons to every project. Owner: "go" (2026-11-25), after asking that features generalize to every video. Status IMPLEMENTED + TESTED + RENDERED (agent-reviewed) on `feature/gen-01` (from `chore/record-talk-04-05` 219278a on main bf032ff); PR pending owner merge.
+- Done:
+  - motion-speed-v1 + visibility-v1 checks (src/quality/motion-check.js; every production writes quality-checks.json; Studio Inspect);
+  - general staging `talk-v1` (binding by name, blocking under an automatic camera, set pieces beside the line, calm behaviour); the Director dialogue mode uses it (deep-identical before pointing);
+  - opt-in `calmTurns` (src/core/calm.js);
+  - `aim.phrase` (point during a measured line);
+  - Director points at a named set piece;
+  - Studio "Stage dialogue" / "Calm fast turns";
+  - TALK-05 rebuilt on the general passes.
+  - Item 5 (split lines for caption speed) dropped: the cause is natural speech pace, not line length. Options are recorded in docs/SPEECH.md GEN-01 for the owner.
+- Evidence:
+  - `npm test` 311 tests, 310 pass, 0 fail, 1 skip (tests/gen01.test.js 7 incl. negatives). Two pinned list assertions narrowed to their first entries, because talk-v1 and director-ir-v1.3 were appended (ART-04 STAGING_MODES, POLISH-02 PROMPT_VERSIONS).
+  - Python 38 OK; protocol plan OK; defaults identical (`fod-digests --exclude talk04,talk05,gen01`).
+  - Headless Studio exercise observed working.
+  - Renders from clean 1e89fdb, all gates PASS, checks 0/0: `gen01-interview-r2` (fresh request, no hand edits; films CPU dc57520852638725…, Three 46481d4d9a8e80ee…) and `talk05-first-words-r5` (CPU 53fb64ea2b3e0cc0…, Three 7f3686963f6f335d…).
+  - r1/r4 were superseded because the request file was uncommitted (sourceDirty).
 
 ## Previous units (TALK-04 + TALK-05, MERGED 2026-11-25)
 Owner: "merge it" (2026-11-25), asking also that the features generalize to every video, not only the showcase films. TALK-04 MERGED as 5c61d3f (PR #25), TALK-05 MERGED as bf032ff (PR #26, retargeted to main after #25); main CI 45611675937 on bf032ff test PASS (render/compare skipped by policy). Owner had not given an explicit visual/audio review or line approval before merging; the TALK-05 lines remain Claude drafts the owner may edit.

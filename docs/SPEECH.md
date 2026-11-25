@@ -182,3 +182,17 @@ The Director can now produce a dialogue project from a topic (docs/DIRECTOR.md T
   That is ≤1.1 nods and ≤1.1 beats per 17 s, within the accepted TALK-03 level. Peak speeds equal TALK-03 r5: turns 41.7°/s, nods 14.9°/s, sway 1.1°/s.
 - `talk04-dialogue-r1` (8d69270) also passed every gate, but its stills showed the set piece hidden behind the middle speaker in every shot. Fixed in 7fb7beb; r1 is superseded and left untouched.
 - Review status: agent stills review only. No human review yet.
+
+## GEN-01 general dialogue staging and calm motion (2026-11-25, opt-in)
+- **Staging `talk-v1`** (src/core/staging.js; `stageProject(p,'talk-v1')`; Studio "Stage dialogue"; used by the Director in dialogue mode) works on any speech project:
+  - **Binding:** each line speaker binds to the mouth-capable character whose ID or asset type equals the speaker's ID or name. One remaining speaker may take one remaining character; anything else is ambiguous and nothing is bound. There is no guessing by order: in the TALK-05 "mistake" shot an order rule would have given the robot's lines to the engineer.
+  - **Blocking:** with 2–3 bound characters, an automatic camera and every character freely placeable, the characters stand in the TALK line and up to two free set pieces move beside it. Aimers, faces, locomotion and attachments count as authored blocking. Shots with authored camera tracks keep their blocking: re-blocking under a fixed camera cropped TALK-05 shots.
+  - **Behaviour, each added only when absent:** dialogue {listen, turn 0.8, cheat 1} with two or more bound characters; bodyLanguage; turnSteps; human detail 2; lighting parity-v1.
+- **`calmTurns(project, {limit = 120, timeline})`** (src/core/calm.js; Studio "Calm fast turns") is opt-in and never silent.
+  - It widens authored yaw-key turns faster than the limit into their neighbouring holds, re-measuring after each step and reverting any step that does not help.
+  - Turns driven by face, dialogue or actions are reported, not changed. A first version made a face-driven turn worse (174 → 3,418°/s); that is now prevented and tested.
+  - It returns `changes` and `unresolved` with reasons. Shots without a known length are reported as "duration unknown".
+  - On workshop-extended it calms the shelf turn from 224 to 111°/s and reports 4 others with reasons.
+- **`aim.phrase: k`** (contract extension, validated): at render the aim window follows narration line k's measured bounds (`phraseAims`, applied in `dialogueShot`). The authored start/end is the estimate used before preparation.
+- **TALK-05** now uses these general passes instead of hand staging (see docs/SHOWCASE.md).
+- **Caption reading speed:** splitting lines does not help. Speech ran at speed 1.0, and Kokoro naturally speaks short lines at about 18–20 characters per second ("We are proud of you." takes 1.1 s). The real options are slightly slower speech for dialogue, or captions lingering briefly after a line. Both change the audio or caption contracts and are left for the owner to decide.

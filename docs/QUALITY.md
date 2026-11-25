@@ -24,3 +24,18 @@ Predecessor v0.7 run 45361307457 verified native 60s video, subtitle exports and
   - a subject whose mean height is outside 0.08–1.1 of the safe area.
 - Bounds are regression ceilings taken from the accepted fixtures (highest observed: mean overlap 0.37, peak 0.80). They are not an aesthetic verdict.
 - It is separate from preflight, so historical quality reports and repair behaviour are unchanged. tests/polish-02.test.js runs it on every cinematic shot of every example on both backends (≥150 shots), plus negatives.
+
+## GEN-01 motion-speed-v1 and visibility-v1 (2026-11-25)
+Two checks run automatically on every production (`quality-checks.json` in each output, a `CHECKS:` log line, and `production.json` `checks`). They also run in Studio Inspect on drafts, with line timing marked `estimated`. They are diagnostic and versioned, and kept separate from preflight so historical reports and digests are unchanged. Source: src/quality/motion-check.js.
+- **motion-speed-v1** measures peak frame-to-frame speed per character over every frame:
+  - it measures body turn (yaw), nod and head tilt;
+  - TALK-02 listener turns, TALK-03 body language and `aim.phrase` windows are applied from the measured timeline;
+  - warnings: `FAST_TURN` above 120°/s, `FAST_NOD` above 35°/s, `FAST_TILT` above 10°/s.
+  - It turns the scratch measurement of TALK-03/05 into a check. The talk05 r2 shelf turn (224°/s) would have been flagged automatically.
+- **visibility-v1** measures how much of each asset's projected box is covered by boxes of assets nearer the camera (12×12 grid, depth margin 0.15 m, attachment parent/child pairs excluded).
+  - Warning: `HIDDEN_ASSET` when the mean coverage is above 0.85.
+  - Box-based, so it over-estimates coverage for thin shapes; it is a screening check.
+  - Calibration: hidden objects measure 1.0 (talk04 r1 set pieces; the TALK-02/03/05 tables). The worst ordinary case is about 0.70 (overlapping shoulders in line-ups).
+- Example sweep (tests/gen01.test.js), where new examples must add no findings. The known findings are all in older accepted films, kept unchanged:
+  - fast turns: the hand-off receiver in art01-handoff, art02-studio and art05-workshop (174°/s); workshop-extended toolbox, steps, teach, shelf and handoff (178–289°/s);
+  - hidden: the TALK-02/03 meeting table.

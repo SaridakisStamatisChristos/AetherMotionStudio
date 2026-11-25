@@ -1,4 +1,36 @@
-# Forward-only handoff — TALK-04/05 merged; GEN-01 proposed (owner types "fod continue" after authorizing)
+# Forward-only handoff — GEN-01 done, PR awaiting the owner
+
+Unit: GEN-01 (implemented, tested and rendered; PR open, not merged)
+Checkpoint: `feature/gen-01` (commits 07a8df7, 55c41a6, e98fda2, da76b77, 1e89fdb plus docs) on `chore/record-talk-04-05` (main bf032ff + record 219278a).
+Status: owner "go" (2026-11-25). Agent-reviewed only.
+Date: 2026-11-25
+
+## GEN-01 checkpoint
+- Changed files:
+  - src/quality/motion-check.js (new); src/core/calm.js (new);
+  - src/core/staging.js (talk-v1), dialogue.js (phraseAims), aim.js + graph.js (aim.phrase);
+  - src/director/dialogue.js + index.js;
+  - scripts/produce.mjs (quality-checks.json), studio-server.mjs (Inspect checks); studio/app.js + index.html;
+  - scripts/talk05-first-words.mjs + examples; examples/gen01-interview.request.json;
+  - tests/gen01.test.js; tests/art04-authoring.test.js (modes list narrowed);
+  - docs QUALITY/SPEECH/DIRECTOR/STUDIO/SHOWCASE; continuity docs.
+- Results: see CURRENT_STATE (Active unit).
+- Open risks:
+  - Automatic framing makes groups small.
+  - Caption reading speed (owner decision: slower dialogue speech or caption linger).
+  - Visibility is box-based.
+  - calmTurns only adjusts authored yaw keys in fixed-length shots.
+  - The listed historical fast turns in accepted films stay as recorded findings.
+
+## Next action
+- Ask the owner to review PR (and optionally out/gen01-interview-r2-*/film.mp4, out/talk05-first-words-r5-*/film.mp4), and to decide on caption speed.
+- On "merge": merge the PR, watch main CI on the merge commit, and record the merge on a new record branch.
+- Candidate follow-ups (not authorized):
+  - group framing (characters larger);
+  - caption speed option;
+  - mesh-accurate visibility.
+
+## Previous handoff (TALK-04/05 + GEN-01 proposal), kept for reference
 
 Unit: GEN-01 (proposed, NOT authorized)
 Checkpoint: main bf032ff (TALK-05 merge; TALK-04 merge 5c61d3f). Record branch `chore/record-talk-04-05` (pushed).

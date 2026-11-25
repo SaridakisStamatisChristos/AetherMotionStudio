@@ -69,3 +69,23 @@ A 75 s dialogue film. The engineer (af_heart), the scientist (bf_emma, en-gb) an
   - r1 and r2 are superseded and left untouched.
 - Known: the table in AROUND THE TABLE is hidden behind the robot (the same layout as the TALK-02 meeting).
 - Review status: agent stills review only. **Owner visual and audio review requested.**
+
+## GEN-01 renders (2026-11-25), both from clean commit 1e89fdb
+- **`gen01-interview-r2`** is a fresh Director request with no hand edits: "How does the internet move a message?", 60 s, interview style, Student (af_bella) and Explorer robot (bm_george, en-gb).
+  - Gates: 1 preparation; all verifies and compare_release (shared hashes exact) PASS; frame-glitch clean on both films.
+  - Checks: motion 0 and visibility 0 warnings on both backends.
+  - Quality: 1 CAPTION_READING_SPEED warning (20.0 characters per second).
+  - Loudness −16.0 LUFS (LRA 5.1 LU).
+  - Render time CPU 121.3 s, Three-vulkan 53.6 s; RTX util peak 61 %, 1,422 MiB.
+  - Films: CPU dc57520852638725…, Three 46481d4d9a8e80ee….
+  - The student points at the router while saying "Routers…". Motion peaks: turns 82°/s, nods 14.9°/s. Over 60 s the host made 5 beats and 4 nods, the guest 5 beats and 2 nods.
+  - r1 had identical gates but was rendered with the request file uncommitted (sourceDirty), so it is superseded; its CPU film is byte-identical to r2.
+- **`talk05-first-words-r5`**: TALK-05 rebuilt with the general passes (talk-v1, calmTurns, automatic framing for free conversations). The table is visible now.
+  - Gates: all PASS; frame-glitch clean; checks 0 and 0.
+  - Loudness −16.0 LUFS (LRA 20.4 LU).
+  - Render time CPU 110.5 s, Three 67.0 s.
+  - Films: CPU 53fb64ea2b3e0cc0…, Three 7f3686963f6f335d….
+  - Review notes: LOW_PROJECTED_MOTION on table, mistake and thanks (calmer automatic cameras). The shelf turn peaks at 111°/s.
+  - r4 is superseded for the same uncommitted-request reason.
+- Known: with automatic framing of a group plus its set piece, characters are fairly small in the frame. A framing improvement is a candidate follow-up.
+- Review status: agent stills review only.

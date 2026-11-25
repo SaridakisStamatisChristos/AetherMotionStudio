@@ -60,3 +60,8 @@ Predecessor scoped CI 45355048931 passed and user accepted current motion qualit
 - Prompt `director-ir-v1.3` is selected automatically with `dialogue` and rejected without it. It is the v1.2 compact layout plus a `Dialogue (style): speakers id=Name (role, character); …` line. It also adds `speakers` to the schema, the one-set-piece rule and the dialogue cameras. 60 s example: ~903 estimated tokens.
 - Studio: the Director form has a Dialogue option (engineer / robot / scientist). The Speakers panel edits speaker names and voices, the speaker of each line, and which character each speaker appears as (docs/STUDIO.md).
 - Evidence: example examples/talk04-dialogue.request.json; tests in tests/talk04.test.js; render `talk04-dialogue-r2` (docs/SPEECH.md TALK-04).
+- GEN-01:
+  - Dialogue shots are now staged by the general `talk-v1` pass. The output was proven deep-identical on 6 dialogue requests before pointing was added.
+  - A provider's set-piece `x` is replaced when `talk-v1` places the set piece.
+  - The first line that names the set piece (its catalog ID words, plurals allowed) makes its speaker point at it with `aim {target: 'object-1', phrase: k, cheat: 0.5}`. The window follows the measured line; the estimate comes from the word share.
+  - Proof: examples/gen01-interview.request.json (new topic wording, interview style, a student and an explorer robot, en-gb guest voice), rendered `gen01-interview-r2` with no hand edits (docs/SHOWCASE.md GEN-01).

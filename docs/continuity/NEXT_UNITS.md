@@ -124,7 +124,7 @@ Goal: "The Workshop — First Words", a 60–90 s dialogue film using TALK-01..0
 
 Exit: the owner watches and accepts the film; PR merged on the owner's word.
 
-## GEN-01 (proposed 2026-11-25, not authorized) — make every video benefit, not only the showcase films
+## GEN-01 (authorized "go" 2026-11-25; IMPLEMENTED + RENDERED on `feature/gen-01`, PR pending; item 5 dropped with reason, see docs/SPEECH.md GEN-01) — make every video benefit, not only the showcase films
 Owner (on merging TALK-04/05): "the point is that these should be generalized to every video not this videos we mock up here".
 The TALK-01..04 features are already general project and Director contracts that any project or request can opt into. But several quality fixes in TALK-04/05 were found by reviewing stills and then applied by hand to one film. GEN-01 turns those lessons into automatic, opt-in or default-proven-unchanged mechanisms:
 1. **Motion-speed check** (quality/preflight, new versioned policy): peak body turn, nod and sway speed per character for any project, with dialogue face chains and body language applied from the measured timeline. Flags turns above ~90°/s. The talk05 r2 shelf turn at 224°/s was found only by a manual script.
