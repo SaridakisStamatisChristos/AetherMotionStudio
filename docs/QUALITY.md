@@ -16,3 +16,11 @@ Existing verification performs exact frame count, H.264/AAC, full decode, narrat
 
 ## Evaluation and acceptance
 Predecessor v0.7 run 45361307457 verified native 60s video, subtitle exports and 5 reading-speed outliers. New independent scripted topic How a Forest Grows has five shots, mixed fixed/automatic 50s timeline, deliberately problematic but contract-valid camera on shot 3, and matched CPU/Three.js fixtures. Tests explicitly challenge cropping across human/technology, transport, science and nature groups, malformed inputs, no-repair identity, deterministic repair, budgets, protected-content preservation and matched graph state. These predeclared structural challenge cases are not a sealed model benchmark. Python tests exercise transition exclusion, sustained run detection and independent subtitle parsing. Native CPU acceptance requires a real MP4, quality report and contact sheet; human visual review remains required. Full native Three.js and prior-fixture head-to-head deferred. No automatic merge.
+
+## POLISH-02 composition gate composition-v1 (2026-11-25)
+- `compositionGate(shot)` in src/quality/composition.js applies policy `composition-v1` and returns bounded warnings (at most 16, with a `truncated` flag). It flags:
+  - any back-to-camera samples;
+  - pairwise overlap with a mean above 0.40 or a peak above 0.85;
+  - a subject whose mean height is outside 0.08–1.1 of the safe area.
+- Bounds are regression ceilings taken from the accepted fixtures (highest observed: mean overlap 0.37, peak 0.80). They are not an aesthetic verdict.
+- It is separate from preflight, so historical quality reports and repair behaviour are unchanged. tests/polish-02.test.js runs it on every cinematic shot of every example on both backends (≥150 shots), plus negatives.

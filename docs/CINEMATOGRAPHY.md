@@ -65,3 +65,11 @@ All optional; absent fields keep historical behaviour (graph-state and preflight
 - Surfaces (src/core/surface.js): `surfaceTop(asset, pose, x, z)` = highest top of the rendered boxes whose footprint contains (x, z), else null. `assets[].restOn: {surface, at?:[dx,dz]}` places a prop on that top (root x/y/z come from the surface; x/y/z tracks rejected; the surface may not rest or be attached). Attachment `release:{mode:'place', to:{surface, at?}}` lands the prop on the surface top.
 - Attachment `offset:'auto'` (first window only): grip as found — the prop keeps its offset and yaw relative to the hand at pickup, so there is no pop; blendIn is not needed.
 - `solveReach(character, target, {params, scale, around, spreadDeg, clearance, maxDist, avoid, bodyRadius, hands, visibility})` (src/core/interaction.js): stands a hand-rig character so the chosen hand meets a world point; keep-out boxes, face ≤100° from camera, optional visibility weight (default 0). Used by the HIGH SHELF shot (pick and place within 1–3 mm of the solved target; the hand ends 4.7 cm from the book at grab, absorbed by the auto grip).
+
+## POLISH-02 item 9 — evaluation performance (2026-11-25)
+- Profiling evaluateGraph on the 73 s film found one hotspot, the teach shot: 35 ms/frame normally, and 1.19 s/frame when the shot object is cloned per frame. With a fresh copy, the turn-step table re-ran the aim-with-cheat grid for all 240 frames.
+- Fixes:
+  - coarse-to-fine aim solve: arm grid 20×8 plus refinement, cheat candidates at 0.15 rad then refined; about 5× fewer evaluations and the same accuracy (0.0° / 2.6° in the film);
+  - a bounded memo for aim solves;
+  - content-keyed caches for the locomotion and turn-step tables, alongside the per-object WeakMaps.
+- Results: graph time for the whole film 9.1 s → 0.5 s; teach's first frame in a fresh process about 20 ms. Poses of every shot except teach are byte-identical; teach changes only through the new aim search.

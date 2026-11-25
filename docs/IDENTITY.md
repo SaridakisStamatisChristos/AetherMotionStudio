@@ -15,3 +15,12 @@ Scoped predecessor 45356660809 green. New 50s five-shot story Orion and the repa
 ## POLISH-01 identity handoff chains (2026-11-25)
 - The continuity ledger now models attachment chains on identity props: contiguous windows produce `{type:'handoff', prop, from, fromAnchor, to, toAnchor, at}`; a gap between windows produces release + pickup; a final release records `mode` when the window has `release`. Hand occupancy is checked per window; holder/hand changes across shots must still be explained. Previous single-window behaviour and event shapes are unchanged.
 - Director IR `hold` may be a 2–4 window chain (sequential) and compiles to an attachment chain (blendIn 0.05 for later windows). The model-facing prompt text was intentionally not changed (it would alter existing identity prompts); teaching providers about chains is a follow-up.
+
+## POLISH-02 human detail 3 (2026-11-25, opt-in)
+- `params.detail: 3` (humans only; robots and other families are rejected; 4 is invalid) includes every detail-2 cue, and adds:
+  - per-kind hair silhouettes: scientist parted with back hair, office fringe, student bob, runner headband and ponytail, ridged hard hats on the engineer and construction worker; the astronaut helmet is unchanged;
+  - a per-kind brow tilt;
+  - three fingers and a thumb along each arm's direction (the gripping right hand keeps its grip fingers);
+  - clothing silhouettes: lab-coat hem, tool belt and pouch, jacket lapels, hoodie hood, running shorts, suit shoulder pads.
+- Default and detail-2 geometry are digest-identical. Detail 3 is not used in "The Workshop — Extended": its reused ART-05 shots stay at detail 2, and switching detail between shots would break character continuity.
+- Lineup example `examples/polish02-cast-{cpu,three}-polished.json` (generator scripts/polish02-cast.mjs) shows the ART-03 cast at detail 2 and then at detail 3. Matched render `polish02-cast-r1` at 593757c: all gates PASS. Review: agent stills only; at lineup scale the additions are subtle.
