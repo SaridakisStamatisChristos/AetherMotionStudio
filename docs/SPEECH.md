@@ -155,3 +155,10 @@ Acceptance fixture: A message travels across a network, supplied script and six 
 
   - Budget regression test added.
   - `talk03-body-r3` was interrupted mid-render by a session break; its incomplete output is left untouched and superseded by r4.
+- TALK-03 third revision (owner: "still a bit much of movement, especially in nodding"). Commit cb74c7b, render `talk03-body-r5`: all gates PASS, frame-glitch clean; films CPU 38cef1baf4adeaf0…, Three 97207a4d5f90af43….
+  - Changes:
+    - nods 0.07 rad (was 0.12);
+    - at most one nod per character per 240 frames (8 s);
+    - no nod from an addressee who speaks next, since the reply acknowledges the line;
+    - sway 0.015 rad (was 0.03).
+  - Result in the meeting: 1 nod per character (was 1–3), nodding 5 % of the time; arm beats unchanged at 2 per character.
