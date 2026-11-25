@@ -19,6 +19,10 @@ Updated 2026-11-25 (main fae67c1 has GEN-04..12; GEN-15 step 1 on feature/gen-15
 6. Source and approved decisions authoritative. This summary cannot discard binding facts; consult the source-specific contract when the task touches it. Keep state and handoff synchronized. No new native render runs on GitHub or release without authorization.
 
 ## Active unit
+GEN-15 Three tune on `feature/gen-15-three-tune` (from main a4d9396; PR #33 MERGED a4d9396). Owner: "merge pr 32 [#32 was already merged; #33 merged as the evident intent]. then tune three js and merge the pr you will create for the tune to main. then clean up."
+- 35ffc7c: `CRAFTED.three` (lighter palette touch, ambient × 0.78, exposure × 0.93, roughness 0.56, metalness 0.12). The CPU palette is pinned in a test.
+- Render `gen15-forest-r2`: CPU 0a996a7262fe460c… (byte-identical to r1), Three c1be7010ecad39c0…. All gates PASS, glitch clean, −16.0 LUFS. Three is no longer washed out (agent review).
+
 GEN-15 step 1, the crafted look — IMPLEMENTED + TESTED + RENDERED (agent-reviewed) on `feature/gen-15` (from main fae67c1). PR pending; not merged.
 - Owner: "lets skip 13 and 14 for now and go to the better looking shapes and materials"; then "wait merge pr 32 and dont branch… lets dont mess the code sequence".
   - PR #32 was merged (fae67c1, after its CI passed on the PR head; main CI 45702405758 success). GEN-15 was then restarted from main, not stacked.
