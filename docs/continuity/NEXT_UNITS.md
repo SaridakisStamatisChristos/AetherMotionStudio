@@ -17,7 +17,7 @@ This is an actionable proposed sequence for future work, not an approved require
 | TALK-01 | Speaking faces (mouth + speaker binding) — MERGED 7f121e7 (PR #22) | Mouth channel on detail-2 humans and robot face panels; driven by a per-frame speech envelope from the measured narration PCM (prepared once, shared, hashed); speaker→character binding per phrase; both backends; deterministic. |
 | TALK-02 | Dialogue scenes — MERGED e17870c (PR #23) | Two+ characters exchange lines with distinct Kokoro voices (existing speakers/shotSpeakers); listeners face the active speaker; captions name speakers; turn-taking from measured phrase bounds. |
 | TALK-03 | Body language while talking — MERGED 85d7a37 (PR #24; owner: "merge it for now") | Beat gestures on stressed words (estimated word timing, never called forced alignment), head nods/tilts, blinks, idle weight shifts; bounded and deterministic. |
-| TALK-04 | Director dialogue authoring | Director/Studio produce dialogue scripts with speakers from a topic; staging places speakers, cheats faces, plans listener reactions; editable in Studio. |
+| TALK-04 | Director dialogue authoring — IMPLEMENTED + RENDERED on `feature/talk-04` (talk04-dialogue-r2), PR pending | Director/Studio produce dialogue scripts with speakers from a topic; staging places speakers, cheats faces, plans listener reactions; editable in Studio. |
 | TALK-05 | Talking showcase | A 60–90 s dialogue film (e.g. the makers teaching the robot to speak); matched CPU/Three; human visual + audio review. |
 
 ## Unit status (2026-11-24, branch `local-dev`, not pushed)
