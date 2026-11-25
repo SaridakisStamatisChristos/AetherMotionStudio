@@ -98,3 +98,29 @@ Owner: "if the videos are posted for example in instagram the characters are sma
 
   The calmer, readable dolly also cleared the LOW_PROJECTED_MOTION review notes on the talk-v1 shots.
 - **Known gap:** the composition gate's overlap metric only counts rigs with a `right-hand` anchor. The explorer robot has none, so its overlap with the host was invisible to the gate and was caught in the stills. Candidate fix: count every catalog character.
+
+## GEN-03 speaker follow (2026-11-25, opt-in)
+Owner asked for the next size gain for vertical feeds ("do 1": the camera follows the speaker).
+- **Contract:**
+  - `shot.dialogue.camera: 'follow'`, which requires `cameraRig.framing: 'group'`;
+  - generated `cameraRig.focus: [{at, subject | null, blend}]`: 1–32 entries in time order, subject one of `subjects` or null, blend 0.001–0.5.
+  - Every rule has a negative test.
+- **Plan** (`followPlan` in src/core/dialogue.js, applied by `dialogueShot` from the measured lines, so all renders and checks see it):
+  - a line of at least 1.5 s by a new speaker eases over 1.8 s, starting 0.5 s before the line;
+  - consecutive lines by the same speaker hold, and moves never overlap;
+  - a shot whose first line starts within 1.2 + 1.8 s opens already framed on that speaker, with no move. r1 spent first lines on the group and the move; shots that start with a pause still show the group first.
+- **Framing** (`FOLLOW` in src/core/cinematography.js): the target shifts 0.65 of the way toward the speaker and the camera pushes in at most 1.25× the group zoom, never tighter than the speaker's own fit, so the speaker stays fully in frame (tested). Listeners stay partly in frame.
+- **Camera speed in motion-speed-v1:** per shot pan and zoom rate, with warnings `FAST_CAMERA_PAN` above 30°/s and `FAST_CAMERA_ZOOM` above 30 %/s.
+  - Existing films peak at 10.7°/s and 6 %/s.
+  - Follow peaks at 6.3°/s pan and 0 %/s zoom: speaker changes are pans at a constant push.
+  - An earlier 1.0 s / 1.3× version zoomed at 40 %/s and was calmed before the first render.
+- **Result:** the active speaker's height while speaking, as a share of the safe height:
+
+  | Film | Group framing only | With follow |
+  |---|---|---|
+  | Interview | 0.447 | 0.556 |
+  | Network | 0.372 | 0.464 |
+  | TALK-05 | 0.486 | 0.563 |
+
+  Against GEN-01, the interview speaker is about 1.95× taller.
+- **`talk-v1`** turns follow on for every conversation it frames as a group.

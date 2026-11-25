@@ -1,4 +1,18 @@
-# Forward-only handoff — GEN-01/02 merged; no unit authorized
+# Forward-only handoff — GEN-03 (speaker follow) PR awaiting the owner
+
+Unit: GEN-03 (implemented, tested and rendered; PR open, not merged)
+Checkpoint: `feature/gen-03` (48706ee, d31a34a plus docs) on `chore/record-gen-01-02` (main 23f4198 + record 6612699).
+Status: owner "do 1" (2026-11-25). Agent-reviewed only.
+Date: 2026-11-25
+
+## Next action
+- Ask the owner to watch out/gen03-interview-r2-three-polished/film.mp4 and out/talk05-first-words-r9-three-polished/film.mp4 on a phone, and to say merge.
+- On "merge": merge the PR, watch main CI on the merge commit, and record the merge on a new record branch.
+- Remaining candidates (not authorized):
+  - a caption-speed decision;
+  - make the composition overlap metric count every catalog character.
+
+## Previous handoff, kept for reference
 
 Unit: none (await the owner)
 Checkpoint: main 23f4198 (GEN-01 + GEN-02 merge, PR #27); record branch `chore/record-gen-01-02`.
