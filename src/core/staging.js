@@ -62,7 +62,12 @@ function stageHandoff(out){
 // 3. behaviour (each only when absent): dialogue {listen, turn .8, cheat 1} with ≥2 bound characters, bodyLanguage
 //    {beats, nods, blinks, sway}, turnSteps on legged rigs, detail 2 on humans, lighting parity-v1.
 // Authored choices are kept; shots without line speakers are returned unchanged.
-export const TALK_STAGE=Object.freeze({turn:.8,cheat:1,line:Object.freeze({2:[[-1,.35],[1,.35]],3:[[-1.35,.35],[0,-.2],[1.35,.35]]}),prop:Object.freeze({2:[[2,-.5],[-2,-.5]],3:[[2.4,-.6],[-2.4,-.6]]})});
+// GEN-02 (vertical 9:16 delivery): a tighter line framed by camera framing 'group', set pieces behind the gaps between
+// speakers so they stay in frame (GEN-01 put them beside the line, which made automatic framing wide and characters small).
+export const TALK_STAGE=Object.freeze({turn:.8,cheat:1,line:Object.freeze({2:[[-.75,.3],[.75,.3]],3:[[-1,.35],[0,-.15],[1,.35]]}),prop:Object.freeze({2:[[0,-1.1],[0,-1.1]],3:[[1.75,-.5],[-1.75,-.5]]})});
+// Three speakers leave gaps too narrow (visibility-v1 measured set pieces behind them as fully hidden): the set piece
+// stands close beside the line and is framed with the group; two speakers keep it behind their gap.
+const PROP_IN_GROUP=Object.freeze({2:false,3:true});
 const placeable=a=>!a.identity&&a.attachment===undefined&&a.locomotion===undefined&&a.restOn===undefined&&a.aim===undefined&&(a.tracks?.x?.length??0)<=1&&(a.tracks?.z?.length??0)<=1&&!a.actions?.some(x=>Object.hasOwn(ACTIONS[x.name]??{},'x')||Object.hasOwn(ACTIONS[x.name]??{},'z'));
 export function talkBinding(s,speech){
  if(s.speakerAssets)return s.speakerAssets;
@@ -82,7 +87,10 @@ function stageTalk(out,speech){
  const line=TALK_STAGE.line[chars.length];
  if(line&&!['x','y','z','zoom'].some(k=>out.camera?.[k]!==undefined)&&chars.every(a=>placeable(a)&&a.face===undefined)){
   chars.forEach((a,j)=>{a.tracks={...a.tracks,x:[[0,line[j][0]]],z:[[0,line[j][1]]]};});
-  out.assets.filter(a=>!character(a)&&placeable(a)).slice(0,2).forEach((a,j)=>{const [x,z]=TALK_STAGE.prop[chars.length][j];a.tracks={...a.tracks,x:[[0,x]],z:[[0,z]]};});
+  const pieces=out.assets.filter(a=>!character(a)&&placeable(a)).slice(0,2);
+  pieces.forEach((a,j)=>{const [x,z]=TALK_STAGE.prop[chars.length][j];a.tracks={...a.tracks,x:[[0,x]],z:[[0,z]]};});
+  // Frame the speakers, not the whole set (only an automatic rig without a single authored subject).
+  if(out.cameraRig&&out.cameraRig.subject===undefined)out.cameraRig={...out.cameraRig,framing:'group',subjects:[...chars,...(PROP_IN_GROUP[chars.length]?pieces:[])].slice(0,4).map(a=>a.id)};
  }
  if(out.dialogue===undefined&&chars.length>=2&&chars.every(a=>a.face===undefined))out.dialogue={listen:true,turn:TALK_STAGE.turn,cheat:TALK_STAGE.cheat};
  if(out.bodyLanguage===undefined)out.bodyLanguage={beats:true,nods:true,blinks:true,sway:true};

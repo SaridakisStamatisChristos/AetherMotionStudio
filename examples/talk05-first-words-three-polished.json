@@ -114,8 +114,12 @@
    },
    "cameraRig": {
     "preset": "medium",
-    "framing": "medium",
-    "padding": 0.1
+    "framing": "group",
+    "padding": 0.1,
+    "subjects": [
+     "engineer",
+     "robot"
+    ]
    },
    "camera": {},
    "assets": [
@@ -129,13 +133,13 @@
       "x": [
        [
         0,
-        -1
+        -0.75
        ]
       ],
       "z": [
        [
         0,
-        0.35
+        0.3
        ]
       ]
      },
@@ -148,13 +152,13 @@
       "x": [
        [
         0,
-        1
+        0.75
        ]
       ],
       "z": [
        [
         0,
-        0.35
+        0.3
        ]
       ]
      },
@@ -704,8 +708,14 @@
    },
    "cameraRig": {
     "preset": "medium",
-    "framing": "medium",
-    "padding": 0.1
+    "framing": "group",
+    "padding": 0.1,
+    "subjects": [
+     "engineer",
+     "robot",
+     "scientist",
+     "table"
+    ]
    },
    "camera": {},
    "assets": [
@@ -719,7 +729,7 @@
       "x": [
        [
         0,
-        -1.35
+        -1
        ]
       ],
       "z": [
@@ -744,7 +754,7 @@
       "z": [
        [
         0,
-        -0.2
+        -0.15
        ]
       ]
      },
@@ -760,7 +770,7 @@
       "x": [
        [
         0,
-        1.35
+        1
        ]
       ],
       "z": [
@@ -779,13 +789,13 @@
       "x": [
        [
         0,
-        2.4
+        1.75
        ]
       ],
       "z": [
        [
         0,
-        -0.6
+        -0.5
        ]
       ],
       "scale": [
@@ -847,8 +857,12 @@
    },
    "cameraRig": {
     "preset": "medium",
-    "framing": "medium",
-    "padding": 0.1
+    "framing": "group",
+    "padding": 0.1,
+    "subjects": [
+     "engineer",
+     "robot"
+    ]
    },
    "camera": {},
    "assets": [
@@ -862,13 +876,13 @@
       "x": [
        [
         0,
-        -1
+        -0.75
        ]
       ],
       "z": [
        [
         0,
-        0.35
+        0.3
        ]
       ]
      },
@@ -881,13 +895,13 @@
       "x": [
        [
         0,
-        1
+        0.75
        ]
       ],
       "z": [
        [
         0,
-        0.35
+        0.3
        ]
       ]
      },
@@ -900,13 +914,13 @@
       "x": [
        [
         0,
-        2
+        0
        ]
       ],
       "z": [
        [
         0,
-        -0.5
+        -1.1
        ]
       ],
       "scale": [
@@ -965,8 +979,13 @@
    },
    "cameraRig": {
     "preset": "medium",
-    "framing": "medium",
-    "padding": 0.1
+    "framing": "group",
+    "padding": 0.1,
+    "subjects": [
+     "engineer",
+     "robot",
+     "scientist"
+    ]
    },
    "camera": {},
    "assets": [
@@ -980,7 +999,7 @@
       "x": [
        [
         0,
-        -1.35
+        -1
        ]
       ],
       "z": [
@@ -1005,7 +1024,7 @@
       "z": [
        [
         0,
-        -0.2
+        -0.15
        ]
       ]
      },
@@ -1021,7 +1040,7 @@
       "x": [
        [
         0,
-        1.35
+        1
        ]
       ],
       "z": [
