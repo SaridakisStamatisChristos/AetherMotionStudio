@@ -10,6 +10,7 @@ import {repairProject} from '../src/quality/preflight.js';
 import {matchedProject,normalizedProject,sharedArtifacts,verifyShared} from '../src/studio/production.js';
 import {parseProduction} from './production-options.mjs';
 import {motionCheck,visibilityCheck} from '../src/quality/motion-check.js';
+import {crowdingCheck} from '../src/quality/crowding.js';
 import {renderNative,runChecked} from './native-render.mjs';
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..'),outRoot=join(root,'out');
 const o=parseProduction(process.argv.slice(2)),env={...process.env};
@@ -84,9 +85,9 @@ try{
  const inventory={version:1,production:o.id,mode:o.mode,sourceCommit:manifest.sourceCommit,sourceDirty:manifest.sourceDirty,targetFrames:manifest.targetFrames,timelineDigest:manifest.timelineDigest,frameAllocation:manifest.frameAllocation,normalizedProjectDigest:manifest.normalizedProjectDigest,modelFingerprint:manifest.modelFingerprint,inputHashes:manifest.inputHashes,sharedHashes:manifest.sharedHashes};
  for(const p of prepared)write(join(p.out,'shared-inputs.json'),inventory);
  // GEN-01 diagnostic checks on every production (measured timeline; not a gate): motion-speed-v1 and visibility-v1.
- for(const p of prepared){const checks={version:1,motion:motionCheck(p.scene,timeline),visibility:visibilityCheck(p.scene)};write(join(p.out,'quality-checks.json'),checks);
-  manifest.checks={motionWarnings:checks.motion.warnings.length,visibilityWarnings:checks.visibility.warnings.length};
-  console.log('CHECKS:',p.backend,checks.motion.policy,'warnings',checks.motion.warnings.length,checks.visibility.policy,'warnings',checks.visibility.warnings.length,JSON.stringify([...checks.motion.warnings,...checks.visibility.warnings].map(w=>w.code+':'+w.shot+'/'+w.asset)));}
+ for(const p of prepared){const checks={version:1,motion:motionCheck(p.scene,timeline),visibility:visibilityCheck(p.scene),crowding:crowdingCheck(p.scene,timeline)};write(join(p.out,'quality-checks.json'),checks);
+  manifest.checks={motionWarnings:checks.motion.warnings.length,visibilityWarnings:checks.visibility.warnings.length,crowdingWarnings:checks.crowding.warnings.length};
+  console.log('CHECKS:',p.backend,checks.motion.policy,'warnings',checks.motion.warnings.length,checks.visibility.policy,'warnings',checks.visibility.warnings.length,checks.crowding.policy,'warnings',checks.crowding.warnings.length,JSON.stringify([...checks.motion.warnings,...checks.visibility.warnings,...checks.crowding.warnings].map(w=>w.code+':'+w.shot+'/'+(w.asset??w.pair))));}
  manifest.status='rendering';update();
  const outputHash=out=>name=>existsSync(join(out,name))?sha(join(out,name)):null;
  const soundtrack=id=>join(root,'public','audio',id+'.wav');

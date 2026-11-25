@@ -97,7 +97,7 @@ Owner: "if the videos are posted for example in instagram the characters are sma
   | TALK-05 conversation shots | 0.26–0.38 | 0.38–0.51 |
 
   The calmer, readable dolly also cleared the LOW_PROJECTED_MOTION review notes on the talk-v1 shots.
-- **Known gap:** the composition gate's overlap metric only counts rigs with a `right-hand` anchor. The explorer robot has none, so its overlap with the host was invisible to the gate and was caught in the stills. Candidate fix: count every catalog character.
+- **Known gap (corrected in GEN-04):** the r1 overlap was caught in the stills, not by the gate. The cause recorded here at first ("the explorer robot has no `right-hand` anchor") was wrong: the robot has hands. The gate samples only 9 poses, without body-language beats. GEN-04 adds crowding-v1 (docs/QUALITY.md), which counts every catalog character, including robot animals, in its rendered poses.
 
 ## GEN-03 speaker follow (2026-11-25, opt-in)
 Owner asked for the next size gain for vertical feeds ("do 1": the camera follows the speaker).

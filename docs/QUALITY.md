@@ -39,3 +39,14 @@ Two checks run automatically on every production (`quality-checks.json` in each 
 - Example sweep (tests/gen01.test.js), where new examples must add no findings. The known findings are all in older accepted films, kept unchanged:
   - fast turns: the hand-off receiver in art01-handoff, art02-studio and art05-workshop (174°/s); workshop-extended toolbox, steps, teach, shelf and handoff (178–289°/s);
   - hidden: the TALK-02/03 meeting table.
+
+## GEN-04 crowding-v1 (2026-11-25)
+A third automatic check (src/quality/crowding.js): do characters overlap each other on screen? It runs on every production (`quality-checks.json` `crowding`, the `CHECKS:` line, `production.json` `checks.crowdingWarnings`) and in Studio Inspect. composition-v1 and its tests are unchanged.
+- **What it counts:** every catalog character: humans, robots (including the legacy retro robot) and the robot animals. composition-v1 counted only rigs with a right-hand anchor, which leaves out the four robot animals.
+- **How:** poses as rendered, with listener turns, speaker follow, phrase aims and body-language arm beats applied from the timeline (measured, or the estimate). It samples every third frame, not 9 samples. Each emitted part is projected and rasterised on a 4 px grid, so an arm stretched toward a neighbour counts only where it covers the neighbour, not by a whole-asset rectangle.
+- **Overlap:** the shared area as a share of the smaller character. Warnings: `CROWDED` when the mean is above 0.08, `CROWDED_PEAK` when the peak is above 0.20.
+- **Calibration (every example plus the fresh Director interview and network films):** ordinary shots measure at most a 0.045 mean and a 0.084 peak. Only these were flagged, all in older accepted films, recorded in tests/gen04.test.js and left unchanged (GEN-07 re-staging was deferred by the owner):
+  - the ART-03 and POLISH-02 cast line-ups (two staggered rows, means 0.16–0.27);
+  - the robot walking past the engineer and the scientist in the "steps" shot of art05-workshop and workshop-extended (peaks 0.31–0.71).
+- **Correction to the GEN-02 record:** the GEN-02 notes said the explorer robot's overlap was missed because it "has no right-hand anchor". That is wrong. explorer-robot is a catalog robot with both hand anchors, and composition-v1 did count the host|guest pair. Re-measured on current code, ±0.75 spacing leaves a clear gap (the smallest gap is 12–19 % of the character's height, with zero overlap in both metrics). The r1 overlap therefore came from that revision's poses, which the 9-sample, beat-free composition report did not sample. The r1 render was deleted on 2026-11-25, so this cannot be re-checked. crowding-v1 closes both blind spots (beats/aims and sampling).
+- Box-per-part, so it slightly over-estimates thin rotated parts; it is a screening check, not an aesthetic verdict.
