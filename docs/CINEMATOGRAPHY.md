@@ -142,8 +142,9 @@ Owner: "gen 6 yes i want these cuts". Follow (GEN-03) cannot enlarge two-person 
   - the shot's preset, `medium` or `close-up`;
   - the preset's camera path mirrored to the other side (an explicit camera x track);
   - lateral target offsets of 0 to ±0.6 m and paddings of 0.05–0.2.
-  - Each candidate is measured at the start, middle and end of the shot. The speaker must lie wholly inside the 9:16 safe area. Every other character must be wholly inside the frame at every sample, or wholly outside at every sample.
-  - The largest speaker wins. If no candidate passes, the line stays in the group shot (`no framing keeps everyone whole`).
+  - Each candidate is measured at nine points through the shot (three at first; the GEN-09 render showed a neighbour peeking in between them). The speaker must lie wholly inside the 9:16 safe area. Every other character must be wholly inside the frame at every sample, or wholly outside at every sample.
+  - **Only true singles** (the speaker alone in view) are used. A candidate that still shows another character whole is a closer two-shot, not the cut the owner asked for. It is reported (`only a closer shot (others stay in view)`), and the line stays in the group shot. GEN-09 render r1 showed such closer shots in Reels mode, which led to this rule. Among true singles, the largest speaker wins.
+  - If no candidate passes, the line stays in the group shot (`no framing keeps everyone whole`).
 - **What the single shows:** assets the single never shows whole (listeners outside the frame, a set piece the edge would cut) are left out of that shot, unless something in the shot refers to them. Nothing in a single is cut by an edge. With only the speaker left, the shot has no `dialogue` block (no listeners).
 - **Continuity:** a part that follows a cut keeps the same heading with the new opt-in shot flag `titleHold:true`: the polished heading is drawn steady instead of fading in again. It is never allowed on the first shot.
 - **OFF_FRAME** (motion-speed-v1) now counts a character that is wholly outside the frame as not cut (0). The rule is "never cut by the frame edge"; leaving the frame entirely, as in a single, is allowed. Known findings of older films are unchanged (tests/gen01.test.js).

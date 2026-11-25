@@ -16,7 +16,8 @@ Owner: "can the instagram be a mode and in case i want i can generate longer vid
   - the heading is smaller (38 px on the 720×1280 reference) and sits at the top of the safe area;
   - the AETHER pill, the subheading and the progress bar are left out;
   - captions hang just under the heading (box x 46–634, top 206), not at the bottom, where the app's caption and buttons sit.
-- **Framing:** group and single framings fit the characters into the area below the captions and above the bottom overlay (`cameraRig.safeArea:'reels-v1'`: half-width 274, half-height 292, against 336/340 by default). Singles are solved for that area too.
+- **Framing:** group and single framings fit the characters into the area below the captions and above the bottom overlay (`cameraRig.safeArea:'reels-v1'`: half-width 274, half-height 292, against 336/340 by default).
+  - Singles are solved for that area too. With the Director's line spacing (±0.9 m), no true single exists in that narrower frame: the neighbour stays in view. So the Reels interview has no cuts, and the singles report says why. Wider staging for Reels singles is a possible follow-up.
 - **Check reels-safe-v1** (`quality-checks.json` `reels`, `CHECKS:` line, Studio Inspect):
   - `REELS_UNDER_OVERLAY`: more than 5 % of a character's box under the app overlay;
   - `REELS_UNDER_CAPTION`: more than 5 % under an active caption;

@@ -43,7 +43,10 @@ test('Director Reels interview: every check clean; framing inside the Reels area
  const r=reelsCheck(p,t);assert.equal(r.applies,true);assert.deepEqual(r.warnings,[]);
  assert.deepEqual(motionCheck(p,t).warnings,[]);assert.deepEqual(crowdingCheck(p,t).warnings,[]);assert.deepEqual(visibility2Check(p,t).warnings,[]);
  assert.deepEqual(inspectProject(p).issues.filter(x=>x.severity!=='review'),[]);
- assert.ok(p.shots.some(s=>s.id.endsWith('-single')),'singles solved inside the Reels area');
+ // Reels framing is narrower: this staging has no true single (the neighbour stays in view), so no cut, with a reason
+ assert.ok(!p.shots.some(s=>s.id.endsWith('-single')));
+ const {singleShots}=await import('../src/core/singles.js'),flatR=await directed('gen01-interview',{delivery:'reels-v1',dialogue:{...read('gen01-interview.request').dialogue,singles:false}});
+ assert.ok(singleShots(flatR).report.kept.some(k=>k.reason==='only a closer shot (others stay in view)'));
  assert.equal(reelsCheck(plain,est(plain)).applies,false);
  const q=read('gen01-interview.request'),a=await direct({...q,speech:defaultSpeech(q.seconds)}),b=await direct({...q,speech:defaultSpeech(q.seconds),delivery:'reels-v1'});
  assert.equal(a.manifest.promptDigest,b.manifest.promptDigest,'delivery does not reach the model prompt');
@@ -68,8 +71,9 @@ test('Reels check negatives: a character under the buttons is flagged; long film
  const t=est(p),long={...t,durationFrames:100*30};assert.ok(reelsCheck(p,long).warnings.some(w=>w.code==='REELS_LONG'&&w.seconds===100));
 });
 test('export: cover from the first single (or explicit frame); report passes long films with a warning; wrong format fails',async()=>{
- const p=await directed('gen01-interview',{delivery:'reels-v1'}),t=est(p);
- const c=coverFrame(p,t);assert.equal(c.source,'first single');assert.ok(c.frame>0&&c.frame<t.durationFrames);
+ const p=await directed('gen01-interview',{delivery:'reels-v1'}),t=est(p),d=await directed('gen01-interview');
+ assert.equal(coverFrame(d,est(d)).source,'first single');
+ const c=coverFrame(p,t);assert.equal(c.source,'first line');assert.ok(c.frame>0&&c.frame<t.durationFrames);
  assert.equal(coverFrame(p,t,12).frame,12);assert.throws(()=>coverFrame(p,t,t.durationFrames),/outside/);assert.throws(()=>coverFrame(p,t,-1),/outside/);
  const probe={streams:[{codec_type:'video',codec_name:'h264',width:1080,height:1920},{codec_type:'audio',codec_name:'aac'}]};
  const ok=reelsReport(p,{...t,durationFrames:150*30},probe,null,c);assert.equal(ok.status,'pass');assert.ok(ok.warnings.some(w=>w.code==='REELS_LONG'));

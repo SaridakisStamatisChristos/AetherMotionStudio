@@ -43,7 +43,9 @@ export function singleFits(shot,speakerId,P=SINGLES){
  }
  // gone: assets not wholly inside the frame at every sample. They are left out of the single (characters among them
  // were outside at every sample, by the rule above), so nothing in the single is cut by an edge.
- return {height,gone:shot.assets.map(a=>a.id).filter(id=>id!==speakerId&&cut.has(id))};
+ // others: characters still shown (wholly inside); 0 means a true single
+ const chars=shot.assets.filter(a=>a.id!==speakerId&&isChar(a.asset)).map(a=>a.id);
+ return {height,gone:shot.assets.map(a=>a.id).filter(id=>id!==speakerId&&cut.has(id)),others:chars.filter(id=>!cut.has(id)).length};
 }
 // Best single framing for a speaker: the largest speaker among candidates that pass; ties keep the smaller offset.
 export function solveSingle(shot,speakerId,P=SINGLES){
@@ -56,7 +58,8 @@ export function solveSingle(shot,speakerId,P=SINGLES){
   const rig={...shot.cameraRig,preset,framing:'single',subject:speakerId,padding,...(o?{targetOffset:[sign*o,0,0]}:{})};delete rig.focus;delete rig.subjects;
   const R=CAMERA_RIGS[preset],camera=mirror?{...shot.camera,x:R.a[0]===R.b[0]?[[0,-R.a[0]]]:[[0,-R.a[0]],[1,-R.b[0]]]}:shot.camera;
   const fit=singleFits({...shot,camera,cameraRig:rig},speakerId,P);
-  if(fit&&(!best||fit.height>best.height+1e-6))best={rig,camera,height:fit.height,gone:fit.gone,offset:+(sign*o).toFixed(2),padding,preset,mirror};
+  // a true single (speaker alone) beats a closer shot that still shows others whole; then the larger speaker wins
+  if(fit&&(!best||fit.others<best.others||fit.others===best.others&&fit.height>best.height+1e-6))best={rig,camera,height:fit.height,gone:fit.gone,others:fit.others,offset:+(sign*o).toFixed(2),padding,preset,mirror};
  }
  return best;
 }
@@ -75,8 +78,9 @@ export function singleShots(project,P0=SINGLES){
   const k=long[0],speakerAsset=s.speakerAssets[ids[k]];
   const solo={...s,id:s.id+'-single',narration:[lines[k]],transitionFrames:0,transition:'cut'};
   if(s.dialogue){const {camera,...d}=s.dialogue;solo.dialogue=d;}
-  const fit=speakerAsset?solveSingle(solo,speakerAsset,P):null;
-  if(!fit||total+(k>0)+(k<lines.length-1)>P.maxShots){report.kept.push({shot:s.id,line:k,reason:fit?'shot limit':'no framing keeps everyone whole'});shots.push(s);continue;}
+  // only true singles (the speaker alone): a closer shot that still shows the others is not the cut the owner asked for
+  const found=speakerAsset?solveSingle(solo,speakerAsset,P):null,fit=found&&!found.others?found:null;
+  if(!fit||total+(k>0)+(k<lines.length-1)>P.maxShots){report.kept.push({shot:s.id,line:k,reason:fit?'shot limit':found?'only a closer shot (others stay in view)':'no framing keeps everyone whole'});shots.push(s);continue;}
   solo.cameraRig=fit.rig;solo.camera=fit.camera;
   // Leave out what the single never shows (unless something else in the shot refers to it).
   const refs=id=>JSON.stringify({...solo,assets:solo.assets.filter(a=>a.id!==id),speakerAssets:undefined}).includes('"'+id+'"');
@@ -93,7 +97,7 @@ export function singleShots(project,P0=SINGLES){
   for(const p of parts){out.speech.shotSpeakers[p.id]=p.id===s.id?ids.slice(0,k):p.id.endsWith('-single')?[ids[k]]:ids.slice(k+1);}
   if(parts[0].id!==s.id)delete out.speech.shotSpeakers[s.id];
   total+=parts.length-1;shots.push(...parts);
-  report.singles.push({shot:s.id,line:k,speaker:ids[k],asset:speakerAsset,heightOfSafe:Math.round(fit.height*1000)/1000,preset:fit.preset,mirror:fit.mirror,offset:fit.offset,padding:fit.padding,shots:parts.map(p=>p.id)});
+  report.singles.push({shot:s.id,line:k,speaker:ids[k],asset:speakerAsset,kind:fit.others?'closer':'single',heightOfSafe:Math.round(fit.height*1000)/1000,preset:fit.preset,mirror:fit.mirror,offset:fit.offset,padding:fit.padding,shots:parts.map(p=>p.id)});
  }
  out.shots=shots;
  return {project:out,report};
