@@ -7,7 +7,8 @@
   "version": 1,
   "targetFrames": 2250,
   "fixedShots": {
-   "shelf": 270
+   "shelf": 270,
+   "lights": 180
   },
   "placement": "lead",
   "speakers": {
