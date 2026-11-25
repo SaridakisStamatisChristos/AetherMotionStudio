@@ -19,6 +19,39 @@ Updated 2026-11-25 (handoff to TALK-04/05; TALK-01..03 merged). Authoritative ro
 6. Source and approved decisions authoritative. This summary cannot discard binding facts; consult the source-specific contract when the task touches it. Keep state and handoff synchronized. No new native render runs on GitHub or release without authorization.
 
 ## Active unit
+GEN-02 — group framing for vertical (9:16) social video, added to the GEN-01 branch/PR #27 at the owner's request ("lets do this first and then merge. if the videos are posted for example in instagram the charachers are samll", 2026-11-25). Status IMPLEMENTED + TESTED + RENDERED (agent-reviewed).
+- Done:
+  - opt-in `cameraRig.framing:'group'` + `subjects` (rest-pose bounds, one zoom per shot, 9:16 safe area);
+  - talk-v1 uses it with a tighter line;
+  - set pieces behind the gap (2 speakers) or beside and framed (3);
+  - the Director points after staging.
+- Speaker height as a share of the safe area: interview 0.285 → 0.445, network 0.267 → 0.373, TALK-05 0.41 → 0.49.
+- Evidence:
+  - `npm test` 314 tests, 313 pass, 0 fail, 1 skip (tests/gen02.test.js 3 incl. negatives); defaults identical.
+  - Renders from clean 1c526b6, all gates PASS, checks 0/0: `gen02-interview-r2` (CPU c74bb6949c2147cb…, Three 159219bd12f29aa4…) and `talk05-first-words-r7` (CPU d64de6b7e882ab0e…, Three f76eb7828a1ad92a…).
+  - r1/r6 (±0.75 spacing, overlap seen in stills) are superseded.
+- Known gap: the composition overlap metric ignores rigs without a right-hand anchor (explorer robot).
+
+GEN-01 — generalize the TALK/POLISH lessons to every project. Owner: "go" (2026-11-25), after asking that features generalize to every video. Status IMPLEMENTED + TESTED + RENDERED (agent-reviewed) on `feature/gen-01` (from `chore/record-talk-04-05` 219278a on main bf032ff); PR pending owner merge.
+- Done:
+  - motion-speed-v1 + visibility-v1 checks (src/quality/motion-check.js; every production writes quality-checks.json; Studio Inspect);
+  - general staging `talk-v1` (binding by name, blocking under an automatic camera, set pieces beside the line, calm behaviour); the Director dialogue mode uses it (deep-identical before pointing);
+  - opt-in `calmTurns` (src/core/calm.js);
+  - `aim.phrase` (point during a measured line);
+  - Director points at a named set piece;
+  - Studio "Stage dialogue" / "Calm fast turns";
+  - TALK-05 rebuilt on the general passes.
+  - Item 5 (split lines for caption speed) dropped: the cause is natural speech pace, not line length. Options are recorded in docs/SPEECH.md GEN-01 for the owner.
+- Evidence:
+  - `npm test` 311 tests, 310 pass, 0 fail, 1 skip (tests/gen01.test.js 7 incl. negatives). Two pinned list assertions narrowed to their first entries, because talk-v1 and director-ir-v1.3 were appended (ART-04 STAGING_MODES, POLISH-02 PROMPT_VERSIONS).
+  - Python 38 OK; protocol plan OK; defaults identical (`fod-digests --exclude talk04,talk05,gen01`).
+  - Headless Studio exercise observed working.
+  - Renders from clean 1e89fdb, all gates PASS, checks 0/0: `gen01-interview-r2` (fresh request, no hand edits; films CPU dc57520852638725…, Three 46481d4d9a8e80ee…) and `talk05-first-words-r5` (CPU 53fb64ea2b3e0cc0…, Three 7f3686963f6f335d…).
+  - r1/r4 were superseded because the request file was uncommitted (sourceDirty).
+
+## Previous units (TALK-04 + TALK-05, MERGED 2026-11-25)
+Owner: "merge it" (2026-11-25), asking also that the features generalize to every video, not only the showcase films. TALK-04 MERGED as 5c61d3f (PR #25), TALK-05 MERGED as bf032ff (PR #26, retargeted to main after #25); main CI 45611675937 on bf032ff test PASS (render/compare skipped by policy). Owner had not given an explicit visual/audio review or line approval before merging; the TALK-05 lines remain Claude drafts the owner may edit.
+
 TALK-05 — talking showcase "The Workshop — First Words" (75 s, 7 shots). Status IMPLEMENTED + TESTED + RENDERED (agent-reviewed) on branch `feature/talk-05` (stacked on `feature/talk-04`), stacked PR with base `feature/talk-04`; awaiting owner visual + audio review and approval of the Claude-drafted lines; not merged. Generator scripts/talk05-first-words.mjs, tests/talk05.test.js (3), docs/SHOWCASE.md TALK-05.
 - Evidence: `npm test` 304 tests, 303 pass, 0 fail, 1 skip; defaults identical (`fod-digests --exclude talk04,talk05`). Render `talk05-first-words-r3` at a7b539b clean: all gates PASS, frame-glitch clean, −16.0 LUFS (LRA 20.7 LU, TP −3.7 dBFS), 2 CAPTION_READING_SPEED warnings; CPU 109.3 s / Three-vulkan 68.4 s (RTX util peak 46 %, 1,444 MiB); films CPU 5b83b6f65c7234a1…, Three 4a0ced6180aea44a…. Motion: nods 2/2/4, beats 1/2/3 (engineer/scientist/robot) over 75 s; peak nod 14.9°/s; robot turn peaks 105°/s (shelf carry, middle-position THANK YOU). r1 preparation failed (LIGHTS OUT fixed duration missing from fixedShots, fixed + test); r2 (d58d7c7) passed gates but shelf turn 224°/s → slowed; r1/r2 superseded, untouched.
 

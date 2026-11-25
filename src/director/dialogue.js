@@ -11,13 +11,16 @@ import {mouthSupported} from '../core/talk.js';
 import {recipeSpec} from '../visual/catalog-rig.js';
 import {locomotionRig} from '../core/locomotion.js';
 import {defaultSpeech} from '../studio/production.js';
+import {TALK_STAGE} from '../core/staging.js';
+import {aimSupported} from '../core/aim.js';
 
 const bad=(p,m)=>{throw Error(p+': '+m)};
 export const DIALOGUE_STYLES=Object.freeze(['conversation','interview']);
 // Cameras that keep an open line of speakers readable (frontal or gently angled); others show backs or lose faces.
 export const DIALOGUE_CAMERAS=Object.freeze(['medium','dolly-in','push-in','pull-back','establishing']);
-// Calm defaults from the owner's TALK-03 reviews: 0.8 s turns, cheat 1.0, body language as merged in TALK-03.
-export const DIALOGUE_STAGE=Object.freeze({turn:.8,cheat:1,line:{2:[[-1,.35],[1,.35]],3:[[-1.35,.35],[0,-.2],[1.35,.35]]},prop:{2:[2,-.5],3:[2.4,-.6]},propScale:.85});
+// Calm defaults from the owner's TALK-03 reviews (0.8 s turns, cheat 1.0). GEN-01: layout and behaviour now come from
+// the general staging mode talk-v1 (src/core/staging.js TALK_STAGE), shared with Studio and authored projects.
+export const DIALOGUE_STAGE=Object.freeze({turn:TALK_STAGE.turn,cheat:TALK_STAGE.cheat,line:TALK_STAGE.line,prop:Object.freeze({2:TALK_STAGE.prop[2][0],3:TALK_STAGE.prop[3][0]}),propScale:.85});
 const human=asset=>recipeSpec(asset)?.family==='human';
 
 export function validateDialogueRequest(q){
@@ -77,14 +80,26 @@ export function dialogueSpeech(q,ir){
  return {...base,speakers:Object.fromEntries(q.dialogue.speakers.map(s=>[s.id,{name:s.name,voice:s.voice,language:s.language}])),
   shotSpeakers:Object.fromEntries(ir.shots.map((s,i)=>['shot-'+(i+1),[...s.speakers]])),placement:'lead',mix:{...base.mix,master:'mix-v2'}};
 }
-// Speakers in an open line facing the camera (TALK-02/03 layout: x ±1.35, middle z −0.2), the set piece beside the line
-// (r1 render: placed behind the line it was hidden by the middle speaker in every shot).
+// Speakers (bound by ID) and the set piece; compile then applies staging talk-v1, which places the line and the set piece
+// beside it and adds dialogue/bodyLanguage/lighting. A provider's set-piece x is replaced when talk-v1 places it.
 export function stageDialogueAssets(q,prop){
  const sp=q.dialogue.speakers,line=DIALOGUE_STAGE.line[sp.length],[px,pz]=DIALOGUE_STAGE.prop[sp.length];
  const chars=sp.map((s,j)=>({id:s.id,asset:s.character,...(human(s.character)?{params:{detail:2}}:{}),tracks:{x:[[0,line[j][0]]],z:[[0,line[j][1]]]},...(locomotionRig(s.character)?{turnSteps:true}:{})}));
  const object={id:'object-1',asset:prop.asset,tracks:{x:[[0,prop.x??px]],z:[[0,pz]],scale:[[0,prop.scale??DIALOGUE_STAGE.propScale]]},...(prop.action&&prop.action!=='idle'?{actions:[{name:prop.action,start:.06,end:.94,blend:.1,...(['walk','run'].includes(prop.action)?{mode:'loop',speed:2}:{})}]}:{})};
  return [...chars,object];
 }
+// GEN-01: the first line that names the set piece (its catalog ID words, plurals allowed) makes its speaker point at it
+// while saying it: aim.phrase follows the measured line at render; start/end are a word-share estimate for previews.
+const stem=w=>w.length>3&&w.endsWith('s')?w.slice(0,-1):w;
+export function mentions(text,assetId){const w=String(text).toLowerCase().split(/[^a-z0-9]+/).filter(Boolean).map(stem),parts=assetId.split('-');
+ for(let i=0;i+parts.length<=w.length;i++)if(parts.every((p,j)=>w[i+j]===p))return true;return false;}
+export function pointAtSetPiece(q,s,assets){
+ const prop=assets.find(a=>a.id==='object-1'),k=prop?s.narration.findIndex(t=>mentions(t,prop.asset)):-1;if(k<0)return assets;
+ const who=assets.find(a=>a.id===s.speakers[k]);if(!who||!aimSupported(who.asset))return assets;
+ const words=s.narration.map(t=>t.trim().split(/s+/).length),total=words.reduce((a,b)=>a+b,0),before=words.slice(0,k).reduce((a,b)=>a+b,0);
+ const start=+(.05+.9*before/total).toFixed(3),end=+(.05+.9*(before+words[k])/total).toFixed(3);
+ return assets.map(a=>a===who?{...a,aim:{target:'object-1',start,end,blend:.08,cheat:.5,phrase:k}}:a);
+}
 export function dialogueShotFields(q){
- return {lighting:'parity-v1',speakerAssets:Object.fromEntries(q.dialogue.speakers.map(s=>[s.id,s.id])),dialogue:{listen:true,turn:DIALOGUE_STAGE.turn,cheat:DIALOGUE_STAGE.cheat},bodyLanguage:{beats:true,nods:true,blinks:true,sway:true}};
+ return {speakerAssets:Object.fromEntries(q.dialogue.speakers.map(s=>[s.id,s.id]))};
 }

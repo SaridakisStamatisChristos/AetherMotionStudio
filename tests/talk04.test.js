@@ -96,10 +96,11 @@ test('compile: speech from the dialogue, staged speakers with TALK-01..03 opt-in
    assert.deepEqual(s.speakerAssets,{eng:'eng',robo:'robo',sci:'sci'});assert.deepEqual(s.dialogue,{listen:true,turn:.8,cheat:1});
    assert.deepEqual(s.bodyLanguage,{beats:true,nods:true,blinks:true,sway:true});assert.equal(s.lighting,'parity-v1');
    assert.deepEqual(s.assets.map(a=>a.id),['eng','robo','sci','object-1']);
-   assert.deepEqual(s.assets.slice(0,3).map(a=>a.tracks.x[0][1]),[-1.35,0,1.35]);
+   // GEN-02: shared talk-v1 line (tighter for 9:16), framed as a group with the set piece beside it.
+   assert.deepEqual(s.assets.slice(0,3).map(a=>[a.tracks.x[0][1],a.tracks.z[0][1]]),DIALOGUE_STAGE.line[3]);
    assert.equal(s.assets[0].params.detail,2);assert.equal(s.assets[1].params,undefined);assert.equal(s.assets[2].params.detail,2);
    assert.ok(s.assets.slice(0,3).every(a=>a.turnSteps===true&&a.face===undefined&&a.actions===undefined));
-   assert.equal(s.cameraRig.subject,undefined,'camera frames the whole line');
+   assert.equal(s.cameraRig.subject,undefined);assert.equal(s.cameraRig.framing,'group');assert.deepEqual(s.cameraRig.subjects,['eng','robo','sci','object-1']);
   }
   assert.equal(inspectProject(p).issues.filter(i=>i.severity==='error').length,0);
   const t=syntheticTimeline(p);

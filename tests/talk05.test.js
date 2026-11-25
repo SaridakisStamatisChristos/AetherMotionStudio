@@ -20,7 +20,7 @@ test('talk05: examples are fresh generator output and an exact backend pair',()=
 });
 test('talk05: speech project with three voices, lead placement, mix-v2 and a pronunciation fix',()=>{
  const p=validateProject(load('cpu')),c=p.speech;
- assert.equal(c.targetFrames,2250);assert.equal(c.placement,'lead');assert.equal(c.mix.master,'mix-v2');assert.deepEqual(c.fixedShots,{shelf:360,lights:180});
+ assert.equal(c.targetFrames,2250);assert.equal(c.placement,'lead');assert.equal(c.mix.master,'mix-v2');assert.deepEqual(c.fixedShots,{shelf:270,lights:180});
  // r1 preparation failed: a shot with fixed durationFrames was missing from fixedShots. Every fixed shot must be listed.
  for(const s of p.shots)assert.equal(s.durationFrames===null,!Object.hasOwn(c.fixedShots,s.id),s.id);
  assert.deepEqual(Object.keys(c.speakers),['eng','sci','robo']);assert.equal(c.speakers.sci.language,'en-gb');

@@ -1,4 +1,53 @@
-# Forward-only handoff — TALK-04 (PR #25) and TALK-05 (stacked PR) await the owner
+# Forward-only handoff — GEN-01 + GEN-02 (group framing) in PR #27; owner said merge after GEN-02
+
+Unit: GEN-01 (implemented, tested and rendered; PR open, not merged)
+Checkpoint: `feature/gen-01` (commits 07a8df7, 55c41a6, e98fda2, da76b77, 1e89fdb plus docs) on `chore/record-talk-04-05` (main bf032ff + record 219278a).
+Status: owner "go" (2026-11-25). Agent-reviewed only.
+Date: 2026-11-25
+
+## GEN-01 checkpoint
+- Changed files:
+  - src/quality/motion-check.js (new); src/core/calm.js (new);
+  - src/core/staging.js (talk-v1), dialogue.js (phraseAims), aim.js + graph.js (aim.phrase);
+  - src/director/dialogue.js + index.js;
+  - scripts/produce.mjs (quality-checks.json), studio-server.mjs (Inspect checks); studio/app.js + index.html;
+  - scripts/talk05-first-words.mjs + examples; examples/gen01-interview.request.json;
+  - tests/gen01.test.js; tests/art04-authoring.test.js (modes list narrowed);
+  - docs QUALITY/SPEECH/DIRECTOR/STUDIO/SHOWCASE; continuity docs.
+- Results: see CURRENT_STATE (Active unit).
+- Open risks:
+  - Automatic framing makes groups small.
+  - Caption reading speed (owner decision: slower dialogue speech or caption linger).
+  - Visibility is box-based.
+  - calmTurns only adjusts authored yaw keys in fixed-length shots.
+  - The listed historical fast turns in accepted films stay as recorded findings.
+
+## GEN-02 addendum
+- Added on the same branch: group framing.
+- See CURRENT_STATE (Active unit) and docs/CINEMATOGRAPHY.md GEN-02.
+- Final renders: `gen02-interview-r2` and `talk05-first-words-r7` (1c526b6).
+- Owner instruction: "lets do this first and then merge".
+
+## Next action
+- Ask the owner to review PR (and optionally out/gen01-interview-r2-*/film.mp4, out/talk05-first-words-r5-*/film.mp4), and to decide on caption speed.
+- On "merge": merge the PR, watch main CI on the merge commit, and record the merge on a new record branch.
+- Candidate follow-ups (not authorized):
+  - group framing (characters larger);
+  - caption speed option;
+  - mesh-accurate visibility.
+
+## Previous handoff (TALK-04/05 + GEN-01 proposal), kept for reference
+
+Unit: GEN-01 (proposed, NOT authorized)
+Checkpoint: main bf032ff (TALK-05 merge; TALK-04 merge 5c61d3f). Record branch `chore/record-talk-04-05` (pushed).
+Status: TALK-04 and TALK-05 MERGED (owner: "merge it", 2026-11-25); main CI 45611675937 test PASS. TALK-05 lines are Claude drafts; no explicit human visual or audio review yet.
+Date: 2026-11-25
+
+## Next action
+- If the owner authorizes GEN-01, branch `feature/gen-01` from `chore/record-talk-04-05` and implement NEXT_UNITS "GEN-01" items 1→6. Start with the two checks (motion speed, visibility) and run them on every example before changing staging.
+- Keep: `fod-digests` defaults identical, tests including negatives, a matched render from a clean commit, and an owner review.
+
+## Previous handoff (TALK-04/05), kept for reference
 
 Unit: TALK-04 + TALK-05, both implemented and rendered; waiting for owner review and merge
 Checkpoint: `feature/talk-04` (PR #25 → main) and `feature/talk-05` (stacked PR, base `feature/talk-04`; commits 1803533, d58d7c7, a7b539b plus docs).

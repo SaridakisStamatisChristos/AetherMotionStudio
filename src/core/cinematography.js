@@ -39,10 +39,13 @@ export const CAMERA_RIGS=Object.freeze({
 // ART-02: zoom ceiling raised 1550→2400 for authored telephoto product framing (validation widening only; auto-framing still clamps to 1550).
 export const RIG_CAMERA_LIMITS={x:[-5,5],y:[1.8,6],z:[6,12],zoom:[700,2400]};
 export function validateCameraRig(x,ids,p){
- fields(x,['preset','subject','framing','padding','targetOffset','strength'],p,['preset']);
+ fields(x,['preset','subject','subjects','framing','padding','targetOffset','strength'],p,['preset']);
  choice(x.preset,Object.keys(CAMERA_RIGS),p+'.preset');
  if(x.subject!==undefined&&!ids.has(x.subject))fail(p+'.subject','unknown subject');
- if(x.framing!==undefined)choice(x.framing,['establishing','medium','close-up'],p+'.framing');
+ if(x.framing!==undefined)choice(x.framing,['establishing','medium','close-up','group'],p+'.framing');
+ // GEN-02 opt-in: framing 'group' fits the listed subjects (2–4 asset IDs, rest-pose bounds) into the vertical safe area.
+ if((x.framing==='group')!==(x.subjects!==undefined))fail(p+'.subjects','framing group requires subjects (and only it)');
+ if(x.subjects!==undefined){if(!Array.isArray(x.subjects)||x.subjects.length<2||x.subjects.length>4||new Set(x.subjects).size!==x.subjects.length)fail(p+'.subjects','2–4 distinct asset IDs required');for(const id of x.subjects)if(!ids.has(id))fail(p+'.subjects','unknown subject');if(x.subject!==undefined)fail(p+'.subjects','use subject or subjects, not both');}
  if(x.padding!==undefined)finite(x.padding,0,0.3,p+'.padding');
  if(x.strength!==undefined)finite(x.strength,0,1,p+'.strength');
  if(x.targetOffset!==undefined)vector(x.targetOffset,-.6,.6,p+'.targetOffset');
@@ -63,7 +66,28 @@ export function geometryBounds(assets){
  if(!lo.every(Number.isFinite)||!hi.every(Number.isFinite))return null;
  return {lo,hi,center:lerp3(lo,hi,.5)};
 }
+// GEN-02 'group': for 9:16 social video. Bounds of the subjects in rest pose (origin/scale/params only, so turning heads
+// and arms never make the zoom breathe), target at their centre, zoom fitted in and out to the safe area between the
+// heading and the captions (720×1280 reference: half-width 336, half-height 340 around the projection centre).
+export const GROUP_FRAMING=Object.freeze({halfWidth:336,halfHeight:340,zoom:[700,2000],padding:.08});
+function frameGroup(camera,rig,assets,tracks){
+ const set=new Set(rig.subjects),rest=assets.filter(a=>set.has(a.id)).map(a=>({...a,pose:{origin:a.pose.origin,yaw:0,scale:a.pose.scale??1,...(a.pose.params?{params:a.pose.params}:{})}}));
+ const b=geometryBounds(rest);if(!b)return camera;
+ const strength=rig.strength??.85,desired=add(b.center,rig.targetOffset??[0,0,0]),delta=sub(desired,camera.target);
+ const c={...camera,target:add(camera.target,delta.map(v=>clamp(v,-2.4,2.4)*strength))};
+ // One zoom per shot: the tightest fit over the rig's start, middle and end camera, so the preset's dolly still reads
+ // (fitting every frame cancelled it, a dolly-zoom warp) and nothing is cropped at its closest point.
+ const G=GROUP_FRAMING,pad=1-(rig.padding??G.padding);let fit=Infinity,minZ=Infinity;
+ for(const p of [0,.5,1]){const cam=sampleCameraRig(rig,p,tracks),tgt=add(cam.target,sub(desired,cam.target).map(v=>clamp(v,-2.4,2.4)*strength)),proj=createProjection(cam.position,tgt,1,[0,0]);let maxX=0,maxY=0;
+  for(const x of [b.lo[0],b.hi[0]])for(const y of [b.lo[1],b.hi[1]])for(const z of [b.lo[2],b.hi[2]]){const q=proj([x,y,z]);maxX=Math.max(maxX,Math.abs(q[0]));maxY=Math.max(maxY,Math.abs(q[1]));}
+  fit=Math.min(fit,G.halfWidth/Math.max(maxX,1e-6),G.halfHeight/Math.max(maxY,1e-6));}
+ {const proj=createProjection(c.position,c.target,1,[0,0]);for(const x of [b.lo[0],b.hi[0]])for(const y of [b.lo[1],b.hi[1]])for(const z of [b.lo[2],b.hi[2]])minZ=Math.min(minZ,proj([x,y,z])[2]);}
+ if(!tracks.zoom)c.zoom=clamp(fit*pad,G.zoom[0],G.zoom[1]);
+ if(minZ<1.0&&!tracks.z)c.position=[c.position[0],c.position[1],Math.min(12,c.position[2]+(1-minZ))];
+ return c;
+}
 export function frameCamera(camera,rig,assets,tracks={}){
+ if(rig.framing==='group')return frameGroup(camera,rig,assets,tracks);
  if(!rig.subject&&!rig.framing)return camera;
  const b=geometryBounds(rig.subject?assets.filter(a=>a.id===rig.subject):assets);if(!b)return camera;
  const strength=rig.strength??.85,offset=rig.targetOffset??[0,0,0];

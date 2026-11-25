@@ -14,6 +14,8 @@ import {VOICES} from '../src/core/contract.js';
 import {CAMERA_RIGS,ACTIONS} from '../src/core/cinematography.js';
 import {MOTION_PRESETS,EFFECT_PRESETS} from '../src/core/presets.js';
 import {inspectProject} from '../src/quality/preflight.js';
+import {motionCheck,visibilityCheck,estimatedTimeline} from '../src/quality/motion-check.js';
+import {plannedTimeline} from '../src/studio/model.js';
 const ROOT=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const MAX_BODY=1024*1024,MAX_LOG=40000,MAX_JOBS=40;
 const FILES=new Set(['film.mp4','scene.json','timeline.json','props.json','voice-report.json','speech-report.json','captions.srt','captions.vtt','quality-report.json','quality-preflight.json','quality-original-project.json','quality-contact-sheet.jpg','probe.json','render-timing.json','kokoro-narration.wav','mix.wav','preview-audio.wav']);
@@ -158,7 +160,10 @@ export async function createStudio({root=ROOT,dataDir=join(root,'studio-data'),r
     if(planning)throw status(409,'Director planning already active');planning=true;
     try{const x=await body(req);const plan=await direct(x);return send(res,200,{project:plan.project,manifest:plan.manifest,stages:plan.stages});}finally{planning=false;}
    }
-   if(method==='POST'&&path==='/api/inspect'){const x=await body(req);keys(x,['project']);return send(res,200,inspectProject(x.project));}
+   if(method==='POST'&&path==='/api/inspect'){const x=await body(req);keys(x,['project']);const report=inspectProject(x.project);
+    // GEN-01: motion-speed and visibility checks on the draft (estimated line timing until prepared).
+    if(x.project?.version===2&&x.project.shots.some(s=>s.template==='cinematic-graph'))report.checks={motion:motionCheck(x.project,estimatedTimeline(x.project,plannedTimeline(x.project))),visibility:visibilityCheck(x.project)};
+    return send(res,200,report);}
    if(method==='POST'&&path==='/api/jobs')return send(res,202,await startJob(await body(req)));
    if(method==='GET'&&path==='/api/jobs')return send(res,200,{jobs:[...jobs.values()].reverse().map(publicJob),active});
    match=/^\/api\/jobs\/(studio-[a-f0-9]{20})$/.exec(path);

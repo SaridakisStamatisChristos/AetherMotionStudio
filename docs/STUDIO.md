@@ -22,3 +22,10 @@ Tests cover transactional edits, estimated budget, reference rejection, atomic p
 - The first speaker set on a shot that had no line speakers voices every line of that shot. The narrator cannot be mixed with named speakers.
 - Changing a dialogue shot's line count is rejected until its line speakers match.
 - Manual exercise (2026-11-25, headless Chrome from the pinned Remotion renderer, loopback server, temp data): every step was observed working, with no browser errors. Steps: generate a dialogue project, change a line speaker, rename a speaker and change its voice, unbind a character, then two rejected edits.
+- GEN-01 adds three things:
+  - "Stage dialogue" (`talk-v1`) and "Calm fast turns" buttons;
+  - Inspect also shows the motion-speed and visibility warnings (estimated line timing on drafts).
+  - Headless exercise observed, with no browser errors:
+    - talk02 with its bindings removed: all speakers re-bound by name;
+    - workshop-extended calm: 1 turn changed, 4 reported;
+    - Inspect: 4 motion warnings, 0 visibility warnings, timeline estimated.

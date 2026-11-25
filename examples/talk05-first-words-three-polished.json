@@ -7,7 +7,7 @@
   "version": 1,
   "targetFrames": 2250,
   "fixedShots": {
-   "shelf": 360,
+   "shelf": 270,
    "lights": 180
   },
   "placement": "lead",
@@ -114,67 +114,14 @@
    },
    "cameraRig": {
     "preset": "medium",
-    "framing": "medium",
-    "strength": 0.5,
-    "subject": "robot"
-   },
-   "camera": {
-    "x": [
-     [
-      0,
-      -0.2
-     ],
-     [
-      1,
-      0.2
-     ]
-    ],
-    "y": [
-     [
-      0,
-      2.8
-     ]
-    ],
-    "z": [
-     [
-      0,
-      7.4
-     ],
-     [
-      1,
-      7.1
-     ]
-    ],
-    "zoom": [
-     [
-      0,
-      1400
-     ],
-     [
-      1,
-      1500
-     ]
+    "framing": "group",
+    "padding": 0.1,
+    "subjects": [
+     "engineer",
+     "robot"
     ]
    },
-   "cameraInterpolation": {
-    "x": "flow",
-    "zoom": "flow"
-   },
-   "speakerAssets": {
-    "eng": "engineer",
-    "robo": "robot"
-   },
-   "dialogue": {
-    "listen": true,
-    "turn": 0.8,
-    "cheat": 1
-   },
-   "bodyLanguage": {
-    "beats": true,
-    "nods": true,
-    "blinks": true,
-    "sway": true
-   },
+   "camera": {},
    "assets": [
     {
      "id": "engineer",
@@ -186,7 +133,7 @@
       "x": [
        [
         0,
-        -0.8
+        -0.9
        ]
       ],
       "z": [
@@ -205,13 +152,13 @@
       "x": [
        [
         0,
-        0.8
+        0.9
        ]
       ],
       "z": [
        [
         0,
-        0.2
+        0.3
        ]
       ]
      },
@@ -222,7 +169,22 @@
     "Good morning! Can you say hello?",
     "Hello.",
     "Your very first word!"
-   ]
+   ],
+   "speakerAssets": {
+    "eng": "engineer",
+    "robo": "robot"
+   },
+   "dialogue": {
+    "listen": true,
+    "turn": 0.8,
+    "cheat": 1
+   },
+   "bodyLanguage": {
+    "beats": true,
+    "nods": true,
+    "blinks": true,
+    "sway": true
+   }
   },
   {
    "id": "tools",
@@ -295,21 +257,6 @@
    "cameraInterpolation": {
     "x": "flow",
     "zoom": "flow"
-   },
-   "speakerAssets": {
-    "sci": "scientist",
-    "robo": "robot"
-   },
-   "dialogue": {
-    "listen": true,
-    "turn": 0.8,
-    "cheat": 1
-   },
-   "bodyLanguage": {
-    "beats": true,
-    "nods": true,
-    "blinks": true,
-    "sway": true
    },
    "assets": [
     {
@@ -398,13 +345,28 @@
     "Can you name that, over there?",
     "That is a toolbox.",
     "Very good."
-   ]
+   ],
+   "speakerAssets": {
+    "sci": "scientist",
+    "robo": "robot"
+   },
+   "dialogue": {
+    "listen": true,
+    "turn": 0.8,
+    "cheat": 1
+   },
+   "bodyLanguage": {
+    "beats": true,
+    "nods": true,
+    "blinks": true,
+    "sway": true
+   }
   },
   {
    "id": "shelf",
    "template": "cinematic-graph",
    "backend": "three",
-   "durationFrames": 360,
+   "durationFrames": 270,
    "transitionFrames": 12,
    "transition": "fade",
    "heading": "TOP SHELF",
@@ -490,11 +452,11 @@
         1.66
        ],
        [
-        0.3,
+        0.289,
         1.66
        ],
        [
-        0.46,
+        0.491,
         -0.676
        ],
        [
@@ -712,6 +674,12 @@
    },
    "speakerAssets": {
     "robo": "robot"
+   },
+   "bodyLanguage": {
+    "beats": true,
+    "nods": true,
+    "blinks": true,
+    "sway": true
    }
   },
   {
@@ -740,68 +708,16 @@
    },
    "cameraRig": {
     "preset": "medium",
-    "framing": "medium",
-    "strength": 0.5,
-    "subject": "robot"
-   },
-   "camera": {
-    "x": [
-     [
-      0,
-      -0.3
-     ],
-     [
-      1,
-      0.3
-     ]
-    ],
-    "y": [
-     [
-      0,
-      2.8
-     ]
-    ],
-    "z": [
-     [
-      0,
-      8.2
-     ],
-     [
-      1,
-      7.8
-     ]
-    ],
-    "zoom": [
-     [
-      0,
-      1300
-     ],
-     [
-      1,
-      1380
-     ]
+    "framing": "group",
+    "padding": 0.1,
+    "subjects": [
+     "engineer",
+     "robot",
+     "scientist",
+     "table"
     ]
    },
-   "cameraInterpolation": {
-    "x": "flow",
-    "zoom": "flow"
-   },
-   "speakerAssets": {
-    "eng": "engineer",
-    "robo": "robot",
-    "sci": "scientist"
-   },
-   "dialogue": {
-    "listen": true,
-    "turn": 0.8,
-    "cheat": 1
-   },
-   "bodyLanguage": {
-    "beats": true,
-    "nods": true,
-    "blinks": true,
-    "sway": true
-   },
+   "camera": {},
    "assets": [
     {
      "id": "engineer",
@@ -813,7 +729,7 @@
       "x": [
        [
         0,
-        -1.35
+        -1
        ]
       ],
       "z": [
@@ -838,7 +754,7 @@
       "z": [
        [
         0,
-        -0.2
+        -0.15
        ]
       ]
      },
@@ -854,7 +770,7 @@
       "x": [
        [
         0,
-        1.35
+        1
        ]
       ],
       "z": [
@@ -873,13 +789,13 @@
       "x": [
        [
         0,
-        0
+        1.75
        ]
       ],
       "z": [
        [
         0,
-        -1.1
+        -0.5
        ]
       ],
       "scale": [
@@ -897,7 +813,23 @@
     "That is three new words.",
     "And tomorrow, three more.",
     "I would like that."
-   ]
+   ],
+   "speakerAssets": {
+    "eng": "engineer",
+    "robo": "robot",
+    "sci": "scientist"
+   },
+   "dialogue": {
+    "listen": true,
+    "turn": 0.8,
+    "cheat": 1
+   },
+   "bodyLanguage": {
+    "beats": true,
+    "nods": true,
+    "blinks": true,
+    "sway": true
+   }
   },
   {
    "id": "mistake",
@@ -925,67 +857,14 @@
    },
    "cameraRig": {
     "preset": "medium",
-    "framing": "medium",
-    "strength": 0.5,
-    "subject": "engineer"
-   },
-   "camera": {
-    "x": [
-     [
-      0,
-      0.2
-     ],
-     [
-      1,
-      -0.2
-     ]
-    ],
-    "y": [
-     [
-      0,
-      2.8
-     ]
-    ],
-    "z": [
-     [
-      0,
-      7.4
-     ],
-     [
-      1,
-      7.1
-     ]
-    ],
-    "zoom": [
-     [
-      0,
-      1400
-     ],
-     [
-      1,
-      1500
-     ]
+    "framing": "group",
+    "padding": 0.1,
+    "subjects": [
+     "engineer",
+     "robot"
     ]
    },
-   "cameraInterpolation": {
-    "x": "flow",
-    "zoom": "flow"
-   },
-   "speakerAssets": {
-    "eng": "engineer",
-    "robo": "robot"
-   },
-   "dialogue": {
-    "listen": true,
-    "turn": 0.8,
-    "cheat": 1
-   },
-   "bodyLanguage": {
-    "beats": true,
-    "nods": true,
-    "blinks": true,
-    "sway": true
-   },
+   "camera": {},
    "assets": [
     {
      "id": "engineer",
@@ -997,7 +876,7 @@
       "x": [
        [
         0,
-        -0.8
+        -0.9
        ]
       ],
       "z": [
@@ -1016,13 +895,13 @@
       "x": [
        [
         0,
-        0.8
+        0.9
        ]
       ],
       "z": [
        [
         0,
-        0.2
+        0.3
        ]
       ]
      },
@@ -1041,7 +920,7 @@
       "z": [
        [
         0,
-        -0.9
+        -1.1
        ]
       ],
       "scale": [
@@ -1057,7 +936,22 @@
     "Please pass me the wench.",
     "Wrench. There is an R.",
     "Wrrrench. Thank you."
-   ]
+   ],
+   "speakerAssets": {
+    "robo": "robot",
+    "eng": "engineer"
+   },
+   "dialogue": {
+    "listen": true,
+    "turn": 0.8,
+    "cheat": 1
+   },
+   "bodyLanguage": {
+    "beats": true,
+    "nods": true,
+    "blinks": true,
+    "sway": true
+   }
   },
   {
    "id": "thanks",
@@ -1085,68 +979,15 @@
    },
    "cameraRig": {
     "preset": "medium",
-    "framing": "medium",
-    "strength": 0.5,
-    "subject": "robot"
-   },
-   "camera": {
-    "x": [
-     [
-      0,
-      -0.2
-     ],
-     [
-      1,
-      0.2
-     ]
-    ],
-    "y": [
-     [
-      0,
-      2.7
-     ]
-    ],
-    "z": [
-     [
-      0,
-      7.6
-     ],
-     [
-      1,
-      7.3
-     ]
-    ],
-    "zoom": [
-     [
-      0,
-      1350
-     ],
-     [
-      1,
-      1430
-     ]
+    "framing": "group",
+    "padding": 0.1,
+    "subjects": [
+     "engineer",
+     "robot",
+     "scientist"
     ]
    },
-   "cameraInterpolation": {
-    "x": "flow",
-    "zoom": "flow"
-   },
-   "speakerAssets": {
-    "eng": "engineer",
-    "robo": "robot",
-    "sci": "scientist"
-   },
-   "dialogue": {
-    "listen": true,
-    "turn": 0.8,
-    "cheat": 1
-   },
-   "bodyLanguage": {
-    "beats": true,
-    "nods": true,
-    "blinks": true,
-    "sway": true
-   },
+   "camera": {},
    "assets": [
     {
      "id": "engineer",
@@ -1158,13 +999,13 @@
       "x": [
        [
         0,
-        -1.2
+        -1
        ]
       ],
       "z": [
        [
         0,
-        0.2
+        0.35
        ]
       ]
      },
@@ -1183,7 +1024,7 @@
       "z": [
        [
         0,
-        0.1
+        -0.15
        ]
       ]
      },
@@ -1199,13 +1040,13 @@
       "x": [
        [
         0,
-        1.2
+        1
        ]
       ],
       "z": [
        [
         0,
-        0.2
+        0.35
        ]
       ]
      },
@@ -1216,7 +1057,23 @@
     "Thank you, both of you.",
     "You are very welcome.",
     "We are proud of you."
-   ]
+   ],
+   "speakerAssets": {
+    "robo": "robot",
+    "sci": "scientist",
+    "eng": "engineer"
+   },
+   "dialogue": {
+    "listen": true,
+    "turn": 0.8,
+    "cheat": 1
+   },
+   "bodyLanguage": {
+    "beats": true,
+    "nods": true,
+    "blinks": true,
+    "sway": true
+   }
   },
   {
    "id": "lights",
@@ -1351,7 +1208,8 @@
      },
      "interpolation": {
       "yaw": "flow"
-     }
+     },
+     "turnSteps": true
     }
    ],
    "effects": [
@@ -1378,6 +1236,12 @@
    },
    "speakerAssets": {
     "robo": "robot"
+   },
+   "bodyLanguage": {
+    "beats": true,
+    "nods": true,
+    "blinks": true,
+    "sway": true
    }
   }
  ]

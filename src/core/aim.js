@@ -10,9 +10,12 @@ const DEFAULT_HEIGHT=.8;
 const fail=(p,m)=>{throw Error(p+': '+m);};
 const num=(v,lo,hi,p)=>{if(typeof v!=='number'||!Number.isFinite(v)||v<lo||v>hi)fail(p,'number in ['+lo+', '+hi+'] required');};
 export function aimSupported(asset){return asset!=='retro-robot'&&hasHands(asset)&&!!recipeSpec(asset);}
-export function validateAim(a,ids,p){
+// GEN-01: optional `phrase` (narration line index): at render the window follows that line's measured bounds
+// (dialogueShot / phraseAims); start/end remain the estimate used before preparation.
+export function validateAim(a,ids,p,lines=null){
  const x=a.aim;if(!x||typeof x!=='object'||Array.isArray(x))fail(p,'object required');
- for(const k of Object.keys(x))if(!['target','start','end','blend','hold','height','cheat'].includes(k))fail(p+'.'+k,'unknown field');
+ for(const k of Object.keys(x))if(!['target','start','end','blend','hold','height','cheat','phrase'].includes(k))fail(p+'.'+k,'unknown field');
+ if(x.phrase!==undefined&&(!Number.isSafeInteger(x.phrase)||x.phrase<0||lines===null||x.phrase>=lines))fail(p+'.phrase','narration line index required');
  if(!aimSupported(a.asset))fail(p,'aim requires a catalog hand rig');
  if(typeof x.target!=='string'||!ids.has(x.target)||x.target===a.id)fail(p+'.target','another asset ID required');
  num(x.start,0,1,p+'.start');num(x.end,0,1,p+'.end');if(x.start>=x.end)fail(p,'invalid window');

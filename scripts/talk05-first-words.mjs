@@ -8,15 +8,18 @@ import {validateProject} from '../src/core/timeline.js';
 import {inspectProject} from '../src/quality/preflight.js';
 import {compositionGate} from '../src/quality/composition.js';
 import {build as extended} from './workshop-extended.mjs';
+import {stageProject} from '../src/core/staging.js';
+import {calmTurns} from '../src/core/calm.js';
 
 const art05=JSON.parse(readFileSync(new URL('../examples/art05-workshop-cpu-polished.json',import.meta.url),'utf8'));
 const FIDELITY=art05.shots[0].fidelity,D2={detail:2};
-const BODY={beats:true,nods:true,blinks:true,sway:true},TALK={listen:true,turn:.8,cheat:1};
 const shot=(id,environment,heading,subheading,body)=>({id,template:'cinematic-graph',backend:'cpu',durationFrames:null,transitionFrames:id==='morning'?0:12,...(id==='morning'?{}:{transition:'fade'}),heading,subheading,environment,lighting:'parity-v1',effects:[],fidelity:FIDELITY,...body});
 const eng=(x,z=.35)=>({id:'engineer',asset:'engineer',params:D2,tracks:{x:[[0,x]],z:[[0,z]]},turnSteps:true});
 const sci=(x,z=.35)=>({id:'scientist',asset:'scientist',params:D2,tracks:{x:[[0,x]],z:[[0,z]]},turnSteps:true});
 const robo=(x,z=-.2)=>({id:'robot',asset:'service-robot',tracks:{x:[[0,x]],z:[[0,z]]},turnSteps:true});
 const cam=(x0,x1,z0,z1,zoom0,zoom1,subject='robot',y=2.8)=>({cameraRig:{preset:'medium',framing:'medium',strength:.5,subject},camera:{x:[[0,x0],[1,x1]],y:[[0,y]],z:[[0,z0],[1,z1]],zoom:[[0,zoom0],[1,zoom1]]},cameraInterpolation:{x:'flow',zoom:'flow'}});
+// Automatic framing of the whole group (GEN-01: talk-v1 re-blocks only shots with an automatic camera).
+const AUTO={cameraRig:{preset:'medium',framing:'medium',padding:.1},camera:{}};
 const ext=Object.fromEntries(extended('cpu').shots.map(s=>[s.id,s]));
 // Lines per shot: [speaker, text]. DRAFT (Claude) — the owner may edit any line.
 export const SCRIPT={
@@ -31,32 +34,32 @@ export const SCRIPT={
 function shots(){
  const table=()=>({id:'table',asset:'table',tracks:{x:[[0,0]],z:[[0,-1.1]],scale:[[0,.8]]}});
  const shelf=structuredClone(ext.shelf),lights=structuredClone(ext.lights);
- // Calmer turn than the extended film (r2 measured 224°/s for the 134° turn with the book): 360 frames and the turn
- // spread over .30–.46 (~1.9 s) instead of .34–.44 at 270 frames. Only this copy changes; the extended film is untouched.
- shelf.durationFrames=360;const ry=shelf.assets.find(a=>a.id==='robot').tracks.yaw;ry[1][0]=.3;ry[2][0]=.46;
  return [
-  shot('morning','amber','GOOD MORNING','A first word.',{...cam(-.2,.2,7.4,7.1,1400,1500),speakerAssets:{eng:'engineer',robo:'robot'},dialogue:TALK,bodyLanguage:BODY,assets:[eng(-.8,.3),robo(.8,.2)]}),
+  shot('morning','amber','GOOD MORNING','A first word.',{...AUTO,assets:[eng(-.8,.3),robo(.8,.2)]}),
   // The robot points past the scientist at the toolbox (aim, body cheat) while it names it.
-  shot('tools','laboratory','NAME IT','Point, then say it.',{...cam(.3,-.1,8,7.7,1250,1320,'scientist'),speakerAssets:{sci:'scientist',robo:'robot'},dialogue:TALK,bodyLanguage:BODY,
+  shot('tools','laboratory','NAME IT','Point, then say it.',{...cam(.3,-.1,8,7.7,1250,1320,'scientist'),
    assets:[sci(-.7,.3),{...robo(1,.1),actions:[{name:'point',start:.4,end:.85,blend:.2}],aim:{target:'toolbox',start:.4,end:.85,blend:.2,height:.35,cheat:.6}},{id:'toolbox',asset:'toolbox',tracks:{x:[[0,-2.1]],z:[[0,-.5]],scale:[[0,.9]]}}]}),
-  // Reused POLISH-02 HIGH SHELF choreography (360 frames here); the robot speaks after setting the book down.
-  {...shelf,heading:'TOP SHELF',subheading:'A book to read.',speakerAssets:{robo:'robot'}},
-  shot('table','amber','AROUND THE TABLE','Three voices.',{...cam(-.3,.3,8.2,7.8,1300,1380),speakerAssets:{eng:'engineer',robo:'robot',sci:'scientist'},dialogue:TALK,bodyLanguage:BODY,assets:[eng(-1.35),robo(0),sci(1.35),table()]}),
-  shot('mistake','laboratory','ONE LETTER','Wench, wrench.',{...cam(.2,-.2,7.4,7.1,1400,1500,'engineer'),speakerAssets:{eng:'engineer',robo:'robot'},dialogue:TALK,bodyLanguage:BODY,
+  // Reused POLISH-02 HIGH SHELF choreography (270 frames; its 224°/s turn is calmed by the general calmTurns pass in build); the robot speaks after setting the book down.
+  {...shelf,heading:'TOP SHELF',subheading:'A book to read.'},
+  shot('table','amber','AROUND THE TABLE','Three voices.',{...AUTO,assets:[eng(-1.35),robo(0),sci(1.35),table()]}),
+  shot('mistake','laboratory','ONE LETTER','Wench, wrench.',{...AUTO,
    assets:[eng(-.8,.3),robo(.8,.2),{id:'wrench',asset:'wrench',tracks:{x:[[0,0]],z:[[0,-.9]],scale:[[0,.8]]}}]}),
-  shot('thanks','amber','THANK YOU','Two small words.',{...cam(-.2,.2,7.6,7.3,1350,1430,'robot',2.7),speakerAssets:{eng:'engineer',robo:'robot',sci:'scientist'},dialogue:TALK,bodyLanguage:BODY,assets:[eng(-1.2,.2),robo(0,.1),sci(1.2,.2)]}),
-  {...lights,heading:'LIGHTS OUT',subheading:'Goodnight.',speakerAssets:{robo:'robot'}}
+  shot('thanks','amber','THANK YOU','Two small words.',{...AUTO,assets:[eng(-1.2,.2),robo(0,.1),sci(1.2,.2)]}),
+  {...lights,heading:'LIGHTS OUT',subheading:'Goodnight.'}
  ].map(s=>({...s,narration:SCRIPT[s.id].map(l=>l[1])}));
 }
 export function build(backend){
  const list=shots(),p={version:2,id:'talk05-first-words-'+backend+'-polished',title:'The Workshop — First Words',voice:'af_heart',
-  speech:{version:1,targetFrames:2250,fixedShots:{shelf:360,lights:180},placement:'lead',
+  speech:{version:1,targetFrames:2250,fixedShots:{shelf:270,lights:180},placement:'lead',
    speakers:{eng:{name:'Engineer',voice:'af_heart',language:'en-us'},sci:{name:'Scientist',voice:'bf_emma',language:'en-gb'},robo:{name:'Robot',voice:'am_michael',language:'en-us'}},
    shotSpeakers:Object.fromEntries(list.map(s=>[s.id,SCRIPT[s.id].map(l=>l[0])])),pronunciations:{Wrrrench:'rrr rench'},
    captions:{mode:'both',highlight:true,maxChars:32,maxLines:2,maxCps:18},
    mix:{narration:1,music:.55,ambience:.35,sfx:.45,duck:.35,fadeSeconds:.25,peak:.92,master:'mix-v2'},cues:[],syncActions:false},
   shots:list.map(s=>({...s,backend}))};
- validateProject(p);return p;
+ // GEN-01: speakers, listener turns, body language and blocking come from the general staging talk-v1 (no hand
+ // staging): it binds speakers to characters by name, re-blocks free conversations and puts set pieces beside the line.
+ // GEN-01: fast authored turns are widened by the general opt-in pass calmTurns (r2: shelf 224°/s; r3 fixed it by hand).
+ validateProject(p);return calmTurns(stageProject(p,'talk-v1')).project;
 }
 if(process.argv[1]&&import.meta.url.endsWith(process.argv[1].replace(/\\/g,'/').split('/').pop())){
  for(const b of ['cpu','three']){const file=new URL('../examples/talk05-first-words-'+b+'-polished.json',import.meta.url),p=build(b),text=JSON.stringify(p,null,1)+'\n';
