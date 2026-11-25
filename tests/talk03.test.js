@@ -36,8 +36,11 @@ test('bodyAt: speaker beats at peaks, listeners nod as a phrase ends, blinks and
  const eb=plan.beats.find(x=>x.id==='engineer'),f=eb.frame+5,b=bodyAt(p,t,f,0);   // engineer speaking
  assert.ok(b.engineer.beat<0&&b.engineer.beat>=-BODY.beatPitch,'speaker beat');assert.equal(b.engineer.nod,undefined,'no head nod on beats');
  assert.equal(b.scientist.beat,undefined);assert.equal(b.robot.beat,undefined);
- // Only the addressee nods (the engineer, first speaker, looks at the next speaker: the scientist).
- const end=85-BODY.nodLead+8,n=bodyAt(p,t,end,0);assert.ok(n.scientist.nod>0,'addressee nods');assert.equal(n.robot.nod,undefined,'other listener stays still');
+ // Only the addressee nods, and not when the addressee replies next (the reply acknowledges the line).
+ // Line 0 (engineer → scientist): the scientist replies next, so nobody nods.
+ const end0=85-BODY.nodLead+8,n0=bodyAt(p,t,end0,0);assert.equal(n0.scientist.nod,undefined,'replying addressee does not nod');assert.equal(n0.robot.nod,undefined);
+ // Line 1 (scientist → engineer, the previous speaker): the robot speaks next, so the engineer nods.
+ const end1=165-BODY.nodLead+8,n1=bodyAt(p,t,end1,0);assert.ok(n1.engineer.nod>0&&n1.engineer.nod<=BODY.listenNod,'addressee nods');assert.equal(n1.robot.nod,undefined,'other listener stays still');
  for(const id of ['engineer','scientist','robot']){const fr=plan.nods.filter(x=>x.id===id).map(x=>x.frame);for(let i=1;i<fr.length;i++)assert.ok(fr[i]-fr[i-1]>=BODY.nodMinGap);}
  for(let fr=0;fr<500;fr+=7){const x=bodyAt(p,t,fr,0);for(const o of Object.values(x)){if(o.tilt!==undefined)assert.ok(Math.abs(o.tilt)<=BODY.swayAmp+1e-12);if(o.blink!==undefined)assert.ok(o.blink>=.1&&o.blink<=1);if(o.nod!==undefined)assert.ok(o.nod>=0&&o.nod<=BODY.listenNod);}}
  assert.deepEqual(bodyAt(p,t,123,0),bodyAt(structuredClone(p),t,123,0));

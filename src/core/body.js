@@ -17,7 +17,9 @@ const fail=(p,m)=>{throw Error(p+': '+m)};
 // Second owner review ("too many movements and nods"): r2 had 8–9 nods and 4–5 beats per character in 17 s. Now a
 // per-shot event plan: at most one arm beat per line (its loudest frame, lines ≥ beatMinPhrase frames), no head nod on
 // beats, and only the addressee nods as a line ends, at most once per nodMinGap frames.
-export const BODY=Object.freeze({beatFrames:18,beatMinPhrase:45,minGap:20,peakMin:600,peakRadius:5,beatPitch:.35,nodFrames:30,nodLead:10,nodMinGap:120,listenNod:.12,swayAmp:.03,swayPeriod:150,blinkFrames:[.55,.15,.1,.35,.8]});
+// Third owner review ("still a bit much movement, especially nodding"): smaller nods (0.07 rad), at most one per
+// character per 8 s, none from an addressee who replies next (the reply acknowledges), and half the sway.
+export const BODY=Object.freeze({beatFrames:18,beatMinPhrase:45,minGap:20,peakMin:600,peakRadius:5,beatPitch:.35,nodFrames:30,nodLead:10,nodMinGap:240,listenNod:.07,swayAmp:.015,swayPeriod:150,blinkFrames:[.55,.15,.1,.35,.8]});
 const KEYS=['beats','nods','blinks','sway'];
 const ARM_ACTIONS=['point','wave','reach','grasp','release','carry'];
 export function validateBodyLanguage(project){
@@ -58,12 +60,13 @@ export function bodyPlan(project,t,index){
  if(byShot.has(index))return byShot.get(index);
  const s=project.shots[index],ts=t.shots[index],v=t.speechEnvelope?.values??[],beats=[],nods=[],lastNod={};
  const focus=focusPlan({...s,durationFrames:ts.endFrame-ts.startFrame},ts),n=(ts.endFrame-ts.startFrame)*1600,base=ts.startFrame*1600;
- for(const g of ts.segments){
+ for(const [k,g] of ts.segments.entries()){
   const who=s.speakerAssets[g.speaker??'default'];if(who===undefined)continue;
   const a=Math.ceil(g.startSample/1600),e=Math.floor(g.endSample/1600);
   if(e-a>=BODY.beatMinPhrase&&beatEligible(s,who)){let best=-1;for(let f=a;f<e;f++)if(best<0||(v[f]??0)>(v[best]??0))best=f;if(best>=0&&(v[best]??0)>=BODY.peakMin)beats.push({id:who,frame:best});}
   const at=(g.startSample-base)/n,addressee=(focus[who]??[]).filter(x=>x.at<=at+1e-9).at(-1)?.target;
-  const start=e-BODY.nodLead;if(addressee&&addressee!==who&&(lastNod[addressee]===undefined||start-lastNod[addressee]>=BODY.nodMinGap)){nods.push({id:addressee,frame:start});lastNod[addressee]=start;}
+  const next=ts.segments[k+1],replies=next!==undefined&&s.speakerAssets[next.speaker??'default']===addressee;
+  const start=e-BODY.nodLead;if(addressee&&addressee!==who&&!replies&&(lastNod[addressee]===undefined||start-lastNod[addressee]>=BODY.nodMinGap)){nods.push({id:addressee,frame:start});lastNod[addressee]=start;}
  }
  const plan={beats,nods};byShot.set(index,plan);return plan;
 }
