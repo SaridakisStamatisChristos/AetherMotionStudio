@@ -10,11 +10,13 @@ function arr(x,max,p){if(!Array.isArray(x)||x.length>max)fail(p,'invalid array')
 const bool=(x,p)=>{if(typeof x!=='boolean')fail(p,'boolean required');};
 const map=(x,p,max)=>{if(!x||typeof x!=='object'||Array.isArray(x)||Object.keys(x).length>max)fail(p,'invalid mapping');};
 export function validateSpeechConfig(c,shots=null){
- fields(c,['version','targetFrames','fixedShots','speakers','shotSpeakers','pronunciations','captions','mix','cues','syncActions','placement','pace'],'speech',['version','targetFrames','fixedShots','speakers','shotSpeakers','pronunciations','captions','mix','cues','syncActions']);
+ fields(c,['version','targetFrames','fixedShots','speakers','shotSpeakers','pronunciations','captions','mix','cues','syncActions','placement','pace','mouths'],'speech',['version','targetFrames','fixedShots','speakers','shotSpeakers','pronunciations','captions','mix','cues','syncActions']);
  // POLISH-03 opt-ins: placement of narration inside shots, and mastering profile mix-v2 inside speech.mix.
  if(c.placement!==undefined&&!['center','lead'].includes(c.placement))fail('speech.placement','center or lead required');
  // GEN-05 opt-in: starting Kokoro speed below 1 (slightly slower, easier-to-read speech). Absent = 1 (unchanged).
  if(c.pace!==undefined)finite(c.pace,SPEECH_PACE.min,1,'speech.pace');
+ // GEN-10 opt-in estimated mouth shapes for bound speakers (src/core/talk.js VISEMES, scripts/visemes.py)
+ if(c.mouths!==undefined&&c.mouths!=='visemes-v1')fail('speech.mouths','visemes-v1 or absent required');
  if(c.version!==1)fail('speech.version','unsupported');int(c.targetFrames,180,9000,'speech.targetFrames');
  const ids=shots?new Map(shots.map(s=>[s.id,s])):null;
  const shotId=(id,p)=>{if(!/^[a-z0-9][a-z0-9-]{0,47}$/.test(id)||['constructor','prototype'].includes(id)||ids&&!ids.has(id))fail(p,'unknown or unsafe shot');};

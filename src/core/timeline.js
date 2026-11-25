@@ -2,7 +2,7 @@ import {FORMAT,TEMPLATES,VOICES,validateScene} from './contract.js';
 import {validateGraph} from './graph.js';
 import {continuityLedger} from './identity.js';
 import {validateSpeechConfig,validateSpeechTimeline} from './speech.js';
-import {validateSpeakerAssets,validateEnvelope} from './talk.js';
+import {validateSpeakerAssets,validateEnvelope,validateVisemes} from './talk.js';
 import {validateDialogue} from './dialogue.js';
 import {validateBodyLanguage} from './body.js';
 export const FPS=30,SAMPLE_RATE=48000,SAMPLES_PER_FRAME=1600,MAX_FRAMES=9000,MAX_SHOT=3600;
@@ -49,7 +49,7 @@ export function validateProject(s){
 }
 export function validateTimeline(s,t){
  validateProject(s);if(s.version!==2)fail('timeline','requires v2 project');
- fields(t,['version','fps','sampleRate','durationFrames','shots'],'timeline',['captions','alignment','speechEnvelope']);
+ fields(t,['version','fps','sampleRate','durationFrames','shots'],'timeline',['captions','alignment','speechEnvelope','visemes']);
  if(t.version!==1||t.fps!==FPS||t.sampleRate!==SAMPLE_RATE)fail('timeline','unsupported timebase');
  integer(t.durationFrames,60,MAX_FRAMES,'durationFrames');
  if(!Array.isArray(t.shots)||t.shots.length!==s.shots.length)fail('timeline.shots','length mismatch');
@@ -75,7 +75,7 @@ export function validateTimeline(s,t){
  });
  if(previous!==t.durationFrames)fail('timeline','total length mismatch');
  validateSpeechTimeline(s,t);
- validateEnvelope(s,t);
+ validateEnvelope(s,t);validateVisemes(s,t);
  return t;
 }
 export function shotAt(t,frame){
