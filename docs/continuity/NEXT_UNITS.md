@@ -142,6 +142,11 @@ Exit criteria: checks run on every example in tests and stay digest-neutral for 
   - Fixed with the follow constraint and the OFF_FRAME check.
 
 ## Candidates after GEN-03 (proposed 2026-11-25; the owner picks)
+Status 2026-11-25 (owner: "lets do it seriallized. Gen10 and onwards"):
+- GEN-10 (estimated mouth shapes, no new dependency) and GEN-11 (idle weight shift) are IMPLEMENTED + TESTED + RENDERED on `feature/gen-10-11` (stacked on PR #29).
+- GEN-12 (topic sets) is next and needs no owner decision.
+- GEN-13 needs music sources and licences, and GEN-14 needs a local model; both are owner decisions.
+- PR #29 revised: Reels captions low at normal size; GEN-05b readable captions.
 Status 2026-11-25 (owner: "execute gen-04 to gen9"):
 - GEN-04, GEN-05 (option a: pace 0.92), GEN-06 (true singles), GEN-08 and GEN-09 (Reels mode; length only warns) are IMPLEMENTED + TESTED + RENDERED (agent-reviewed) on `feature/gen-04-09`, PR pending the owner's merge.
 - GEN-07 is DEFERRED (owner: "i dont think its needed").
