@@ -46,7 +46,10 @@ export function validateGraph(s,p='shot'){
  if(Object.hasOwn(s,'geometryProfile')&&(![PROFILE,LOD_PROFILE,HERO_PROFILE,IMPORT_PROFILE,GENERATED_PROFILE].includes(s.geometryProfile)||s.assets.some(a=>!(s.geometryProfile===GENERATED_PROFILE?[...HERO_IDS,GENERATED_ID]:s.geometryProfile===IMPORT_PROFILE?[...HERO_IDS,IMPORT_ID]:s.geometryProfile===HERO_PROFILE?HERO_IDS:s.geometryProfile===LOD_PROFILE?LOD_SUPPORTED:SUPPORTED).includes(a.asset))))fail(p+'.geometryProfile','unsupported Foundry profile or asset');
  if([LOD_PROFILE,HERO_PROFILE,IMPORT_PROFILE,GENERATED_PROFILE].includes(s.geometryProfile))validateLODPolicy(s.lodPolicy,s.assets);else if(Object.hasOwn(s,'lodPolicy'))fail(p+'.lodPolicy','AF-03 geometry profile required');
  if(Object.hasOwn(s,'materialProfile')){if([HERO_PROFILE,IMPORT_PROFILE,GENERATED_PROFILE].includes(s.geometryProfile))fail(p+'.materialProfile','premium revision has pinned component materials');if(!s.geometryProfile)fail(p+'.materialProfile','Foundry geometry profile required');if(s.assets.some(a=>a.identity&&s.materialProfile?.assignments?.some?.(x=>x.asset===a.id)))fail(p+'.materialProfile','pinned identity material override requires a versioned variant');validateMaterialProfile(s.materialProfile,s.assets,s.backend);}
- for(const [i,a] of s.assets.entries())if(Object.hasOwn(a,'face'))validateFace(a,ids,p+'.assets['+i+'].face');
+ for(const [i,a] of s.assets.entries())if(Object.hasOwn(a,'face')){const q=p+'.assets['+i+'].face';
+  // TALK-02 opt-in: face may be a chain of 2–16 sequential windows (each blends from the previous window's target).
+  if(Array.isArray(a.face)){if(a.face.length<2||a.face.length>16)fail(q,'face chain requires 2–16 windows');a.face.forEach((x,k)=>{validateFace({...a,face:x},ids,q+'['+k+']');if(k&&x.start<a.face[k-1].end-1e-9)fail(q+'['+k+']','face windows must be sequential');});}
+  else validateFace(a,ids,q);}
  for(const [i,a] of s.assets.entries())if(Object.hasOwn(a,'aim'))validateAim(a,ids,p+'.assets['+i+'].aim');
  for(const [i,a] of s.assets.entries())if(Object.hasOwn(a,'restOn')){const q=p+'.assets['+i+'].restOn';validateSurfaceRef(a.restOn,ids,a.id,q,fail);const sf=s.assets.find(b=>b.id===a.restOn.surface);
   if(sf.restOn||sf.attachment)fail(q+'.surface','surface must not rest on or attach to another asset');for(const ch of ['x','y','z'])if(Object.hasOwn(a.tracks,ch))fail(q,'restOn sets the position; remove the '+ch+' track');}
@@ -60,6 +63,19 @@ export function validateGraph(s,p='shot'){
 function sample(t,d,p,modes={}){return Object.fromEntries(Object.entries(d).map(([k,v])=>[k,t[k]?interpolate(p,t[k],modes[k]??'ease'):v]));}
 // ART-01 opt-in facing: yaw turns toward another asset's own (track/action) position inside a window.
 function validateFace(a,ids,p){const x=a.face;object(x,['target','start','end','blend','hold','offset'],p,['target','start','end']);if(typeof x.target!=='string'||!ids.has(x.target)||x.target===a.id)fail(p+'.target','another asset ID required');number(x.start,0,1,p+'.start');number(x.end,0,1,p+'.end');if(x.start>=x.end)fail(p,'invalid window');if(x.blend!==undefined)number(x.blend,0,.5,p+'.blend');if(x.hold!==undefined&&x.hold!==true)fail(p+'.hold','hold must be true');if(x.offset!==undefined)number(x.offset,-Math.PI,Math.PI,p+'.offset');}
+// TALK-02: chain of face windows. A window contiguous with the previous one blends from that window's target (no snap
+// back to the authored yaw); the last window may hold. targetOf(window,t) returns the target position at t.
+function faceChainYaw(list,from,targetOf,yaw,t){
+ let i=-1;for(let k=0;k<list.length;k++)if(list[k].start<=t)i=k;
+ if(i<0)return yaw;
+ const x=list[i];if(t>x.end&&x.hold!==true)return yaw;
+ const aim=w=>{const to=targetOf(w,t),d=Math.atan2(to[0]-from[0],to[2]-from[2])+(w.offset??0)-yaw;return yaw+d-2*Math.PI*Math.round(d/(2*Math.PI));};
+ const prev=i>0&&list[i-1].end>=x.start-1e-9?list[i-1]:null,next=i+1<list.length&&list[i+1].start<=x.end+1e-9;
+ const u=Math.min(1,(t-x.start)/(x.end-x.start)),b=x.blend??0;let w=b?smooth(u/b):1;
+ if(b&&!next&&x.hold!==true)w=Math.min(w,smooth((1-u)/b));
+ const fromYaw=prev?aim(prev):yaw;
+ return clamp(mix(fromYaw,aim(x),w),...limits.yaw);
+}
 function faceYaw(x,from,to,yaw,t){
  if(t<x.start||(t>x.end&&x.hold!==true))return yaw;
  const u=Math.min(1,(t-x.start)/(x.end-x.start)),b=x.blend??0,w=b?(x.hold===true?smooth(u/b):Math.min(smooth(u/b),smooth((1-u)/b))):1;
@@ -84,7 +100,8 @@ function evaluateGraphRaw(s,p){
  }
  function bodyPose(a,t){
   const {x,y,z,...pose}=poseOf(a,t);
-  if(a.face){const o=poseOf(byId.get(a.face.target),t);pose.yaw=faceYaw(a.face,[x,y,z],[o.x,o.y,o.z],pose.yaw,t);}
+  if(Array.isArray(a.face))pose.yaw=faceChainYaw(a.face,[x,y,z],(w,u)=>{const o=poseOf(byId.get(w.target),u);return [o.x,o.y,o.z];},pose.yaw,t);
+  else if(a.face){const o=poseOf(byId.get(a.face.target),t);pose.yaw=faceYaw(a.face,[x,y,z],[o.x,o.y,o.z],pose.yaw,t);}
   if(a.locomotion){const m=locomote(a,t,u=>poseOf(a,u),pose.yaw);pose.walking=m.walking;pose.footLift=m.footLift;if(m.yaw!==undefined)pose.yaw=m.yaw;}
   if(a.aim){const o=poseOf(byId.get(a.aim.target),t);Object.assign(pose,applyAim(a,pose,[x,y,z],[o.x,o.y,o.z],t));}
   return {x,y,z,pose};
