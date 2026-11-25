@@ -6,10 +6,16 @@ export const REELS=Object.freeze({
  version:'reels-v1',
  ui:Object.freeze({x:Object.freeze([40,640]),y:Object.freeze([147,1000])}),
  heading:Object.freeze({x:340,y:178,size:38,maxWidth:560}),
- caption:Object.freeze({top:206,left:46,width:588,maxText:548}),
- // characters: below the tallest caption box (2 lines + speaker label = 134) and above the bottom overlay
- characters:Object.freeze({x:Object.freeze([46,634]),y:Object.freeze([348,1000])}),
- // group/single fit, symmetric about the projection centre (360,640): min(360-46, 634-360), min(640-348, 1000-640)
- frame:Object.freeze({halfWidth:274,halfHeight:292}),
+ // Owner 2026-11-25 (before merge): captions low, like most Reels ("if on top it will cover the face... bottom is
+ // prefered"), and characters at the normal height. The caption box ends just above the app's own text (bottom 990)
+ // and may cover legs and feet; it must never cover a head (check REELS_CAPTION_ON_HEAD).
+ caption:Object.freeze({bottom:990,left:46,width:588,maxText:548}),
+ // head = top share of a character's projected box that a caption must not cover
+ headShare:.4,
+ // characters: under the heading, above the bottom overlay, clear of the right-edge buttons
+ characters:Object.freeze({x:Object.freeze([46,634]),y:Object.freeze([300,1000])}),
+ // group/single fit, symmetric about the projection centre (360,640): min(360-46, 634-360), min(640-300, 1000-640);
+ // the height (340) is the default one, only the width is narrower
+ frame:Object.freeze({halfWidth:274,halfHeight:340}),
  recommendedMaxSeconds:90,maxOutside:.05,every:3
 });

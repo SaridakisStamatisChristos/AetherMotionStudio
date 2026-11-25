@@ -15,12 +15,12 @@ Owner: "can the instagram be a mode and in case i want i can generate longer vid
   - the app's overlay covers the top, the bottom and the right edge of a Reel;
   - the heading is smaller (38 px on the 720×1280 reference) and sits at the top of the safe area;
   - the AETHER pill, the subheading and the progress bar are left out;
-  - captions hang just under the heading (box x 46–634, top 206), not at the bottom, where the app's caption and buttons sit.
-- **Framing:** group and single framings fit the characters into the area below the captions and above the bottom overlay (`cameraRig.safeArea:'reels-v1'`: half-width 274, half-height 292, against 336/340 by default).
-  - Singles are solved for that area too. With the Director's line spacing (±0.9 m), no true single exists in that narrower frame: the neighbour stays in view. So the Reels interview has no cuts, and the singles report says why. Wider staging for Reels singles is a possible follow-up.
+  - captions sit low, ending just above the app's own text (box x 46–634, bottom 990 on the reference). They may cover legs and feet, never a head. Revised before merge on the owner's word: "if on top it will cover the face... so i think bottom is prefered" (the first version hung them under the heading and shrank the characters).
+- **Framing:** group and single framings keep the normal character height and only fit the width clear of the right-edge buttons (`cameraRig.safeArea:'reels-v1'`: half-width 274, half-height 340, against 336/340 by default).
+  - Singles are solved for that area too; the Reels interview gets the same three singles as the default layout.
 - **Check reels-safe-v1** (`quality-checks.json` `reels`, `CHECKS:` line, Studio Inspect):
   - `REELS_UNDER_OVERLAY`: more than 5 % of a character's box under the app overlay;
-  - `REELS_UNDER_CAPTION`: more than 5 % under an active caption;
+  - `REELS_CAPTION_ON_HEAD`: an active caption covers more than 5 % of a character's head (the top 40 % of its projected box; the box is sized like the drawn caption);
   - `REELS_LONG`: longer than the recommended 90 s. This is a warning only; longer films are fine.
 - **Export report:**
   - `fail` only for a wrong format (not 1080×1920, not H.264/AAC);
@@ -30,7 +30,7 @@ Owner: "can the instagram be a mode and in case i want i can generate longer vid
 ## Assumptions and trade-offs (please check)
 - **Safe area:** Meta publishes no single figure for organic Reels, and third-party guides disagree (bottom 280–670 px, right 90–120 px on 1080×1920). The mode keeps top 220, bottom 420, left 60 and right 120 px clear. Check a test upload in the app.
 - **Length:** guides disagree on the current Reels maximum (3 min in some, up to 20 min for uploads in others), so the mode never refuses length. 90 s is the recommended length.
-- **Smaller characters:** keeping clear of the app overlay costs size. On the fresh interview, speakers measure 0.39 of the default safe height in Reels mode, against 0.56 in the default layout. Captions on top were chosen over captions just above the bottom overlay, which would have cost about 25 % more height.
+- **Character size:** the first version shrank speakers to 0.39 of the safe height (0.56 by default). The owner declined that; the revised mode keeps the normal height, and captions may cover legs and feet.
 - Not done: a seamless loop (optional in the plan), Stories, and music.
 
 ## Related fix found while testing

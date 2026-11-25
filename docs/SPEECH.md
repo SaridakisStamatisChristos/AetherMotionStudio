@@ -210,3 +210,11 @@ Owner choice for the caption reading-speed finding (1–2 cues per film at 18–
   - Non-dialogue projects are unchanged; the Director digests are identical.
 - Tests: tests/gen05.test.js (contract, timeline bounds, Director, negatives) and tests/test_speech_pace.py (ladder).
 - The effect on reading speed is measured from the GEN render (see docs/continuity/CURRENT_STATE.md), not assumed.
+
+## GEN-05b readable captions (2026-11-25)
+Owner: "the captions must be generalized in speed not only from the sample video". The fastest GEN-06 caption (19.1 characters per second) came from two things: the greedy splitter left one word ("together.") alone on a second cue, and that line was spoken faster than 18 characters per second. Opt-in `speech.captions.readable: true`, on for every production through `defaultSpeech` (Director films, Studio); authored examples without the flag are unchanged.
+- **Balanced split** (`scripts/speech_plan.py` `balanced`): a phrase that needs k cues is cut into k cues of even reading speed (the fastest cue as slow as possible), still within maxChars/maxLines/10 words.
+- **Hold:** a phrase's last cue stays shown into the following pause (`holdSample`) until it reads at most `maxCps`, at least 0.7 s in all, at most 1 s later, never past its shot's end or 0.1 s before the next cue. The SRT/VTT sidecars use the same times. Word highlight follows the speech only.
+- **Per-phrase pace** (`phrase_speed`): a phrase still spoken faster than `maxCps` is spoken again slower (3 % headroom, never below the 0.85 floor), if the time budget still fits. Otherwise all phrases keep the film speed and the report says so (`readablePhrases {slowed, kept}`). Timeline speeds may then go down to 0.85 (contract: timeline.js, verify.py).
+- Metrics: `alignment.maxCps` and `readingSpeedOutliers` measure the time each cue is shown; `speechMaxCps` and `heldCues` are added when a cue holds.
+- Tests: tests/test_captions_readable.py (300 random scripts spoken within the limit: 0 fast cues; faster scripts: fewer fast cues; holds never overlap), tests/gen05b.test.js (contract and negatives).

@@ -67,7 +67,8 @@ export function validateTimeline(s,t){
    if(a.text!==y.narration[j])fail(p,'speech text mismatch');
    integer(a.startSample,last,x.endFrame*SAMPLES_PER_FRAME-1,p+'.startSample');
    integer(a.endSample,a.startSample+1,x.endFrame*SAMPLES_PER_FRAME,p+'.endSample');
-   if(!Number.isFinite(a.speed)||a.speed<(s.speech?.pace??1)||a.speed>1.25)fail(p,'speed out of range');
+   // GEN-05b: readable captions may slow single phrases down to the pace floor (0.85)
+   if(!Number.isFinite(a.speed)||a.speed<(s.speech?.captions?.readable?.85:s.speech?.pace??1)||a.speed>1.25)fail(p,'speed out of range');
    last=a.endSample;
   }
   previous=x.endFrame;

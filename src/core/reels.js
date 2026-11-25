@@ -2,11 +2,11 @@
 // want i can generate longer videos?" — yes: a mode, and length is only a warning, never a limit.
 // What the mode changes (default output is unchanged without it):
 // - layout: the app's own overlay covers the top, the bottom and the right edge of a Reel, so the heading is smaller,
-//   the AETHER pill, subheading and progress bar are left out, and captions sit just under the heading, all inside
-//   the Reels-safe area;
-// - framing: group and single framings fit the characters into the Reels-safe area below the captions
+//   the AETHER pill, subheading and progress bar are left out, and captions sit low, just above the app's own text
+//   (owner: bottom preferred, a caption on top would cover faces);
+// - framing: group and single framings keep the normal height and fit the width clear of the right-edge buttons
 //   (cameraRig.safeArea 'reels-v1', set on every group/single rig by reelsProject);
-// - check reels-safe-v1: characters under the app overlay, or under an active caption, are reported.
+// - check reels-safe-v1: characters under the app overlay, or a caption over a head, are reported.
 // Layout constants and the safe-area assumption: src/core/reels-layout.js.
 import {evaluateGraph} from './graph.js';
 import {geometryBounds} from './cinematography.js';
@@ -43,15 +43,17 @@ export function reelsCheck(project,t){
     const area=Math.max(1e-9,(x1-x0)*(y1-y0)),inFrame=Math.max(0,Math.min(x1,720)-Math.max(x0,0))*Math.max(0,Math.min(y1,1280)-Math.max(y0,0));
     if(inFrame<=0)continue;// wholly outside the frame: not shown, not covered
     const safe=Math.max(0,Math.min(x1,P.ui.x[1])-Math.max(x0,P.ui.x[0]))*Math.max(0,Math.min(y1,P.ui.y[1])-Math.max(y0,P.ui.y[0]));
-    const under=(inFrame-safe)/area,caption=cue?Math.max(0,Math.min(y1,P.characters.y[0])-Math.max(y0,P.caption.top))*Math.max(0,Math.min(x1,P.caption.left+P.caption.width)-Math.max(x0,P.caption.left))/area:0;
+    // a caption may cover legs and feet, never the head (top headShare of the box); the box is sized like drawSpeechCue
+    const hy=y0+(y1-y0)*P.headShare,ch=cue?cue.cue.lines.length*40+30+(Object.keys(project.speech.speakers).length>1?24:0):0;
+    const under=(inFrame-safe)/area,caption=cue?Math.max(0,Math.min(hy,P.caption.bottom)-Math.max(y0,P.caption.bottom-ch))*Math.max(0,Math.min(x1,P.caption.left+P.caption.width)-Math.max(x0,P.caption.left))/Math.max(1e-9,(x1-x0)*(hy-y0)):0;
     const w=worst[a.id]??={ui:[0,0],caption:[0,0]};if(under>w.ui[0])w.ui=[under,f];if(caption>w.caption[0])w.caption=[caption,f];
    }
   }
   const r3=v=>Math.round(v*1000)/1000;
-  shots.push({shot:s0.id,characters:Object.fromEntries(Object.entries(worst).map(([id,w])=>[id,{underOverlay:r3(w.ui[0]),overlayFrame:w.ui[1],underCaption:r3(w.caption[0]),captionFrame:w.caption[1]}]))});
+  shots.push({shot:s0.id,characters:Object.fromEntries(Object.entries(worst).map(([id,w])=>[id,{underOverlay:r3(w.ui[0]),overlayFrame:w.ui[1],captionOnHead:r3(w.caption[0]),captionFrame:w.caption[1]}]))});
   for(const [id,w] of Object.entries(worst)){
    if(w.ui[0]>P.maxOutside)warnings.push({code:'REELS_UNDER_OVERLAY',shot:s0.id,asset:id,share:r3(w.ui[0]),frame:w.ui[1],limit:P.maxOutside});
-   if(w.caption[0]>P.maxOutside)warnings.push({code:'REELS_UNDER_CAPTION',shot:s0.id,asset:id,share:r3(w.caption[0]),frame:w.caption[1],limit:P.maxOutside});}
+   if(w.caption[0]>P.maxOutside)warnings.push({code:'REELS_CAPTION_ON_HEAD',shot:s0.id,asset:id,share:r3(w.caption[0]),frame:w.caption[1],limit:P.maxOutside});}
  }
  const seconds=t.durationFrames/30;
  if(seconds>P.recommendedMaxSeconds)warnings.push({code:'REELS_LONG',shot:null,asset:null,seconds,recommended:P.recommendedMaxSeconds});

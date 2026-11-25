@@ -33,9 +33,9 @@ export function drawFilm(ctx,scene,timeline,frame,width,height,three=null){
 export function drawSpeechCue(ctx,width,height,{cue,active},speech,delivery=null){
  ctx.save();ctx.scale(width/720,height/1280);
  const speaker=Object.keys(speech.speakers).length>1?(speech.speakers[cue.speaker]?.name??'Narrator'):null;
- // GEN-09 Reels: the caption box hangs under the heading, clear of the app overlay (src/core/reels.js REELS.caption).
+ // GEN-09 Reels: the caption box ends just above the app's own text and buttons (src/core/reels-layout.js REELS.caption).
  const R=delivery===REELS.version?REELS.caption:null,left=R?R.left:42,boxW=R?R.width:636,cx=left+boxW/2,maxText=R?R.maxText:592;
- const size=30,h=cue.lines.length*40+30+(speaker?24:0),top=R?R.top:1171-h;
+ const size=30,h=cue.lines.length*40+30+(speaker?24:0),top=R?R.bottom-h:1171-h;
  roundedBox(ctx,left,top,boxW,h,14,'rgba(5,15,28,.94)','#567485');
  if(speaker)text(ctx,speaker,cx,top+18,20,'#9bdef3',700,'Arial',600);
  let index=0;
