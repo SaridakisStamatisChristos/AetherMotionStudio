@@ -3,7 +3,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {validateProject} from '../src/core/timeline.js';
-import {BODY,bodyAt,applyBody,emphasisPeaks,beatEligible} from '../src/core/body.js';
+import {BODY,bodyAt,bodyPlan,applyBody,emphasisPeaks,beatEligible} from '../src/core/body.js';
 import {emitAsset} from '../src/visual/assets.js';
 import {evaluateGraph} from '../src/core/graph.js';
 
@@ -29,10 +29,16 @@ test('emphasis peaks: above threshold, local maxima, at least minGap apart',()=>
 });
 test('bodyAt: speaker beats at peaks, listeners nod as a phrase ends, blinks and sway bounded and deterministic',()=>{
  const p=load('cpu'),t=timeline(p),pk=emphasisPeaks(t);
- const f=pk.find(x=>x>20&&x<85)+3,b=bodyAt(p,t,f,0);   // engineer speaking
- assert.ok(b.engineer.beat<0&&b.engineer.beat>=-BODY.beatPitch&&b.engineer.nod>0,'speaker beat + nod');
+ // Calmer contract (owner review): one beat per line at its loudest frame, no head nod on beats.
+ const plan=bodyPlan(p,t,0),v=t.speechEnvelope.values,segs=t.shots[0].segments;
+ assert.ok(plan.beats.length<=segs.length);
+ for(const x of plan.beats){const g=segs.find(g=>x.frame*1600>=g.startSample&&x.frame*1600<g.endSample);assert.ok(g,'beat inside a line');for(let f2=Math.ceil(g.startSample/1600);f2<Math.floor(g.endSample/1600);f2++)assert.ok(v[f2]<=v[x.frame]);}
+ const eb=plan.beats.find(x=>x.id==='engineer'),f=eb.frame+5,b=bodyAt(p,t,f,0);   // engineer speaking
+ assert.ok(b.engineer.beat<0&&b.engineer.beat>=-BODY.beatPitch,'speaker beat');assert.equal(b.engineer.nod,undefined,'no head nod on beats');
  assert.equal(b.scientist.beat,undefined);assert.equal(b.robot.beat,undefined);
- const end=85-BODY.nodLead+4,n=bodyAt(p,t,end,0);assert.ok(n.scientist.nod>0&&n.robot.nod>0,'listeners nod near the end of the line');assert.ok(!(n.engineer.nod>0)||n.engineer.beat!==undefined);
+ // Only the addressee nods (the engineer, first speaker, looks at the next speaker: the scientist).
+ const end=85-BODY.nodLead+8,n=bodyAt(p,t,end,0);assert.ok(n.scientist.nod>0,'addressee nods');assert.equal(n.robot.nod,undefined,'other listener stays still');
+ for(const id of ['engineer','scientist','robot']){const fr=plan.nods.filter(x=>x.id===id).map(x=>x.frame);for(let i=1;i<fr.length;i++)assert.ok(fr[i]-fr[i-1]>=BODY.nodMinGap);}
  for(let fr=0;fr<500;fr+=7){const x=bodyAt(p,t,fr,0);for(const o of Object.values(x)){if(o.tilt!==undefined)assert.ok(Math.abs(o.tilt)<=BODY.swayAmp+1e-12);if(o.blink!==undefined)assert.ok(o.blink>=.1&&o.blink<=1);if(o.nod!==undefined)assert.ok(o.nod>=0&&o.nod<=BODY.listenNod);}}
  assert.deepEqual(bodyAt(p,t,123,0),bodyAt(structuredClone(p),t,123,0));
  let blinks=0;for(let fr=0;fr<500;fr++)if(bodyAt(p,t,fr,0).robot.blink<1)blinks++;assert.ok(blinks>=10&&blinks<=40,'robot blinks every 2.5-4.5 s ('+blinks+' frames)');
@@ -74,4 +80,10 @@ test('head motion speed: nods and sway stay gentle and continuous across speaker
  for(let f=0;f<500;f++){const b=bodyAt(p,t,f,0);if(prev)for(const id of ['engineer','scientist','robot'])for(const k of ['nod','tilt'])peak[k]=Math.max(peak[k],deg(Math.abs((b[id][k]??0)-(prev[id][k]??0))));prev=b;}
  assert.ok(peak.nod<=35,'nod peak '+peak.nod.toFixed(1)+' deg/s');assert.ok(peak.tilt<=5,'sway peak '+peak.tilt.toFixed(1)+' deg/s');
  assert.equal(load('cpu').shots[0].dialogue.turn,.8,'example turns slowed to 0.8 s');
+});
+
+test('movement budget: at most one beat per own line and nods spaced by nodMinGap (owner review: fewer movements)',()=>{
+ const p=load('cpu'),t=timeline(p),plan=bodyPlan(p,t,0),lines=id=>t.shots[0].segments.filter(g=>p.shots[0].speakerAssets[g.speaker]===id).length;
+ for(const id of ['engineer','scientist','robot']){assert.ok(plan.beats.filter(x=>x.id===id).length<=lines(id));assert.ok(plan.nods.filter(x=>x.id===id).length<=Math.ceil(500/BODY.nodMinGap));}
+ assert.ok(plan.nods.length<=t.shots[0].segments.length,'at most one nod (by the addressee) per line');
 });

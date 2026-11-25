@@ -1,19 +1,23 @@
 // TALK-03 body language while talking. A shot with bound speakers (speakerAssets) may opt into
 // `bodyLanguage: {beats?, nods?, blinks?, sway?}`. Everything is derived per frame from the measured timeline:
-// - beats: the speaker's arm lifts briefly at loudness peaks of the shared speech envelope (measured emphasis peaks,
-//   not word-level or forced alignment), with a small head nod;
-// - nods: listeners nod as another speaker finishes a phrase;
+// - beats: at most one per line: the speaker's arm lifts briefly at the line's loudest frame of the shared speech
+//   envelope (measured emphasis, not word-level or forced alignment);
+// - nods: only the addressee (whom the speaker is looking at) nods as a line ends, at most once per 4 s;
 // - blinks: each bound character blinks on a fixed per-character schedule (hash of its ID);
 // - sway: heads of all bound characters tilt slowly and continuously.
 // Applied after graph evaluation (head pose keys, blink, additive arm pitch). Beats skip characters that hold props,
 // aim, or have authored arm tracks/actions, so attachments and aims never drift. Bounded and deterministic.
 import {speakerAt} from './talk.js';
+import {focusPlan} from './dialogue.js';
 import {smooth} from './motion.js';
 
 const fail=(p,m)=>{throw Error(p+': '+m)};
 // Speeds tuned after owner review ("the heads move too fast"): first version peaked ~93°/s on nods and the sway jumped
 // when a listener became the speaker. Now: gentle nods (≤ ~30°/s), continuous sway on every bound character.
-export const BODY=Object.freeze({beatFrames:18,beatNodFrames:20,minGap:20,peakMin:600,peakRadius:5,beatPitch:.35,beatNod:.05,nodFrames:30,nodLead:10,listenNod:.12,swayAmp:.03,swayPeriod:150,blinkFrames:[.55,.15,.1,.35,.8]});
+// Second owner review ("too many movements and nods"): r2 had 8–9 nods and 4–5 beats per character in 17 s. Now a
+// per-shot event plan: at most one arm beat per line (its loudest frame, lines ≥ beatMinPhrase frames), no head nod on
+// beats, and only the addressee nods as a line ends, at most once per nodMinGap frames.
+export const BODY=Object.freeze({beatFrames:18,beatMinPhrase:45,minGap:20,peakMin:600,peakRadius:5,beatPitch:.35,nodFrames:30,nodLead:10,nodMinGap:120,listenNod:.12,swayAmp:.03,swayPeriod:150,blinkFrames:[.55,.15,.1,.35,.8]});
 const KEYS=['beats','nods','blinks','sway'];
 const ARM_ACTIONS=['point','wave','reach','grasp','release','carry'];
 export function validateBodyLanguage(project){
@@ -47,20 +51,30 @@ export function beatEligible(s,id){
  return !s.assets.some(o=>{const w=o.attachment===undefined?[]:Array.isArray(o.attachment)?o.attachment:[o.attachment];return w.some(x=>x.parent===id);});
 }
 // Per bound character at `frame` of timeline shot `index`: {nod?, tilt?, blink?, beat?}.
+const planCache=new WeakMap();
+// Per-shot event plan from the measured timeline: beats [{id, frame}] and nods [{id, frame}] (frame = motion start).
+export function bodyPlan(project,t,index){
+ let byShot=planCache.get(t);if(!byShot){byShot=new Map();planCache.set(t,byShot);}
+ if(byShot.has(index))return byShot.get(index);
+ const s=project.shots[index],ts=t.shots[index],v=t.speechEnvelope?.values??[],beats=[],nods=[],lastNod={};
+ const focus=focusPlan({...s,durationFrames:ts.endFrame-ts.startFrame},ts),n=(ts.endFrame-ts.startFrame)*1600,base=ts.startFrame*1600;
+ for(const g of ts.segments){
+  const who=s.speakerAssets[g.speaker??'default'];if(who===undefined)continue;
+  const a=Math.ceil(g.startSample/1600),e=Math.floor(g.endSample/1600);
+  if(e-a>=BODY.beatMinPhrase&&beatEligible(s,who)){let best=-1;for(let f=a;f<e;f++)if(best<0||(v[f]??0)>(v[best]??0))best=f;if(best>=0&&(v[best]??0)>=BODY.peakMin)beats.push({id:who,frame:best});}
+  const at=(g.startSample-base)/n,addressee=(focus[who]??[]).filter(x=>x.at<=at+1e-9).at(-1)?.target;
+  const start=e-BODY.nodLead;if(addressee&&addressee!==who&&(lastNod[addressee]===undefined||start-lastNod[addressee]>=BODY.nodMinGap)){nods.push({id:addressee,frame:start});lastNod[addressee]=start;}
+ }
+ const plan={beats,nods};byShot.set(index,plan);return plan;
+}
 export function bodyAt(project,t,frame,index){
  const s=project.shots[index],bl=s?.bodyLanguage;if(!bl||!s.speakerAssets)return null;
- const ts=t.shots[index],out={};
+ const out={},plan=bodyPlan(project,t,index);
  for(const [sp,id] of Object.entries(s.speakerAssets)){
   const o={};
-  // A started beat or nod always finishes (no cut when the speaker changes): gated by the peak's own phrase speaker.
-  if(bl.beats&&beatEligible(s,id)){
-   const span=Math.max(BODY.beatFrames,BODY.beatNodFrames),p=emphasisPeaks(t).filter(f=>f<=frame&&f>=ts.startFrame&&frame-f<span&&speakerAt(t,index,f)===sp).at(-1);
-   if(p!==undefined){const a=bump((frame-p)/BODY.beatFrames),n=bump((frame-p)/BODY.beatNodFrames);if(a>0)o.beat=-BODY.beatPitch*a;if(n>0)o.nod=BODY.beatNod*n;}
-  }
-  if(bl.nods){
-   for(const g of ts.segments){const e=Math.floor(g.endSample/1600),who=s.speakerAssets[g.speaker??'default'];if(who===undefined||who===id)continue;
-    const u=(frame-(e-BODY.nodLead))/BODY.nodFrames;if(u>=0&&u<1){o.nod=Math.max(o.nod??0,BODY.listenNod*bump(u));}}
-  }
+  // Started beats and nods always finish (no cut when the speaker changes).
+  if(bl.beats)for(const x of plan.beats){if(x.id!==id)continue;const a=bump((frame-x.frame)/BODY.beatFrames);if(a>0)o.beat=-BODY.beatPitch*a;}
+  if(bl.nods)for(const x of plan.nods){if(x.id!==id)continue;const u=bump((frame-x.frame)/BODY.nodFrames);if(u>0)o.nod=Math.max(o.nod??0,BODY.listenNod*u);}
   // Sway on every bound character (continuous across speaker changes).
   if(bl.sway)o.tilt=BODY.swayAmp*Math.sin(2*Math.PI*frame/BODY.swayPeriod+(hash(id)%628)/100);
   if(bl.blinks&&!Object.hasOwn(s.assets.find(x=>x.id===id)?.tracks??{},'blink')){
