@@ -22,6 +22,7 @@ voice=scene['voice']
 lang='en-gb' if voice.startswith('b') else 'en-us'
 highpass=butter(2,90,btype='highpass',fs=R,output='sos')
 mastered=audio_master.enabled(scene)
+placement=(scene.get('audio') or {}).get('placement','center')
 
 def synth(text,speed):
     v,sr=kokoro.create(text,voice=voice,speed=speed,lang=lang)
@@ -64,7 +65,7 @@ for shot_index,shot in enumerate(scene['shots']):
         waves=measured[shot_index] if measured is not None else [synth(text,speed) for text in shot['narration']]
         lengths=[len(v) for v in waves]
         try:
-            frames,slots=allocate(lengths,budget)
+            frames,slots=allocate(lengths,budget,placement)
             break
         except ValueError:
             if budget is None or speed>=1.25 or attempt==3: raise RuntimeError('Narration cannot fit shot '+shot['id'])

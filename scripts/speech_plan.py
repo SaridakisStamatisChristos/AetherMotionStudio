@@ -33,7 +33,7 @@ def allocate_mixed(lengths,texts,budgets,target):
         remaining-=sum(chunks)
     return frames
 
-def slots(lengths,texts,frames):
+def slots(lengths,texts,frames,placement='center'):
     slack=frames*SPF-required(lengths,texts)
     if slack<0: raise ValueError('speech cannot fit')
     # Retain punctuation pauses; spread a bounded internal surplus, then place
@@ -42,11 +42,13 @@ def slots(lengths,texts,frames):
     gaps=[]
     if len(lengths)>1:
         q,r=divmod(internal,len(lengths)-1);gaps=[q+(i<r) for i in range(len(lengths)-1)]
-    edge=slack-internal;cursor=PAD+edge//2;out=[]
+    # POLISH-03: placement 'lead' starts speech right after PAD and leaves the remaining silence at the end.
+    if placement not in ('center','lead'): raise ValueError('unknown placement')
+    edge=slack-internal;head=0 if placement=='lead' else edge//2;cursor=PAD+head;out=[]
     for i,n in enumerate(lengths):
         out.append((cursor,cursor+n));cursor+=n
         if i<len(gaps): cursor+=pause_after(texts[i])+gaps[i]
-    assert out[-1][1]+PAD+(edge-edge//2)==frames*SPF
+    assert out[-1][1]+PAD+(edge-head)==frames*SPF
     return out
 
 def pronunciation(text,dictionary):

@@ -8,11 +8,15 @@ from scipy.io import wavfile
 from scipy.signal import resample_poly, butter, sosfilt
 from timeline_plan import RATE,SPF
 from speech_plan import allocate_mixed, slots, pronunciation, caption_cues, subtitles, caption_metrics
+import audio_master
 from phrase_cache import PhraseCache,key_for,file_hash
 R=RATE
 
 def compile_speech(scene,out,root,model_dir,kokoro):
     c=scene['speech'];out=Path(out);target=c['targetFrames'];shots=scene['shots']
+    # POLISH-03 opt-ins: speech.placement ('center' default | 'lead') and speech.mix.master ('mix-v2'): every phrase of
+    # every speaker levelled to one RMS, loudness mastered, then the configured mix.peak still enforced.
+    placement=c.get('placement','center');mastered=c['mix'].get('master')==audio_master.PROFILE
     fingerprint={'model':file_hash(model_dir/'kokoro-v1.0.int8.onnx'),'voices':file_hash(model_dir/'voices-v1.0.bin'),'kokoro':version('kokoro-onnx'),'numpy':np.__version__,'processing':'speech-pcm-f32-v1'}
     cache=PhraseCache(Path(os.environ.get('AETHER_SPEECH_CACHE',root/'out'/'speech-cache')))
     cache.prune()
@@ -24,11 +28,11 @@ def compile_speech(scene,out,root,model_dir,kokoro):
         v=scene['voice'];return 'default',{'name':'Narrator','voice':v,'language':'en-gb' if v.startswith('b') else 'en-us'}
     def synth(text,speed,speaker):
         spoken=pronunciation(text,c['pronunciations'])
-        key=key_for({'text':' '.join(text.split()),'spoken':spoken,'speed':speed,'voice':speaker['voice'],'language':speaker['language'],'fingerprint':fingerprint})
+        key=key_for({'text':' '.join(text.split()),'spoken':spoken,'speed':speed,'voice':speaker['voice'],'language':speaker['language'],'fingerprint':fingerprint,**({'level':audio_master.PROFILE} if mastered else {})})
         raw=cache.get(key)
         if raw:
             v=np.frombuffer(raw,dtype='<f4')
-            if len(v) and np.isfinite(v).all() and np.max(np.abs(v))<=.67 and np.sqrt(np.mean(v*v))>.001:return v
+            if len(v) and np.isfinite(v).all() and np.max(np.abs(v))<=(audio_master.PHRASE_LIMIT if mastered else .67) and np.sqrt(np.mean(v*v))>.001:return v
         v,sr=kokoro.create(spoken,voice=speaker['voice'],speed=speed,lang=speaker['language'])
         v=np.asarray(v,dtype=float).reshape(-1)
         if not len(v) or not np.isfinite(v).all():raise RuntimeError('invalid neural speech')
@@ -38,7 +42,9 @@ def compile_speech(scene,out,root,model_dir,kokoro):
         g=gcd(sr,R);v=resample_poly(v,R//g,sr//g);v=sosfilt(hp,v)
         rms=float(np.sqrt(np.mean(v*v)))
         if rms<=.001:raise RuntimeError('inaudible neural speech')
-        v*=min(.17/rms,.66/(np.max(np.abs(v))+1e-8));ramp=min(int(.012*R),len(v)//2)
+        if mastered:v=audio_master.level_phrase(v)
+        else:v*=min(.17/rms,.66/(np.max(np.abs(v))+1e-8))
+        ramp=min(int(.012*R),len(v)//2)
         if ramp:v[:ramp]*=np.linspace(0,1,ramp);v[-ramp:]*=np.linspace(1,0,ramp)
         v=v.astype('<f4');cache.put(key,v.tobytes());return v
     texts=[s['narration'] for s in shots]
@@ -53,7 +59,7 @@ def compile_speech(scene,out,root,model_dir,kokoro):
     N=target*SPF;speech=np.zeros(N,dtype=np.float32);offset=0;segments=[];speech_metrics=[]
     for s,n,ls,ws in zip(shots,frames,lengths,waves):
         entry={'id':s['id'],'startFrame':offset,'endFrame':offset+n,'transitionFrames':s['transitionFrames'],'segments':[]}
-        for i,((a,b),w,text) in enumerate(zip(slots(ls,s['narration'],n),ws,s['narration'])):
+        for i,((a,b),w,text) in enumerate(zip(slots(ls,s['narration'],n,placement),ws,s['narration'])):
             a+=offset*SPF;b+=offset*SPF;sid,sp=who(s,i)
             seg={'text':text,'startSample':a,'endSample':b,'speed':speed,'speaker':sid,'voice':sp['voice'],'language':sp['language']}
             entry['segments'].append(seg);segments.append(seg);speech[a:b]=w
@@ -99,7 +105,12 @@ def compile_speech(scene,out,root,model_dir,kokoro):
         f=min(fade,segments[0]['startSample']);g=min(fade,N-segments[-1]['endSample'])
         if f:mix[:f]*=np.linspace(0,1,f)
         if g:mix[-g:]*=np.linspace(1,0,g)
+    master_report=None
+    if mastered:
+        mix,master_report=audio_master.master(mix,R);mix=mix.astype(np.float32)
     raw_peak=float(np.max(np.abs(mix)));gain=min(1,cfg['peak']/max(raw_peak,1e-9));mix*=gain
+    if master_report is not None:
+        master_report['peakCapGainDb']=round(20*math.log10(gain),2);(out/'audio-master.json').write_text(json.dumps(master_report,indent=2),encoding='utf-8')
     def metrics(v):return {'peak':float(np.max(np.abs(v))),'rms':float(np.sqrt(np.mean(v*v))),'rmsDbfs':20*math.log10(max(1e-12,float(np.sqrt(np.mean(v*v))))),'clippedSamples':int(np.count_nonzero(np.abs(v)>=1))}
     def pcm(v):return np.int16(np.clip(v,-1,1)*32767)
     wavfile.write(out/'kokoro-narration.wav',R,pcm(speech))

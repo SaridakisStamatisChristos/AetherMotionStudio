@@ -14,7 +14,9 @@ export function validateProject(s){
  fields(s,['version','id','title','voice','shots'],'film',['identityLibrary','speech','audio']);
  if(s.version!==2)fail('version','only 1 or 2 supported');
  // POLISH-02 item 8: opt-in mastering profile for the timeline mixer (speech projects keep their own mix contract).
- if(s.audio!==undefined){if(!s.audio||typeof s.audio!=='object'||Array.isArray(s.audio))fail('audio','object required');for(const k of Object.keys(s.audio))if(k!=='master')fail('audio.'+k,'unknown field');if(s.audio.master!=='mix-v2')fail('audio.master','mix-v2 required');if(s.speech!==undefined)fail('audio','speech projects use speech.mix');}
+ if(s.audio!==undefined){if(!s.audio||typeof s.audio!=='object'||Array.isArray(s.audio))fail('audio','object required');const ks=Object.keys(s.audio);if(!ks.length)fail('audio','master or placement required');for(const k of ks)if(!['master','placement'].includes(k))fail('audio.'+k,'unknown field');if(s.audio.master!==undefined&&s.audio.master!=='mix-v2')fail('audio.master','mix-v2 required');
+  // POLISH-03: narration placement inside each shot ('center' historical, 'lead' = speak early, silence at the end).
+  if(s.audio.placement!==undefined&&!['center','lead'].includes(s.audio.placement))fail('audio.placement','center or lead required');if(s.speech!==undefined)fail('audio','speech projects use speech.mix.master and speech.placement');}
  slug(s.id,'id');str(s.title,'title',100);if(!VOICES.includes(s.voice))fail('voice','unsupported');
  if(!Array.isArray(s.shots)||s.shots.length<1||s.shots.length>60)fail('shots','1–60 required');
  const ids=new Set();let minimum=0;
