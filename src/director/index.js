@@ -39,6 +39,9 @@ export function compile(q,ir,selection){
  validateProject(project);if(!speech&&project.shots.reduce((n,s)=>n+s.durationFrames,0)!==q.seconds*FPS)throw Error('duration: frame allocation mismatch');
  // ART-04 opt-in staging pass; absent request.staging keeps director output byte-identical.
  let out=q.staging?stageProject(project,q.staging):project;
+ // GEN-11: dialogue films add the idle weight shift to every shot with body language (staging itself is unchanged,
+ // so authored TALK showcases keep their accepted output).
+ if(q.dialogue)out={...out,shots:out.shots.map(s=>s.bodyLanguage?{...s,bodyLanguage:{...s.bodyLanguage,weight:true}}:s)};
  // GEN-09: Reels delivery (layout + framing inside the Reels-safe area) before singles, so singles are solved for it.
  if(q.delivery)out=reelsProject(out).project;
  // GEN-06: dialogue cuts long lines to singles of the speaker (request.dialogue.singles false keeps group shots only).
