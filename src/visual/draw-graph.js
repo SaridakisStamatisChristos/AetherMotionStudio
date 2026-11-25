@@ -37,7 +37,7 @@ function world(ctx,p,W,H,s,three,talk=null,body=null){
    ctx.save();ctx.filter='blur('+Math.max(2,Math.round(6*a.pose.scale))+'px)';ctx.fillStyle='rgba(0,0,0,'+PARITY.shadowAlpha+')';ctx.beginPath();pts.forEach((q,i)=>i?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1]));ctx.closePath();ctx.fill();ctx.restore();
   }
   for(const a of state.assets){const q=project(a.pose.origin);ctx.save();ctx.translate(q[0],q[1]);ctx.scale(1,.24);glow(ctx,0,0,105*a.pose.scale,'rgba(0,0,0,.6)');ctx.restore()}
-  const {box,faces}=createMesh(c.position,project,.3);if(!state.geometryProfile)emitGraph(state,box);
+  const {box,faces}=createMesh(c.position,project,.3,state.look??null);if(!state.geometryProfile)emitGraph(state,box);
   if(state.fidelity)contactShadows(ctx,state,project,state.fidelity);
   if(state.geometryProfile)drawFoundry(ctx,state);
   else for(const f of faces.sort((a,b)=>b.z-a.z)){polygon(ctx,f.p,f.color,f.edge);if(state.fidelity)detailedFace(ctx,f,state.fidelity.surfaceDetail);}

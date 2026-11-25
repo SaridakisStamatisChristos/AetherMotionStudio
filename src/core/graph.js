@@ -8,6 +8,7 @@ import {validateMaterialProfile} from '../foundry/materials.js';
 import {PROFILE,SUPPORTED,meshCommands} from '../foundry/instances.js';
 import {supportedChannels,RIG_CAMERA_LIMITS,validateCameraRig,sampleCameraRig,frameCamera,validateActions,composePose,validateAttachments,resolveAttachments,validateAssembly,emitCinematicAsset,LAYERED_ENVIRONMENTS,emitEnvironment} from './cinematography.js';
 import {validateOverlays} from './overlays.js';
+import {LOOKS} from '../visual/crafted.js';
 import {validateAssetParams} from '../visual/catalog.js';
 import {recipeSpec} from '../visual/catalog-rig.js';
 import {locomote,validateLocomotion} from './locomotion.js';
@@ -39,6 +40,8 @@ export function validateGraph(s,p='shot'){
  tracks(s.camera,s.cameraRig?RIG_CAMERA_LIMITS:cameraLimits,p+'.camera');
  // ART-02 opt-in lighting profile; absent = historical look on both backends.
  if(Object.hasOwn(s,'lighting')&&!LIGHTING_PROFILES.includes(s.lighting))fail(p+'.lighting','unknown lighting profile');
+ // GEN-15 opt-in look (src/visual/crafted.js); absent = historical drawing on both backends. Foundry geometry keeps its own.
+ if(Object.hasOwn(s,'look')){if(!LOOKS.includes(s.look))fail(p+'.look','unknown look');if(s.geometryProfile)fail(p+'.look','not with a geometryProfile');}
  if(Object.hasOwn(s,'cameraInterpolation'))interpolationMap(s.cameraInterpolation,s.camera,p+'.cameraInterpolation');
  if(!Array.isArray(s.assets)||s.assets.length<1||s.assets.length>8)fail(p+'.assets','1–8 assets required');
  const ids=new Set();
@@ -117,7 +120,7 @@ function evaluateGraphRaw(s,p){
  }
  const assets=s.assets.some(a=>a.attachment)?resolveAttachments(s.assets,p,sampleAsset):s.assets.map(a=>sampleAsset(a,p));
  const camera=s.cameraRig?frameCamera(sampleCameraRig(s.cameraRig,p,s.camera,s.cameraInterpolation),s.cameraRig,assets,s.camera,p):{position:[c.x,c.y,c.z],target:[0,1.2,0],zoom:c.zoom};
- return {camera,assets,...([HERO_PROFILE,IMPORT_PROFILE,GENERATED_PROFILE].includes(s.geometryProfile)?{materialProfile:{version:1,lighting:'studio',assignments:[],heroKey:s.assets.map(a=>a.generatedRef?.digest??a.importBundle?.digest??a.asset).join(':')},backend:s.backend}:s.materialProfile?{materialProfile:s.materialProfile,backend:s.backend}:{}),...(s.geometryProfile?{geometryProfile:s.geometryProfile}:{}),...(s.layers?{layers:s.layers}:{}),...(s.lighting?{lighting:s.lighting}:{}),environment:ENVIRONMENTS[s.environment],effects:s.effects.map(resolveEffect).map(e=>({...e,strength:p>=e.start&&p<=e.end?Math.min(1,(p-e.start)*12,(e.end-p)*12):0})),progress:p,fidelity:fidelity(s.fidelity)};
+ return {camera,assets,...([HERO_PROFILE,IMPORT_PROFILE,GENERATED_PROFILE].includes(s.geometryProfile)?{materialProfile:{version:1,lighting:'studio',assignments:[],heroKey:s.assets.map(a=>a.generatedRef?.digest??a.importBundle?.digest??a.asset).join(':')},backend:s.backend}:s.materialProfile?{materialProfile:s.materialProfile,backend:s.backend}:{}),...(s.geometryProfile?{geometryProfile:s.geometryProfile}:{}),...(s.layers?{layers:s.layers}:{}),...(s.lighting?{lighting:s.lighting}:{}),...(s.look?{look:s.look}:{}),environment:ENVIRONMENTS[s.environment],effects:s.effects.map(resolveEffect).map(e=>({...e,strength:p>=e.start&&p<=e.end?Math.min(1,(p-e.start)*12,(e.end-p)*12):0})),progress:p,fidelity:fidelity(s.fidelity)};
 }
 export function evaluateGraph(s,p){const state=evaluateGraphRaw(s,p);if(![LOD_PROFILE,HERO_PROFILE,IMPORT_PROFILE,GENERATED_PROFILE].includes(s.geometryProfile))return state;const plan=planLOD(s,t=>evaluateGraphRaw(s,t));state.lodSelection=plan.selected;state.lodReport=plan;enforceBudget(resourceUsage(meshCommands(state)),plan.budget);return state}
 // Both backends consume exactly the same emitted box commands, in the same order.
