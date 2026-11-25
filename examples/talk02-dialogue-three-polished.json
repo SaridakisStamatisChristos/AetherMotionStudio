@@ -5,7 +5,7 @@
  "voice": "af_heart",
  "speech": {
   "version": 1,
-  "targetFrames": 900,
+  "targetFrames": 600,
   "fixedShots": {},
   "placement": "lead",
   "speakers": {

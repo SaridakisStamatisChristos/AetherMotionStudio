@@ -24,7 +24,7 @@ function shots(){
 }
 export function build(backend){
  const p={version:2,id:'talk02-dialogue-'+backend+'-polished',title:'TALK-02 dialogue',voice:'af_heart',
-  speech:{version:1,targetFrames:900,fixedShots:{},placement:'lead',
+  speech:{version:1,targetFrames:600,fixedShots:{},placement:'lead',
    speakers:{eng:{name:'Engineer',voice:'af_heart',language:'en-us'},sci:{name:'Scientist',voice:'bf_emma',language:'en-gb'},robo:{name:'Robot',voice:'am_michael',language:'en-us'}},
    shotSpeakers:{meeting:['eng','sci','robo','eng','sci','robo'],ready:['robo']},pronunciations:{},
    captions:{mode:'both',highlight:true,maxChars:32,maxLines:2,maxCps:18},
