@@ -61,17 +61,25 @@ test('follow plan: opens on an early first speaker, skips short lines, holds on 
  assert.ok(lp[0].at>=FOLLOW_PLAN.establish/20-1e-9,'a shot that starts with a pause shows the group first');assert.ok(plan.every((f,k)=>!k||f.at>=plan[k-1].at+plan[k-1].blend-1e-9));assert.ok(plan.every(f=>f.at+f.blend<=1));
  assert.equal(plan[0].blend,+(FOLLOW_PLAN.transition/20).toFixed(6));
 });
-test('follow: the speaker is larger while speaking, fully in frame, and the camera stays within the calm budget',async()=>{
- const p=await project('gen01-interview'),t=estimatedTimeline(p,plannedTimeline(p)),m=motionCheck(p,t);assert.deepEqual(m.warnings,[]);
- for(const s of m.shots){assert.ok(s.camera.panDegPerSec.value<=CAMERA_POLICY.maxPanDegPerSec&&s.camera.zoomPerSec.value<=CAMERA_POLICY.maxZoomPerSec,JSON.stringify(s.camera));}
- assert.ok(p.shots.every(s=>s.dialogue.camera==='follow'));
- let gained=0,checked=0;
+// Owner review of GEN-03 r2: "the camera move makes characters out of screen" (host 28 % off the left edge).
+import {FRAME_POLICY} from '../src/quality/motion-check.js';
+test('follow never puts a character out of frame; it only moves when that is possible (three speakers), calmly',async()=>{
+ for(const n of ['gen01-interview','talk04-dialogue']){const p=await project(n),t=estimatedTimeline(p,plannedTimeline(p)),m=motionCheck(p,t);
+  assert.deepEqual(m.warnings,[],n);assert.ok(p.shots.every(s=>s.dialogue.camera==='follow'));
+  for(const s of m.shots){for(const v of Object.values(s.offFrame))assert.equal(v.outside,0,n+' '+s.shot);
+   assert.ok(s.camera.panDegPerSec.value<=CAMERA_POLICY.maxPanDegPerSec&&s.camera.zoomPerSec.value<=CAMERA_POLICY.maxZoomPerSec,JSON.stringify(s.camera));}}
+ const p5=read('talk05-first-words-cpu-polished'),m5=motionCheck(p5,estimatedTimeline(p5,plannedTimeline(p5)));assert.deepEqual(m5.warnings,[]);
+ // Three speakers + set piece: the follow can leave the set piece and frame the speakers closer.
+ const p=await project('talk04-dialogue'),t=estimatedTimeline(p,plannedTimeline(p));let gained=0,checked=0;
  for(const [i,s0] of p.shots.entries()){const s=dialogueShot(s0,t.shots[i]),ts=t.shots[i],n=ts.endFrame-ts.startFrame;if(!s.cameraRig.focus)continue;
-  for(const f of s.cameraRig.focus){const k=Math.min(n-1,Math.round((f.at+f.blend)*(n-1))+2),st=evaluateGraph({...s,durationFrames:n},k/(n-1)),base=evaluateGraph({...s,cameraRig:{...s.cameraRig,focus:undefined},durationFrames:n},k/(n-1));
-   assert.ok(st.camera.zoom<=base.camera.zoom*FOLLOW.push+1e-6);if(st.camera.zoom>base.camera.zoom*1.05)gained++;checked++;
-   const a=st.assets.find(x=>x.id===f.subject),pr=createProjection(st.camera.position,st.camera.target,st.camera.zoom,[360,650]);
-   for(const y of [0,1.8])for(const dx of [-.35,.35]){const q=pr([a.pose.origin[0]+dx,y,a.pose.origin[2]]);assert.ok(q[0]>0&&q[0]<720&&q[1]>250&&q[1]<1100,'speaker in frame '+q.map(v=>v.toFixed(0)));}}}
+  for(const f of s.cameraRig.focus){const k=Math.min(n-1,Math.round((f.at+f.blend)*(n-1))+2),z=evaluateGraph({...s,durationFrames:n},k/(n-1)).camera.zoom,zb=evaluateGraph({...s,cameraRig:{...s.cameraRig,focus:undefined},durationFrames:n},k/(n-1)).camera.zoom;
+   assert.ok(z<=zb*FOLLOW.push+1e-6);if(z>zb*1.03)gained++;checked++;}}
  assert.ok(checked>=4&&gained>=checked/2,gained+'/'+checked);
+});
+test('OFF_FRAME: a camera that crops a character is flagged',()=>{
+ const p=structuredClone(read('talk02-dialogue-cpu-polished')),s=p.shots[0];s.camera.zoom=[[0,2300]];delete s.cameraInterpolation.zoom;
+ const w=motionCheck(p,estimatedTimeline(p,plannedTimeline(p))).warnings.filter(x=>x.code==='OFF_FRAME');
+ assert.ok(w.some(x=>x.shot==='meeting'&&x.outside>FRAME_POLICY.maxOutside),JSON.stringify(w));
 });
 test('follow contract negatives',()=>{
  const p=read('talk02-dialogue-cpu-polished'),withRig=(rig,dlg)=>{const x=structuredClone(p);x.shots[0].cameraRig={preset:'medium',...rig};if(dlg)x.shots[0].dialogue={...x.shots[0].dialogue,...dlg};return x;};

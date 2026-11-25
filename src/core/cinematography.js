@@ -5,7 +5,7 @@ import {emitHeroBoxes,heroBounds} from '../foundry/hero.js';
 import {smooth,clamp,keyframes,interpolate,mix} from './motion.js';
 import {MOTION_PRESETS} from './presets.js';
 import {add,sub,dot,cross,norm,ry} from '../visual/vectors.js';
-import {catalogHandAnchor,recipeRig} from '../visual/catalog-rig.js';
+import {catalogHandAnchor,recipeRig,recipeSpec} from '../visual/catalog-rig.js';
 import {emitAsset,robotHandAnchor} from '../visual/assets.js';
 import {createProjection} from '../visual/mesh.js';
 
@@ -76,7 +76,7 @@ export const GROUP_FRAMING=Object.freeze({halfWidth:336,halfHeight:340,zoom:[700
 // measured lines; see src/core/dialogue.js). Each entry eases (smoothstep over blend) from the current framing to one
 // that shifts FOLLOW.shift of the way toward the subject and pushes in up to FOLLOW.push, never tighter than the
 // subject's own fit. null returns to the group framing. Calm by construction: one move per qualifying line.
-export const FOLLOW=Object.freeze({push:1.25,shift:.65});
+export const FOLLOW=Object.freeze({push:1.25,shift:.65,steps:13});
 const restOf=(assets,ids)=>{const set=new Set(ids);return assets.filter(a=>set.has(a.id)).map(a=>({...a,pose:{origin:a.pose.origin,yaw:0,scale:a.pose.scale??1,...(a.pose.params?{params:a.pose.params}:{})}}));};
 function fitZoom(b,desired,rig,tracks,strength){
  const G=GROUP_FRAMING;let fit=Infinity;
@@ -85,6 +85,19 @@ function fitZoom(b,desired,rig,tracks,strength){
   fit=Math.min(fit,G.halfWidth/Math.max(maxX,1e-6),G.halfHeight/Math.max(maxY,1e-6));}
  return fit;
 }
+const isPerson=asset=>['human','robot'].includes(recipeSpec(asset)?.family);
+// Box b mirrored about center (so a target at center keeps all of b on screen).
+const around=(b,center)=>({lo:b.lo.map((v,i)=>Math.min(v,2*center[i]-b.hi[i])),hi:b.hi.map((v,i)=>Math.max(v,2*center[i]-b.lo[i]))});
+// Best follow framing: over shifts 0..FOLLOW.shift toward the speaker, the largest zoom that keeps the speaker and every
+// character fully in the safe area (and at most FOLLOW.push × the group zoom); ties keep the smaller shift (less motion).
+function followGoal(base,sb,chars,rig,tracks,strength,pad){
+ let best=base;
+ for(let k=1;k<=FOLLOW.steps;k++){const center=lerp3(base.center,sb.center,FOLLOW.shift*k/FOLLOW.steps);
+  let zoom=Math.min(base.zoom*FOLLOW.push,fitZoom(around(sb,center),center,rig,tracks,strength)*pad);
+  if(chars)zoom=Math.min(zoom,fitZoom(around(chars,center),center,rig,tracks,strength)*pad);
+  if(zoom>best.zoom+1e-6)best={center,zoom};}
+ return best;
+}
 function frameGroup(camera,rig,assets,tracks,progress=null){
  const b=geometryBounds(restOf(assets,rig.subjects));if(!b)return camera;
  const strength=rig.strength??.85,G=GROUP_FRAMING,pad=1-(rig.padding??G.padding);
@@ -92,12 +105,12 @@ function frameGroup(camera,rig,assets,tracks,progress=null){
  // (fitting every frame cancelled it, a dolly-zoom warp) and nothing is cropped at its closest point.
  const base={center:add(b.center,rig.targetOffset??[0,0,0]),zoom:fitZoom(b,add(b.center,rig.targetOffset??[0,0,0]),rig,tracks,strength)*pad};
  let state=base;
+ // Owner review of GEN-03 r2: "the camera move makes characters out of screen". Every character among the subjects
+ // must stay fully inside the safe area during follow; set pieces may leave the frame.
+ const chars=rig.focus&&progress!==null?geometryBounds(restOf(assets,rig.subjects.filter(id=>{const a=assets.find(x=>x.id===id);return a&&isPerson(a.asset);}))):null;
  if(rig.focus&&progress!==null)for(const f of rig.focus){if(progress<f.at)break;
   let goal=base;
-  if(f.subject){const sb=geometryBounds(restOf(assets,[f.subject]));if(sb){const center=add(lerp3(base.center,sb.center,FOLLOW.shift),[0,0,0]);
-   // The subject must stay fully inside the safe area at the shifted target (fit with the subject alone, padded).
-   const own=fitZoom({lo:sb.lo.map((v,i)=>Math.min(v,2*center[i]-sb.hi[i])),hi:sb.hi.map((v,i)=>Math.max(v,2*center[i]-sb.lo[i]))},center,rig,tracks,strength)*pad;
-   goal={center,zoom:Math.min(base.zoom*FOLLOW.push,own)};}}
+  if(f.subject){const sb=geometryBounds(restOf(assets,[f.subject]));if(sb)goal=followGoal(base,sb,chars,rig,tracks,strength,pad);}
   // at 0: the shot opens on the subject (no move)
   const w=f.at<=0?1:smooth(clamp((progress-f.at)/f.blend,0,1));state={center:lerp3(state.center,goal.center,w),zoom:mix(state.zoom,goal.zoom,w)};
  }
