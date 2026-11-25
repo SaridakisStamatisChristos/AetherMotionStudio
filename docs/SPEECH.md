@@ -67,3 +67,24 @@ Acceptance fixture: A message travels across a network, supplied script and six 
 
     `polish03-voices-r1`: delivered −16.02 LUFS; speech verify PASS (including the peak limit), native verify PASS, compare_release PASS. Quality is pass-with-findings with 2 warnings (shot-3 VIEWPORT_CROP and SAFE_ZONE_RISK), both already present in the source example, which keeps a framing issue for the camera-repair demo.
 - Tests: tests/test_placement.py (pure planning; runs in CI) and tests/polish-03.test.js (validation, film lines). Human audio review is pending.
+
+## TALK-01 speaking faces (2026-11-25, opt-in)
+- Binding: a cinematic-graph shot may set `speakerAssets: {speakerId: assetId}`.
+  - Speaker IDs are `default` or keys of `speech.speakers`.
+  - Each asset must be in that shot and have a mouth: a detail-2/3 human or a catalog robot.
+  - One speaker per character.
+- Envelope: when any shot binds speakers, preparation adds `timeline.speechEnvelope = {version:1, unit:'permille-rms', values:[…]}`.
+  - One integer per frame: the narration RMS over the frame's 1,600 samples relative to 0.25 RMS, with a 0.01 silence gate (scripts/speech_envelope.py, used by both mixers).
+  - It rides in the shared, hashed `timeline.json`, so both backends read identical values (compare_release shared hashes).
+  - It is required when speakers are bound; there is no silent closed-mouth fallback. Timelines without bound speakers are unchanged.
+- Render: `talkAt` (src/core/talk.js) finds the phrase sounding at the frame's centre sample.
+  - That phrase's speaker's character gets `pose.mouth` = 1-2-1 smoothed envelope; other bound characters get 0; pauses close every mouth.
+  - It is applied after graph evaluation on both the CPU and Three paths. The graph and its caches are untouched.
+- Geometry:
+  - Humans keep the detail-2 lip line unchanged; while speaking, a dark inner mouth opens below it in proportion to `mouth`. Closed or absent = identical geometry.
+  - Catalog robots that are bound get a lit mouth bar under the eyes that grows with `mouth`.
+- This is envelope-driven lip motion, not phoneme or viseme alignment.
+- Example `examples/talk01-faces-{cpu,three}-polished.json` (generator scripts/talk01-faces.mjs): engineer (af_heart) and robot (am_michael) bound per phrase, lead placement, mix-v2, three-quarter cheat on the two-shot.
+- Evidence: `talk01-faces-r2` (source 18fe699 clean): speech verify and native verify PASS, compare_release PASS (shared hashes exact, envelope included), frame-glitch clean on both. Quality is pass-with-findings with 1 CAPTION_READING_SPEED warning. r1 (da5ff50) also passed every gate, but its stills showed unreadable mouths (thin lip line, faces near profile); that led to the dark inner mouth, the stronger cheat and the tighter two-shot. Agent stills show the speaker's mouth open and the listener's closed, with every mouth closed in pauses, on both backends.
+- Defaults vs main 01051f1: graph+preflight 1b75bee2197e90db (170 shots, excluding the new example), geometry 14dec244d171dc56, human detail 2 e3f80439a292f21a, director 2cbf9916e65da935, all identical.
+- Tests: tests/talk01.test.js (binding and envelope negatives, talkAt, geometry, applyTalk, generator reproduction) and tests/test_speech_envelope.py.

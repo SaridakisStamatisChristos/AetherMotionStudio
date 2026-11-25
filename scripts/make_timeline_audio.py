@@ -8,6 +8,7 @@ from scipy.signal import resample_poly, butter, sosfilt
 from kokoro_onnx import Kokoro
 from timeline_plan import RATE,SPF,MAX_FRAMES,allocate,required_samples,allocate_global
 import audio_master
+import speech_envelope
 R=RATE
 root=Path(__file__).resolve().parents[1]
 scene=json.loads(Path(sys.argv[1]).read_text(encoding='utf-8'))
@@ -110,6 +111,7 @@ if mastered:
     (out/'audio-master.json').write_text(json.dumps(master_report,indent=2),encoding='utf-8')
 else: mix=np.tanh((music*duck+speech)*1.12)*fade
 wavfile.write(out/'kokoro-narration.wav',R,np.int16(np.clip(speech,-1,1)*32767))
+if speech_envelope.wanted(scene): compiled['speechEnvelope']=speech_envelope.envelope(speech,offset)
 (out/'timeline.json').write_text(json.dumps(compiled,indent=2,ensure_ascii=False),encoding='utf-8')
 report={'backend':'kokoro-onnx','voice':voice,'sample_rate':R,'segments':[a for s in compiled['shots'] for a in s['segments']]}
 (out/'voice-report.json').write_text(json.dumps(report,indent=2,ensure_ascii=False),encoding='utf-8')

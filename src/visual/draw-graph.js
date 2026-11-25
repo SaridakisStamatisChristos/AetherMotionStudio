@@ -3,12 +3,14 @@ import {drawOverlays} from './draw-overlays.js';
 import {createProjection,createMesh} from '../visual/mesh.js';
 import {polygon,glow,star,text,r} from '../visual/primitives.js';
 import {evaluateGraph,emitGraph} from '../core/graph.js';
+import {applyTalk} from '../core/talk.js';
 import {shutterSamples} from '../core/fidelity.js';
 import {floorStops,castShadow,PARITY} from './lighting-parity.js';
 import {beginFilm,finishFilm,atmosphere,contactShadows,detailedFace,particleTrails,polishedType} from './fidelity-effects.js';
 const TAU=Math.PI*2;
-function world(ctx,p,W,H,s,three){
- const state=evaluateGraph(s,p),{camera:c,environment:env}=state;
+// TALK-01: `talk` = {assetId: mouth} for this frame (null when the shot binds no speakers).
+function world(ctx,p,W,H,s,three,talk=null){
+ const state=applyTalk(evaluateGraph(s,p),talk),{camera:c,environment:env}=state;
  const project=createProjection(c.position,c.target,c.zoom,[360,640]);
  ctx.save();ctx.scale(W/720,H/1280);
  if(s.backend==='three'){
@@ -52,11 +54,11 @@ function world(ctx,p,W,H,s,three){
  const vignette=ctx.createRadialGradient(360,640,270,360,640,800);vignette.addColorStop(0,'transparent');vignette.addColorStop(1,'rgba(2,6,15,.57)');ctx.fillStyle=vignette;ctx.fillRect(0,0,720,1280);
  ctx.restore();
 }
-export function drawGraph(ctx,p,W,H,s,three,frames=360){
+export function drawGraph(ctx,p,W,H,s,three,frames=360,talk=null){
  const state=evaluateGraph(s,p),env=state.environment,f=state.fidelity;
- if(!f)world(ctx,p,W,H,s,three);
+ if(!f)world(ctx,p,W,H,s,three,talk);
  else{
-  const a=beginFilm(ctx,W,H,shutterSamples(p,frames,f.motionBlur),(x,t)=>world(x,t,W,H,s,three));
+  const a=beginFilm(ctx,W,H,shutterSamples(p,frames,f.motionBlur),(x,t)=>world(x,t,W,H,s,three,talk));
   const project=createProjection(state.camera.position,state.camera.target,state.camera.zoom,[360,640]),focus=project(state.camera.target);
   finishFilm(ctx,a,f,focus,Math.round(p*(frames-1)));
  }

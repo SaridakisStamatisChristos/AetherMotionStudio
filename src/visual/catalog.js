@@ -64,6 +64,8 @@ const F={
  for(const s of [-1,1]){const {shoulder:a,hand:c}=localArm('robot',[w,h],s,p);rod(a,c,w*.22,0);b(...c,w*.28,.18,.22,3);if(s===1&&p.grip!==undefined)for(const j of [-1,1])b(c[0]+j*(.09-.045*p.grip),c[1]-.12,c[2]+.05,.055,.13,.08,1);}
  b(0,h*.83,0,w*(1.05+kind*.035),h*.27,d*.96,3);b(0,h*.84,d*.49,w*.85,h*.17,.045,1);
  for(const s of [-1,1])b(s*w*.22,h*.85,d*.52,w*.14,h*.09*(p.blink??1),.035,2,0,'z',true);
+ // TALK-01 opt-in mouth (pose.mouth 0..1, present only on a bound speaker): lit bar under the eyes that opens with speech.
+ if(p.mouth!==undefined)b(0,h*.775,d*.52,w*.3,h*(.012+.03*p.mouth),.035,2,0,'z',true);
  if(kind%2===0){rod([0,h*.97,0],[0,h*1.08,0],.045,1);b(0,h*1.08,0,.13,.13,.13,2,0,'z',true);}else for(const s of [-1,1])b(s*w*.58,h*.85,0,.13,.27,d*.5,0);
  if(kind>=3)b(0,h*.45,-d*.58,w*.65,h*.32,.24,1);
  },
@@ -89,7 +91,10 @@ const F={
     b(s*(w*.285+.015),h*.89,0,.05,h*.06,d*.14,3);
    }
    b(0,h*.885,z0+.03,w*.06,h*.035,.07,3);
+   // TALK-01: the lip line stays; while speaking a dark inner mouth opens below it with pose.mouth (closed or absent =
+   // unchanged geometry).
    b(0,h*.852,z0+.012,w*.15,h*.012,.028,5);
+   if(p.mouth>0)b(0,h*(.846-.0225*p.mouth),z0+.016,w*.12,h*.045*p.mouth,.024,4);
   }
   b(0,h*.805,d*.505,w*.34,h*.03,.025,k===4?1:3);
   if([2,5,6].includes(k))for(let i=0;i<3;i++)b(0,h*(.75-.06*i),d*.51,w*.05,w*.05,.02,4);
