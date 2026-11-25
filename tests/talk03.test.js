@@ -1,0 +1,70 @@
+// TALK-03: body language while talking (beats at measured emphasis peaks, listener nods, blinks, sway).
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {validateProject} from '../src/core/timeline.js';
+import {BODY,bodyAt,applyBody,emphasisPeaks,beatEligible} from '../src/core/body.js';
+import {emitAsset} from '../src/visual/assets.js';
+import {evaluateGraph} from '../src/core/graph.js';
+
+const load=b=>JSON.parse(readFileSync(new URL('../examples/talk03-body-'+b+'-polished.json',import.meta.url),'utf8'));
+// Synthetic measured timeline: six phrases in the meeting, an envelope with a peak every 25 frames while speaking.
+function timeline(p){
+ const n=600,shots=[{id:'meeting',startFrame:0,endFrame:500,transitionFrames:0,segments:p.speech.shotSpeakers.meeting.map((sp,k)=>({text:'x',speaker:sp,startSample:(20+k*80)*1600,endSample:(85+k*80)*1600,speed:1}))},
+  {id:'ready',startFrame:500,endFrame:600,transitionFrames:12,segments:[{text:'x',speaker:'robo',startSample:520*1600,endSample:570*1600,speed:1}]}];
+ const values=Array.from({length:n},(_,f)=>{const speaking=shots.some(s=>s.segments.some(g=>f*1600>=g.startSample&&f*1600<g.endSample));return speaking?(f%25===0?900:400):0;});
+ return {version:1,fps:30,sampleRate:48000,durationFrames:n,shots,speechEnvelope:{version:1,unit:'permille-rms',values}};
+}
+const geo=(id,pose)=>{const o=[];emitAsset(id,(c,sz,col,tf=q=>q)=>o.push(JSON.stringify([tf(c).map(v=>+v.toFixed(9)),sz.map(v=>+v.toFixed(9)),col])),pose);return o;};
+
+test('bodyLanguage validation: negatives',()=>{
+ const p=load('cpu');validateProject(p);
+ for(const mut of [s=>{s.shots[0].bodyLanguage={dance:true};},s=>{s.shots[0].bodyLanguage={beats:1};},s=>{s.shots[0].bodyLanguage={beats:false,nods:false};},s=>{s.shots[0].bodyLanguage='on';},s=>{delete s.shots[1].speakerAssets;}])
+  {const q=structuredClone(p);mut(q);assert.throws(()=>validateProject(q),/bodyLanguage/);}
+});
+test('emphasis peaks: above threshold, local maxima, at least minGap apart',()=>{
+ const t=timeline(load('cpu')),pk=emphasisPeaks(t),v=t.speechEnvelope.values;
+ assert.ok(pk.length>5);for(const f of pk)assert.ok(v[f]>=BODY.peakMin);for(let i=1;i<pk.length;i++)assert.ok(pk[i]-pk[i-1]>=BODY.minGap);
+ assert.equal(emphasisPeaks(t),pk,'cached per timeline');
+});
+test('bodyAt: speaker beats at peaks, listeners nod as a phrase ends, blinks and sway bounded and deterministic',()=>{
+ const p=load('cpu'),t=timeline(p),pk=emphasisPeaks(t);
+ const f=pk.find(x=>x>20&&x<85)+3,b=bodyAt(p,t,f,0);   // engineer speaking
+ assert.ok(b.engineer.beat<0&&b.engineer.beat>=-BODY.beatPitch&&b.engineer.nod>0,'speaker beat + nod');
+ assert.equal(b.scientist.beat,undefined);assert.equal(b.robot.beat,undefined);
+ const end=85-BODY.nodLead+4,n=bodyAt(p,t,end,0);assert.ok(n.scientist.nod>0&&n.robot.nod>0,'listeners nod near the end of the line');assert.ok(!(n.engineer.nod>0)||n.engineer.beat!==undefined);
+ for(let fr=0;fr<500;fr+=7){const x=bodyAt(p,t,fr,0);for(const o of Object.values(x)){if(o.tilt!==undefined)assert.ok(Math.abs(o.tilt)<=BODY.swayAmp+1e-12);if(o.blink!==undefined)assert.ok(o.blink>=.1&&o.blink<=1);if(o.nod!==undefined)assert.ok(o.nod>=0&&o.nod<=BODY.listenNod);}}
+ assert.deepEqual(bodyAt(p,t,123,0),bodyAt(structuredClone(p),t,123,0));
+ let blinks=0;for(let fr=0;fr<500;fr++)if(bodyAt(p,t,fr,0).robot.blink<1)blinks++;assert.ok(blinks>=10&&blinks<=40,'robot blinks every 2.5-4.5 s ('+blinks+' frames)');
+ const noBl=structuredClone(p);delete noBl.shots[0].bodyLanguage;assert.equal(bodyAt(noBl,t,50,0),null);
+});
+test('beats skip characters that hold props, aim or have authored arm motion; authored blink tracks win',()=>{
+ const s=structuredClone(load('cpu').shots[0]);assert.equal(beatEligible(s,'engineer'),true);
+ s.assets.push({id:'cup',asset:'mug',tracks:{x:[[0,-1]]},attachment:{parent:'engineer',anchor:'right-hand',start:0,end:1}});assert.equal(beatEligible(s,'engineer'),false);
+ const a=structuredClone(load('cpu').shots[0]);a.assets[0].aim={target:'robot',start:0,end:1};assert.equal(beatEligible(a,'engineer'),false);
+ const r=structuredClone(load('cpu').shots[0]);r.assets[2].actions=[{name:'wave',start:0,end:1}];assert.equal(beatEligible(r,'scientist'),false);
+ const p=load('cpu');p.shots[0].assets[1].tracks.blink=[[0,1]];assert.equal(bodyAt(p,timeline(p),40,0).robot.blink,undefined);
+});
+test('applyBody: additive clamped arm pitch, head keys and blink on bound characters only',()=>{
+ const s=load('cpu').shots[0],st=applyBody(evaluateGraph(s,.3),{engineer:{beat:-.3,nod:.1},robot:{tilt:.02,blink:.5}});
+ const e=st.assets.find(a=>a.id==='engineer').pose,r=st.assets.find(a=>a.id==='robot').pose;
+ assert.equal(e.armPitch,-.3);assert.equal(e.nod,.1);assert.equal(e.tilt,0);assert.equal(r.tilt,.02);assert.equal(r.nod,0);assert.equal(r.blink,.5);
+ assert.equal(st.assets.find(a=>a.id==='scientist').pose.nod,undefined);
+ assert.equal(applyBody(evaluateGraph(s,.3),{engineer:{beat:-5}}).assets.find(a=>a.id==='engineer').pose.armPitch,-2.8);
+});
+test('geometry: nod/tilt move only the head; blink 1 and no-blink identical; closed eyes shrink',()=>{
+ for(const [id,params] of [['engineer',{detail:2}],['scientist',{detail:3}],['service-robot',undefined]]){
+  const base={origin:[0,0,0],yaw:.2,armPitch:-.8,params},a=geo(id,base),b=geo(id,{...base,nod:.25,tilt:.05}).map(JSON.parse),A=a.map(JSON.parse);
+  const moved=A.map((x,i)=>Math.hypot(...x[0].map((v,j)=>v-b[i][0][j]))>1e-9);assert.ok(moved.some(Boolean));
+  const hMin=Math.min(...A.filter((x,i)=>moved[i]).map(x=>x[0][1])),hMax=Math.max(...A.filter((x,i)=>!moved[i]).map(x=>x[0][1]));assert.ok(hMin>hMax,id+' only head boxes move');
+  assert.deepEqual(geo(id,{...base,nod:0,tilt:0}).map(JSON.parse).map(x=>x[0].map(v=>+v.toFixed(6))),A.map(x=>x[0].map(v=>+v.toFixed(6))),'zero nod = rest pose');
+ }
+ const pose={origin:[0,0,0],yaw:0,params:{detail:2}};assert.deepEqual(geo('engineer',{...pose,blink:1}),geo('engineer',pose));
+ assert.notDeepEqual(geo('engineer',{...pose,blink:.1}),geo('engineer',pose));
+});
+test('TALK-03 example: generator reproduces both backends; dialogue identical to TALK-02 apart from body language',async()=>{
+ const {build}=await import('../scripts/talk03-body.mjs');for(const b of ['cpu','three'])assert.deepEqual(build(b),load(b));
+ const p=load('cpu'),d=JSON.parse(readFileSync(new URL('../examples/talk02-dialogue-cpu-polished.json',import.meta.url),'utf8'));
+ assert.deepEqual(p.speech,d.speech);assert.deepEqual(p.shots.map(s=>s.narration),d.shots.map(s=>s.narration));
+ assert.ok(p.shots.every(s=>s.bodyLanguage.beats&&s.bodyLanguage.nods&&s.bodyLanguage.blinks&&s.bodyLanguage.sway));
+});

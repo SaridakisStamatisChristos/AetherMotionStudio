@@ -33,10 +33,22 @@ function primitive(box,pose,palette,params={}){
   box([0,0,0],[width,len,depth],col[color],p=>tf(mid.map((v,i)=>v+right[i]*p[0]+u[i]*p[1]+forward[i]*p[2])),lit,0);
  };
  const ring=(x,y,z,r,w,d,n=12,c=0,axis='z',phase=0)=>{for(let i=0;i<n;i++){const a=phase+(i+.5)*TAU/n,k=2*r*Math.tan(Math.PI/n)*1.03;if(axis==='y')b(x+r*Math.cos(a),y,z+r*Math.sin(a),k,d,w,c,-a-Math.PI/2,'y');else b(x+r*Math.cos(a),y+r*Math.sin(a),z,w,k,d,c,a,'z');}};
- return {b,rod,ring};
+ // TALK-03 opt-in: the same builders with a local-space pre-transform (used to rotate the head about the neck).
+ const headed=pre=>({
+  b:(x,y,z,w,h,d,c=0,angle=0,axis='z',lit=false)=>box([0,0,0],[w,h,d],col[c],p=>tf(pre(add((axis==='x'?rx:axis==='y'?ry:rz)(p,angle),[x,y,z]))),lit,0),
+  rod:(a,c,width,color=1,depth=width,lit=false)=>{const dx=c[0]-a[0],dy=c[1]-a[1],dz=c[2]-a[2],len=Math.hypot(dx,dy,dz);if(len<1e-7)return;const u=[dx/len,dy/len,dz/len],ref=Math.abs(u[1])>.95?[1,0,0]:[0,1,0],right=norm(cross(ref,u)),forward=cross(right,u),mid=a.map((v,i)=>(v+c[i])/2);box([0,0,0],[width,len,depth],col[color],p=>tf(pre(mid.map((v,i)=>v+right[i]*p[0]+u[i]*p[1]+forward[i]*p[2]))),lit,0);}
+ });
+ return {b,rod,ring,headed};
 }
 // POLISH-02 opt-in planted feet (turnSteps): per-foot yaw twist and local ankle offset from src/core/turnsteps.js
 // (pose keys footTwist*/footDx*/footDz*, present only with turnSteps).
+// TALK-03 opt-in head motion: with pose.nod (pitch, + = down) or pose.tilt (roll) present, boxes/rods in the head region
+// (above `cut`, within |x| <= `half`) rotate about the neck `pivot`. Absent = the original builders (unchanged geometry).
+function headRoute(P,b,rod,p,cut,half,pivot){
+ if(p.nod===undefined&&p.tilt===undefined)return [b,rod];
+ const H=P.headed(v=>add(rz(rx(sub(v,pivot),p.nod??0),p.tilt??0),pivot)),inHead=(x,y)=>y>=cut&&Math.abs(x)<=half;
+ return [(x,y,...r)=>(inHead(x,y)?H.b:b)(x,y,...r),(a,c,...r)=>(inHead(a[0],a[1])&&inHead(c[0],c[1])?H.rod:rod)(a,c,...r)];
+}
 const planted=(p,s)=>s===1?[p.footTwistR,p.footDxR,p.footDzR]:[p.footTwistL,p.footDxL,p.footDzL];
 // POLISH-02 item 7 opt-in human detail 3 (extends detail 2): fingers + thumb along the arm, per-kind hair, brow tilt
 // and clothing silhouettes. Absent or detail 1/2 = unchanged geometry.
@@ -55,7 +67,7 @@ function detail3(b,w,h,d,k){
  if(k===7){b(0,h*.95,0,w*.64,.04,d*.76,2);b(0,h*.9,-d*.45,w*.12,h*.14,w*.12,1);b(0,h*.44,0,w*1.02,h*.06,d*1.02,1);}
 }
 const F={
- robot({b,rod},[w,h,d,legs,kind],p){const step=p.walking??0,open=p.open??0;
+ robot(P,[w,h,d,legs,kind],p){let {b,rod}=P;[b,rod]=headRoute(P,b,rod,p,h*.66,w*.62,[0,h*.7,0]);const step=p.walking??0,open=p.open??0;
  b(0,h*.5,0,w,h*.37,d,0);b(0,h*.52,d*.51,w*.62,h*.18,.04,1);b(0,h*.54,d*.54,w*.36,.045,.035,2,0,'z',true);
  if(legs){for(const s of [-1,1]){const ly=p.footLift===undefined?0:Math.max(0,s*p.footLift)*.1;
   if(p.footTwistR===undefined){rod([s*w*.27,h*.36,0],[s*w*.28,.13+ly,s*step*.17],w*.24,1);b(s*w*.28,.11+ly,.12+s*step*.17,w*.38,.22,d*.66,0);}
@@ -69,7 +81,7 @@ const F={
  if(kind%2===0){rod([0,h*.97,0],[0,h*1.08,0],.045,1);b(0,h*1.08,0,.13,.13,.13,2,0,'z',true);}else for(const s of [-1,1])b(s*w*.58,h*.85,0,.13,.27,d*.5,0);
  if(kind>=3)b(0,h*.45,-d*.58,w*.65,h*.32,.24,1);
  },
- human({b,rod},[w,h,d,k],p){const walk=p.walking??0,open=p.open??0;
+ human(P,[w,h,d,k],p){let {b,rod}=P;[b,rod]=headRoute(P,b,rod,p,h*.84,w*.4,[0,h*.8,0]);const walk=p.walking??0,open=p.open??0;
  for(const s of [-1,1]){const z=s*walk*.2,ly=p.footLift===undefined?0:Math.max(0,s*p.footLift)*.12;
   if(p.footTwistR===undefined){rod([s*w*.22,h*.48,0],[s*w*.24,.13+ly,z],w*.25,1);b(s*w*.24,.09+ly,z+.09,w*.34,.18,d*.65,4);}
   else{const [q,dx,dz]=planted(p,s),fx=s*w*.24+dx,fz=z+dz;rod([s*w*.22,h*.48,0],[fx,.13+ly,fz],w*.25,1);b(...add([fx,.09+ly,fz],ry([0,0,.09],q)),w*.34,.18,d*.65,4,q,'y');}const {shoulder:a,hand:c}=localArm('human',[w,h],s,p);rod(a,c,w*.2,0);b(...c,w*.22,.16,.19,3);if(p.params?.detail===3&&!(s===1&&p.grip!==undefined))fingers(rod,a,c,s,w);if(s===1&&p.grip!==undefined)for(const j of [-1,1])b(c[0]+j*(.07-.035*p.grip),c[1]-.1,c[2]+.04,.045,.1,.07,3);}
@@ -85,8 +97,9 @@ const F={
   if(k===4)b(-w*.12,h*.92,d*.36+.03,w*.1,h*.03,.02,6,0,'z',true);
   else{
    for(const s of [-1,1]){
-    b(s*w*.12,h*.905,z0+.012,w*.085,h*.032,.03,4);
-    b(s*w*.12+w*.02,h*.912,z0+.03,w*.025,h*.011,.012,6,0,'z',true);
+    // TALK-03: human blink (pose.blink 0.1..1 scales the eye height; absent = unchanged).
+    if(p.blink===undefined){b(s*w*.12,h*.905,z0+.012,w*.085,h*.032,.03,4);b(s*w*.12+w*.02,h*.912,z0+.03,w*.025,h*.011,.012,6,0,'z',true);}
+    else{b(s*w*.12,h*.905,z0+.012,w*.085,h*.032*p.blink,.03,4);if(p.blink>.5)b(s*w*.12+w*.02,h*.912,z0+.03,w*.025,h*.011,.012,6,0,'z',true);}
     b(s*w*.12,h*.935,z0+.012,w*.11,h*.012,.028,1,p.params.detail===3?s*(BROW[k]??0):0);
     b(s*(w*.285+.015),h*.89,0,.05,h*.06,d*.14,3);
    }
