@@ -11,10 +11,10 @@ const shot=(id,frames,heading,subheading,narration,body)=>({id,template:'cinemat
 function shots(){
  return [
   shot('hello',240,'HELLO','Two voices, two faces.',['Hello! I build robots in this workshop.','And I am the robot she built.'],{
-   cameraRig:{preset:'medium',framing:'medium',strength:.5,subject:'robot'},camera:{x:[[0,-.2],[1,.2]],y:[[0,2.9]],z:[[0,8.4],[1,8.1]]},cameraInterpolation:{x:'flow'},
+   cameraRig:{preset:'medium',framing:'medium',strength:.5,subject:'robot'},camera:{x:[[0,-.2],[1,.2]],y:[[0,2.6]],z:[[0,7.2],[1,6.9]],zoom:[[0,1450],[1,1550]]},cameraInterpolation:{x:'flow',zoom:'flow'},
    speakerAssets:{eng:'engineer',robo:'robot'},
-   assets:[{id:'engineer',asset:'engineer',params:D2,tracks:{x:[[0,-.75]],z:[[0,.3]]},face:{target:'robot',start:0,end:1,offset:-.7}},
-    {id:'robot',asset:'service-robot',tracks:{x:[[0,.8]],z:[[0,.2]],blink:[[0,1],[.6,1],[.63,.1],[.66,1]]},face:{target:'engineer',start:0,end:1,offset:.6}}]}),
+   assets:[{id:'engineer',asset:'engineer',params:D2,tracks:{x:[[0,-.75]],z:[[0,.3]]},face:{target:'robot',start:0,end:1,offset:-.95}},
+    {id:'robot',asset:'service-robot',tracks:{x:[[0,.8]],z:[[0,.2]],blink:[[0,1],[.6,1],[.63,.1],[.66,1]]},face:{target:'engineer',start:0,end:1,offset:.85}}]}),
   shot('learn',null,'FIRST WORDS','Every word moves the face.',['Today I learned to talk.','Every word lights up my face.'],{
    cameraRig:{preset:'close-up',framing:'close-up',strength:.5,subject:'robot'},camera:{x:[[0,-.3],[1,.3]],y:[[0,2.5]],z:[[0,6.4],[1,6.1]],zoom:[[0,1650],[1,1800]]},cameraInterpolation:{x:'flow',zoom:'flow'},
    speakerAssets:{robo:'robot'},
@@ -22,8 +22,8 @@ function shots(){
   shot('reply',null,'WELL SAID','Listening back.',['And every word sounds just right.'],{
    cameraRig:{preset:'medium',framing:'medium',strength:.5,subject:'engineer'},camera:{x:[[0,.3],[1,-.1]],y:[[0,2.8]],z:[[0,7.6],[1,7.3]]},cameraInterpolation:{x:'flow'},
    speakerAssets:{eng:'engineer',robo:'robot'},
-   assets:[{id:'engineer',asset:'engineer',params:D2,tracks:{x:[[0,-.4]],z:[[0,.4]]},face:{target:'robot',start:0,end:1,offset:-.8},actions:[{name:'point',start:.15,end:.8,blend:.15}],aim:{target:'robot',start:.15,end:.8,blend:.15,height:1.2,cheat:.4}},
-    {id:'robot',asset:'service-robot',tracks:{x:[[0,1.1]],z:[[0,-.1]]},face:{target:'engineer',start:0,end:1,offset:.7}}]})];
+   assets:[{id:'engineer',asset:'engineer',params:D2,tracks:{x:[[0,-.4]],z:[[0,.4]]},face:{target:'robot',start:0,end:1,offset:-1},actions:[{name:'point',start:.15,end:.8,blend:.15}],aim:{target:'robot',start:.15,end:.8,blend:.15,height:1.2,cheat:.4}},
+    {id:'robot',asset:'service-robot',tracks:{x:[[0,1.1]],z:[[0,-.1]]},face:{target:'engineer',start:0,end:1,offset:.9}}]})];
 }
 export function build(backend){
  const p={version:2,id:'talk01-faces-'+backend+'-polished',title:'TALK-01 speaking faces',voice:'af_heart',

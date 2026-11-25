@@ -91,8 +91,10 @@ const F={
     b(s*(w*.285+.015),h*.89,0,.05,h*.06,d*.14,3);
    }
    b(0,h*.885,z0+.03,w*.06,h*.035,.07,3);
-   // TALK-01: the mouth opens downward with pose.mouth (absent = unchanged geometry; 0 = numerically identical).
-   if(p.mouth===undefined)b(0,h*.852,z0+.012,w*.15,h*.012,.028,5);else b(0,h*(.852-.0175*p.mouth),z0+.012,w*.15,h*(.012+.035*p.mouth),.028,5);
+   // TALK-01: the lip line stays; while speaking a dark inner mouth opens below it with pose.mouth (closed or absent =
+   // unchanged geometry).
+   b(0,h*.852,z0+.012,w*.15,h*.012,.028,5);
+   if(p.mouth>0)b(0,h*(.846-.0225*p.mouth),z0+.016,w*.12,h*.045*p.mouth,.024,4);
   }
   b(0,h*.805,d*.505,w*.34,h*.03,.025,k===4?1:3);
   if([2,5,6].includes(k))for(let i=0;i<3;i++)b(0,h*(.75-.06*i),d*.51,w*.05,w*.05,.02,4);

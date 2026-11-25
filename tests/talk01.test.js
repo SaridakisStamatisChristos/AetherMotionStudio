@@ -47,7 +47,10 @@ test('talkAt: active speaker opens, other bound characters stay closed, pauses c
 test('mouth geometry: closed mouth identical to no mouth on humans; opening grows it; robots gain a lit mouth',()=>{
  const pose={origin:[0,0,0],yaw:.1,params:{detail:2}};
  assert.deepEqual(boxes('engineer',{...pose,mouth:0}),boxes('engineer',pose));
- const open=boxes('engineer',{...pose,mouth:1}),closed=boxes('engineer',pose);assert.equal(open.length,closed.length);assert.notDeepEqual(open,closed);
+ const open=boxes('engineer',{...pose,mouth:1}),half=boxes('engineer',{...pose,mouth:.5}),closed=boxes('engineer',pose);
+ // Open = the unchanged lip line plus one dark inner-mouth box whose height follows the envelope.
+ assert.equal(open.length,closed.length+1);assert.ok(closed.every(b=>open.includes(b)));
+ const inner=list=>JSON.parse(list.find(b=>!closed.includes(b)));assert.equal(inner(open)[2],'#162333');assert.ok(inner(open)[1][1]>inner(half)[1][1]);
  const r0=boxes('service-robot',{origin:[0,0,0],yaw:0}),r1=boxes('service-robot',{origin:[0,0,0],yaw:0,mouth:.5});assert.equal(r1.length,r0.length+1);
  const lit=m=>boxes('service-robot',{origin:[0,0,0],yaw:0,mouth:m}).map(JSON.parse).find(b=>Math.abs(b[0][1]-1.7*.775)<1e-6)[1][1];assert.ok(lit(1)>lit(0));
 });

@@ -104,22 +104,33 @@
     "y": [
      [
       0,
-      2.9
+      2.6
      ]
     ],
     "z": [
      [
       0,
-      8.4
+      7.2
      ],
      [
       1,
-      8.1
+      6.9
+     ]
+    ],
+    "zoom": [
+     [
+      0,
+      1450
+     ],
+     [
+      1,
+      1550
      ]
     ]
    },
    "cameraInterpolation": {
-    "x": "flow"
+    "x": "flow",
+    "zoom": "flow"
    },
    "speakerAssets": {
     "eng": "engineer",
@@ -150,7 +161,7 @@
       "target": "robot",
       "start": 0,
       "end": 1,
-      "offset": -0.7
+      "offset": -0.95
      }
     },
     {
@@ -192,7 +203,7 @@
       "target": "engineer",
       "start": 0,
       "end": 1,
-      "offset": 0.6
+      "offset": 0.85
      }
     }
    ]
@@ -415,7 +426,7 @@
       "target": "robot",
       "start": 0,
       "end": 1,
-      "offset": -0.8
+      "offset": -1
      },
      "actions": [
       {
@@ -455,7 +466,7 @@
       "target": "engineer",
       "start": 0,
       "end": 1,
-      "offset": 0.7
+      "offset": 0.9
      }
     }
    ]
