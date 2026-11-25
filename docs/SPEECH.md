@@ -131,3 +131,12 @@ Acceptance fixture: A message travels across a network, supplied script and six 
 - Agent side-by-side against TALK-02 r2 (frames 63 and 88): the engineer's arm beat, the listeners' head sway, and the listeners nodding as her line ends; body and feet unchanged.
 - Defaults vs aacab42 identical: graph 9629764b6193cf5c (180 shots, excluding the new example), geometry 14dec244d171dc56, human detail 2 e3f80439a292f21a, director 2cbf9916e65da935.
 - Tests: tests/talk03.test.js (validation negatives, peaks, per-role behaviour and bounds, eligibility, applyBody clamping, head-only rotation, blink geometry, generator reproduction).
+- TALK-03 speed revision (owner review: "the heads move too fast"). Commit 5e25225, render `talk03-body-r2`: all gates PASS, frame-glitch clean; films CPU 8826b0964be4e8e7…, Three ec5fac8abbab77ec….
+  - r1 measured peaks: nods ~93°/s; sway ~68°/s, a bug where the tilt dropped to 0 in one frame when a listener became the speaker; dialogue turns ~80°/s.
+  - Changes:
+    - listener nods 0.12 rad over 30 frames, starting 10 frames before the line ends;
+    - beat head nods 0.05 rad over 20 frames, now separate from the arm beat (18 frames);
+    - beats and nods always finish rather than being cut at speaker changes;
+    - sway 0.03 rad with a 150-frame period on every bound character;
+    - the TALK-03 example uses `dialogue.turn: 0.8` s.
+  - New peaks: nods 26°/s, sway 2°/s, turns ~42°/s. A regression test pins nods at ≤35°/s and sway at ≤5°/s.
