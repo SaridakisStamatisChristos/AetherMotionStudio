@@ -164,6 +164,13 @@ Exit criteria: checks run on every example in tests and stay digest-neutral for 
 
 Order set by the owner (2026-11-25: "let gen 09 as last put it as gen 14. change the order"): after GEN-04..08 come GEN-09 Instagram export, GEN-10 mouth shapes, GEN-11 idle weight shift, GEN-12 topic sets, GEN-13 music and sound, and real dialogue writing as GEN-14; then the look track GEN-15..18 (owner: "add them after the gen 14"). Added at the owner's request ("yes add them of course"); proposals only, none authorized.
 
+Render cleanup plan (owner, 2026-11-25: old renders are deleted once the graphical update is reached):
+1. When GEN-15 starts, delete the old renders in out/ and public/audio except a "before" reference set: the latest interview (gen03-interview-r3), network (gen03-network-r1) and First Words (talk05-first-words-r10) films, plus out/bench.
+2. Once the owner accepts the GEN-15 look, delete the reference set too.
+- Fingerprints and findings stay in the docs.
+- Show the exact list and confirm with the owner before each deletion.
+- Never touch git, .venv, node_modules or models.
+
 Rules for any pick:
 - Opt-in or default-proven-unchanged (fod-digests).
 - Tests including negatives.
