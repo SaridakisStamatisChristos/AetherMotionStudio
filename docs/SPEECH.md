@@ -30,3 +30,40 @@ Acceptance fixture: A message travels across a network, supplied script and six 
 
 - Remaining finding, not changed: authored shot lengths centre the narration, leaving 1.6–3.1 s of bed-only time at each end of every shot (up to about 5 s across a cut). Fixing it means tightening shot durations or adding narration, which is an authoring or TALK-track decision.
 - Tests: tests/test_audio_master.py (BS.1770 reference tone, gating, target and ceiling, determinism, phrase levelling, rate guard) and project-field validation in tests/polish-02.test.js. Human audio review is still pending.
+
+## POLISH-03 narration placement and mix-v2 for speech projects (2026-11-25, opt-in)
+- Placement inside each shot:
+  - `center` is the historical default and byte-identical;
+  - `lead` starts speech right after the 0.45 s pad, lets pauses between phrases grow by at most 0.35 s each, and leaves the remaining silence at the end of the shot, while the action plays.
+- Where to set it: `audio.placement` for timeline projects (scripts/timeline_plan.py `allocate`); `speech.placement` for speech projects (scripts/speech_plan.py `slots`).
+- Speech projects: `speech.mix.master: 'mix-v2'`.
+  - Every phrase of every speaker is levelled to one RMS, so voices with different natural loudness match.
+  - The phrase-cache key includes the levelling profile only when it is enabled, so historical cache entries are unchanged.
+  - Loudness is mastered to −16 LUFS delivered.
+  - The configured `mix.peak` is still enforced afterwards, so verify's peak check is unchanged.
+  - Report: `<prepared>/audio-master.json` (adds `peakCapGainDb`).
+  - The project-level `audio` field is still rejected for speech projects.
+- Evidence:
+  - **"The Workshop — Extended" r7** (source 3dd64e6 clean): lead placement plus one extra line in TOOLBOX, LEARNING BY WATCHING and HIGH SHELF. POWER ON, a reused accepted ART-05 shot, keeps its script.
+
+    | Measure | r6 | r7 |
+    |---|---|---|
+    | Speech share of film | 42 % | 51 % |
+    | Mean voice-free gap | 4.31 s | 2.69 s |
+    | Longest gap across a cut | 5.0 s | 4.5 s |
+    | Delivered loudness | −16.0 LUFS | −16.0 LUFS |
+    | Loudness range | 11.7 LU | 11.2 LU |
+    | True peak | −2.5 dBFS | −3.4 dBFS |
+
+    The remaining long gaps follow reused shots with short scripts (PLAN, FIRST STEPS, HAND TO HAND). r7 passed every gate: verify, quality 0/0, compare_release, frame-glitch clean on both. Films CPU b3490129c3776acb…, Three e995ce1a64a41fac….
+  - **Two-voice speech fixture** (from examples/quality-cpu-polished.json; Maya af_heart and Leo am_michael alternating by shot; out/polish03-fixtures, not committed):
+
+    | Measure | Baseline, no master | `mix-v2` + lead (`polish03-voices-r1`) |
+    |---|---|---|
+    | Maya phrase level | −21.2 dB | −16.2 dB |
+    | Leo phrase level | −23.8 dB | −16.6 dB |
+    | Gap between voices | 2.6 dB | 0.4 dB |
+    | First phrase start | 0.8–1.3 s | 0.45 s |
+
+    `polish03-voices-r1`: delivered −16.02 LUFS; speech verify PASS (including the peak limit), native verify PASS, compare_release PASS. Quality is pass-with-findings with 2 warnings (shot-3 VIEWPORT_CROP and SAFE_ZONE_RISK), both already present in the source example, which keeps a framing issue for the camera-repair demo.
+- Tests: tests/test_placement.py (pure planning; runs in CI) and tests/polish-03.test.js (validation, film lines). Human audio review is pending.
