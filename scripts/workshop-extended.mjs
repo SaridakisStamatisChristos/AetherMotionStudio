@@ -1,3 +1,4 @@
+// POLISH-02 item 1: LEARNING BY WATCHING pointers aim at the table (opt-in aim).
 // POLISH-01 part 4: "The Workshop — Extended" (64 s, 9 shots). Builds on the owner-accepted ART-05 film (unchanged)
 // and adds shots that use planted walking and the interaction solver. Deterministic generator.
 // Usage: node scripts/workshop-extended.mjs [--check]  (writes examples/workshop-extended-{cpu,three}-polished.json)
@@ -35,8 +36,8 @@ function teach(){
  return fresh('teach',240,'laboratory','LEARNING BY WATCHING','Point, look, follow.','It learns by watching. Point, look, and follow.',{
   cameraRig:{preset:'medium',framing:'medium',strength:.5,subject:'robot'},camera:{x:[[0,.5],[1,-.3]],y:[[0,3]],z:[[0,8.6],[1,8.2]],zoom:[[0,1250],[1,1350]]},cameraInterpolation:{x:'flow',zoom:'flow'},
   assets:[
-   {id:'engineer',asset:'engineer',params:D2,tracks:{x:[[0,-1.2]],z:[[0,.2]]},face:{target:'table',start:0,end:1,offset:-.45},actions:[{name:'point',start:.08,end:.5,blend:.12}]},
-   {id:'robot',asset:'service-robot',tracks:{x:[[0,.35]],z:[[0,.45]],yaw:[[0,.55]],blink:[[0,1],[.4,1],[.43,.1],[.46,1]]},face:{target:'engineer',start:0,end:.48,blend:.15,offset:.35},actions:[{name:'point',start:.55,end:.92,blend:.12}]},
+   {id:'engineer',asset:'engineer',params:D2,tracks:{x:[[0,-1.2]],z:[[0,.2]]},face:{target:'table',start:0,end:1,offset:-.45},actions:[{name:'point',start:.08,end:.5,blend:.12}],aim:{target:'table',start:.08,end:.5,blend:.12,height:.7}},
+   {id:'robot',asset:'service-robot',tracks:{x:[[0,.35]],z:[[0,.45]],yaw:[[0,.55]],blink:[[0,1],[.4,1],[.43,.1],[.46,1]]},face:{target:'engineer',start:0,end:.48,blend:.15,offset:.35},actions:[{name:'point',start:.55,end:.92,blend:.12}],aim:{target:'table',start:.55,end:.92,blend:.12,height:.7,cheat:.6}},
    {id:'table',asset:'table',tracks:{x:[[0,1.85]],z:[[0,-.55]],scale:[[0,.85]]}}]});
 }
 function lights(){

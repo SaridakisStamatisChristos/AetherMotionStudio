@@ -1128,7 +1128,14 @@
        "end": 0.5,
        "blend": 0.12
       }
-     ]
+     ],
+     "aim": {
+      "target": "table",
+      "start": 0.08,
+      "end": 0.5,
+      "blend": 0.12,
+      "height": 0.7
+     }
     },
     {
      "id": "robot",
@@ -1185,7 +1192,15 @@
        "end": 0.92,
        "blend": 0.12
       }
-     ]
+     ],
+     "aim": {
+      "target": "table",
+      "start": 0.55,
+      "end": 0.92,
+      "blend": 0.12,
+      "height": 0.7,
+      "cheat": 0.6
+     }
     },
     {
      "id": "table",
