@@ -5,8 +5,13 @@ Checkpoint: `feature/gen-03` (48706ee, d31a34a plus docs) on `chore/record-gen-0
 Status: owner "do 1" (2026-11-25). Agent-reviewed only.
 Date: 2026-11-25
 
+## Owner review fix
+- Owner: "the camera move makes characters out of screen. this must be fixed".
+- Fixed in 0054e76: the follow constraint plus the OFF_FRAME check. See CURRENT_STATE.
+
 ## Next action
-- Ask the owner to watch out/gen03-interview-r2-three-polished/film.mp4 and out/talk05-first-words-r9-three-polished/film.mp4 on a phone, and to say merge.
+- Ask the owner to watch on a phone: out/gen03-interview-r3-three-polished/film.mp4, out/gen03-network-r1-three-polished/film.mp4 and out/talk05-first-words-r10-three-polished/film.mp4.
+- Then ask the owner to say merge.
 - On "merge": merge the PR, watch main CI on the merge commit, and record the merge on a new record branch.
 - Remaining candidates (not authorized):
   - a caption-speed decision;

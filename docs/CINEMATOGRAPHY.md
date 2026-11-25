@@ -124,3 +124,9 @@ Owner asked for the next size gain for vertical feeds ("do 1": the camera follow
 
   Against GEN-01, the interview speaker is about 1.95× taller.
 - **`talk-v1`** turns follow on for every conversation it frames as a group.
+- **Owner review of `gen03-interview-r2`: "the camera move makes characters out of screen. this must be fixed."** At one frame the host was 28 % off the left edge. Fixed in 0054e76, generally:
+  - **Follow constraint (`followGoal`):** over shifts toward the speaker in 13 steps up to 0.65, the follow takes the largest zoom that keeps the speaker and every character among the subjects (catalog humans and robots) fully inside the safe area. Set pieces may leave the frame. Ties keep the smaller shift.
+  - Consequence, measured: two-speaker shots no longer move at all (both people already fill the width; the interview CPU film is byte-identical to GEN-02 r2). Three speakers plus a set piece gain +13 % speaker height (network 0.372 → 0.420).
+  - **New automatic check `OFF_FRAME`** in motion-speed-v1. Every third frame it measures each character's projected box (evaluated pose, real camera including follow); more than 2 % outside the 720×1280 frame is a warning.
+  - Found in older accepted films and recorded unchanged in tests: art01/art02 hand-off watcher, art05/workshop-extended plan robot and together engineer/scientist, workshop-extended toolbox scientist, cinematography capture guide, af04/af09-lab instrument robot, talk01 hello engineer, talk02/03 meeting engineer.
+  - A deliberately cropping camera is flagged (negative test).
