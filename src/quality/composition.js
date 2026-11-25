@@ -32,3 +32,14 @@ export function compositionReport(shot,{subject=shot.cameraRig?.subject??shot.as
   overlap:Object.fromEntries(Object.entries(pairs).map(([k,v])=>[k,stats(v)])),
   preflightIssues:pre.issues.map(i=>i.code)};
 }
+
+// POLISH-02 item 6: versioned composition gate (separate from preflight, so historical quality reports are unchanged).
+// Bounds are regression ceilings set from the accepted showcase fixtures (2026-11-25), not an aesthetic verdict.
+export const COMPOSITION_POLICY=Object.freeze({version:'composition-v1',maxBackToCameraSamples:0,maxOverlapMean:.4,maxOverlapPeak:.85,subjectHeightOfSafe:Object.freeze([.08,1.1]),maxWarnings:16});
+export function compositionGate(shot,report=compositionReport(shot)){
+ const P=COMPOSITION_POLICY,w=[];
+ for(const [id,v] of Object.entries(report.characters))if(v.backToCameraSamples>P.maxBackToCameraSamples)w.push({code:'BACK_TO_CAMERA',asset:id,samples:v.backToCameraSamples});
+ for(const [pair,o] of Object.entries(report.overlap)){if(o.mean>P.maxOverlapMean)w.push({code:'OVERLAP_MEAN',pair,value:o.mean});if(o.max>P.maxOverlapPeak)w.push({code:'OVERLAP_PEAK',pair,value:o.max});}
+ const h=report.subjectHeightOfSafe?.mean;if(h!==undefined&&(h<P.subjectHeightOfSafe[0]||h>P.subjectHeightOfSafe[1]))w.push({code:'SUBJECT_SIZE',value:h});
+ return {policy:P.version,shot:report.shot,warnings:w.slice(0,P.maxWarnings),truncated:w.length>P.maxWarnings};
+}

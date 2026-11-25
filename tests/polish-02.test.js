@@ -246,3 +246,21 @@ test('prompt v1.2: mock-provider round trip from the prompt alone compiles a val
 test('prompt v1.2: negatives',()=>{
  for(const v of ['director-ir-v9','v1.2',12,null])assert.throws(()=>directorRequest({...loadReq('release'),promptVersion:v}),/promptVersion/);
 });
+
+// ---- Item 6: composition gates on every cinematic example (both backends) ----
+import {readdirSync} from 'node:fs';
+import {compositionReport,compositionGate,COMPOSITION_POLICY} from '../src/quality/composition.js';
+test('composition-v1: every cinematic shot in every example passes the gate (both backends)',()=>{
+ const files=readdirSync(new URL('../examples/',import.meta.url)).filter(f=>f.endsWith('.json')&&!f.includes('request'));let shots=0;
+ for(const f of files){const p=JSON.parse(readFileSync(new URL('../examples/'+f,import.meta.url),'utf8'));
+  for(const s of p.shots??[]){if(s.template!=='cinematic-graph')continue;const g=compositionGate(s);shots++;assert.deepEqual(g.warnings,[],f+'/'+s.id+' '+JSON.stringify(g.warnings));}}
+ assert.ok(shots>=150,'gate covered '+shots+' shots');assert.equal(COMPOSITION_POLICY.version,'composition-v1');
+});
+test('composition-v1: negatives — back to camera, heavy overlap and tiny subjects are flagged, bounded',()=>{
+ const base={id:'c',template:'cinematic-graph',backend:'cpu',durationFrames:90,transitionFrames:0,heading:'C',subheading:'c',environment:'amber',camera:{},effects:[],narration:['x'],cameraRig:{preset:'medium',subject:'a',framing:'medium'}};
+ const back=compositionGate({...base,assets:[{id:'a',asset:'engineer',tracks:{x:[[0,0]],yaw:[[0,3.1]]}}]});assert.ok(back.warnings.some(w=>w.code==='BACK_TO_CAMERA'&&w.asset==='a'));
+ const stack=compositionGate({...base,assets:[{id:'a',asset:'engineer',tracks:{x:[[0,0]]}},{id:'b',asset:'scientist',tracks:{x:[[0,.05]],z:[[0,.3]]}}]});assert.ok(stack.warnings.some(w=>w.code==='OVERLAP_MEAN'||w.code==='OVERLAP_PEAK'));
+ const rep=compositionReport({...base,assets:[{id:'a',asset:'engineer',tracks:{x:[[0,0]]}}]});
+ const tiny=compositionGate(null,{...rep,subjectHeightOfSafe:{min:.01,mean:.02,max:.03}});assert.ok(tiny.warnings.some(w=>w.code==='SUBJECT_SIZE'));
+ const many=compositionGate(null,{...rep,characters:Object.fromEntries(Array.from({length:30},(_,i)=>['c'+i,{backToCameraSamples:3}]))});assert.equal(many.warnings.length,COMPOSITION_POLICY.maxWarnings);assert.equal(many.truncated,true);
+});
