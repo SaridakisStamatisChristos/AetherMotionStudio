@@ -42,7 +42,9 @@ export function validateCameraRig(x,ids,p){
  fields(x,['preset','subject','subjects','framing','padding','targetOffset','strength','focus'],p,['preset']);
  choice(x.preset,Object.keys(CAMERA_RIGS),p+'.preset');
  if(x.subject!==undefined&&!ids.has(x.subject))fail(p+'.subject','unknown subject');
- if(x.framing!==undefined)choice(x.framing,['establishing','medium','close-up','group'],p+'.framing');
+ if(x.framing!==undefined)choice(x.framing,['establishing','medium','close-up','group','single'],p+'.framing');
+ // GEN-06 opt-in: framing 'single' fits one character (subject) the way 'group' fits several (rest pose, one zoom per shot).
+ if(x.framing==='single'&&(x.subject===undefined||!ids.has(x.subject)))fail(p+'.subject','framing single requires a known subject');
  // GEN-02 opt-in: framing 'group' fits the listed subjects (2–4 asset IDs, rest-pose bounds) into the vertical safe area.
  if((x.framing==='group')!==(x.subjects!==undefined))fail(p+'.subjects','framing group requires subjects (and only it)');
  if(x.subjects!==undefined){if(!Array.isArray(x.subjects)||x.subjects.length<2||x.subjects.length>4||new Set(x.subjects).size!==x.subjects.length)fail(p+'.subjects','2–4 distinct asset IDs required');for(const id of x.subjects)if(!ids.has(id))fail(p+'.subjects','unknown subject');if(x.subject!==undefined)fail(p+'.subjects','use subject or subjects, not both');}
@@ -122,6 +124,7 @@ function frameGroup(camera,rig,assets,tracks,progress=null){
 }
 export function frameCamera(camera,rig,assets,tracks={},progress=null){
  if(rig.framing==='group')return frameGroup(camera,rig,assets,tracks,progress);
+ if(rig.framing==='single'){const {subject,...r}=rig;return frameGroup(camera,{...r,subjects:[subject]},assets,tracks,null);}
  if(!rig.subject&&!rig.framing)return camera;
  const b=geometryBounds(rig.subject?assets.filter(a=>a.id===rig.subject):assets);if(!b)return camera;
  const strength=rig.strength??.85,offset=rig.targetOffset??[0,0,0];

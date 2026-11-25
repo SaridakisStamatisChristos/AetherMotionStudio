@@ -39,7 +39,8 @@ test('every catalog character counts, including robot animals; props do not',()=
  for(const id of ['laptop','table','treasure-chest','energy-core','not-an-asset'])assert.equal(isCatalogCharacter(id),false,id);
 });
 test('negatives: a crowded line is flagged on every shot; an animal overlap is caught where composition-v1 is blind',async()=>{
- const p=await directed('gen01-interview');
+ // singles off: this negative is about the crowding check on group shots
+ const q0=read('gen01-interview.request'),p=(await direct({...q0,speech:defaultSpeech(q0.seconds),dialogue:{...q0.dialogue,singles:false}})).project;
  for(const s of p.shots)for(const a of s.assets)if(['host','guest'].includes(a.id))a.tracks.x=[[0,Math.sign(a.tracks.x[0][1])*.3]];
  const c=crowdingCheck(p,est(p));
  assert.equal(c.timeline,'estimated');

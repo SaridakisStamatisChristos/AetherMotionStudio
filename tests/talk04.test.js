@@ -110,7 +110,8 @@ test('compile: speech from the dialogue, staged speakers with TALK-01..03 opt-in
  // Two speakers: ±1; fixed shots honoured.
  const two=await direct({...REQ,dialogue:{speakers:CAST.slice(0,2)},speech:{...defaultSpeech(60),fixedShots:{'shot-1':240}}});
  assert.deepEqual(two.project.shots[0].assets.slice(0,2).map(a=>a.tracks.x[0][1]),DIALOGUE_STAGE.line[2].map(v=>v[0]));assert.equal(two.project.shots[0].durationFrames,240);
- assert.ok(two.project.shots.every(s=>Object.keys(s.speakerAssets).length===2));
+ // GEN-06: singles bind only their visible speaker; every group shot binds both.
+ assert.ok(two.project.shots.every(s=>Object.keys(s.speakerAssets).length===(s.id.endsWith('-single')?1:2)));
  // Deterministic.
  assert.deepEqual((await direct(REQ)).project,(await direct(structuredClone(REQ))).project);
 });

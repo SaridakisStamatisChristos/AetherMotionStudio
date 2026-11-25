@@ -130,3 +130,26 @@ Owner asked for the next size gain for vertical feeds ("do 1": the camera follow
   - **New automatic check `OFF_FRAME`** in motion-speed-v1. Every third frame it measures each character's projected box (evaluated pose, real camera including follow); more than 2 % outside the 720×1280 frame is a warning.
   - Found in older accepted films and recorded unchanged in tests: art01/art02 hand-off watcher, art05/workshop-extended plan robot and together engineer/scientist, workshop-extended toolbox scientist, cinematography capture guide, af04/af09-lab instrument robot, talk01 hello engineer, talk02/03 meeting engineer.
   - A deliberately cropping camera is flagged (negative test).
+
+## GEN-06 singles: cut to the speaker on long lines (2026-11-25)
+Owner: "gen 6 yes i want these cuts". Follow (GEN-03) cannot enlarge two-person shots, because both characters already fill the width. Long lines therefore cut to a single of the speaker as its own shot. Source: src/core/singles.js `singleShots`, policy `singles-v1`.
+- **When:** in each eligible shot, the first line with 10 or more words (about 3.7 s at the GEN-05 pace) gets a single. At most one single per shot, to keep the cutting calm.
+  - The shot is split into group (lines before), single (the line) and group (lines after); a part with no lines is left out.
+  - Durations stay automatic, so each part lasts exactly as long as its measured speech.
+  - Lines, line order and line speakers are unchanged (tested).
+- **Eligible:** speech-driven shots with line speakers, not fixed-duration, no audio cues on the shot, and characters standing still (single-key x/z, no actions, attachments, locomotion or aim). Everything else is kept, and the report gives the reason.
+- **Framing** (new opt-in rig value `framing:'single'` + `subject`, the GEN-02 group fit applied to one character; `targetOffset` and `padding` as before). Candidates:
+  - the shot's preset, `medium` or `close-up`;
+  - the preset's camera path mirrored to the other side (an explicit camera x track);
+  - lateral target offsets of 0 to ±0.6 m and paddings of 0.05–0.2.
+  - Each candidate is measured at the start, middle and end of the shot. The speaker must lie wholly inside the 9:16 safe area. Every other character must be wholly inside the frame at every sample, or wholly outside at every sample.
+  - The largest speaker wins. If no candidate passes, the line stays in the group shot (`no framing keeps everyone whole`).
+- **What the single shows:** assets the single never shows whole (listeners outside the frame, a set piece the edge would cut) are left out of that shot, unless something in the shot refers to them. Nothing in a single is cut by an edge. With only the speaker left, the shot has no `dialogue` block (no listeners).
+- **Continuity:** a part that follows a cut keeps the same heading with the new opt-in shot flag `titleHold:true`: the polished heading is drawn steady instead of fading in again. It is never allowed on the first shot.
+- **OFF_FRAME** (motion-speed-v1) now counts a character that is wholly outside the frame as not cut (0). The rule is "never cut by the frame edge"; leaving the frame entirely, as in a single, is allowed. Known findings of older films are unchanged (tests/gen01.test.js).
+- **Director:** on by default for dialogue requests; `request.dialogue.singles:false` gives the GEN-03 shots exactly.
+- **Results on the fresh Director requests:**
+  - Interview (2 speakers): 3 singles, with the speaker at 0.72–0.74 of the safe height (group shots about 0.56). Motion, visibility, crowding and preflight are clean (review notes only: static camera, repeated heading).
+  - Network (3 speakers, 1 m apart): no singles. No candidate keeps the neighbours wholly out without cutting someone, so the lines stay in group shots and the report says so.
+  - TALK-05: no line reaches 10 words, so nothing changes.
+- Tests: tests/gen06.test.js. Two earlier assertions were narrowed to group shots (contract extension): GEN-03 "every Director shot follows" and TALK-04 "every shot binds both speakers".

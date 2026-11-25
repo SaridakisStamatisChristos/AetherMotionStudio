@@ -9,6 +9,7 @@ import {directorCatalog,digest} from './catalog.js';
 import {request,validateIR,safeJson} from './schema.js';
 import {baseline,offlineIR} from './offline.js';
 import {stageProject,stageShot} from '../core/staging.js';
+import {singleShots} from '../core/singles.js';
 import {dialogueSpeech,stageDialogueAssets,dialogueShotFields,pointAtSetPiece,DIALOGUE_CAMERAS} from './dialogue.js';
 export function foundryShortlist(query,registry){return searchRegistry({...query,limit:300},registry).filter(x=>x.kind!=='legacy').slice(0,Math.min(query.limit??8,20)).map(({id,kind,revision,category,pack,quality,backends,lods,motion})=>({id,kind,revision,category,pack,quality,backends,lods,motion}));}
 export const PROMPT_VERSION='director-ir-v1.1';
@@ -35,6 +36,8 @@ export function compile(q,ir,selection){
   return {id:'shot-'+(i+1),template:'cinematic-graph',backend:q.backend,durationFrames:q.speech?(q.speech.fixedShots['shot-'+(i+1)]??null):budgets[i],transitionFrames:i?10:0,transition:i?'fade':'cut',heading:s.heading,subheading:s.subheading,environment:s.environment,...(q.identityLibrary?identityLocation(q,s):{}),camera:{},cameraRig:{preset:s.camera,subject:assets[0].id,framing:'medium',padding:.1},assets,effects:s.effect?[{preset:s.effect,target:assets[0].id}]:[],...(s.overlay?{overlays:[s.overlay]}:{}),narration:s.narration,...(q.profile==='polished'?{fidelity:{...profile}}:{})};
  })};
  validateProject(project);if(!speech&&project.shots.reduce((n,s)=>n+s.durationFrames,0)!==q.seconds*FPS)throw Error('duration: frame allocation mismatch');
+ // GEN-06: dialogue cuts long lines to singles of the speaker (request.dialogue.singles false keeps group shots only).
+ if(q.dialogue&&q.dialogue.singles!==false){const x=singleShots(project).project;validateProject(x);return x;}
  // ART-04 opt-in staging pass; absent request.staging keeps director output byte-identical.
  return q.staging?stageProject(project,q.staging):project;
 }

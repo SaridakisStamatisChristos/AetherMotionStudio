@@ -26,7 +26,8 @@ const human=asset=>recipeSpec(asset)?.family==='human';
 export function validateDialogueRequest(q){
  if(q.dialogue===undefined)return;
  const d=q.dialogue,p='request.dialogue';
- fields(d,['speakers','style','pace'],p,['speakers']);
+ fields(d,['speakers','style','pace','singles'],p,['speakers']);
+ if(d.singles!==undefined&&typeof d.singles!=='boolean')bad(p+'.singles','boolean required');
  if(d.style!==undefined)choice(d.style,DIALOGUE_STYLES,p+'.style');
  if(d.pace!==undefined&&(typeof d.pace!=='number'||!Number.isFinite(d.pace)||d.pace<SPEECH_PACE.min||d.pace>1))bad(p+'.pace','number from '+SPEECH_PACE.min+' to 1 required');
  if(!Array.isArray(d.speakers)||d.speakers.length<2||d.speakers.length>3)bad(p+'.speakers','2–3 speakers required');
