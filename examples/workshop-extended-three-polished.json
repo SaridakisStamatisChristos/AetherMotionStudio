@@ -4,7 +4,8 @@
  "title": "The Workshop — Extended",
  "voice": "af_heart",
  "audio": {
-  "master": "mix-v2"
+  "master": "mix-v2",
+  "placement": "lead"
  },
  "shots": [
   {
@@ -662,7 +663,8 @@
    ],
    "effects": [],
    "narration": [
-    "From the toolbox, she brings the one tool they need."
+    "From the toolbox, she brings the one tool they need.",
+    "Careful steps, steady hands, and the wrench changes hands."
    ],
    "fidelity": {
     "bloom": 0.6,
@@ -1239,7 +1241,8 @@
    ],
    "effects": [],
    "narration": [
-    "It learns by watching. Point, look, and follow."
+    "It learns by watching. Point, look, and follow.",
+    "Every gesture becomes a lesson."
    ],
    "fidelity": {
     "bloom": 0.6,
@@ -1549,7 +1552,8 @@
    ],
    "effects": [],
    "narration": [
-    "Now it tries on its own: up to the high shelf, and down onto the table."
+    "Now it tries on its own: up to the high shelf, and down onto the table.",
+    "No one shows it how this time."
    ],
    "fidelity": {
     "bloom": 0.6,

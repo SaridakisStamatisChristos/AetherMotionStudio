@@ -307,6 +307,7 @@ test('audio master: project field validation and the extended film opts in',()=>
  validateProject({...base,audio:{master:'mix-v2'}});
  assert.throws(()=>validateProject({...base,speech:{},audio:{master:'mix-v2'}}),/speech projects use speech.mix/);
  for(const bad of [{master:'loud'},{master:'mix-v2',gain:3},'mix-v2',[],null])assert.throws(()=>validateProject({...base,audio:bad}),/audio/);
- const p=JSON.parse(readFileSync(new URL('../examples/workshop-extended-cpu-polished.json',import.meta.url),'utf8'));assert.deepEqual(p.audio,{master:'mix-v2'});
+ const p=JSON.parse(readFileSync(new URL('../examples/workshop-extended-cpu-polished.json',import.meta.url),'utf8'));// POLISH-03 added placement:'lead' to the film.
+ assert.deepEqual(p.audio,{master:'mix-v2',placement:'lead'});
  for(const f of readdirSync(new URL('../examples/',import.meta.url)).filter(f=>f.endsWith('.json')&&!f.startsWith('workshop-extended'))){const x=JSON.parse(readFileSync(new URL('../examples/'+f,import.meta.url),'utf8'));assert.equal(x.audio,undefined,f+' unchanged');}
 });

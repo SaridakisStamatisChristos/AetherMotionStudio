@@ -13,7 +13,13 @@ def required_samples(lengths):
         raise ValueError('positive integer sample counts required')
     return sum(lengths)+2*PAD+GAP*(len(lengths)-1)
 
-def allocate(lengths, frames):
+# POLISH-03: placement 'center' (historical: unused time spread evenly before, between and after phrases) or 'lead'
+# (speech starts right after PAD; pauses between phrases grow by at most LEAD_GAP_MAX each; the rest goes to the end
+# of the shot, while the action plays).
+PLACEMENTS=('center','lead')
+LEAD_GAP_MAX=RATE*35//100
+
+def allocate(lengths, frames, placement='center'):
     need=required_samples(lengths)
     if frames is None:
         frames=max(60,math.ceil(need/SPF))
@@ -22,9 +28,15 @@ def allocate(lengths, frames):
     extra=frames*SPF-need
     if extra<0:
         raise ValueError('speech exceeds shot budget')
-    # Spread unused time over pauses rather than truncate or stretch audio.
-    q,r=divmod(extra,len(lengths)+1)
-    gaps=[q+(i<r) for i in range(len(lengths)+1)]
+    if placement not in PLACEMENTS:
+        raise ValueError('unknown placement')
+    if placement=='lead':
+        inner=len(lengths)-1;each=min(LEAD_GAP_MAX,extra//inner) if inner else 0
+        gaps=[0]+[each]*inner+[extra-each*inner]
+    else:
+        # Spread unused time over pauses rather than truncate or stretch audio.
+        q,r=divmod(extra,len(lengths)+1)
+        gaps=[q+(i<r) for i in range(len(lengths)+1)]
     start=PAD+gaps[0]
     slots=[]
     for i,n in enumerate(lengths):

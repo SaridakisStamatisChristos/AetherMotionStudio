@@ -1,3 +1,5 @@
+// POLISH-03: narration placement 'lead' and one extra line in TOOLBOX, LEARNING BY WATCHING and HIGH SHELF
+// (POWER ON is a reused accepted ART-05 shot and keeps its script).
 // POLISH-02 items 1-4: aim (teach), planted turn steps, HIGH SHELF (telescoping reach, solved pickup/place).
 // POLISH-02 item 1: LEARNING BY WATCHING pointers aim at the table (opt-in aim).
 // POLISH-01 part 4: "The Workshop — Extended" (64 s, 9 shots). Builds on the owner-accepted ART-05 film (unchanged)
@@ -14,11 +16,11 @@ import {compositionReport} from '../src/quality/composition.js';
 
 const base=Object.fromEntries(JSON.parse(readFileSync(new URL('../examples/art05-workshop-cpu-polished.json',import.meta.url),'utf8')).shots.map(s=>[s.id,s]));
 const FIDELITY=base.workshop.fidelity,D2={detail:2},r3=v=>Math.round(v*1000)/1000;
-const fresh=(id,frames,environment,heading,subheading,narration,body)=>({id,template:'cinematic-graph',backend:'cpu',durationFrames:frames,transitionFrames:12,transition:'fade',heading,subheading,environment,lighting:'parity-v1',...body,effects:body.effects??[],narration:[narration],fidelity:FIDELITY});
+const fresh=(id,frames,environment,heading,subheading,narration,body)=>({id,template:'cinematic-graph',backend:'cpu',durationFrames:frames,transitionFrames:12,transition:'fade',heading,subheading,environment,lighting:'parity-v1',...body,effects:body.effects??[],narration:Array.isArray(narration)?narration:[narration],fidelity:FIDELITY});
 
 function toolbox(){
  const H=.68,gx=-.55,sol=solveHandoff('scientist','engineer',{giverAt:[gx,0],side:1});
- return fresh('toolbox',270,'amber','THE TOOLBOX','One tool, carried with care.','From the toolbox, she brings the one tool they need.',{
+ return fresh('toolbox',270,'amber','THE TOOLBOX','One tool, carried with care.',['From the toolbox, she brings the one tool they need.','Careful steps, steady hands, and the wrench changes hands.'],{
   cameraRig:{preset:'medium',subject:'engineer',framing:'medium',strength:.4},camera:{x:[[0,-.7],[1,.2]],y:[[0,3.1]],z:[[0,9],[1,8.6]]},cameraInterpolation:{x:'flow'},
   assets:[
    {id:'scientist',asset:'scientist',params:D2,tracks:{x:[[0,-2.25],[.55,r3(sol.giver.x)]],z:[[0,-.4],[.55,r3(sol.giver.z)]],armPitch:[[0,-.9],[.58,-.9],[.66,sol.giver.armPitch],[.74,sol.giver.armPitch],[.9,0]],grip:[[0,1],[.7,1],[.78,0]]},interpolation:{x:'flow',z:'flow'},
@@ -36,7 +38,7 @@ function steps(){
  return {...s,durationFrames:240,narration:['Its first steps are slow and careful, and everyone is watching.']};
 }
 function teach(){
- return fresh('teach',240,'laboratory','LEARNING BY WATCHING','Point, look, follow.','It learns by watching. Point, look, and follow.',{
+ return fresh('teach',240,'laboratory','LEARNING BY WATCHING','Point, look, follow.',['It learns by watching. Point, look, and follow.','Every gesture becomes a lesson.'],{
   cameraRig:{preset:'medium',framing:'medium',strength:.5,subject:'robot'},camera:{x:[[0,.5],[1,-.3]],y:[[0,3]],z:[[0,8.6],[1,8.2]],zoom:[[0,1250],[1,1350]]},cameraInterpolation:{x:'flow',zoom:'flow'},
   assets:[
    {id:'engineer',asset:'engineer',params:D2,tracks:{x:[[0,-1.2]],z:[[0,.2]]},face:{target:'table',start:0,end:1,offset:-.45},actions:[{name:'point',start:.08,end:.5,blend:.12}],aim:{target:'table',start:.08,end:.5,blend:.12,height:.7}},
@@ -53,7 +55,7 @@ function shelf(){
  const up=(p)=>[p[0],p[1]+lift,p[2]],pick=solveReach('service-robot',up(surfacePoint(S,PICK)),{...opt,around:-Math.PI/2,spreadDeg:35}),put=solveReach('service-robot',up(surfacePoint(T,PLACE)),opt);
  // Turns are authored (about 27 frames each) instead of a short faceTravel blend, so the carried book never whips.
  const head=r3(Math.atan2(put.x-pick.x,put.z-pick.z));
- return fresh('shelf',270,'laboratory','HIGH SHELF','Reach, carry, set it down.','Now it tries on its own: up to the high shelf, and down onto the table.',{
+ return fresh('shelf',270,'laboratory','HIGH SHELF','Reach, carry, set it down.',['Now it tries on its own: up to the high shelf, and down onto the table.','No one shows it how this time.'],{
   cameraRig:{preset:'medium',framing:'establishing',strength:.5,subject:'robot'},camera:{x:[[0,.4],[1,-.4]],y:[[0,3.2]],z:[[0,9.4],[1,9]]},cameraInterpolation:{x:'flow'},
   assets:[
    {id:'robot',asset:'service-robot',params:R,tracks:{x:[[0,r3(pick.x)],[.44,r3(pick.x)],[.72,r3(put.x)]],z:[[0,r3(pick.z)],[.44,r3(pick.z)],[.72,r3(put.z)]],yaw:[[0,r3(pick.yaw)],[.34,r3(pick.yaw)],[.44,head],[.72,head],[.84,r3(put.yaw)]],
@@ -80,7 +82,7 @@ function shots(){
 }
 export function build(backend){
  // POLISH-02 item 8: opt-in mastering (consistent phrase levels, -16 LUFS, -1 dBTP).
- const p={version:2,id:'workshop-extended-'+backend+'-polished',title:'The Workshop — Extended',voice:'af_heart',audio:{master:'mix-v2'},shots:shots().map(s=>({...s,backend}))};
+ const p={version:2,id:'workshop-extended-'+backend+'-polished',title:'The Workshop — Extended',voice:'af_heart',audio:{master:'mix-v2',placement:'lead'},shots:shots().map(s=>({...s,backend}))};
  validateProject(p);return stageProject(p);
 }
 if(process.argv[1]&&import.meta.url.endsWith(process.argv[1].replaceAll('\\','/').split('/').pop())){

@@ -9,7 +9,9 @@ function arr(x,max,p){if(!Array.isArray(x)||x.length>max)fail(p,'invalid array')
 const bool=(x,p)=>{if(typeof x!=='boolean')fail(p,'boolean required');};
 const map=(x,p,max)=>{if(!x||typeof x!=='object'||Array.isArray(x)||Object.keys(x).length>max)fail(p,'invalid mapping');};
 export function validateSpeechConfig(c,shots=null){
- fields(c,['version','targetFrames','fixedShots','speakers','shotSpeakers','pronunciations','captions','mix','cues','syncActions'],'speech',['version','targetFrames','fixedShots','speakers','shotSpeakers','pronunciations','captions','mix','cues','syncActions']);
+ fields(c,['version','targetFrames','fixedShots','speakers','shotSpeakers','pronunciations','captions','mix','cues','syncActions','placement'],'speech',['version','targetFrames','fixedShots','speakers','shotSpeakers','pronunciations','captions','mix','cues','syncActions']);
+ // POLISH-03 opt-ins: placement of narration inside shots, and mastering profile mix-v2 inside speech.mix.
+ if(c.placement!==undefined&&!['center','lead'].includes(c.placement))fail('speech.placement','center or lead required');
  if(c.version!==1)fail('speech.version','unsupported');int(c.targetFrames,180,9000,'speech.targetFrames');
  const ids=shots?new Map(shots.map(s=>[s.id,s])):null;
  const shotId=(id,p)=>{if(!/^[a-z0-9][a-z0-9-]{0,47}$/.test(id)||['constructor','prototype'].includes(id)||ids&&!ids.has(id))fail(p,'unknown or unsafe shot');};
@@ -28,7 +30,8 @@ export function validateSpeechConfig(c,shots=null){
  map(c.pronunciations,'pronunciations',64);for(const [k,v] of Object.entries(c.pronunciations)){if(!/^[A-Za-z0-9][A-Za-z0-9'-]{0,31}$/.test(k)||['constructor','prototype'].includes(k))fail('pronunciations','invalid token');if(typeof v!=='string'||!/^[A-Za-z0-9][A-Za-z0-9 ',-]{0,79}$/.test(v))fail('pronunciations','invalid replacement');}
  fields(c.captions,['mode','highlight','maxChars','maxLines','maxCps'],'captions',['mode','highlight','maxChars','maxLines','maxCps']);choice(c.captions.mode,['burn-in','sidecar','both'],'captions.mode');bool(c.captions.highlight,'captions.highlight');int(c.captions.maxChars,24,36,'captions.maxChars');int(c.captions.maxLines,1,2,'captions.maxLines');int(c.captions.maxCps,12,24,'captions.maxCps');
  if(ids&&shots.some(s=>s.narration.some(t=>words(t).some(w=>Array.from(w).length>c.captions.maxChars))))fail('captions','word exceeds configured line limit');
- fields(c.mix,['narration','music','ambience','sfx','duck','fadeSeconds','peak'],'mix',['narration','music','ambience','sfx','duck','fadeSeconds','peak']);
+ fields(c.mix,['narration','music','ambience','sfx','duck','fadeSeconds','peak','master'],'mix',['narration','music','ambience','sfx','duck','fadeSeconds','peak']);
+ if(c.mix.master!==undefined&&c.mix.master!=='mix-v2')fail('mix.master','mix-v2 required');
  for(const k of ['narration','music','ambience','sfx','duck'])finite(c.mix[k],0,1,'mix.'+k);finite(c.mix.fadeSeconds,0,.5,'mix.fadeSeconds');finite(c.mix.peak,.5,.98,'mix.peak');
  if(c.mix.narration<.2)fail('mix.narration','narration gain must be at least .2');
  arr(c.cues,120,'cues');for(const x of c.cues){fields(x,['shot','anchor','phrase','type','gain'],'cue',['shot','anchor','type','gain']);shotId(x.shot,'cue.shot');choice(x.anchor,['shot-start','speech-start','speech-end'],'cue.anchor');choice(x.type,['chime','whoosh','tick'],'cue.type');finite(x.gain,0,1,'cue.gain');if(x.anchor==='shot-start'){if(x.phrase!==undefined)fail('cue','phrase not allowed');}else int(x.phrase,0,ids?ids.get(x.shot).narration.length-1:7,'cue.phrase');}
