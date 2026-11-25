@@ -50,3 +50,18 @@ A third automatic check (src/quality/crowding.js): do characters overlap each ot
   - the robot walking past the engineer and the scientist in the "steps" shot of art05-workshop and workshop-extended (peaks 0.31–0.71).
 - **Correction to the GEN-02 record:** the GEN-02 notes said the explorer robot's overlap was missed because it "has no right-hand anchor". That is wrong. explorer-robot is a catalog robot with both hand anchors, and composition-v1 did count the host|guest pair. Re-measured on current code, ±0.75 spacing leaves a clear gap (the smallest gap is 12–19 % of the character's height, with zero overlap in both metrics). The r1 overlap therefore came from that revision's poses, which the 9-sample, beat-free composition report did not sample. The r1 render was deleted on 2026-11-25, so this cannot be re-checked. crowding-v1 closes both blind spots (beats/aims and sampling).
 - Box-per-part, so it slightly over-estimates thin rotated parts; it is a screening check, not an aesthetic verdict.
+
+## GEN-08 visibility-v2 (2026-11-25)
+A more precise "is it hidden?" check (src/quality/visibility.js). Every production's `quality-checks.json` `visibility` entry and Studio Inspect now use it. visibility-v1 (src/quality/motion-check.js) stays exported and tested unchanged.
+- **How:**
+  - each emitted part's projected rectangle is rasterised on a 4 px grid, with the part's nearest depth;
+  - a cell of an asset is covered when another asset has a part in that cell nearer by more than 0.15 m;
+  - poses are taken as rendered (listener turns, follow, aims, beats) from the timeline, every sixth frame;
+  - attachment parent/child pairs are excluded, as in v1.
+  - v1 compared whole-asset rectangles and asset origins: thin shapes counted as solid boxes, and interpenetrating assets at the same distance counted as not covering each other.
+- **Warning:** `HIDDEN_ASSET` when the mean covered share is above 0.70. This was recalibrated because v2 no longer inflates coverage:
+  - ordinary shots peak at 0.52;
+  - flagged cases measure 0.72 or more: the TALK-02/03 meeting tables at 0.85, and the reproduced TALK-04 r1 hidden set piece at 0.75–0.96 in every shot.
+- **Fewer false alarms:** the ART-03/POLISH-02 line-up back row drops from 0.63–0.70 (v1) to 0.39–0.51.
+- **New true finding (older accepted film, left unchanged):** in cinematography / homes, the guide robot stands half inside the cottage (the robot's box reaches 0.4 m into it, and the cottage's front wall is nearer the camera). It is covered at 0.72; v1 measured 0. Recorded in tests/gen08.test.js.
+- Tests: tests/gen08.test.js (example sweep, line-up improvement, hidden set piece, depth test in front/behind, attachment links, non-graph shots).

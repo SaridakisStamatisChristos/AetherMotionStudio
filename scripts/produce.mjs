@@ -9,8 +9,9 @@ import {validateProject,validateTimeline} from '../src/core/timeline.js';
 import {repairProject} from '../src/quality/preflight.js';
 import {matchedProject,normalizedProject,sharedArtifacts,verifyShared} from '../src/studio/production.js';
 import {parseProduction} from './production-options.mjs';
-import {motionCheck,visibilityCheck} from '../src/quality/motion-check.js';
+import {motionCheck} from '../src/quality/motion-check.js';
 import {crowdingCheck} from '../src/quality/crowding.js';
+import {visibility2Check} from '../src/quality/visibility.js';
 import {renderNative,runChecked} from './native-render.mjs';
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..'),outRoot=join(root,'out');
 const o=parseProduction(process.argv.slice(2)),env={...process.env};
@@ -84,8 +85,9 @@ try{
  // Per-output shared-input inventory; compare_release.py verifies both copies are identical and match the files.
  const inventory={version:1,production:o.id,mode:o.mode,sourceCommit:manifest.sourceCommit,sourceDirty:manifest.sourceDirty,targetFrames:manifest.targetFrames,timelineDigest:manifest.timelineDigest,frameAllocation:manifest.frameAllocation,normalizedProjectDigest:manifest.normalizedProjectDigest,modelFingerprint:manifest.modelFingerprint,inputHashes:manifest.inputHashes,sharedHashes:manifest.sharedHashes};
  for(const p of prepared)write(join(p.out,'shared-inputs.json'),inventory);
- // GEN-01 diagnostic checks on every production (measured timeline; not a gate): motion-speed-v1 and visibility-v1.
- for(const p of prepared){const checks={version:1,motion:motionCheck(p.scene,timeline),visibility:visibilityCheck(p.scene),crowding:crowdingCheck(p.scene,timeline)};write(join(p.out,'quality-checks.json'),checks);
+ // GEN-01 diagnostic checks on every production (measured timeline; not a gate): motion-speed-v1, visibility (v2 from
+ // GEN-08: projected parts with a depth test; v1 stays exported and tested) and crowding-v1 (GEN-04).
+ for(const p of prepared){const checks={version:1,motion:motionCheck(p.scene,timeline),visibility:visibility2Check(p.scene,timeline),crowding:crowdingCheck(p.scene,timeline)};write(join(p.out,'quality-checks.json'),checks);
   manifest.checks={motionWarnings:checks.motion.warnings.length,visibilityWarnings:checks.visibility.warnings.length,crowdingWarnings:checks.crowding.warnings.length};
   console.log('CHECKS:',p.backend,checks.motion.policy,'warnings',checks.motion.warnings.length,checks.visibility.policy,'warnings',checks.visibility.warnings.length,checks.crowding.policy,'warnings',checks.crowding.warnings.length,JSON.stringify([...checks.motion.warnings,...checks.visibility.warnings,...checks.crowding.warnings].map(w=>w.code+':'+w.shot+'/'+(w.asset??w.pair))));}
  manifest.status='rendering';update();
