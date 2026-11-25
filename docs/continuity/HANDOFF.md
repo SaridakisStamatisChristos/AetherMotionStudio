@@ -1,7 +1,7 @@
 # Forward-only handoff — POLISH-02 items 1–4 (aim, planted feet, robot reach, solved pickup/place)
 
 Unit: POLISH-02 (items 1–4 in this PR)
-Checkpoint: branch `feature/polish-02` (from local record commit ed3fa4c on top of main 365a78e). Commits: 2535907 (item 1), fe3ee26 (item 1 checkpoint), 7e847ea (item 2), 0087fa7 (items 3+4), 52c01fd (HIGH SHELF readability), plus this checkpoint commit. Pushed; PR opened against main for owner acceptance (see PR page). Not merged.
+Checkpoint: branch `feature/polish-02` (from local record commit ed3fa4c on top of main 365a78e). Commits: 2535907 (item 1), fe3ee26 (item 1 checkpoint), 7e847ea (item 2), 0087fa7 (items 3+4), 52c01fd (HIGH SHELF readability), plus this checkpoint commit. Pushed; PR #20 against main, CI run 45569390294 test job PASS at 32b6bf3 (render/compare skipped by test-only policy). Awaiting owner acceptance; not merged.
 Status: items 1–4 IMPLEMENTED + TESTED + RENDERED (agent-reviewed). Items 5–10 NOT started.
 Approved by: owner "fod continue" (item 1); then "continue until polish 3 is done then ask me for merge. not ask me for polish 2", then "implement item 4 also. then we will merge" (2026-11-25).
 Date: 2026-11-25
