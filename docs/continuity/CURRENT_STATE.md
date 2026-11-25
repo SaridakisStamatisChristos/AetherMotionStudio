@@ -1,5 +1,5 @@
 # Current state — AetherMotion Studio
-Updated 2026-11-25 (GEN-04..09 implemented on feature/gen-04-09, PR pending; GEN-07 deferred). Authoritative rolling checkpoint for new coding sessions; update at verified transitions. This file references the historical ledger rather than replacing source or evidence. Baseline product merge: `04e3491bb21b4ebc3d54755a2a211b1a7affb3fa` (PR #13 merged into main). The handoff documentation commit may be newer; inspect git HEAD. No release publication implied.
+Updated 2026-11-25 (GEN-10/11 implemented on feature/gen-10-11, stacked on PR #29; PR #29 revised: Reels captions low, readable captions; nothing merged). Authoritative rolling checkpoint for new coding sessions; update at verified transitions. This file references the historical ledger rather than replacing source or evidence. Baseline product merge: `04e3491bb21b4ebc3d54755a2a211b1a7affb3fa` (PR #13 merged into main). The handoff documentation commit may be newer; inspect git HEAD. No release publication implied.
 
 ## Current status and authority
 - v1.0 core pipeline and Asset Foundry AF01–AF09 implementation merged; do not reimplement.
@@ -19,6 +19,29 @@ Updated 2026-11-25 (GEN-04..09 implemented on feature/gen-04-09, PR pending; GEN
 6. Source and approved decisions authoritative. This summary cannot discard binding facts; consult the source-specific contract when the task touches it. Keep state and handoff synchronized. No new native render runs on GitHub or release without authorization.
 
 ## Active unit
+GEN-10 + GEN-11 — IMPLEMENTED + TESTED + RENDERED (agent-reviewed) on branch `feature/gen-10-11` (stacked on `feature/gen-04-09`; PR against that branch). Not merged.
+- Owner (2026-11-25, after the GEN-04..09 report): "2 no i think it autocompress the videos . 2 the cap[tions must be generalized in speed not only from the sample video. also lets do it seriallized. Gen10 and onwards." Then, on Reels captions: "if on top it will cover the face.... so i think bottom is prefered."
+- **PR #29 revised before merge** (commit 33e576f on feature/gen-04-09):
+  - Reels mode keeps the normal character height (half-height 340, width 274). Captions end just above the app's text (bottom 990) and may cover legs, never heads (check code `REELS_CAPTION_ON_HEAD`, replacing REELS_UNDER_CAPTION). Reels now gets the same 3 singles as the default layout. Doc: REELS.md.
+  - GEN-05b readable captions (opt-in `speech.captions.readable`, on through `defaultSpeech`). Three parts: a balanced cue split; a hold into the pause (`holdSample`, ≤ 1 s); per-phrase slowing to the 0.85 floor when the budget fits (`readablePhrases` in the report). Cause of the 19.1 cps cue: an orphan last word plus a line spoken faster than 18 cps. Doc: SPEECH.md.
+  - Renders from clean 33e576f; all gates PASS, checks 0, shared hashes exact, glitch clean, −16.0 LUFS; max caption 17.94 cps, 0 outliers, 1 phrase slowed to 0.85:
+    - `gen06-interview-r3`: CPU 078f5ce03c69b457…, Three 480add012aa01cd7…;
+    - `gen09-reels-r3`: CPU 8801f584fe865dcd…, Three bbc9eb9a8d774224…; reels-export PASS, cover from the first single.
+  - Superseded: gen09-reels-r2 (top captions, small characters). Interrupted (session ended mid-render): gen06-interview-r2.
+- **GEN-10** estimated mouth shapes (8e7586b). Doc: docs/MOUTHS.md.
+  - No new dependency. The installed Kokoro export has no duration output, so phonemes come from espeak-ng through kokoro-onnx, with timing estimated per word.
+  - `speech.mouths:'visemes-v1'` (on through defaultSpeech) → `timeline.visemes` (one XMFEAO code per frame) → `pose.mouthWidth`.
+  - Never call it lip-sync. Exact timing would need a Kokoro export with durations (owner decision: model download).
+- **GEN-11** idle weight shift (be66483 plus a director change). Doc: docs/IDLE.md.
+  - `bodyLanguage.weight`, `pose.hip`: lean ±0.022 rad, held 6–9 s, shift in 1.5 s, feet planted.
+  - Director dialogue films only; staging unchanged, so the TALK-05 showcase is unchanged.
+  - The pinned talk04 test now expects `weight:true` (a deliberate change).
+- Defaults unchanged: fod-digests (exclude talk04,talk05,gen01,gen09) graph 3d33fbaee198acad, geometry 14dec244d171dc56, detail2 e3f80439a292f21a, director 2cbf9916e65da935. npm test 349 tests, 348 pass, 0 fail, 1 Windows skip; Python 50 OK.
+- Render from clean be66483: `gen11-interview-r1`, CPU 915190f9b5727d0a…, Three 23631d257648561a…. All gates PASS, checks 0, hashes exact, glitch clean, −16.0 LUFS, RTX up to 31 %.
+- Close-up stills: on Three the robot mouth bar visibly changes (wide, narrow, open, thin closure).
+- **Found (pre-existing, not caused by GEN-10):** on CPU the catalog robot's lit mouth bar does not show in close shots. It is also missing in the accepted gen06-interview-r1 CPU render; human mouths show on both backends. This is a CPU draw-order difference. Repair needs the owner's word because it changes CPU re-renders of robot speakers.
+
+## Previous active unit (GEN-04..09, PR #29)
 GEN-04..09 (except GEN-07) — IMPLEMENTED + TESTED + RENDERED (agent-reviewed) on branch `feature/gen-04-09` (from `chore/record-gen-03` 30748d5 on main 4f588e3), PR #29 against main (CI 45659718843 test PASS on 6ad282c), awaiting owner review and merge. Not merged.
 - Owner authorization (2026-11-25): "execute gen-04 to gen9 for gen 5 speech a bit slower. gen 6 yes i want these cuts for gen 07 i dont think its needed". GEN-07 (re-stage older accepted films) DEFERRED by the owner, with the agent agreeing. GEN-09: owner asked that Instagram be "a mode" and that longer videos stay possible. The target was not named; the agent assumed Reels.
 - Owner asked for a FOD handoff after GEN-09 (done: HANDOFF.md).
@@ -212,6 +235,7 @@ LOCAL-02 — matched CPU/Three production for authored v2 projects. Status IMPLE
 LOCAL-01 — establish a local, reproducible baseline. Status IMPLEMENTED + VERIFIED locally 2026-11-24 at 1e0adcd, awaiting owner acceptance. Results: initially JS 157/158 (tests/foundry-import.test.js symlink fixture EPERM — Windows needs Developer Mode/admin). Owner-authorized fix: symlink case split into its own test, skipped only on win32+EPERM via a capability probe with explicit reason (negative-tested: EPERM on linux and EACCES on win32 still fail); production lstat/realpath rejection unchanged; full enforcement on Linux CI. After fix: JS 160 tests, 159 pass, 0 fail, 1 skip. package-lock.json (lockfileVersion 3, 297 entries, all registry+integrity, all platform binaries optional incl. linux-x64-gnu) reviewed and committed for reproducible installs; Python 11/11 on .venv 3.11.9; compileall scripts OK; foundry-qualify plan OK (9 pairs). Renders (verify.py PASS: native 360-frame MP4, 12s, full decode, Kokoro per-phrase audio): cinematic-cpu-polished renderSeconds 55.9, sha256 45A364E0…B4F6; cinematic-three-polished vulkan 34.3s sha256 4B12D823…B68D (kept at out/local01-three-vulkan); swangle 155.7s sha256 0D5065A3…97C5 (out/local01-three-swangle). Review stills at 6.0s inspected by agent: both backends coherent, same composition. Not human-reviewed; not a matched shared-speech pair. Start with setup and fast tests, then one small existing CPU fixture and one matched GPU-enabled Three.js fixture only as authorized locally. Avoid rerunning all 48 films. After baseline, ask/confirm next scoped visual improvement or follow the user's immediate task. [NEXT_UNITS](NEXT_UNITS.md) is a proposed sequence, not already implemented work.
 
 ## Outstanding obligations
+- CPU robot mouth bar hidden in close shots (found 2026-11-25 in GEN-10 stills; pre-existing). Proposed scoped repair (FOD BACKPORT), owner decision.
 - Local cleanup (owner: "ok clean it up the way yuo want", 2026-11-25): superseded, failed or rejected renders were deleted from the git-ignored out/ and public/audio. 182 paths, 2.3 GB; out/ is now 3.3 GB.
   - Removed runs: art01-handoff-r1; art02-studio-r1, r2; art05-workshop-r1; talk01-faces-r1; talk02-dialogue-r1; talk03-body-r1..r4; talk04-dialogue-r1; talk05-first-words-r1, r2, r4, r6, r8, r9; gen01-interview-r1; gen02-interview-r1; gen03-interview-r1, r2 (owner-rejected); workshop-extended-r2, r4, r5; local-02-cinematic.
   - Their recorded hashes and findings remain in the docs.

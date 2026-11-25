@@ -1,44 +1,42 @@
-# Forward-only handoff — after GEN-04..09 (owner types only "fod continue")
+# Forward-only handoff — after GEN-10/11 (owner types only "fod continue")
 
-Unit: GEN-04, 05, 06, 08 and 09 are IMPLEMENTED + TESTED + RENDERED (agent-reviewed) on `feature/gen-04-09`, with one PR against main. **Not merged.** GEN-07 was deferred by the owner.
-Checkpoint: branch head is the checkpoint commit after edd3a3d (code at edd3a3d; renders from clean edd3a3d). main is still 4f588e3.
-Status: AWAITING OWNER REVIEW AND MERGE. PR #29 (https://github.com/SaridakisStamatisChristos/AetherMotionStudio/pull/29): CI 45659718843 test PASS on 6ad282c; render and compare skipped by policy.
-Authorized by: owner, 2026-11-25: "execute gen-04 to gen9 for gen 5 speech a bit slower. gen 6 yes i want these cuts for gen 07 i dont think its needed". Then: "can the instragram be a mode and in case i want i can generate longer videos?" and "after gen 9 finishes . write a handoff for the new session using the fod continue principles."
+Unit: GEN-10 (estimated mouth shapes) and GEN-11 (idle weight shift) are IMPLEMENTED + TESTED + RENDERED (agent-reviewed) on `feature/gen-10-11`, which is stacked on `feature/gen-04-09` (PR #29). PR #29 also got the owner-requested revisions: Reels captions low at normal size, and GEN-05b readable captions. **Nothing is merged.**
+Checkpoint: the head of `feature/gen-10-11` (code at be66483 plus this checkpoint); `feature/gen-04-09` is at 33e576f; main is still 4f588e3.
+Authorized by: owner, 2026-11-25: "the cap[tions must be generalized in speed not only from the sample video. also lets do it seriallized. Gen10 and onwards." Reels: "if on top it will cover the face.... so i think bottom is prefered."
 Date: 2026-11-25
-Earlier handoffs: git history of this file (record branches `chore/record-*`). Binding facts are in CURRENT_STATE.md.
+Earlier handoffs: git history of this file. Binding facts are in CURRENT_STATE.md ("Active unit").
 
-## What "fod continue" must do (step by step)
+## What "fod continue" must do
 1. Bootstrap (CLAUDE.md):
-   - `git status --short --branch` and `git rev-parse HEAD`. Expect `feature/gen-04-09`, clean, or main if the owner merged in between. Never discard user changes.
-   - Read AGENTS.md, CLAUDE.md, CURRENT_STATE.md ("Active unit"), this file and NEXT_UNITS.md ("Candidates after GEN-03", status block).
-   - Report in plain language: active unit | checkpoint | state loaded | blockers | next action.
-2. `git fetch`. Check the PR state with `gh pr list --head feature/gen-04-09 --state all`.
-   - If it was merged, record the merge (merge commit, main CI) on a new record branch `chore/record-gen-04-09`, then go to step 5.
-3. Baseline. `node scripts/fod-digests.mjs . --exclude talk04,talk05,gen01,gen09` must print:
-   - graph 204 shots 3d33fbaee198acad
-   - geometry 250 assets 6370 boxes 14dec244d171dc56
-   - detail2 e3f80439a292f21a
-   - director 7 requests 2cbf9916e65da935
-   - `gen09` is now excluded too: examples/gen09-reels.request.json is a new dialogue request.
-4. `npm test` must end with `# fail 0` (338 tests, 337 pass, 1 Windows skip). Python: 41 OK.
-5. **Do not start a new unit on your own.** Ask the owner the open questions below, in plain language and with a short table. Only the owner says "merge".
-   - On "merge": merge the PR, watch main CI on the merge commit, record it.
-   - For a new unit: branch `feature/<unit>` from the record branch (or main) and follow the FOD loop:
-     - opt-in or default-proven-unchanged (fod-digests);
-     - tests including negatives;
-     - a matched CPU/Three render from a clean commit;
-     - frame-glitch and loudness checks;
-     - agent stills at the middle of every spoken line, on both backends;
-     - docs and checkpoint, push, PR, CI, report; ask before merging.
+   - `git status --short --branch` and `git rev-parse HEAD`;
+   - read AGENTS.md, CURRENT_STATE.md, this file and NEXT_UNITS.md;
+   - report active unit | checkpoint | state loaded | blockers | next action.
+2. `git fetch`. Then check the PR state of #29 and of the GEN-10/11 PR with `gh pr list --state all`.
+   - If merged, record the merge on a `chore/record-*` branch.
+3. Baseline: `node scripts/fod-digests.mjs . --exclude talk04,talk05,gen01,gen09` must print:
+   - graph 3d33fbaee198acad;
+   - geometry 14dec244d171dc56;
+   - detail2 e3f80439a292f21a;
+   - director 2cbf9916e65da935.
+   Then `npm test` must end with `# fail 0` (349 tests, 1 Windows skip), and `PYTHONPATH=scripts python -m unittest discover -s tests -p "test_*.py"` must give 50 OK.
+4. Next unit: **GEN-12 topic-fitting sets** (no owner decision needed).
+   - Today the Director picks only from the environments laboratory, midnight and amber (offline.js: `warm` style → amber, else alternating). There are also 3 layered backdrops (solar-field, city-dusk, energy-hub), and there is one set piece per dialogue shot.
+   - Plan: choose the environment, the layered backdrop and the set piece by topic, from the catalog categories (src/director/catalog.js aliases).
+   - Use an opt-in request field or a new prompt version, so that the director digest stays unchanged.
+   - Pass visibility-v2, composition and crowding.
+   - Prove it on 2–3 fresh topics.
+5. GEN-13 (music sources and licences) and GEN-14 (local model) need owner decisions. Ask before starting them.
+6. Ask the owner too:
+   - merge PR #29 and then the GEN-10/11 PR?
+   - fix the CPU robot mouth (below)?
 
-## Questions for the owner (open decisions)
+## Questions for the owner
 | # | Question | Facts |
 |---|---|---|
-| 1 | Merge the GEN-04..09 PR? | All gates pass and all checks are 0 on both new films. Agent-reviewed only. |
-| 2 | Reels mode makes characters smaller. Is that OK? | Keeping clear of Instagram's buttons and putting captions on top leaves the speaker at about 0.39 of the normal safe height (0.56 without Reels). The lower frame is mostly floor. Options: accept it; or let captions overlap the lower body; or a wider stage so Reels can have singles too (Reels currently gets no singles). |
-| 3 | One caption is still a bit fast | Pace 0.92 brought the fastest caption from 20.0 to 19.1 characters per second (limit 18). Options: pace 0.85, or captions staying on screen a little longer (GEN-05 option b). |
-| 4 | Instagram numbers | Meta publishes no single safe-area figure for organic Reels; guides disagree. The mode keeps top 220, bottom 420, left 60 and right 120 px clear on 1080×1920. Please check one test upload in the app. |
-| 5 | Next unit | In the owner's order: GEN-10 mouth shapes (needs a local tool), GEN-11 idle weight shift (no owner decision needed, recommended), GEN-12 topic sets, GEN-13 music and sound, GEN-14 real dialogue writing, then the look track GEN-15..18. |
+| 1 | Merge PR #29, then the GEN-10/11 PR? | All gates pass on all new films. Agent-reviewed stills only. |
+| 2 | Fix the CPU robot mouth? | Pre-existing: on CPU, the catalog robot's lit mouth bar does not show in close shots (Three shows it). Human mouths are fine. The fix changes CPU re-renders of robot speakers. |
+| 3 | Exact mouth timing later? | It needs a Kokoro model export that reports phoneme durations (a model download and a new voice fingerprint). |
+| 4 | Instagram check | Please upload one test Reel (gen09-reels-r3) and check that captions and faces are clear of the app's buttons. |
 
 ## Owner working agreement and taste (binding; see also auto-memory)
 - **Delegation:** the owner delegates whole units and wants plain-language reports with short tables. Stop only for direction-changing or risky actions: backend defaults, dependencies, deletions, system settings, anything outside the repo, or changing accepted films.
@@ -74,6 +72,15 @@ Earlier handoffs: git history of this file (record branches `chore/record-*`). B
   - never use sed with code containing backticks or `\n`.
 - Stills: frame numbers from `<id>-prepared/timeline.json` (segment sample midpoints ÷ 1600). Then `ffmpeg -i film.mp4 -vf "select='eq(n,F1)+…',scale=216:384,tile=Nx1" -frames:v 1 <scratchpad>/x.png`.
 
+## Evidence trail (this checkpoint)
+- Renders from clean 33e576f; all gates PASS, checks 0, glitch clean, −16.0 LUFS:
+  - `gen06-interview-r3`: CPU 078f5ce03c69b457…, Three 480add012aa01cd7…;
+  - `gen09-reels-r3`: CPU 8801f584fe865dcd…, Three bbc9eb9a8d774224…; reels-export PASS.
+  - Max caption 17.94 cps, 0 outliers.
+- Render from clean be66483: `gen11-interview-r1`, CPU 915190f9b5727d0a…, Three 23631d257648561a…; all gates PASS.
+- Superseded: gen09-reels-r2. Interrupted: gen06-interview-r2. Both are kept on disk; ask before any cleanup.
+- Human review: none of these films has been watched by the owner.
+
 ## Where things are (this branch)
 | Unit | Files | Contract / note |
 |---|---|---|
@@ -81,9 +88,12 @@ Earlier handoffs: git history of this file (record branches `chore/record-*`). B
 | GEN-05 pace | src/core/speech.js `SPEECH_PACE`, timeline.js, scripts/speech_pipeline.py, speech_plan.py `speed_ladder`, verify.py, src/director/dialogue.js, tests/gen05.test.js, test_speech_pace.py, docs/SPEECH.md | `speech.pace`, `request.dialogue.pace`; the report records `pace {requested, kept}` |
 | GEN-06 singles | src/core/singles.js, cinematography.js (`framing:'single'`), timeline.js (`titleHold`), fidelity-effects.js, motion-check.js OFF_FRAME, director/index.js, tests/gen06.test.js, docs/CINEMATOGRAPHY.md | `singles-v1`; only true singles; `request.dialogue.singles` |
 | GEN-08 visibility | src/quality/visibility.js, produce.mjs, studio-server.mjs, tests/gen08.test.js, docs/QUALITY.md | `visibility-v2`, threshold 0.70; v1 kept |
+| GEN-10 mouths | scripts/visemes.py, speech_pipeline.py, src/core/talk.js (`VISEMES`, `visemeAt`, `validateVisemes`), catalog.js (`mouthWidth`), speech.js (`mouths`), timeline.js, production.js, tests/gen10.test.js, test_visemes.py, docs/MOUTHS.md | `viseme-estimated-v1`, `speech.mouths` |
+| GEN-11 weight | src/core/body.js (`WEIGHT`, `weightAt`), catalog.js `headRoute` (`pose.hip`), director/index.js, tests/gen11.test.js, docs/IDLE.md | `bodyLanguage.weight` |
+| GEN-05b captions | scripts/speech_plan.py (`balanced`, `phrase_speed`, holds), speech_pipeline.py, verify.py, speech.js (`readable`, `holdSample`, `cueAt`), timeline.js, tests/gen05b.test.js, test_captions_readable.py, docs/SPEECH.md | `captions.readable` |
 | GEN-09 Reels | src/core/reels.js, reels-layout.js, cinematography.js (`safeArea`, `SAFE_AREAS`), draw-film.js, draw-graph.js, director schema/index, scripts/reels-export.mjs, tests/gen09.test.js, docs/REELS.md | `delivery:'reels-v1'`, `request.delivery`, `reelsProject`, `reelsCheck`; Director `AIM_BLEND` 0.12 |
 
-## Evidence trail
+## Evidence trail (GEN-04..09, first version)
 - Renders from clean edd3a3d. All gates PASS, checks 0, frame-glitch clean, −16.0 LUFS:
   - `gen06-interview-r1` (default layout, 3 singles): CPU 8b3278cf336ca49e…, Three 14673933adf21772….
   - `gen09-reels-r2` (Reels): CPU 75f9259bf3391d68…, Three 5a9157feec85dba7…; reels-export PASS.
@@ -98,5 +108,6 @@ Earlier handoffs: git history of this file (record branches `chore/record-*`). B
 - Still open from before: mouths follow loudness only (GEN-10); no idle weight shift (GEN-11); "Wrrrench" not heard by the owner; TALK-05 has a wide LRA.
 
 ## Next action
-- Run "fod continue": bootstrap, PR state, baseline digests and tests.
-- Then ask the owner questions 1–5 (merge first). Do not merge or start a unit without the owner's word.
+- Run "fod continue": bootstrap, PR states, baseline digests and tests.
+- Ask the owner questions 1–4. Then start GEN-12 (no owner decision needed) on `feature/gen-12`, branched from `feature/gen-10-11`, or from main if it is merged.
+- Do not merge without the owner's word. Do not start GEN-13 or GEN-14 without the owner's decision on sources and model.

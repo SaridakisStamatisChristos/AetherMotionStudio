@@ -10,6 +10,7 @@
 import {speakerAt} from './talk.js';
 import {focusPlan} from './dialogue.js';
 import {smooth} from './motion.js';
+import {recipeSpec} from '../visual/catalog-rig.js';
 
 const fail=(p,m)=>{throw Error(p+': '+m)};
 // Speeds tuned after owner review ("the heads move too fast"): first version peaked ~93°/s on nods and the sway jumped
@@ -19,8 +20,12 @@ const fail=(p,m)=>{throw Error(p+': '+m)};
 // beats, and only the addressee nods as a line ends, at most once per nodMinGap frames.
 // Third owner review ("still a bit much movement, especially nodding"): smaller nods (0.07 rad), at most one per
 // character per 8 s, none from an addressee who replies next (the reply acknowledges), and half the sway.
+// GEN-11 opt-in weight shift (bodyLanguage.weight): each bound character stands on one leg for 6–9 s (per-character
+// schedule from its ID), then moves its hips over the other foot in 1.5 s. Lean ±0.022 rad about the ground point,
+// peak ≈ 2.5°/s: calm, below every motion limit.
+export const WEIGHT=Object.freeze({amp:.022,holdMin:180,holdSpread:90,move:45});
 export const BODY=Object.freeze({beatFrames:18,beatMinPhrase:45,minGap:20,peakMin:600,peakRadius:5,beatPitch:.35,nodFrames:30,nodLead:10,nodMinGap:240,listenNod:.07,swayAmp:.015,swayPeriod:150,blinkFrames:[.55,.15,.1,.35,.8]});
-const KEYS=['beats','nods','blinks','sway'];
+const KEYS=['beats','nods','blinks','sway','weight'];
 const ARM_ACTIONS=['point','wave','reach','grasp','release','carry'];
 export function validateBodyLanguage(project){
  project.shots.forEach((s,i)=>{
@@ -28,7 +33,7 @@ export function validateBodyLanguage(project){
   const p='shots['+i+'].bodyLanguage',x=s.bodyLanguage;
   if(!x||typeof x!=='object'||Array.isArray(x))fail(p,'object required');
   for(const [k,v] of Object.entries(x)){if(!KEYS.includes(k))fail(p+'.'+k,'unknown field');if(typeof v!=='boolean')fail(p+'.'+k,'boolean required');}
-  if(!KEYS.some(k=>x[k]===true))fail(p,'enable at least one of beats, nods, blinks, sway');
+  if(!KEYS.some(k=>x[k]===true))fail(p,'enable at least one of beats, nods, blinks, sway, weight');
   if(s.speakerAssets===undefined)fail(p,'speakerAssets required');
  });
 }
@@ -80,6 +85,7 @@ export function bodyAt(project,t,frame,index){
   if(bl.nods)for(const x of plan.nods){if(x.id!==id)continue;const u=bump((frame-x.frame)/BODY.nodFrames);if(u>0)o.nod=Math.max(o.nod??0,BODY.listenNod*u);}
   // Sway on every bound character (continuous across speaker changes).
   if(bl.sway)o.tilt=BODY.swayAmp*Math.sin(2*Math.PI*frame/BODY.swayPeriod+(hash(id)%628)/100);
+  if(bl.weight&&weightEligible(s,id))o.hip=weightAt(id,frame);
   if(bl.blinks&&!Object.hasOwn(s.assets.find(x=>x.id===id)?.tracks??{},'blink')){
    const h=hash(id),period=75+h%60,phase=(frame+h%period)%period;o.blink=phase<BODY.blinkFrames.length?BODY.blinkFrames[phase]:1;
   }
@@ -87,11 +93,25 @@ export function bodyAt(project,t,frame,index){
  }
  return out;
 }
+// GEN-11: hip lean at a frame (deterministic per character ID; continuous, smooth moves between the two sides).
+export function weightAt(id,frame){
+ const h=hash(id+'/weight'),period=WEIGHT.holdMin+h%WEIGHT.holdSpread,t=Math.max(0,frame+h%period),k=Math.floor(t/period),u=t-k*period;
+ const side=k%2?1:-1,from=k===0&&u<WEIGHT.move?0:-side,v=u<WEIGHT.move?from+(side-from)*smooth(u/WEIGHT.move):side;
+ return Math.round(WEIGHT.amp*v*1e5)/1e5;
+}
+// Weight shifts only for human and robot rigs that stand (no x/z tracks or walking): walkers already move their hips.
+function weightEligible(s,id){
+ const a=s.assets.find(x=>x.id===id);if(!a)return false;
+ const fam=recipeSpec(a.asset)?.family;if(fam!=='human'&&fam!=='robot')return false;
+ const moves=k=>{const tr=a.tracks?.[k];return Array.isArray(tr)&&tr.some(q=>q[1]!==tr[0][1]);};
+ return !moves('x')&&!moves('z')&&!a.tracks?.walking;
+}
 export function applyBody(state,body){
  if(!body)return state;
  for(const a of state.assets){const o=body[a.id];if(!o)continue;const pose={...a.pose};
   if(o.nod!==undefined||o.tilt!==undefined){pose.nod=o.nod??0;pose.tilt=o.tilt??0;}
   if(o.blink!==undefined)pose.blink=o.blink;
+  if(o.hip!==undefined)pose.hip=o.hip;
   if(o.beat!==undefined)pose.armPitch=Math.max(-2.8,Math.min(1,(pose.armPitch??0)+o.beat));
   a.pose=pose;}
  return state;

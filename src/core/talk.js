@@ -30,6 +30,22 @@ export function validateSpeakerAssets(project){
   }
  });
 }
+// GEN-10 opt-in estimated mouth shapes (speech.mouths 'visemes-v1'): one code per frame in timeline.visemes, made in
+// preparation from the speech model's own phonemizer with ESTIMATED timing (scripts/visemes.py). Never lip-sync or
+// forced alignment. Loudness still sets how far the mouth opens; the shape scales it and sets the mouth width.
+export const VISEMES=Object.freeze({version:'viseme-estimated-v1',codes:'XMFEAO',
+ shapes:Object.freeze({X:{open:1,width:1},M:{open:0,width:1},F:{open:.25,width:1.05},E:{open:.6,width:1.25},A:{open:1,width:1},O:{open:.8,width:.62}})});
+export function usesVisemes(project){return project.speech?.mouths==='visemes-v1'&&usesTalk(project);}
+export function validateVisemes(project,t){
+ const v=t.visemes;
+ if(v===undefined){if(usesVisemes(project))fail('timeline.visemes','required when speech.mouths is visemes-v1 and a shot binds speakerAssets');return;}
+ if(!usesVisemes(project))fail('timeline.visemes','speech.mouths visemes-v1 and bound speakers required');
+ if(!v||typeof v!=='object'||Array.isArray(v))fail('timeline.visemes','object required');
+ for(const k of Object.keys(v))if(!['version','phonemizer','timing','values'].includes(k))fail('timeline.visemes.'+k,'unknown field');
+ if(v.version!==VISEMES.version||v.timing!=='estimated')fail('timeline.visemes','unsupported version or timing');
+ if(typeof v.phonemizer!=='string'||!v.phonemizer||v.phonemizer.length>80)fail('timeline.visemes.phonemizer','name required');
+ if(typeof v.values!=='string'||v.values.length!==t.durationFrames||![...v.values].every(c=>VISEMES.codes.includes(c)))fail('timeline.visemes.values','one code (XMFEAO) per frame required');
+}
 export function validateEnvelope(project,t){
  const e=t.speechEnvelope;
  if(e===undefined){if(usesTalk(project))fail('timeline.speechEnvelope','required when a shot binds speakerAssets');return;}
@@ -50,12 +66,23 @@ export function talkAt(project,t,frame,index){
  const s=project.shots[index];if(!s?.speakerAssets||!t.speechEnvelope)return null;
  const v=t.speechEnvelope.values,at=f=>v[Math.max(0,Math.min(v.length-1,f))];
  const level=Math.min(1,(at(frame-1)+2*at(frame)+at(frame+1))/4000),speaker=speakerAt(t,index,frame),out={};
- for(const [sp,id] of Object.entries(s.speakerAssets))out[id]=sp===speaker?Math.round(level*1000)/1000:0;
+ const shape=t.visemes&&project.speech?.mouths==='visemes-v1'?visemeAt(t,frame):null;
+ for(const [sp,id] of Object.entries(s.speakerAssets)){
+  if(!shape){out[id]=sp===speaker?Math.round(level*1000)/1000:0;continue;}
+  out[id]=sp===speaker?{mouth:Math.round(level*shape.open*1000)/1000,width:shape.width}:{mouth:0,width:1};
+ }
  return out;
+}
+// GEN-10: open factor and width at a frame, 1-2-1 smoothed over neighbouring frames (calm shape changes).
+export function visemeAt(t,frame){
+ const v=t.visemes.values,at=f=>VISEMES.shapes[v[Math.max(0,Math.min(v.length-1,f))]];
+ const a=at(frame-1),b=at(frame),c=at(frame+1),r=x=>Math.round(x*1000)/1000;
+ // a closure (M) is held at its own frame: lips meet even when the neighbours are open
+ return {open:b.open===0?0:r((a.open+2*b.open+c.open)/4),width:r((a.width+2*b.width+c.width)/4)};
 }
 // Applies talk values to an evaluated graph state (pose.mouth on bound assets only).
 export function applyTalk(state,talk){
  if(!talk)return state;
- for(const a of state.assets)if(Object.hasOwn(talk,a.id))a.pose={...a.pose,mouth:talk[a.id]};
+ for(const a of state.assets)if(Object.hasOwn(talk,a.id)){const v=talk[a.id];a.pose=typeof v==='number'?{...a.pose,mouth:v}:{...a.pose,mouth:v.mouth,mouthWidth:v.width};}
  return state;
 }
