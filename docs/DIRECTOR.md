@@ -28,3 +28,7 @@ Predecessor scoped CI 45355048931 passed and user accepted current motion qualit
 - The staging module lives in src/core because the Studio server serves only src/{core,visual,templates,studio,foundry} to the browser; a test walks the Studio import graph to keep it that way (an earlier placement in src/director broke the Studio page and was caught by a headless UI exercise).
 - Unstaged director output (project, IR, stages, prompt, selection, manifest minus timing) is byte-identical for all directable request examples.
 - AF08 fix: Foundry search no longer lists an imported exact built-in generated revision twice (the unresolved built-in placeholder is superseded); different revisions remain distinct.
+
+## POLISH-01: staging art-v2 and literal casting (2026-11-25)
+- `request.staging: 'art-v2'` applies the art-v2 staging pass (planted walking, solved handoffs) after compile.
+- Literal casting (art-v2 + generic topics only): catalog assets named in the topic (simple plurals) are boosted in retrieval and cast in order of mention, up to 3 per shot; the retro-robot guide is added only when fewer than 3 are cast. Shots alternate between interaction beats (idle cast → staging may solve a handoff) and, when the topic mentions walking, walking beats. Unstaged and art-v1 director output is byte-identical to before.
