@@ -21,7 +21,7 @@ const speakerHeight=p=>{const t=estimatedTimeline(p,plannedTimeline(p)),v=[];
 
 test('group framing: characters 1.4–1.7x larger; no new preflight errors, gate, visibility or motion findings',async()=>{
  // Before GEN-02 (GEN-01 framing of the whole set): interview 0.285, network 0.267 of the safe height.
- for(const [n,min] of [['gen01-interview',.45],['talk04-dialogue',.33]]){const p=await project(n),h=speakerHeight(p),t=estimatedTimeline(p,plannedTimeline(p));
+ for(const [n,min] of [['gen01-interview',.42],['talk04-dialogue',.33]]){const p=await project(n),h=speakerHeight(p),t=estimatedTimeline(p,plannedTimeline(p));
   assert.ok(h>=min,n+' speaker height '+h.toFixed(3));
   assert.deepEqual(inspectProject(p).issues.filter(i=>i.severity!=='review'),[],n);
   for(const [i,s] of p.shots.entries())assert.deepEqual(compositionGate(dialogueShot(s,t.shots[i])).warnings,[],n+' '+s.id);

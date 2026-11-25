@@ -64,7 +64,7 @@ function stageHandoff(out){
 // Authored choices are kept; shots without line speakers are returned unchanged.
 // GEN-02 (vertical 9:16 delivery): a tighter line framed by camera framing 'group', set pieces behind the gaps between
 // speakers so they stay in frame (GEN-01 put them beside the line, which made automatic framing wide and characters small).
-export const TALK_STAGE=Object.freeze({turn:.8,cheat:1,line:Object.freeze({2:[[-.75,.3],[.75,.3]],3:[[-1,.35],[0,-.15],[1,.35]]}),prop:Object.freeze({2:[[0,-1.1],[0,-1.1]],3:[[1.75,-.5],[-1.75,-.5]]})});
+export const TALK_STAGE=Object.freeze({turn:.8,cheat:1,line:Object.freeze({2:[[-.9,.3],[.9,.3]],3:[[-1,.35],[0,-.15],[1,.35]]}),prop:Object.freeze({2:[[0,-1.1],[0,-1.1]],3:[[1.75,-.5],[-1.75,-.5]]})});
 // Three speakers leave gaps too narrow (visibility-v1 measured set pieces behind them as fully hidden): the set piece
 // stands close beside the line and is framed with the group; two speakers keep it behind their gap.
 const PROP_IN_GROUP=Object.freeze({2:false,3:true});
