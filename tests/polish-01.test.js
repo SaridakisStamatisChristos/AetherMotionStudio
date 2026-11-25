@@ -95,3 +95,26 @@ test('IR hold chains compile to attachment chains; malformed chains rejected',as
  a.hold=[{...h}];assert.throws(()=>validateIR(ir,req,r.catalogSelection),/hold chain requires 2–4 windows/);
  a.hold=[{...h,end:mid},{...h,start:mid-.05}];assert.throws(()=>validateIR(ir,req,r.catalogSelection),/hold windows must be sequential/);
 });
+
+test('closing step: legs ease to standing after the window instead of snapping',()=>{
+ const s=walker('engineer',{locomotion:{mode:'stride',start:0,end:.7}});s.assets[0].tracks.x=[[0,-1.6],[.7,.37]];
+ const w=p=>evaluateGraph(s,p).assets[0].pose.walking,N=s.durationFrames;let maxStep=0;
+ for(let f=1;f<N;f++)maxStep=Math.max(maxStep,Math.abs(w(f/(N-1))-w((f-1)/(N-1))));
+ assert.ok(maxStep<.2,'no pop: '+maxStep);assert.equal(w(1),0);assert.equal(evaluateGraph(s,1).assets[0].pose.footLift,0);
+});
+
+test('extended film: generator reproduces the pair; 64 s, 9 shots; accepted ART-05 shots reused unchanged',async()=>{
+ const {build}=await import('../scripts/workshop-extended.mjs');
+ const read=b=>JSON.parse(readFileSync(new URL('../examples/workshop-extended-'+b+'-polished.json',import.meta.url),'utf8'));
+ for(const b of ['cpu','three'])assert.deepEqual(build(b),read(b));
+ const p=read('cpu'),t=read('three'),art05=JSON.parse(readFileSync(new URL('../examples/art05-workshop-cpu-polished.json',import.meta.url),'utf8'));
+ validateProject(p);validateProject(t);assert.deepEqual(p.shots,t.shots.map(s=>({...s,backend:'cpu'})));
+ assert.equal(p.shots.reduce((n,s)=>n+s.durationFrames,0),1920);assert.equal(p.shots.length,9);
+ for(const id of ['workshop','plan','power','handoff','together'])assert.deepEqual(p.shots.find(s=>s.id===id),art05.shots.find(s=>s.id===id),id);
+ assert.deepEqual(inspectProject(p).issues,[]);
+ for(const s of p.shots)for(const v of Object.values(compositionReport(s).characters))assert.equal(v.backToCameraSamples,0,s.id);
+ const tb=p.shots.find(s=>s.id==='toolbox'),st=evaluateGraph(tb,tb.assets.find(a=>a.id==='wrench').attachment[1].start),m=Object.fromEntries(st.assets.map(a=>[a.id,a]));
+ assert.ok(Math.hypot(...handAnchor('scientist',m.scientist.pose,1).map((v,i)=>v-handAnchor('engineer',m.engineer.pose,1)[i]))<.06,'toolbox hands meet');
+ assert.ok(tb.assets.find(a=>a.id==='scientist').locomotion&&p.shots.find(s=>s.id==='steps').assets.find(a=>a.id==='robot').locomotion,'planted walking used');
+ assert.ok(!p.shots.find(s=>s.id==='steps').assets.some(a=>a.actions?.some(x=>x.name==='walk')),'sliding walk action replaced');
+});

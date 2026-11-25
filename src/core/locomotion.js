@@ -5,6 +5,7 @@ import {recipeSpec} from '../visual/catalog-rig.js';
 import {smooth,clamp,mix} from './motion.js';
 
 const GRID=240;
+export const SETTLE=.06;
 // Local foot swing amplitude (forward/back) of each leg rig, matching src/visual/catalog.js.
 export const SWING={human:.2,robot:.17};
 export function locomotionRig(asset){const s=recipeSpec(asset);if(!s)return null;if(s.family==='human')return 'human';if(s.family==='robot'&&s.args[3])return 'robot';return null;}
@@ -33,8 +34,13 @@ export function locomote(a,t,pathOf,baseYaw){
   const b=x.blend??0,w=t<x.start||t>x.end?0:b?Math.min(smooth(u/b),smooth((1-u)/b)):1,d0=c.head[i]-baseYaw;
   out.yaw=mix(baseYaw,baseYaw+d0-2*Math.PI*Math.round(d0/(2*Math.PI)),w);
  }
- // Outside the window the cycle settles to standing (walking 0, no lift), ramping over the blend.
- if(t<x.start||t>x.end){out.walking=0;out.footLift=0;}
+ // Before the window: standing. After it: a closing step eases the legs from the last stride pose to standing
+ // over SETTLE progress (the moving foot lifts slightly), instead of snapping.
+ if(t<x.start){out.walking=0;out.footLift=0;}
+ else if(t>x.end){
+  const endPhase=c.dist[GRID]/stride,w0=tri(endPhase),k=clamp((t-x.end)/Math.max(1e-9,Math.min(SETTLE,1-x.end)));
+  out.walking=w0*(1-smooth(k));out.footLift=k>=1?0:Math.sign(w0)*.6*Math.sin(Math.PI*k);
+ }
  return out;
 }
 export function validateLocomotion(a,p,fail){
