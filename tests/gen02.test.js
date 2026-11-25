@@ -52,11 +52,13 @@ import {followPlan,FOLLOW_PLAN} from '../src/core/dialogue.js';
 import {FOLLOW} from '../src/core/cinematography.js';
 import {CAMERA_POLICY} from '../src/quality/motion-check.js';
 import {createProjection} from '../src/visual/mesh.js';
-test('follow plan: establishes on the group, skips short lines, holds on repeated speakers, never overlaps moves',()=>{
+test('follow plan: opens on an early first speaker, skips short lines, holds on repeated speakers, never overlaps moves',()=>{
  const s={cameraRig:{framing:'group',subjects:['a','b']},speakerAssets:{x:'a',y:'b'}},F=30*1600,t={startFrame:0,endFrame:600,segments:[
   {speaker:'x',startSample:0,endSample:3*F},{speaker:'x',startSample:3.5*F,endSample:6*F},{speaker:'y',startSample:6.2*F,endSample:6.9*F},{speaker:'y',startSample:8*F,endSample:11*F},{speaker:'x',startSample:11.2*F,endSample:14*F},{speaker:'x',startSample:19.5*F,endSample:20*F}]};
  const plan=followPlan(s,t);assert.deepEqual(plan.map(f=>f.subject),['a','b','a']);
- assert.ok(plan[0].at>=FOLLOW_PLAN.establish/20-1e-9,'group first');assert.ok(plan.every((f,k)=>!k||f.at>=plan[k-1].at+plan[k-1].blend-1e-9));assert.ok(plan.every(f=>f.at+f.blend<=1));
+ assert.equal(plan[0].at,0,'first line starts at once: open on its speaker');
+ const late={...t,segments:t.segments.map(g=>({...g,startSample:g.startSample+4*F,endSample:g.endSample+4*F}))},lp=followPlan(s,late);
+ assert.ok(lp[0].at>=FOLLOW_PLAN.establish/20-1e-9,'a shot that starts with a pause shows the group first');assert.ok(plan.every((f,k)=>!k||f.at>=plan[k-1].at+plan[k-1].blend-1e-9));assert.ok(plan.every(f=>f.at+f.blend<=1));
  assert.equal(plan[0].blend,+(FOLLOW_PLAN.transition/20).toFixed(6));
 });
 test('follow: the speaker is larger while speaking, fully in frame, and the camera stays within the calm budget',async()=>{

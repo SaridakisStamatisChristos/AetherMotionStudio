@@ -98,7 +98,8 @@ function frameGroup(camera,rig,assets,tracks,progress=null){
    // The subject must stay fully inside the safe area at the shifted target (fit with the subject alone, padded).
    const own=fitZoom({lo:sb.lo.map((v,i)=>Math.min(v,2*center[i]-sb.hi[i])),hi:sb.hi.map((v,i)=>Math.max(v,2*center[i]-sb.lo[i]))},center,rig,tracks,strength)*pad;
    goal={center,zoom:Math.min(base.zoom*FOLLOW.push,own)};}}
-  const w=smooth(clamp((progress-f.at)/f.blend,0,1));state={center:lerp3(state.center,goal.center,w),zoom:mix(state.zoom,goal.zoom,w)};
+  // at 0: the shot opens on the subject (no move)
+  const w=f.at<=0?1:smooth(clamp((progress-f.at)/f.blend,0,1));state={center:lerp3(state.center,goal.center,w),zoom:mix(state.zoom,goal.zoom,w)};
  }
  const c={...camera,target:add(camera.target,sub(state.center,camera.target).map(v=>clamp(v,-2.4,2.4)*strength))};
  let minZ=Infinity;{const proj=createProjection(c.position,c.target,1,[0,0]);for(const x of [b.lo[0],b.hi[0]])for(const y of [b.lo[1],b.hi[1]])for(const z of [b.lo[2],b.hi[2]])minZ=Math.min(minZ,proj([x,y,z])[2]);}

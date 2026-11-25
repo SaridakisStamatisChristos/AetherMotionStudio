@@ -56,6 +56,9 @@ export function followPlan(s,t){
  const bound=s.speakerAssets??{},frames=t.endFrame-t.startFrame,seconds=frames/30,n=frames*1600,base=t.startFrame*1600,P=FOLLOW_PLAN,blend=Math.min(.5,P.transition/seconds),out=[];
  for(const g of t.segments){const who=bound[g.speaker??'default'];if(!who||!s.cameraRig.subjects.includes(who)||(g.endSample-g.startSample)/48000<P.minLine)continue;
   if(out.at(-1)?.subject===who)continue;
+  // r1 stills: the first line of each shot was spent on the group and the move. A first line that starts before the
+  // establishing beat plus one move opens the shot already framed on its speaker (at 0: no move).
+  if(!out.length&&(g.startSample-base)/48000<P.establish+P.transition){out.push({at:0,subject:who,blend:+blend.toFixed(6)});continue;}
   let at=Math.max(P.establish/seconds,(g.startSample-base)/n-P.lead/seconds);const prev=out.at(-1);if(prev)at=Math.max(at,prev.at+prev.blend);
   if(at+blend>1)continue;out.push({at:+at.toFixed(6),subject:who,blend:+blend.toFixed(6)});}
  return out;
