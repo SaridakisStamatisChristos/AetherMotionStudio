@@ -140,3 +140,18 @@ Acceptance fixture: A message travels across a network, supplied script and six 
     - sway 0.03 rad with a 150-frame period on every bound character;
     - the TALK-03 example uses `dialogue.turn: 0.8` s.
   - New peaks: nods 26°/s, sway 2°/s, turns ~42°/s. A regression test pins nods at ≤35°/s and sway at ≤5°/s.
+- TALK-03 calmer revision (second owner review: "too many movements and nods"). Commit 79d1932, render `talk03-body-r4`: all gates PASS, frame-glitch clean; films CPU 50abf7073ade3e5f…, Three c8f565da010dbf5d….
+  - `bodyPlan` builds a per-shot event plan from the measured timeline (cached):
+    - at most one arm beat per line, on its loudest envelope frame, only for lines of at least 45 frames;
+    - no head nod on beats;
+    - as a line ends, only the addressee (whom the speaker is looking at, per the TALK-02 focus rule) nods, at most once per 120 frames.
+  - Result in the 17 s meeting, per character:
+
+    | | r2 | r4 |
+    |---|---|---|
+    | Arm beats | 4–5 | 2 |
+    | Nods | 8–9 | 1–3 |
+    | Share of time the head moves | ~33 % | 5–14 % |
+
+  - Budget regression test added.
+  - `talk03-body-r3` was interrupted mid-render by a session break; its incomplete output is left untouched and superseded by r4.
