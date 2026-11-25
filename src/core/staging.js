@@ -7,8 +7,9 @@ import {ACTIONS,geometryBounds} from './cinematography.js';
 import {solveHandoff} from './interaction.js';
 import {locomotionRig} from './locomotion.js';
 import {resolveTracks} from './presets.js';
+import {mouthSupported} from './talk.js';
 
-export const STAGING_MODES=Object.freeze(['art-v1','art-v2']);
+export const STAGING_MODES=Object.freeze(['art-v1','art-v2','talk-v1']);
 export const CHEAT=.55; // radians turned back toward the camera while facing a partner (stage convention)
 const human=a=>recipeSpec(a.asset)?.family==='human';
 const character=a=>hasHands(a.asset);
@@ -50,8 +51,47 @@ function stageHandoff(out){
  prop.attachment=[{parent:g.id,anchor:'right-hand',start:0,end:H,offset:[0,-.08,.12]},{parent:r.id,anchor:'right-hand',start:H,end:1,offset:[0,-.08,.12],blendIn:.05}];
  return true;
 }
-export function stageShot(s,mode='art-v1'){
+// GEN-01 'talk-v1': general dialogue staging for any speech project (Director, Studio or authored), replacing the
+// per-film hand staging of TALK-02..05. Per graph shot with line speakers:
+// 1. binding: if the shot has no speakerAssets, each line speaker binds to the mouth-capable character whose ID or asset
+//    type equals the speaker's ID or name (case-insensitive); one remaining speaker may take one remaining character.
+//    Anything else is ambiguous and nothing is bound (no guessing by order);
+// 2. blocking (2–3 bound characters, automatic camera only: authored camera tracks keep authored blocking): if every bound character is freely placeable (static x/z, no locomotion, attachment or authored face)
+//    (aimers count as authored blocking) they stand in an open line facing the camera (TALK layout) and free set pieces move beside the line, where
+//    they are not hidden (TALK-04 r1 and the TALK-02/05 tables were hidden behind the middle speaker);
+// 3. behaviour (each only when absent): dialogue {listen, turn .8, cheat 1} with ≥2 bound characters, bodyLanguage
+//    {beats, nods, blinks, sway}, turnSteps on legged rigs, detail 2 on humans, lighting parity-v1.
+// Authored choices are kept; shots without line speakers are returned unchanged.
+export const TALK_STAGE=Object.freeze({turn:.8,cheat:1,line:Object.freeze({2:[[-1,.35],[1,.35]],3:[[-1.35,.35],[0,-.2],[1.35,.35]]}),prop:Object.freeze({2:[[2,-.5],[-2,-.5]],3:[[2.4,-.6],[-2.4,-.6]]})});
+const placeable=a=>!a.identity&&a.attachment===undefined&&a.locomotion===undefined&&a.restOn===undefined&&a.aim===undefined&&(a.tracks?.x?.length??0)<=1&&(a.tracks?.z?.length??0)<=1&&!a.actions?.some(x=>Object.hasOwn(ACTIONS[x.name]??{},'x')||Object.hasOwn(ACTIONS[x.name]??{},'z'));
+export function talkBinding(s,speech){
+ if(s.speakerAssets)return s.speakerAssets;
+ const lines=speech?.shotSpeakers?.[s.id];if(!lines)return null;
+ const speakers=[...new Set(lines)].filter(sp=>sp!=='default'),chars=s.assets.filter(a=>character(a)&&mouthSupported(a.asset,{...(a.params??{}),...(human(a)&&a.params?.detail===undefined?{detail:2}:{})}));
+ const key=v=>String(v).toLowerCase(),out={},used=new Set();
+ for(const sp of speakers){const names=[sp,speech.speakers?.[sp]?.name].filter(Boolean).map(key),c=chars.find(a=>!used.has(a.id)&&(names.includes(key(a.id))||names.includes(key(a.asset))));if(c){out[sp]=c.id;used.add(c.id);}}
+ const restS=speakers.filter(sp=>!out[sp]),restC=chars.filter(a=>!used.has(a.id));
+ if(restS.length===1&&restC.length===1)out[restS[0]]=restC[0].id;else if(restS.length)return null;
+ return Object.keys(out).length?out:null;
+}
+function stageTalk(out,speech){
+ const bound=talkBinding(out,speech);if(!bound)return out;
+ const ids=Object.values(bound),chars=out.assets.filter(a=>ids.includes(a.id));
+ out.speakerAssets=bound;
+ for(const a of chars){if(human(a)&&!a.identity&&a.params?.detail===undefined)a.params={...(a.params??{}),detail:2};if(a.turnSteps===undefined&&locomotionRig(a.asset))a.turnSteps=true;}
+ const line=TALK_STAGE.line[chars.length];
+ if(line&&!['x','y','z','zoom'].some(k=>out.camera?.[k]!==undefined)&&chars.every(a=>placeable(a)&&a.face===undefined)){
+  chars.forEach((a,j)=>{a.tracks={...a.tracks,x:[[0,line[j][0]]],z:[[0,line[j][1]]]};});
+  out.assets.filter(a=>!character(a)&&placeable(a)).slice(0,2).forEach((a,j)=>{const [x,z]=TALK_STAGE.prop[chars.length][j];a.tracks={...a.tracks,x:[[0,x]],z:[[0,z]]};});
+ }
+ if(out.dialogue===undefined&&chars.length>=2&&chars.every(a=>a.face===undefined))out.dialogue={listen:true,turn:TALK_STAGE.turn,cheat:TALK_STAGE.cheat};
+ if(out.bodyLanguage===undefined)out.bodyLanguage={beats:true,nods:true,blinks:true,sway:true};
+ if(out.lighting===undefined)out.lighting='parity-v1';
+ return out;
+}
+export function stageShot(s,mode='art-v1',speech=null){
  if(s.template!=='cinematic-graph')return s;
+ if(mode==='talk-v1')return stageTalk(structuredClone(s),speech);
  const out=structuredClone(s);
  if(mode==='art-v2'){for(const a of out.assets)stageLocomotion(a);stageHandoff(out);}
  if(out.lighting===undefined)out.lighting='parity-v1';
@@ -69,6 +109,6 @@ export function stageShot(s,mode='art-v1'){
 export function stageProject(project,mode='art-v1'){
  if(!STAGING_MODES.includes(mode))throw Error('staging: unknown mode '+mode);
  if(project.version!==2)throw Error('staging: v2 project required');
- const out={...structuredClone(project),shots:project.shots.map(s=>stageShot(s,mode))};
+ const out={...structuredClone(project),shots:project.shots.map(s=>stageShot(s,mode,project.speech??null))};
  validateProject(out);return out;
 }

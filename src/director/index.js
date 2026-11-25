@@ -8,8 +8,8 @@ import {EFFECT_PRESETS} from '../core/presets.js';
 import {directorCatalog,digest} from './catalog.js';
 import {request,validateIR,safeJson} from './schema.js';
 import {baseline,offlineIR} from './offline.js';
-import {stageProject} from '../core/staging.js';
-import {dialogueSpeech,stageDialogueAssets,dialogueShotFields,DIALOGUE_CAMERAS} from './dialogue.js';
+import {stageProject,stageShot} from '../core/staging.js';
+import {dialogueSpeech,stageDialogueAssets,dialogueShotFields,pointAtSetPiece,DIALOGUE_CAMERAS} from './dialogue.js';
 export function foundryShortlist(query,registry){return searchRegistry({...query,limit:300},registry).filter(x=>x.kind!=='legacy').slice(0,Math.min(query.limit??8,20)).map(({id,kind,revision,category,pack,quality,backends,lods,motion})=>({id,kind,revision,category,pack,quality,backends,lods,motion}));}
 export const PROMPT_VERSION='director-ir-v1.1';
 const profile={bloom:.6,atmosphere:.5,contactShadow:.65,surfaceDetail:.65,depthOfField:.25,motionBlur:.24,grain:.12,grade:.55,particles:.65,typography:1};
@@ -27,8 +27,8 @@ export function compile(q,ir,selection){
  const budgets=allocateFrames(ir.shots,q.seconds*FPS),speech=q.dialogue?dialogueSpeech(q,ir):q.speech;
  const project={version:2,id:q.id,title:ir.title,voice:q.voice,...(speech?{speech}:{}),...(q.identityLibrary?{identityLibrary:restoreLibrary(q.identityLibrary)}:{}),shots:ir.shots.map((s,i)=>{
   // TALK-04: speakers staged as characters + one set piece; camera frames the whole line (no single subject).
-  if(q.dialogue){const assets=stageDialogueAssets(q,s.assets[0]);
-   return {id:'shot-'+(i+1),template:'cinematic-graph',backend:q.backend,durationFrames:speech.fixedShots['shot-'+(i+1)]??null,transitionFrames:i?10:0,transition:i?'fade':'cut',heading:s.heading,subheading:s.subheading,environment:s.environment,camera:{},cameraRig:{preset:s.camera,framing:'medium',padding:.1},assets,effects:s.effect?[{preset:s.effect,target:'object-1'}]:[],...(s.overlay?{overlays:[s.overlay]}:{}),narration:s.narration,...(q.profile==='polished'?{fidelity:{...profile}}:{}),...dialogueShotFields(q)};}
+  if(q.dialogue){const assets=pointAtSetPiece(q,s,stageDialogueAssets(q,s.assets[0]));
+   return stageShot({id:'shot-'+(i+1),template:'cinematic-graph',backend:q.backend,durationFrames:speech.fixedShots['shot-'+(i+1)]??null,transitionFrames:i?10:0,transition:i?'fade':'cut',heading:s.heading,subheading:s.subheading,environment:s.environment,camera:{},cameraRig:{preset:s.camera,framing:'medium',padding:.1},assets,effects:s.effect?[{preset:s.effect,target:'object-1'}]:[],...(s.overlay?{overlays:[s.overlay]}:{}),narration:s.narration,...(q.profile==='polished'?{fidelity:{...profile}}:{}),...dialogueShotFields(q)},'talk-v1',speech);}
   let assets=s.assets.map((a,j)=>({id:'object-'+(j+1),asset:a.asset,tracks:{x:[[0,a.x??(j-(s.assets.length-1)/2)*1.25]],...(a.identity?{...(a.scale===undefined?{}:{scale:[[0,a.scale]]})}:a.action==='idle'?{}:{scale:[[0,a.scale??.85]]})},...(a.action?{actions:[{name:a.action,start:.06,end:.94,blend:.1,...(['walk','run'].includes(a.action)?{mode:'loop',speed:2}:{})}]}:{})}));
   if(q.identityLibrary)assets=compileIdentityAssets(q,s,assets);
   return {id:'shot-'+(i+1),template:'cinematic-graph',backend:q.backend,durationFrames:q.speech?(q.speech.fixedShots['shot-'+(i+1)]??null):budgets[i],transitionFrames:i?10:0,transition:i?'fade':'cut',heading:s.heading,subheading:s.subheading,environment:s.environment,...(q.identityLibrary?identityLocation(q,s):{}),camera:{},cameraRig:{preset:s.camera,subject:assets[0].id,framing:'medium',padding:.1},assets,effects:s.effect?[{preset:s.effect,target:assets[0].id}]:[],...(s.overlay?{overlays:[s.overlay]}:{}),narration:s.narration,...(q.profile==='polished'?{fidelity:{...profile}}:{})};

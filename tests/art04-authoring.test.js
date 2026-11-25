@@ -51,7 +51,8 @@ test('staging respects authored choices: existing face, yaw motion, identity, ex
 test('Studio setStaging is the same pure pass and is idempotent; negatives',()=>{
  const p=read('art02-product-cpu-polished'),a=setStaging(p),b=stageProject(p);assert.deepEqual(a,b);assert.deepEqual(setStaging(a),a);
  assert.notEqual(a,p);assert.equal(p.shots[0].lighting,undefined,'input not mutated');
- assert.deepEqual(STAGING_MODES,['art-v1','art-v2']);
+ // GEN-01 appended 'talk-v1' (general dialogue staging); the ART modes and their order are unchanged.
+ assert.deepEqual(STAGING_MODES.slice(0,2),['art-v1','art-v2']);
  assert.throws(()=>setStaging(p,'art-v9'),/staging: unknown mode art-v9/);
  assert.throws(()=>stageProject(read('robot-treasure')),/staging: v2 project required/);
  assert.throws(()=>request({...req('director-cpu-polished'),staging:'loud'}),/request\.staging: unsupported value/);
