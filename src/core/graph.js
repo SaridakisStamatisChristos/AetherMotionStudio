@@ -50,7 +50,7 @@ export function validateGraph(s,p='shot'){
   // TALK-02 opt-in: face may be a chain of 2–16 sequential windows (each blends from the previous window's target).
   if(Array.isArray(a.face)){if(a.face.length<2||a.face.length>16)fail(q,'face chain requires 2–16 windows');a.face.forEach((x,k)=>{validateFace({...a,face:x},ids,q+'['+k+']');if(k&&x.start<a.face[k-1].end-1e-9)fail(q+'['+k+']','face windows must be sequential');});}
   else validateFace(a,ids,q);}
- for(const [i,a] of s.assets.entries())if(Object.hasOwn(a,'aim'))validateAim(a,ids,p+'.assets['+i+'].aim');
+ for(const [i,a] of s.assets.entries())if(Object.hasOwn(a,'aim'))validateAim(a,ids,p+'.assets['+i+'].aim',Array.isArray(s.narration)?s.narration.length:null);
  for(const [i,a] of s.assets.entries())if(Object.hasOwn(a,'restOn')){const q=p+'.assets['+i+'].restOn';validateSurfaceRef(a.restOn,ids,a.id,q,fail);const sf=s.assets.find(b=>b.id===a.restOn.surface);
   if(sf.restOn||sf.attachment)fail(q+'.surface','surface must not rest on or attach to another asset');for(const ch of ['x','y','z'])if(Object.hasOwn(a.tracks,ch))fail(q,'restOn sets the position; remove the '+ch+' track');}
  for(const [i,a] of s.assets.entries())if(Object.hasOwn(a,'turnSteps'))validateTurnSteps(a,p+'.assets['+i+'].turnSteps',fail);

@@ -36,8 +36,19 @@ export function focusPlan(s,t){
  }
  return plan;
 }
+// GEN-01: an `aim` with `phrase: k` points during narration line k: its window becomes the line's measured bounds
+// (progress in the shot, widened by the blend so the arm is up when the line starts). Without a timeline the authored
+// start/end stay (estimate). Assets without aim.phrase are returned as they are.
+export function phraseAims(s,t){
+ if(s?.template!=='cinematic-graph'||!t?.segments||!s.assets.some(a=>a.aim?.phrase!==undefined))return s;
+ const n=(t.endFrame-t.startFrame)*1600,base=t.startFrame*1600;
+ return {...s,assets:s.assets.map(a=>{const g=a.aim?.phrase===undefined?null:t.segments[a.aim.phrase];if(!g)return a;
+  const b=a.aim.blend??0,start=Math.max(0,(g.startSample-base)/n-b),end=Math.min(1,(g.endSample-base)/n+b);
+  return end-start>1e-6?{...a,aim:{...a.aim,start:+start.toFixed(6),end:+end.toFixed(6)}}:a;})};
+}
 // Returns the shot with generated `face` (single window or chain) on every bound character; unchanged without dialogue.
 export function dialogueShot(s,t){
+ s=phraseAims(s,t);
  if(!s?.dialogue?.listen||s.template!=='cinematic-graph'||!t?.segments)return s;
  const seconds=(t.endFrame-t.startFrame)/30,turn=s.dialogue.turn??DIALOGUE_LIMITS.defaultTurn,cheat=s.dialogue.cheat??DIALOGUE_LIMITS.defaultCheat;
  const plan=focusPlan(s,t),byId=new Map(s.assets.map(a=>[a.id,a]));
