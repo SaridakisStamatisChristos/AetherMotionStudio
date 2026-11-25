@@ -45,5 +45,6 @@ def expected_subtitles(cues,labels):
     for c in cues:
         lines=c['lines'][:]
         if len(labels)>1:lines[0]=labels.get(c['speaker'],'Narrator')+': '+lines[0]
-        rows.append((sample_ms(c['startSample']),sample_ms(c['endSample']),lines))
+        # GEN-05b readable captions: a held cue is shown until holdSample (same times as the SRT/VTT sidecars)
+        rows.append((sample_ms(c['startSample']),sample_ms(c.get('holdSample',c['endSample'])),lines))
     return rows

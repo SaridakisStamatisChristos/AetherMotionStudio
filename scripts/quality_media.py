@@ -90,7 +90,8 @@ def emit(out):
             except (OSError,ValueError) as e:issue('SUBTITLE_MISMATCH','error',{'format':kind,'message':str(e)})
         rates=[]
         for i,c in enumerate(timeline['captions']):
-            seconds=(c['endSample']-c['startSample'])/R;rate=len(' '.join(c['lines']))/seconds
+            # reading speed over the time the cue is shown (GEN-05b hold included), as speech_plan.caption_metrics
+            seconds=(c.get('holdSample',c['endSample'])-c['startSample'])/R;rate=len(' '.join(c['lines']))/seconds
             rates.append(rate)
             if rate>cfg['captions']['maxCps']:issue('CAPTION_READING_SPEED','warning',{'cue':i,'charactersPerSecond':rate,'limit':cfg['captions']['maxCps']})
             if seconds<.7:issue('SHORT_CAPTION','review',{'cue':i,'seconds':seconds})

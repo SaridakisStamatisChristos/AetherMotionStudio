@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "id": "gen12-forest",
+  "topic": "How do forests clean the air?",
+  "seconds": 60,
+  "audience": "curious beginners",
+  "tone": "friendly",
+  "style": "interview",
+  "language": "en-us",
+  "voice": "af_bella",
+  "backend": "cpu",
+  "profile": "polished",
+  "seed": 1,
+  "dialogue": {
+    "style": "interview",
+    "speakers": [
+      {
+        "id": "host",
+        "name": "Student",
+        "voice": "af_bella",
+        "language": "en-us",
+        "character": "student"
+      },
+      {
+        "id": "guest",
+        "name": "Explorer",
+        "voice": "bm_george",
+        "language": "en-gb",
+        "character": "explorer-robot"
+      }
+    ]
+  }
+}

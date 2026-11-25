@@ -1,5 +1,5 @@
 # Current state — AetherMotion Studio
-Updated 2026-11-25 (GEN-10/11 implemented on feature/gen-10-11, stacked on PR #29; PR #29 revised: Reels captions low, readable captions; nothing merged). Authoritative rolling checkpoint for new coding sessions; update at verified transitions. This file references the historical ledger rather than replacing source or evidence. Baseline product merge: `04e3491bb21b4ebc3d54755a2a211b1a7affb3fa` (PR #13 merged into main). The handoff documentation commit may be newer; inspect git HEAD. No release publication implied.
+Updated 2026-11-25 (main 3ac0f01 has GEN-04..11 and the CPU mouth fix; GEN-12 on feature/gen-12, PR pending). Authoritative rolling checkpoint for new coding sessions; update at verified transitions. This file references the historical ledger rather than replacing source or evidence. Baseline product merge: `04e3491bb21b4ebc3d54755a2a211b1a7affb3fa` (PR #13 merged into main). The handoff documentation commit may be newer; inspect git HEAD. No release publication implied.
 
 ## Current status and authority
 - v1.0 core pipeline and Asset Foundry AF01–AF09 implementation merged; do not reimplement.
@@ -19,6 +19,20 @@ Updated 2026-11-25 (GEN-10/11 implemented on feature/gen-10-11, stacked on PR #2
 6. Source and approved decisions authoritative. This summary cannot discard binding facts; consult the source-specific contract when the task touches it. Keep state and handoff synchronized. No new native render runs on GitHub or release without authorization.
 
 ## Active unit
+GEN-12 topic-fitting sets — IMPLEMENTED + TESTED + RENDERED (agent-reviewed) on `feature/gen-12` (from main 3ac0f01). PR pending; not merged. Owner: "merge and continue" (PR #31 merged 3ac0f01; main CI 45696108860 success).
+- b26b3f9: `request.sets` ('topic-v1' / 'none'; absent means topic-v1 for dialogue films and unchanged output otherwise). It gives one palette plus layered backdrop per film from the topic category, and dialogue set pieces re-picked from that category without repeats (everyday never random). Doc: docs/SETS.md.
+- 2d86bfa **GEN-05b regression fix (merged code):** the media quality audit (quality_metrics.expected_subtitles, quality_media reading speed) ignored `holdSample`.
+  - Every film with held captions failed SUBTITLE_MISMATCH. Found by gen12-forest-r1 (failed, kept on disk); earlier films had no held cue.
+  - The regression test fails without the fix.
+- New example examples/gen12-forest.request.json (dialogue). **Baseline exclude list is now `talk04,talk05,gen01,gen09,gen12`:** graph 3d33fbaee198acad, geometry 14dec244d171dc56, detail2 e3f80439a292f21a, director 7 requests 2cbf9916e65da935.
+- Tests: npm 355 run, 354 pass, 0 fail, 1 Windows skip; Python 51 OK.
+- Render `gen12-forest-r2` from clean 2d86bfa: CPU e7a4949e4888f927…, Three f0cbdddb19c5c1ad…. All gates PASS, QUALITY pass 0/0, checks 0, hashes exact, glitch clean, −16.0 LUFS. 4 phrases slowed to 0.85; max caption 18.0 cps with holds.
+- Stills: amber light and solar-field backdrop in every shot, a different tree per shot.
+- Process note: PR #31 was merged before its PR CI reported (main CI passed afterwards). From now on, wait for PR CI.
+- Findings (not changed): a film of only one-line shots becomes all singles with no set piece (GEN-06); "city bus" ties architecture and vehicles.
+- Next: GEN-13 (music and sound) and GEN-14 (local dialogue model) need owner decisions on sources and licences, and on which model.
+
+## Previous active unit (GEN-10/11 + PR #29 revisions, MERGED)
 - **MERGED 2026-11-25 on the owner's word ("1 merge"):** PR #29 (merge 89f696e) and PR #30 (merge 5668031, retargeted to main). Main CI 45693813848 on 5668031: success (test only; the run on 89f696e was cancelled because the newer push replaced it).
 - **CPU robot mouth repair** (owner: "2 ok"), on `fix/cpu-robot-mouth` (78cec51):
   - CPU-only painter sort bias `ROBOT_MOUTH_BIAS` 0.08 m on the robot mouth bar. Measured cause: in the close-up, the bar's front face sorted 1.1 cm behind the face panel.
