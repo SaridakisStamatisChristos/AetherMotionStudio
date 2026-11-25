@@ -1,0 +1,1056 @@
+{
+ "version": 2,
+ "id": "polish02-cast-cpu-polished",
+ "title": "POLISH-02 cast detail 3",
+ "voice": "af_heart",
+ "shots": [
+  {
+   "id": "detail-2",
+   "template": "cinematic-graph",
+   "backend": "cpu",
+   "durationFrames": 150,
+   "transitionFrames": 0,
+   "transition": "cut",
+   "heading": "DETAIL TWO",
+   "subheading": "Faces that read at a glance.",
+   "environment": "amber",
+   "lighting": "parity-v1",
+   "cameraRig": {
+    "preset": "establishing",
+    "framing": "establishing",
+    "padding": 0.12,
+    "strength": 0.9
+   },
+   "camera": {
+    "x": [
+     [
+      0,
+      0.3
+     ],
+     [
+      1,
+      -0.3
+     ]
+    ],
+    "y": [
+     [
+      0,
+      4.2
+     ],
+     [
+      1,
+      4.4
+     ]
+    ],
+    "z": [
+     [
+      0,
+      9.6
+     ],
+     [
+      1,
+      9.2
+     ]
+    ]
+   },
+   "assets": [
+    {
+     "id": "scientist",
+     "asset": "scientist",
+     "tracks": {
+      "x": [
+       [
+        0,
+        -1.3
+       ]
+      ],
+      "z": [
+       [
+        0,
+        0.7
+       ]
+      ],
+      "yaw": [
+       [
+        0,
+        0
+       ],
+       [
+        0.25,
+        -0.45
+       ],
+       [
+        0.55,
+        0.27
+       ],
+       [
+        0.9,
+        0
+       ]
+      ]
+     },
+     "params": {
+      "detail": 2
+     },
+     "actions": [
+      {
+       "name": "idle",
+       "start": 0,
+       "end": 1,
+       "mode": "loop",
+       "speed": 2
+      }
+     ],
+     "interpolation": {
+      "yaw": "flow"
+     }
+    },
+    {
+     "id": "engineer",
+     "asset": "engineer",
+     "tracks": {
+      "x": [
+       [
+        0,
+        0
+       ]
+      ],
+      "z": [
+       [
+        0,
+        0.7
+       ]
+      ],
+      "yaw": [
+       [
+        0,
+        0
+       ],
+       [
+        0.33,
+        0.45
+       ],
+       [
+        0.63,
+        -0.27
+       ],
+       [
+        0.9,
+        0
+       ]
+      ],
+      "leftArmPitch": [
+       [
+        0,
+        0
+       ],
+       [
+        0.2,
+        -2.5
+       ],
+       [
+        0.3,
+        -2.2
+       ],
+       [
+        0.4,
+        -2.5
+       ],
+       [
+        0.5,
+        -2.2
+       ],
+       [
+        0.6,
+        -2.5
+       ],
+       [
+        0.75,
+        0
+       ]
+      ],
+      "leftArmSpread": [
+       [
+        0,
+        0
+       ],
+       [
+        0.2,
+        0.5
+       ],
+       [
+        0.75,
+        0
+       ]
+      ]
+     },
+     "params": {
+      "detail": 2
+     },
+     "interpolation": {
+      "yaw": "flow"
+     }
+    },
+    {
+     "id": "office-worker",
+     "asset": "office-worker",
+     "tracks": {
+      "x": [
+       [
+        0,
+        1.3
+       ]
+      ],
+      "z": [
+       [
+        0,
+        0.7
+       ]
+      ],
+      "yaw": [
+       [
+        0,
+        0
+       ],
+       [
+        0.41000000000000003,
+        -0.45
+       ],
+       [
+        0.7100000000000001,
+        0.27
+       ],
+       [
+        0.9,
+        0
+       ]
+      ],
+      "leftArmPitch": [
+       [
+        0,
+        0
+       ],
+       [
+        0.3,
+        -1.2
+       ],
+       [
+        0.8,
+        -1.2
+       ],
+       [
+        1,
+        0
+       ]
+      ]
+     },
+     "params": {
+      "detail": 2
+     },
+     "interpolation": {
+      "yaw": "flow"
+     }
+    },
+    {
+     "id": "astronaut",
+     "asset": "astronaut",
+     "tracks": {
+      "x": [
+       [
+        0,
+        -2.26
+       ]
+      ],
+      "z": [
+       [
+        0,
+        -0.7
+       ]
+      ],
+      "yaw": [
+       [
+        0,
+        0
+       ],
+       [
+        0.25,
+        0.45
+       ],
+       [
+        0.55,
+        -0.27
+       ],
+       [
+        0.9,
+        0
+       ]
+      ]
+     },
+     "params": {
+      "detail": 2
+     },
+     "actions": [
+      {
+       "name": "idle",
+       "start": 0,
+       "end": 1,
+       "mode": "loop",
+       "speed": 2
+      }
+     ],
+     "interpolation": {
+      "yaw": "flow"
+     }
+    },
+    {
+     "id": "construction-worker",
+     "asset": "construction-worker",
+     "tracks": {
+      "x": [
+       [
+        0,
+        -0.76
+       ]
+      ],
+      "z": [
+       [
+        0,
+        -0.7
+       ]
+      ],
+      "yaw": [
+       [
+        0,
+        0
+       ],
+       [
+        0.33,
+        -0.45
+       ],
+       [
+        0.63,
+        0.27
+       ],
+       [
+        0.9,
+        0
+       ]
+      ]
+     },
+     "params": {
+      "detail": 2
+     },
+     "actions": [
+      {
+       "name": "idle",
+       "start": 0,
+       "end": 1,
+       "mode": "loop",
+       "speed": 2
+      }
+     ],
+     "interpolation": {
+      "yaw": "flow"
+     }
+    },
+    {
+     "id": "student",
+     "asset": "student",
+     "tracks": {
+      "x": [
+       [
+        0,
+        0.76
+       ]
+      ],
+      "z": [
+       [
+        0,
+        -0.7
+       ]
+      ],
+      "yaw": [
+       [
+        0,
+        0
+       ],
+       [
+        0.41000000000000003,
+        0.45
+       ],
+       [
+        0.7100000000000001,
+        -0.27
+       ],
+       [
+        0.9,
+        0
+       ]
+      ],
+      "armPitch": [
+       [
+        0,
+        0
+       ],
+       [
+        0.35,
+        -2.6
+       ],
+       [
+        0.7,
+        -2.6
+       ],
+       [
+        0.9,
+        0
+       ]
+      ],
+      "leftArmPitch": [
+       [
+        0,
+        0
+       ],
+       [
+        0.35,
+        -2.6
+       ],
+       [
+        0.7,
+        -2.6
+       ],
+       [
+        0.9,
+        0
+       ]
+      ],
+      "armSpread": [
+       [
+        0,
+        0
+       ],
+       [
+        0.35,
+        0.6
+       ],
+       [
+        0.9,
+        0
+       ]
+      ],
+      "leftArmSpread": [
+       [
+        0,
+        0
+       ],
+       [
+        0.35,
+        0.6
+       ],
+       [
+        0.9,
+        0
+       ]
+      ]
+     },
+     "params": {
+      "detail": 2
+     },
+     "interpolation": {
+      "yaw": "flow"
+     }
+    },
+    {
+     "id": "runner",
+     "asset": "runner",
+     "tracks": {
+      "x": [
+       [
+        0,
+        2.26
+       ]
+      ],
+      "z": [
+       [
+        0,
+        -0.7
+       ]
+      ],
+      "yaw": [
+       [
+        0,
+        0
+       ],
+       [
+        0.25,
+        -0.45
+       ],
+       [
+        0.55,
+        0.27
+       ],
+       [
+        0.9,
+        0
+       ]
+      ]
+     },
+     "params": {
+      "detail": 2
+     },
+     "actions": [
+      {
+       "name": "idle",
+       "start": 0,
+       "end": 1,
+       "mode": "loop",
+       "speed": 2
+      }
+     ],
+     "interpolation": {
+      "yaw": "flow"
+     }
+    }
+   ],
+   "effects": [],
+   "narration": [
+    "At detail two, every face reads at a glance."
+   ],
+   "fidelity": {
+    "bloom": 0.5,
+    "atmosphere": 0.45,
+    "contactShadow": 0.75,
+    "surfaceDetail": 0.6,
+    "depthOfField": 0.1,
+    "motionBlur": 0,
+    "grain": 0.12,
+    "grade": 0.45,
+    "particles": 0.3,
+    "typography": 1
+   }
+  },
+  {
+   "id": "detail-3",
+   "template": "cinematic-graph",
+   "backend": "cpu",
+   "durationFrames": 150,
+   "transitionFrames": 12,
+   "transition": "fade",
+   "heading": "DETAIL THREE",
+   "subheading": "Hair, hands and clothing.",
+   "environment": "amber",
+   "lighting": "parity-v1",
+   "cameraRig": {
+    "preset": "establishing",
+    "framing": "establishing",
+    "padding": 0.12,
+    "strength": 0.9
+   },
+   "camera": {
+    "x": [
+     [
+      0,
+      0.3
+     ],
+     [
+      1,
+      -0.3
+     ]
+    ],
+    "y": [
+     [
+      0,
+      4.2
+     ],
+     [
+      1,
+      4.4
+     ]
+    ],
+    "z": [
+     [
+      0,
+      9.6
+     ],
+     [
+      1,
+      9.2
+     ]
+    ]
+   },
+   "assets": [
+    {
+     "id": "scientist",
+     "asset": "scientist",
+     "tracks": {
+      "x": [
+       [
+        0,
+        -1.3
+       ]
+      ],
+      "z": [
+       [
+        0,
+        0.7
+       ]
+      ],
+      "yaw": [
+       [
+        0,
+        0
+       ],
+       [
+        0.25,
+        -0.45
+       ],
+       [
+        0.55,
+        0.27
+       ],
+       [
+        0.9,
+        0
+       ]
+      ]
+     },
+     "params": {
+      "detail": 3
+     },
+     "actions": [
+      {
+       "name": "idle",
+       "start": 0,
+       "end": 1,
+       "mode": "loop",
+       "speed": 2
+      }
+     ],
+     "interpolation": {
+      "yaw": "flow"
+     }
+    },
+    {
+     "id": "engineer",
+     "asset": "engineer",
+     "tracks": {
+      "x": [
+       [
+        0,
+        0
+       ]
+      ],
+      "z": [
+       [
+        0,
+        0.7
+       ]
+      ],
+      "yaw": [
+       [
+        0,
+        0
+       ],
+       [
+        0.33,
+        0.45
+       ],
+       [
+        0.63,
+        -0.27
+       ],
+       [
+        0.9,
+        0
+       ]
+      ],
+      "leftArmPitch": [
+       [
+        0,
+        0
+       ],
+       [
+        0.2,
+        -2.5
+       ],
+       [
+        0.3,
+        -2.2
+       ],
+       [
+        0.4,
+        -2.5
+       ],
+       [
+        0.5,
+        -2.2
+       ],
+       [
+        0.6,
+        -2.5
+       ],
+       [
+        0.75,
+        0
+       ]
+      ],
+      "leftArmSpread": [
+       [
+        0,
+        0
+       ],
+       [
+        0.2,
+        0.5
+       ],
+       [
+        0.75,
+        0
+       ]
+      ]
+     },
+     "params": {
+      "detail": 3
+     },
+     "interpolation": {
+      "yaw": "flow"
+     }
+    },
+    {
+     "id": "office-worker",
+     "asset": "office-worker",
+     "tracks": {
+      "x": [
+       [
+        0,
+        1.3
+       ]
+      ],
+      "z": [
+       [
+        0,
+        0.7
+       ]
+      ],
+      "yaw": [
+       [
+        0,
+        0
+       ],
+       [
+        0.41000000000000003,
+        -0.45
+       ],
+       [
+        0.7100000000000001,
+        0.27
+       ],
+       [
+        0.9,
+        0
+       ]
+      ],
+      "leftArmPitch": [
+       [
+        0,
+        0
+       ],
+       [
+        0.3,
+        -1.2
+       ],
+       [
+        0.8,
+        -1.2
+       ],
+       [
+        1,
+        0
+       ]
+      ]
+     },
+     "params": {
+      "detail": 3
+     },
+     "interpolation": {
+      "yaw": "flow"
+     }
+    },
+    {
+     "id": "astronaut",
+     "asset": "astronaut",
+     "tracks": {
+      "x": [
+       [
+        0,
+        -2.26
+       ]
+      ],
+      "z": [
+       [
+        0,
+        -0.7
+       ]
+      ],
+      "yaw": [
+       [
+        0,
+        0
+       ],
+       [
+        0.25,
+        0.45
+       ],
+       [
+        0.55,
+        -0.27
+       ],
+       [
+        0.9,
+        0
+       ]
+      ]
+     },
+     "params": {
+      "detail": 3
+     },
+     "actions": [
+      {
+       "name": "idle",
+       "start": 0,
+       "end": 1,
+       "mode": "loop",
+       "speed": 2
+      }
+     ],
+     "interpolation": {
+      "yaw": "flow"
+     }
+    },
+    {
+     "id": "construction-worker",
+     "asset": "construction-worker",
+     "tracks": {
+      "x": [
+       [
+        0,
+        -0.76
+       ]
+      ],
+      "z": [
+       [
+        0,
+        -0.7
+       ]
+      ],
+      "yaw": [
+       [
+        0,
+        0
+       ],
+       [
+        0.33,
+        -0.45
+       ],
+       [
+        0.63,
+        0.27
+       ],
+       [
+        0.9,
+        0
+       ]
+      ]
+     },
+     "params": {
+      "detail": 3
+     },
+     "actions": [
+      {
+       "name": "idle",
+       "start": 0,
+       "end": 1,
+       "mode": "loop",
+       "speed": 2
+      }
+     ],
+     "interpolation": {
+      "yaw": "flow"
+     }
+    },
+    {
+     "id": "student",
+     "asset": "student",
+     "tracks": {
+      "x": [
+       [
+        0,
+        0.76
+       ]
+      ],
+      "z": [
+       [
+        0,
+        -0.7
+       ]
+      ],
+      "yaw": [
+       [
+        0,
+        0
+       ],
+       [
+        0.41000000000000003,
+        0.45
+       ],
+       [
+        0.7100000000000001,
+        -0.27
+       ],
+       [
+        0.9,
+        0
+       ]
+      ],
+      "armPitch": [
+       [
+        0,
+        0
+       ],
+       [
+        0.35,
+        -2.6
+       ],
+       [
+        0.7,
+        -2.6
+       ],
+       [
+        0.9,
+        0
+       ]
+      ],
+      "leftArmPitch": [
+       [
+        0,
+        0
+       ],
+       [
+        0.35,
+        -2.6
+       ],
+       [
+        0.7,
+        -2.6
+       ],
+       [
+        0.9,
+        0
+       ]
+      ],
+      "armSpread": [
+       [
+        0,
+        0
+       ],
+       [
+        0.35,
+        0.6
+       ],
+       [
+        0.9,
+        0
+       ]
+      ],
+      "leftArmSpread": [
+       [
+        0,
+        0
+       ],
+       [
+        0.35,
+        0.6
+       ],
+       [
+        0.9,
+        0
+       ]
+      ]
+     },
+     "params": {
+      "detail": 3
+     },
+     "interpolation": {
+      "yaw": "flow"
+     }
+    },
+    {
+     "id": "runner",
+     "asset": "runner",
+     "tracks": {
+      "x": [
+       [
+        0,
+        2.26
+       ]
+      ],
+      "z": [
+       [
+        0,
+        -0.7
+       ]
+      ],
+      "yaw": [
+       [
+        0,
+        0
+       ],
+       [
+        0.25,
+        -0.45
+       ],
+       [
+        0.55,
+        0.27
+       ],
+       [
+        0.9,
+        0
+       ]
+      ]
+     },
+     "params": {
+      "detail": 3
+     },
+     "actions": [
+      {
+       "name": "idle",
+       "start": 0,
+       "end": 1,
+       "mode": "loop",
+       "speed": 2
+      }
+     ],
+     "interpolation": {
+      "yaw": "flow"
+     }
+    }
+   ],
+   "effects": [],
+   "narration": [
+    "Detail three adds hair, hands and clothing for each kind of character."
+   ],
+   "fidelity": {
+    "bloom": 0.5,
+    "atmosphere": 0.45,
+    "contactShadow": 0.75,
+    "surfaceDetail": 0.6,
+    "depthOfField": 0.1,
+    "motionBlur": 0,
+    "grain": 0.12,
+    "grade": 0.45,
+    "particles": 0.3,
+    "typography": 1
+   }
+  }
+ ]
+}

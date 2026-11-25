@@ -1,10 +1,14 @@
+// POLISH-02 items 1-4: aim (teach), planted turn steps, HIGH SHELF (telescoping reach, solved pickup/place).
+// POLISH-02 item 1: LEARNING BY WATCHING pointers aim at the table (opt-in aim).
 // POLISH-01 part 4: "The Workshop — Extended" (64 s, 9 shots). Builds on the owner-accepted ART-05 film (unchanged)
 // and adds shots that use planted walking and the interaction solver. Deterministic generator.
 // Usage: node scripts/workshop-extended.mjs [--check]  (writes examples/workshop-extended-{cpu,three}-polished.json)
 import {readFileSync,writeFileSync} from 'node:fs';
 import {validateProject} from '../src/core/timeline.js';
 import {stageProject} from '../src/core/staging.js';
-import {solveHandoff} from '../src/core/interaction.js';
+import {solveHandoff,solveReach} from '../src/core/interaction.js';
+import {surfacePoint} from '../src/core/surface.js';
+import {locomotionRig} from '../src/core/locomotion.js';
 import {inspectProject} from '../src/quality/preflight.js';
 import {compositionReport} from '../src/quality/composition.js';
 
@@ -35,9 +39,32 @@ function teach(){
  return fresh('teach',240,'laboratory','LEARNING BY WATCHING','Point, look, follow.','It learns by watching. Point, look, and follow.',{
   cameraRig:{preset:'medium',framing:'medium',strength:.5,subject:'robot'},camera:{x:[[0,.5],[1,-.3]],y:[[0,3]],z:[[0,8.6],[1,8.2]],zoom:[[0,1250],[1,1350]]},cameraInterpolation:{x:'flow',zoom:'flow'},
   assets:[
-   {id:'engineer',asset:'engineer',params:D2,tracks:{x:[[0,-1.2]],z:[[0,.2]]},face:{target:'table',start:0,end:1,offset:-.45},actions:[{name:'point',start:.08,end:.5,blend:.12}]},
-   {id:'robot',asset:'service-robot',tracks:{x:[[0,.35]],z:[[0,.45]],yaw:[[0,.55]],blink:[[0,1],[.4,1],[.43,.1],[.46,1]]},face:{target:'engineer',start:0,end:.48,blend:.15,offset:.35},actions:[{name:'point',start:.55,end:.92,blend:.12}]},
+   {id:'engineer',asset:'engineer',params:D2,tracks:{x:[[0,-1.2]],z:[[0,.2]]},face:{target:'table',start:0,end:1,offset:-.45},actions:[{name:'point',start:.08,end:.5,blend:.12}],aim:{target:'table',start:.08,end:.5,blend:.12,height:.7}},
+   {id:'robot',asset:'service-robot',tracks:{x:[[0,.35]],z:[[0,.45]],yaw:[[0,.55]],blink:[[0,1],[.4,1],[.43,.1],[.46,1]]},face:{target:'engineer',start:0,end:.48,blend:.15,offset:.35},actions:[{name:'point',start:.55,end:.92,blend:.12}],aim:{target:'table',start:.55,end:.92,blend:.12,height:.7,cheat:.6}},
    {id:'table',asset:'table',tracks:{x:[[0,1.85]],z:[[0,-.55]],scale:[[0,.85]]}}]});
+}
+// POLISH-02 items 3+4: the robot (telescoping reach) takes a book from the top of the bookshelf and sets it on the
+// table. Standing spots and arm poses come from solveReach; prop heights come from the rendered surface tops.
+function shelf(){
+ // Shelf on the right, table on the left: the robot reaches in profile with its camera-side (left) arm.
+ const SH=[1.3,-.5],TB=[-1.1,-.3],TS=.85,PICK=[-.4,.1],PLACE=[.5,.3],R={reach:1.8},lift=.06;
+ const S={asset:'bookshelf',pose:{origin:[SH[0],0,SH[1]],yaw:0}},T={asset:'table',pose:{origin:[TB[0],0,TB[1]],yaw:0,scale:TS}};
+ const avoid=[{center:SH,half:[.52,.29]},{center:TB,half:[.76*TS,.44*TS]}],opt={params:R,avoid,clearance:.3,spreadDeg:85,hands:['left']};
+ const up=(p)=>[p[0],p[1]+lift,p[2]],pick=solveReach('service-robot',up(surfacePoint(S,PICK)),{...opt,around:-Math.PI/2,spreadDeg:35}),put=solveReach('service-robot',up(surfacePoint(T,PLACE)),opt);
+ // Turns are authored (about 27 frames each) instead of a short faceTravel blend, so the carried book never whips.
+ const head=r3(Math.atan2(put.x-pick.x,put.z-pick.z));
+ return fresh('shelf',270,'laboratory','HIGH SHELF','Reach, carry, set it down.','Now it tries on its own: up to the high shelf, and down onto the table.',{
+  cameraRig:{preset:'medium',framing:'establishing',strength:.5,subject:'robot'},camera:{x:[[0,.4],[1,-.4]],y:[[0,3.2]],z:[[0,9.4],[1,9]]},cameraInterpolation:{x:'flow'},
+  assets:[
+   {id:'robot',asset:'service-robot',params:R,tracks:{x:[[0,r3(pick.x)],[.44,r3(pick.x)],[.72,r3(put.x)]],z:[[0,r3(pick.z)],[.44,r3(pick.z)],[.72,r3(put.z)]],yaw:[[0,r3(pick.yaw)],[.34,r3(pick.yaw)],[.44,head],[.72,head],[.84,r3(put.yaw)]],
+     leftArmPitch:[[0,0],[.08,0],[.24,r3(pick.armPitch)],[.3,r3(pick.armPitch)],[.44,-.9],[.76,-.9],[.86,r3(put.armPitch)],[.9,r3(put.armPitch)],[.98,0]],
+     leftArmSpread:[[0,0],[.08,0],[.24,r3(pick.armSpread)],[.3,r3(pick.armSpread)],[.44,0],[.76,0],[.86,r3(put.armSpread)],[.9,r3(put.armSpread)],[.98,0]],
+     blink:[[0,1],[.5,1],[.53,.1],[.56,1]]},interpolation:{x:'flow',z:'flow',yaw:'flow'},
+    locomotion:{mode:'stride',start:.44,end:.72},turnSteps:true},
+   {id:'shelf',asset:'bookshelf',tracks:{x:[[0,SH[0]]],z:[[0,SH[1]]]}},
+   {id:'table',asset:'table',tracks:{x:[[0,TB[0]]],z:[[0,TB[1]]],scale:[[0,TS]]}},
+   {id:'book',asset:'book',tracks:{scale:[[0,.7]]},restOn:{surface:'shelf',at:PICK},
+    attachment:{parent:'robot',anchor:'left-hand',start:.27,end:.9,offset:'auto',release:{mode:'place',duration:.05,to:{surface:'table',at:PLACE}}}}]});
 }
 function lights(){
  return fresh('lights',180,'midnight','LIGHTS OUT','Tomorrow, more to build.','When the lights go out, it remembers every step.',{
@@ -47,10 +74,13 @@ function lights(){
 }
 function shots(){
  const keep=id=>structuredClone(base[id]);
- return [keep('workshop'),keep('plan'),toolbox(),keep('power'),steps(),teach(),keep('handoff'),keep('together'),lights()];
+ // POLISH-02 item 2: planted turn steps for every legged character in the new/upgraded shots (kept shots unchanged).
+ const turns=s=>{for(const a of s.assets)if(locomotionRig(a.asset))a.turnSteps=true;return s;};
+ return [keep('workshop'),keep('plan'),turns(toolbox()),keep('power'),turns(steps()),turns(teach()),shelf(),keep('handoff'),keep('together'),lights()];
 }
 export function build(backend){
- const p={version:2,id:'workshop-extended-'+backend+'-polished',title:'The Workshop — Extended',voice:'af_heart',shots:shots().map(s=>({...s,backend}))};
+ // POLISH-02 item 8: opt-in mastering (consistent phrase levels, -16 LUFS, -1 dBTP).
+ const p={version:2,id:'workshop-extended-'+backend+'-polished',title:'The Workshop — Extended',voice:'af_heart',audio:{master:'mix-v2'},shots:shots().map(s=>({...s,backend}))};
  validateProject(p);return stageProject(p);
 }
 if(process.argv[1]&&import.meta.url.endsWith(process.argv[1].replaceAll('\\','/').split('/').pop())){

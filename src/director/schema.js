@@ -19,7 +19,7 @@ export function safeJson(raw){
 }
 export const normalize=s=>s.trim().replace(/\s+/g,' ');
 export function request(input){
- fields(input,['version','id','topic','script','seconds','audience','tone','style','language','voice','backend','profile','seed','identityLibrary','cast','story','speech','staging'], 'request',['version','id','topic','seconds']);
+ fields(input,['version','id','topic','script','seconds','audience','tone','style','language','voice','backend','profile','seed','identityLibrary','cast','story','speech','staging','promptVersion'], 'request',['version','id','topic','seconds']);
  const q={audience:'general audience',tone:'clear',style:'cinematic explainer',language:'en',voice:'af_heart',backend:'cpu',profile:'polished',seed:0,...input};
  if(q.version!==REQUEST_VERSION)bad('request.version','unsupported');
  if(typeof q.id!=='string'||!/^[a-z0-9][a-z0-9-]{0,47}$/.test(q.id)||/^(con|prn|aux|nul|com[1-9]|lpt[1-9])$/.test(q.id))bad('request.id','unsafe ID');
@@ -29,7 +29,9 @@ export function request(input){
  if(!Number.isSafeInteger(q.seed)||q.seed<0||q.seed>2147483647)bad('request.seed','invalid seed');
  choice(q.language,['en','en-us','en-gb'],'request.language');choice(q.voice,VOICES,'request.voice');
  if(q.language==='en-gb'&&!q.voice.startsWith('b')||q.language==='en-us'&&q.voice.startsWith('b'))bad('request.voice','language/voice mismatch');
- if(q.staging!==undefined)choice(q.staging,['art-v1','art-v2'],'request.staging');choice(q.backend,['cpu','three'],'request.backend');choice(q.profile,['original','polished'],'request.profile');validateIdentityRequest(q);if(q.speech!==undefined){validateSpeechConfig(q.speech);if(q.speech.targetFrames!==q.seconds*30)bad('speech','targetFrames must equal seconds*30');}return q;
+ if(q.staging!==undefined)choice(q.staging,['art-v1','art-v2'],'request.staging');
+ // POLISH-02: opt-in compact prompt; absent keeps director-ir-v1.1 (unchanged digests).
+ if(q.promptVersion!==undefined)choice(q.promptVersion,['director-ir-v1.1','director-ir-v1.2'],'request.promptVersion');choice(q.backend,['cpu','three'],'request.backend');choice(q.profile,['original','polished'],'request.profile');validateIdentityRequest(q);if(q.speech!==undefined){validateSpeechConfig(q.speech);if(q.speech.targetFrames!==q.seconds*30)bad('speech','targetFrames must equal seconds*30');}return q;
 }
 export function validateIR(ir,q,selection){
  fields(ir,['version','title','treatment','shots'],'ir',['version','title','treatment','shots']);

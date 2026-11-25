@@ -15,3 +15,18 @@ Curated final showcase for the ART track. Topic, style and duration were chosen 
 - Generator scripts/workshop-extended.mjs → examples/workshop-extended-{cpu,three}-polished.json (tests assert exact reproduction).
 - Evidence (source ea9bde3 clean): `node scripts/produce.mjs --project examples/workshop-extended-cpu-polished.json --pair examples/workshop-extended-three-polished.json --backend both --id workshop-extended-r1` (c8/vulkan) → 1 preparation, 2 renders (CPU 91.1 s, Three 50.6 s), verify PASS (1920 f, 64 s, full decode, Kokoro), quality pass 0/0 (384 sampled frames each), compare_release PASS shared hashes exact, frame-glitch clean on all frames. Films CPU 462544f1…, Three cccaa82c….
 - Review: agent stills only (walk mid-stride with lifted foot, handoff, robot walk, teach, lights out on both backends). Polish note: in LEARNING BY WATCHING the engineer's point aims more at the robot than the table.
+
+## "The Workshop — Extended" update (POLISH-02 items 1–4, 2026-11-25)
+- Now 73 s, 2190 frames, 10 shots. Changes: LEARNING BY WATCHING pointers aim at the table (item 1); planted turn steps on every legged character in TOOLBOX, FIRST STEPS and LEARNING BY WATCHING (item 2); new **HIGH SHELF** shot after LEARNING BY WATCHING (items 3+4): the robot (telescoping reach 1.8) stands beside the bookshelf, reaches up with its camera-side arm, takes the book from the shelf top (auto grip), walks with planted feet and sets it on the detected table top. The five reused ART-05 shots (WORKSHOP, PLAN, POWER ON, HAND TO HAND, TOGETHER) and LIGHTS OUT are unchanged.
+- Evidence (source 52c01fd clean): `node scripts/produce.mjs --project examples/workshop-extended-cpu-polished.json --pair examples/workshop-extended-three-polished.json --backend both --id workshop-extended-r3` (c8/vulkan) → 1 preparation, 2 renders (CPU 102.5 s, Three 58.8 s), verify PASS (2190 frames, 73 s, full decode, Kokoro per-phrase audio), quality pass 0 errors/0 warnings (438 sampled frames each), compare_release PASS (shared hashes exact), frame-glitch clean on all frames of both films. Films: CPU fbea6756d1241fe8…, Three 8d864943380c7638…. (r2 at 0087fa7 also passed all gates; its stills showed the reach hidden behind the robot's head, which led to the mirrored layout in r3.)
+- Review: agent stills only (both backends): reach in profile with the raised telescoping arm, carry facing the camera, planted stride, book set on the table. During the reach the shelf front partly hides the robot's body. Owner visual/audio review pending.
+
+## "The Workshop — Extended" update (POLISH-02 items 5–10, 2026-11-25)
+- Picture is unchanged apart from the teach aim numerics (faster solver, same accuracy). Audio now uses mastering profile `mix-v2` (docs/SPEECH.md).
+- Evidence (source 46ca532 clean): `node scripts/produce.mjs --project examples/workshop-extended-cpu-polished.json --pair examples/workshop-extended-three-polished.json --backend both --id workshop-extended-r6` (c8/vulkan):
+  - 1 preparation, 2 renders: CPU 100.8 s, Three 58.6 s;
+  - RTX observed: nvidia-smi utilisation peak 40 %, VRAM peak 1,436 MiB;
+  - verify PASS (2190 frames, 73 s), quality 0/0, compare_release PASS, frame-glitch clean on both;
+  - films: CPU 70867e20fa4248d0…, Three e9eb27517f4dc71a…;
+  - delivered loudness −16.0 LUFS, LRA 11.7 LU, true peak −2.5 dBFS (both films).
+- r4 and r5 were intermediate mastering iterations (bed level, then loudness bookkeeping); both passed all gates and are superseded.

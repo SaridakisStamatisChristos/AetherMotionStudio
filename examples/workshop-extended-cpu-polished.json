@@ -3,6 +3,9 @@
  "id": "workshop-extended-cpu-polished",
  "title": "The Workshop — Extended",
  "voice": "af_heart",
+ "audio": {
+  "master": "mix-v2"
+ },
  "shots": [
   {
    "id": "workshop",
@@ -514,7 +517,8 @@
       "end": 1,
       "blend": 0.15,
       "offset": -1
-     }
+     },
+     "turnSteps": true
     },
     {
      "id": "engineer",
@@ -585,7 +589,8 @@
       "start": 0,
       "end": 1,
       "offset": -0.2
-     }
+     },
+     "turnSteps": true
     },
     {
      "id": "toolbox",
@@ -961,7 +966,8 @@
       "end": 0.85,
       "faceTravel": true,
       "blend": 0.12
-     }
+     },
+     "turnSteps": true
     },
     {
      "id": "engineer",
@@ -988,7 +994,8 @@
       "start": 0,
       "end": 1,
       "offset": -0.3
-     }
+     },
+     "turnSteps": true
     },
     {
      "id": "scientist",
@@ -1015,7 +1022,8 @@
       "start": 0,
       "end": 1,
       "offset": 0.3
-     }
+     },
+     "turnSteps": true
     }
    ],
    "effects": [],
@@ -1128,7 +1136,15 @@
        "end": 0.5,
        "blend": 0.12
       }
-     ]
+     ],
+     "aim": {
+      "target": "table",
+      "start": 0.08,
+      "end": 0.5,
+      "blend": 0.12,
+      "height": 0.7
+     },
+     "turnSteps": true
     },
     {
      "id": "robot",
@@ -1185,7 +1201,16 @@
        "end": 0.92,
        "blend": 0.12
       }
-     ]
+     ],
+     "aim": {
+      "target": "table",
+      "start": 0.55,
+      "end": 0.92,
+      "blend": 0.12,
+      "height": 0.7,
+      "cheat": 0.6
+     },
+     "turnSteps": true
     },
     {
      "id": "table",
@@ -1215,6 +1240,316 @@
    "effects": [],
    "narration": [
     "It learns by watching. Point, look, and follow."
+   ],
+   "fidelity": {
+    "bloom": 0.6,
+    "atmosphere": 0.5,
+    "contactShadow": 0.75,
+    "surfaceDetail": 0.6,
+    "depthOfField": 0.15,
+    "motionBlur": 0,
+    "grain": 0.15,
+    "grade": 0.45,
+    "particles": 0.4,
+    "typography": 1
+   }
+  },
+  {
+   "id": "shelf",
+   "template": "cinematic-graph",
+   "backend": "cpu",
+   "durationFrames": 270,
+   "transitionFrames": 12,
+   "transition": "fade",
+   "heading": "HIGH SHELF",
+   "subheading": "Reach, carry, set it down.",
+   "environment": "laboratory",
+   "lighting": "parity-v1",
+   "cameraRig": {
+    "preset": "medium",
+    "framing": "establishing",
+    "strength": 0.5,
+    "subject": "robot"
+   },
+   "camera": {
+    "x": [
+     [
+      0,
+      0.4
+     ],
+     [
+      1,
+      -0.4
+     ]
+    ],
+    "y": [
+     [
+      0,
+      3.2
+     ]
+    ],
+    "z": [
+     [
+      0,
+      9.4
+     ],
+     [
+      1,
+      9
+     ]
+    ]
+   },
+   "cameraInterpolation": {
+    "x": "flow"
+   },
+   "assets": [
+    {
+     "id": "robot",
+     "asset": "service-robot",
+     "params": {
+      "reach": 1.8
+     },
+     "tracks": {
+      "x": [
+       [
+        0,
+        0.45
+       ],
+       [
+        0.44,
+        0.45
+       ],
+       [
+        0.72,
+        -0.127
+       ]
+      ],
+      "z": [
+       [
+        0,
+        -0.715
+       ],
+       [
+        0.44,
+        -0.715
+       ],
+       [
+        0.72,
+        0.003
+       ]
+      ],
+      "yaw": [
+       [
+        0,
+        1.66
+       ],
+       [
+        0.34,
+        1.66
+       ],
+       [
+        0.44,
+        -0.676
+       ],
+       [
+        0.72,
+        -0.676
+       ],
+       [
+        0.84,
+        -0.958
+       ]
+      ],
+      "leftArmPitch": [
+       [
+        0,
+        0
+       ],
+       [
+        0.08,
+        0
+       ],
+       [
+        0.24,
+        -2.494
+       ],
+       [
+        0.3,
+        -2.494
+       ],
+       [
+        0.44,
+        -0.9
+       ],
+       [
+        0.76,
+        -0.9
+       ],
+       [
+        0.86,
+        -0.844
+       ],
+       [
+        0.9,
+        -0.844
+       ],
+       [
+        0.98,
+        0
+       ]
+      ],
+      "leftArmSpread": [
+       [
+        0,
+        0
+       ],
+       [
+        0.08,
+        0
+       ],
+       [
+        0.24,
+        -0.252
+       ],
+       [
+        0.3,
+        -0.252
+       ],
+       [
+        0.44,
+        0
+       ],
+       [
+        0.76,
+        0
+       ],
+       [
+        0.86,
+        0.46
+       ],
+       [
+        0.9,
+        0.46
+       ],
+       [
+        0.98,
+        0
+       ]
+      ],
+      "blink": [
+       [
+        0,
+        1
+       ],
+       [
+        0.5,
+        1
+       ],
+       [
+        0.53,
+        0.1
+       ],
+       [
+        0.56,
+        1
+       ]
+      ]
+     },
+     "interpolation": {
+      "x": "flow",
+      "z": "flow",
+      "yaw": "flow"
+     },
+     "locomotion": {
+      "mode": "stride",
+      "start": 0.44,
+      "end": 0.72
+     },
+     "turnSteps": true
+    },
+    {
+     "id": "shelf",
+     "asset": "bookshelf",
+     "tracks": {
+      "x": [
+       [
+        0,
+        1.3
+       ]
+      ],
+      "z": [
+       [
+        0,
+        -0.5
+       ]
+      ]
+     }
+    },
+    {
+     "id": "table",
+     "asset": "table",
+     "tracks": {
+      "x": [
+       [
+        0,
+        -1.1
+       ]
+      ],
+      "z": [
+       [
+        0,
+        -0.3
+       ]
+      ],
+      "scale": [
+       [
+        0,
+        0.85
+       ]
+      ]
+     }
+    },
+    {
+     "id": "book",
+     "asset": "book",
+     "tracks": {
+      "scale": [
+       [
+        0,
+        0.7
+       ]
+      ]
+     },
+     "restOn": {
+      "surface": "shelf",
+      "at": [
+       -0.4,
+       0.1
+      ]
+     },
+     "attachment": {
+      "parent": "robot",
+      "anchor": "left-hand",
+      "start": 0.27,
+      "end": 0.9,
+      "offset": "auto",
+      "release": {
+       "mode": "place",
+       "duration": 0.05,
+       "to": {
+        "surface": "table",
+        "at": [
+         0.5,
+         0.3
+        ]
+       }
+      }
+     }
+    }
+   ],
+   "effects": [],
+   "narration": [
+    "Now it tries on its own: up to the high shelf, and down onto the table."
    ],
    "fidelity": {
     "bloom": 0.6,

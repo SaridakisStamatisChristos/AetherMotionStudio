@@ -8,6 +8,13 @@ export function localArm(family,args,s,pose){
  const shoulder=family==='robot'?[s*w*.63,h*.64,0]:[s*w*.57,h*.78,0];
  const rest=family==='robot'?[s*w*(.78+.28*open),h*(.35+.14*open),.08]:[s*w*(.65+open*.2),h*(.45+open*.2),.12];
  const pitch=s===1?(pose.armPitch??0):(pose.leftArmPitch??0),spread=s===1?(pose.armSpread??0):(pose.leftArmSpread??0);
+ const reach=family==='robot'?pose.params?.reach:undefined;
+ if(reach!==undefined&&reach>1){
+  // POLISH-02 opt-in telescoping robot arm: extends (and lifts the shoulder slightly) only as the arm rises above
+  // horizontal, so rest and forward poses are unchanged. u: 0 at pitch -1.2 (just below horizontal), 1 at -2.8.
+  const u=Math.min(1,Math.max(0,(-pitch-1.2)/1.6)),e=(reach-1)*u*u*(3-2*u),sh=[shoulder[0],shoulder[1]+h*.06*e,shoulder[2]];
+  return {shoulder:sh,hand:add(rz(rx(rest.map((v,i)=>(v-shoulder[i])*(1+e)),pitch),spread),sh)};
+ }
  return {shoulder,hand:pitch||spread?add(rz(rx(rest.map((v,i)=>v-shoulder[i]),pitch),spread),shoulder):rest};
 }
 export function catalogHandAnchor(id,pose,s=1){

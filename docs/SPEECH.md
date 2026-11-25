@@ -9,3 +9,24 @@ Speech-envelope retiming maps existing normalized action windows into measured s
 Cache stores processed float32 phrase PCM keyed by normalized original/pronounced text, voice/language, speed, model/voice SHA256, package and processing version. Atomic replacement and checksum/size/waveform validation; 128 MiB per-process eviction limit, 8 MiB entry limit. Concurrent independent renders may transiently exceed cap; use separate output IDs, local trusted cache directory. Cache outside git. Exact repeated deterministic synthesis not claimed across machines/versions.
 
 Acceptance fixture: A message travels across a network, supplied script and six shots, exact 1800-frame target with first shot fixed at 300 frames and remaining automatic, two voices, speech-linked cues and highlight, matched CPU/Three.js. Tests for 15/30/60/120 second synthetic allocation, fixed infeasibility, cache corruption/eviction, caption bounds, malformed data, legacy regressions. Native CPU verification adds sidecars, phrase coverage, mixed audio sample peak/activity. Only one polished CPU render; matched Three.js deferred. v0.8 quality/repair and v0.9 editor remain explicit gates.
+
+## POLISH-02 mastering profile mix-v2 (2026-11-25, opt-in)
+- Project field `audio: {master: 'mix-v2'}` applies to the standard timeline mixer (scripts/make_timeline_audio.py + scripts/audio_master.py). Projects with a `speech` config are rejected with it, because they keep their own `speech.mix` contract. Absent = historical mix, byte-identical.
+- What it does:
+  - every phrase is set to a common RMS (0.17) and soft-limited (tanh, 0.8), replacing the peak-capped normalisation;
+  - the music bed is raised +6 dB before ducking;
+  - BS.1770-4 integrated loudness (numpy/scipy, no new dependency) targets −16 LUFS as delivered (−19.01 LUFS on the mono mix, which the film carries on both AAC channels), with gain re-measured after a soft knee;
+  - true-peak ceiling −1 dBTP (4× oversampled).
+- The report is written to `<prepared>/audio-master.json`.
+- Audio review of "The Workshop — Extended":
+
+  | | r3, historical mix | r6, mix-v2 |
+  |---|---|---|
+  | Integrated loudness (delivered) | −19.8 LUFS | −16.0 LUFS |
+  | Loudness range | 13.6 LU | 11.7 LU |
+  | True peak | −3.8 dBFS | −2.5 dBFS |
+  | Phrase RMS spread | 6.6 dB | 0.3 dB |
+  | Bed in gaps (relative to speech) | −11 dB | about −10 dB, now fills the gaps |
+
+- Remaining finding, not changed: authored shot lengths centre the narration, leaving 1.6–3.1 s of bed-only time at each end of every shot (up to about 5 s across a cut). Fixing it means tightening shot durations or adding narration, which is an authoring or TALK-track decision.
+- Tests: tests/test_audio_master.py (BS.1770 reference tone, gating, target and ceiling, determinism, phrase levelling, rate guard) and project-field validation in tests/polish-02.test.js. Human audio review is still pending.
