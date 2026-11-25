@@ -151,14 +151,14 @@ Exit criteria: checks run on every example in tests and stay digest-neutral for 
 | GEN-07 | Re-stage older accepted films flagged by the checks (off-frame characters, hidden tables, fast turns) using the general passes; produce new revisions, never overwrite | The checks list findings in 9+ older films | Yes: these films were accepted |
 | GEN-08 | Visibility check from projected geometry boxes instead of whole-asset boxes | Fewer false alarms for thin shapes | No |
 
-| GEN-09 | Real dialogue writing: an opt-in local model provider (no paid API, loopback) writes back-and-forth conversation through prompt director-ir-v1.3; the offline split stays the default; every line still validated, and every line flagged as model-written | Offline dialogue is explanatory narration split into turns | Yes: which local model/provider to install (new local dependency) |
-| GEN-10 | Instagram export preset: Reels duration limits, a chosen cover frame / thumbnail, caption and UI-safe zones for the app overlay, optional seamless loop; opt-in profile, default export unchanged | Ready to post without extra steps | Yes: confirm the target (Reels, Stories, both) |
-| GEN-11 | Mouth shapes from sounds: opt-in local phoneme estimate driving visemes, labelled estimated (never "lip-sync"/"forced alignment" unless truly aligned); envelope mouths stay the default | Mouths only open with loudness today | Yes: a new local tool/dependency |
-| GEN-12 | Idle weight shift: opt-in hip joint on human/robot rigs, slow calm shifts; geometry digests unchanged without it | Characters look stiff while listening | No (within the motion-taste budget) |
-| GEN-13 | Topic-fitting sets: environment and set-piece variety chosen per topic from the catalog/Foundry packs, checked by visibility/composition gates | Series will look repetitive | No |
-| GEN-14 | Music and sound design: mood-based music beds and small action sound effects from local, licence-clear sources; mix-v2 loudness preserved | Audio is mostly voice + bed | Yes: music sources/licences |
+| GEN-09 | Instagram export preset: Reels duration limits, a chosen cover frame / thumbnail, caption and UI-safe zones for the app overlay, optional seamless loop; opt-in profile, default export unchanged | Ready to post without extra steps | Yes: confirm the target (Reels, Stories, both) |
+| GEN-10 | Mouth shapes from sounds: opt-in local phoneme estimate driving visemes, labelled estimated (never "lip-sync"/"forced alignment" unless truly aligned); envelope mouths stay the default | Mouths only open with loudness today | Yes: a new local tool/dependency |
+| GEN-11 | Idle weight shift: opt-in hip joint on human/robot rigs, slow calm shifts; geometry digests unchanged without it | Characters look stiff while listening | No (within the motion-taste budget) |
+| GEN-12 | Topic-fitting sets: environment and set-piece variety chosen per topic from the catalog/Foundry packs, checked by visibility/composition gates | Series will look repetitive | No |
+| GEN-13 | Music and sound design: mood-based music beds and small action sound effects from local, licence-clear sources; mix-v2 loudness preserved | Audio is mostly voice + bed | Yes: music sources/licences |
+| GEN-14 | Real dialogue writing: an opt-in local model provider (no paid API, loopback) writes back-and-forth conversation through prompt director-ir-v1.3; the offline split stays the default; every line still validated, and every line flagged as model-written | Offline dialogue is explanatory narration split into turns | Yes: which local model/provider to install (new local dependency) |
 
-Recommended order after GEN-04..08: GEN-09 and GEN-10 first (content quality, then ready-to-post), then GEN-11..14. Added 2026-11-25 at the owner's request ("yes add them of course"); proposals only, none authorized.
+Order set by the owner (2026-11-25: "let gen 09 as last put it as gen 14. change the order"): after GEN-04..08 come GEN-09 Instagram export, GEN-10 mouth shapes, GEN-11 idle weight shift, GEN-12 topic sets, GEN-13 music and sound, and real dialogue writing last as GEN-14. Added at the owner's request ("yes add them of course"); proposals only, none authorized.
 
 Rules for any pick:
 - Opt-in or default-proven-unchanged (fod-digests).

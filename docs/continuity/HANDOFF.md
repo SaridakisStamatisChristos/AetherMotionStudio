@@ -109,4 +109,4 @@ Earlier handoffs: git history of this file (each record branch `chore/record-*`)
 - Run "fod continue": bootstrap, baseline digests and tests.
 - Then present NEXT_UNITS "Candidates after GEN-03" and ask the owner to pick.
 - Recommended first pick: GEN-04 (composition overlap counts every character). It is small, safe and needs no owner decision.
-- Further proposals GEN-09..14 were added at the owner's request (real dialogue writing, Instagram export preset, mouth shapes, idle weight shift, topic sets, music/sound). Recommended after GEN-04..08: GEN-09, then GEN-10. Several need owner decisions about new local dependencies; ask before installing anything.
+- Further proposals GEN-09..14, in the order the owner set: GEN-09 Instagram export preset, GEN-10 mouth shapes, GEN-11 idle weight shift, GEN-12 topic sets, GEN-13 music and sound, GEN-14 real dialogue writing (owner: put it last). Several need owner decisions about new local dependencies; ask before installing anything.
