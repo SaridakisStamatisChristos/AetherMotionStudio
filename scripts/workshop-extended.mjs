@@ -46,14 +46,15 @@ function teach(){
 // POLISH-02 items 3+4: the robot (telescoping reach) takes a book from the top of the bookshelf and sets it on the
 // table. Standing spots and arm poses come from solveReach; prop heights come from the rendered surface tops.
 function shelf(){
- const SH=[-1.3,-.5],TB=[1.1,-.3],TS=.85,PICK=[.38,.2],PLACE=[-.5,.3],R={reach:1.8},lift=.06;
+ // Shelf on the right, table on the left: the robot reaches in profile with its camera-side (left) arm.
+ const SH=[1.3,-.5],TB=[-1.1,-.3],TS=.85,PICK=[-.4,.1],PLACE=[.5,.3],R={reach:1.8},lift=.06;
  const S={asset:'bookshelf',pose:{origin:[SH[0],0,SH[1]],yaw:0}},T={asset:'table',pose:{origin:[TB[0],0,TB[1]],yaw:0,scale:TS}};
  const avoid=[{center:SH,half:[.52,.29]},{center:TB,half:[.76*TS,.44*TS]}],opt={params:R,avoid,clearance:.3,spreadDeg:85,hands:['left']};
- const up=(p)=>[p[0],p[1]+lift,p[2]],pick=solveReach('service-robot',up(surfacePoint(S,PICK)),opt),put=solveReach('service-robot',up(surfacePoint(T,PLACE)),opt);
+ const up=(p)=>[p[0],p[1]+lift,p[2]],pick=solveReach('service-robot',up(surfacePoint(S,PICK)),{...opt,around:-Math.PI/2,spreadDeg:35}),put=solveReach('service-robot',up(surfacePoint(T,PLACE)),opt);
  // Turns are authored (about 27 frames each) instead of a short faceTravel blend, so the carried book never whips.
  const head=r3(Math.atan2(put.x-pick.x,put.z-pick.z));
  return fresh('shelf',270,'laboratory','HIGH SHELF','Reach, carry, set it down.','Now it tries on its own: up to the high shelf, and down onto the table.',{
-  cameraRig:{preset:'medium',framing:'establishing',strength:.5,subject:'robot'},camera:{x:[[0,-.4],[1,.4]],y:[[0,3.2]],z:[[0,9.4],[1,9]]},cameraInterpolation:{x:'flow'},
+  cameraRig:{preset:'medium',framing:'establishing',strength:.5,subject:'robot'},camera:{x:[[0,.4],[1,-.4]],y:[[0,3.2]],z:[[0,9.4],[1,9]]},cameraInterpolation:{x:'flow'},
   assets:[
    {id:'robot',asset:'service-robot',params:R,tracks:{x:[[0,r3(pick.x)],[.44,r3(pick.x)],[.72,r3(put.x)]],z:[[0,r3(pick.z)],[.44,r3(pick.z)],[.72,r3(put.z)]],yaw:[[0,r3(pick.yaw)],[.34,r3(pick.yaw)],[.44,head],[.72,head],[.84,r3(put.yaw)]],
      leftArmPitch:[[0,0],[.08,0],[.24,r3(pick.armPitch)],[.3,r3(pick.armPitch)],[.44,-.9],[.76,-.9],[.86,r3(put.armPitch)],[.9,r3(put.armPitch)],[.98,0]],
