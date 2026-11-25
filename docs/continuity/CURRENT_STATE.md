@@ -1,5 +1,5 @@
 # Current state — AetherMotion Studio
-Updated 2026-11-25 (main 22ffec4 has GEN-04..12 and GEN-15 step 1 with the Three tune; render cleanup step 1 done). Authoritative rolling checkpoint for new coding sessions; update at verified transitions. This file references the historical ledger rather than replacing source or evidence. Baseline product merge: `04e3491bb21b4ebc3d54755a2a211b1a7affb3fa` (PR #13 merged into main). The handoff documentation commit may be newer; inspect git HEAD. No release publication implied.
+Updated 2026-11-25 (main 22ffec4; STUDIO-01 authorized next; owner writes scripts in Claude chat). Authoritative rolling checkpoint for new coding sessions; update at verified transitions. This file references the historical ledger rather than replacing source or evidence. Baseline product merge: `04e3491bb21b4ebc3d54755a2a211b1a7affb3fa` (PR #13 merged into main). The handoff documentation commit may be newer; inspect git HEAD. No release publication implied.
 
 ## Current status and authority
 - v1.0 core pipeline and Asset Foundry AF01–AF09 implementation merged; do not reimplement.
@@ -19,6 +19,14 @@ Updated 2026-11-25 (main 22ffec4 has GEN-04..12 and GEN-15 step 1 with the Three
 6. Source and approved decisions authoritative. This summary cannot discard binding facts; consult the source-specific contract when the task touches it. Keep state and handoff synchronized. No new native render runs on GitHub or release without authorization.
 
 ## Active unit
+**STUDIO-01 "script to film" — AUTHORIZED, not started** (owner: "yeah thats what we need. exactly"). Plan: HANDOFF.md.
+- Owner decision (2026-11-25): **the owner writes scripts in Claude chat and brings them in** ("yeah i prefer bring in my script"; "from now on this will be"). GEN-14 (local writing model) is not needed for now. Format and prompt: docs/SCRIPT_FORMAT.md.
+- Finding (owner: "there is so much pause in the forest video"):
+  - for topics without a curated pattern, the offline Director writes placeholder questions, so gen15-forest had 14 s of talk in 60 s;
+  - film length is fixed by the request, so silence fills the rest, and no check flags it.
+  - Proposed **fix A** (film length follows speech, plus a sparse-speech check) is NOT authorized yet.
+- Owner-requested proof: `forest-script-r1` (a written script, local branch `feature/forest-script` ad893f7, not pushed). CPU 93324d88432897bb…, Three 9d6034c9e7c6084f…. All gates PASS; talk 47 of 60 s (78 %), gaps about 1 s.
+
 **Checkpoint after GEN-15 step 1 (main 22ffec4).** No unit is active.
 - PR #33 (crafted look) MERGED a4d9396, and PR #34 (Three tune) MERGED 22ffec4. Each was merged after its PR CI passed on the head commit (34: run 45704738684).
 - **Render cleanup step 1 done** (owner: "then clean up"; NEXT_UNITS plan):

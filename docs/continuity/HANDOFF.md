@@ -1,28 +1,55 @@
-# Forward-only handoff — after GEN-15 step 1 (owner types only "fod continue")
+# Forward-only handoff — before STUDIO-01 (owner types only "fod continue")
 
-**Update (latest):** main 22ffec4 has GEN-15 step 1 and the Three tune (PRs #33 and #34 merged). Render cleanup step 1 is done (out/ 1.8 GB). Next action:
-- bootstrap, then baseline with `--exclude talk04,talk05,gen01,gen09,gen12`;
-- ask whether the owner accepts the GEN-15 look; acceptance triggers cleanup step 2 (delete the reference set, after confirming the list);
-- continue with GEN-15 step 2 (richer sets, part materials) on `feature/gen-15-step2` from main;
-- one branch per unit from main, never stacked; merge only on the owner's word and after PR CI.
+Date: 2026-11-25, near midnight. The owner is tired; keep the first report short and plain.
+Checkpoint: **main 22ffec4** (GEN-04..12, GEN-15 step 1 and the Three tune are all merged; main CI green). This file lives on `chore/record-gen-15` (PR #35, docs only, **not merged**).
+Earlier handoffs: git history of this file. Binding facts are in CURRENT_STATE.md.
 
+## Where things stand
+| Item | State |
+|---|---|
+| PR #35 `chore/record-gen-15` | Docs only: records the #33/#34 merges, render cleanup step 1 and this handoff. **Ask the owner to merge it** (after its CI). |
+| Branch `feature/forest-script` (local only, ad893f7) | Adds examples/gen12-forest-script.request.json, the owner-requested scripted forest film. **Not pushed:** the push was blocked by a permission prompt. Next session: ask the owner whether to push it and open a PR (data only), or fold the example into STUDIO-01. |
+| Render cleanup step 1 | Done: out/ 1.8 GB. Kept: the reference set (gen03-interview-r3, gen03-network-r1, talk05-first-words-r10), bench, speech-cache, fixtures, gen15-forest-r1/r2 and forest-script-r1. Step 2 (delete the reference set) waits for the owner to accept the GEN-15 look. |
+| GEN-15 look | Merged. The owner has not yet said whether they accept it. Films to watch: gen15-forest-r2 (placeholder lines) and forest-script-r1 (real script). |
+| GEN-13 and GEN-14 | Skipped for now. **The owner chose to write scripts in Claude chat instead of a local writing model** ("yeah i prefer bring in my script"; "from now on this will be"). Format: docs/SCRIPT_FORMAT.md. |
 
-Unit: GEN-12 (topic-fitting sets), plus a GEN-05b audit regression fix, is IMPLEMENTED + TESTED + RENDERED (agent-reviewed) on `feature/gen-12`. PR pending owner merge. main 3ac0f01 already has GEN-04..11 and the CPU robot mouth fix (PRs #29, #30 and #31 merged).
-Authorized by: owner, 2026-11-25: "merge and continue" (after "lets do it seriallized. Gen10 and onwards").
-Date: 2026-11-25
+## Next unit: STUDIO-01 "script to film" (AUTHORIZED by the owner: "yeah thats what we need. exactly")
+Goal: the owner pastes a topic and a script into the local Studio and gets the film, without VS Code.
+1. Branch `feature/studio-01` **from main**. Not stacked: the owner said "dont mess the code sequence".
+2. **Double-click launcher.**
+   - A `.cmd` file in the repo (for example `Start AetherMotion Studio.cmd`) that:
+     - sets the render env from the Environment section below (vulkan, so the RTX is used);
+     - runs `npm run studio:local`;
+     - opens http://127.0.0.1:4173.
+   - Placing a shortcut on the desktop is outside the repo: ask the owner first, or tell them how to do it.
+3. **Director form** (studio/index.html, studio/app.js; the server is scripts/studio-server.mjs):
+   - **cast choice:** "Student + Explorer (interview)" as the default (the same cast and voices as examples/gen01-interview.request.json: host Student af_bella en-us `student`, guest Explorer bm_george en-gb `explorer-robot`, style interview). The existing three-person cast (`DIALOGUE_CAST`: Engineer, Robot, Scientist) stays available. With three speakers, turns rotate among all three, so the help text must say the two-speaker rule applies only to the pair.
+   - **Reels checkbox** → `delivery:'reels-v1'`;
+   - **help text** under the Script box: the rules from docs/SCRIPT_FORMAT.md in 3–4 lines, plus a live word count with the recommended range for the chosen seconds (about 2.2 words per second).
+4. **Backends:** Studio jobs render one backend (`directBackend`). Check whether the job API can do both. Propose "both" only if it fits the existing job model; otherwise keep one backend, with **Three (RTX)** as the default. Do not change Studio job contracts silently.
+5. **Test end to end** with the forest script:
+   - unit tests for the form → request mapping (cast, delivery, script), including negatives (an empty script with no topic, an unknown cast);
+   - a real Studio run through the browser or the API, with the film found in downloads and its gates passing;
+   - report honestly what was clicked or observed.
+6. Docs (SCRIPT_FORMAT.md "How the owner will feed it in", LOCAL_DEVELOPMENT.md), checkpoint, push, PR, CI. **Merge only on the owner's word, after PR CI.**
 
-## What "fod continue" must do
-1. Bootstrap (CLAUDE.md): git status and HEAD; read AGENTS.md, CURRENT_STATE.md, this file and NEXT_UNITS.md; report.
-2. `git fetch`; check the GEN-12 PR with `gh pr list --state all --head feature/gen-12`. If it was merged, record it on a `chore/record-*` branch.
-3. Baseline: `node scripts/fod-digests.mjs . --exclude talk04,talk05,gen01,gen09,gen12` (**gen12 is now excluded**) must print graph 3d33fbaee198acad, geometry 14dec244d171dc56, detail2 e3f80439a292f21a, director 7 requests 2cbf9916e65da935.
-   - `npm test` must give fail 0 (355 tests, 1 Windows skip).
-   - `PYTHONPATH=scripts python -m unittest discover -s tests -p "test_*.py"` must give 51 OK.
-4. Ask the owner, in plain language:
-   - merge the GEN-12 PR (wait for its CI first);
-   - GEN-13 music and sound: which local, licence-clear sources? Options: procedural music generated in code (no licences), or CC0 packs the owner downloads;
-   - GEN-14 real dialogue writing: which local model and provider (a new local dependency).
-   Do not start GEN-13 or GEN-14 without those answers. The look track GEN-15..18 follows; GEN-15 needs no decision.
-5. The Instagram test upload is deferred to the end of everything (owner).
+## Pending owner decisions (ask briefly, after STUDIO-01 or when relevant)
+1. Merge PR #35.
+2. Push `feature/forest-script`, or fold it into STUDIO-01.
+3. **Fix A, "film length follows speech"** (proposed, not authorized). The film length would follow the measured speech, with calm pauses up to the requested seconds, plus a check that fails long silences. It prevents films like gen15-forest (14 s of talk in 60 s). With owner-written scripts of the right length it matters less, but it still protects every video.
+4. Accept the GEN-15 look. Acceptance allows cleanup step 2 and GEN-15 step 2 (richer sets, part materials such as metal trims and glass screens; no other decision needed).
+5. GEN-16 (Three cinematic profile) needs a policy decision. The Instagram test upload is deferred to the very end.
+
+## Bootstrap for "fod continue"
+1. `git status --short --branch`, `git rev-parse HEAD`, `git fetch`; check `gh pr list --state all --limit 5`. Expect main 22ffec4 or later. The local branches chore/record-gen-15 and feature/forest-script exist.
+2. Read AGENTS.md, CURRENT_STATE.md, this file, NEXT_UNITS.md and docs/SCRIPT_FORMAT.md.
+3. Baseline on main: `node scripts/fod-digests.mjs . --exclude talk04,talk05,gen01,gen09,gen12` must print:
+   - graph 3d33fbaee198acad;
+   - geometry 14dec244d171dc56;
+   - detail2 e3f80439a292f21a;
+   - director 7 requests 2cbf9916e65da935.
+   Then `npm test` must give fail 0 (360 tests, 1 Windows skip), and `PYTHONPATH=scripts .venv/Scripts/python.exe -m unittest discover -s tests -p "test_*.py"` must give 51 OK.
+4. Report in one short table, ask question 1 (merge #35), then start STUDIO-01.
 
 ## Owner working agreement and taste (binding; see also auto-memory)
 - **Delegation:** the owner delegates whole units and wants plain-language reports with short tables. Stop only for direction-changing or risky actions: backend defaults, dependencies, deletions, system settings, anything outside the repo, or changing accepted films.
@@ -96,6 +123,7 @@ Date: 2026-11-25
 - Still open from before: mouths follow loudness only (GEN-10); no idle weight shift (GEN-11); "Wrrrench" not heard by the owner; TALK-05 has a wide LRA.
 
 ## Next action
-- Run "fod continue": bootstrap, the GEN-12 PR state, baseline (with gen12 excluded) and tests.
-- Ask the owner: merge GEN-12? GEN-13 sources? GEN-14 model?
-- Do not merge without the owner's word, and only after PR CI has reported.
+- "fod continue": bootstrap, then the baseline.
+- Ask the owner to merge PR #35.
+- Start STUDIO-01 (authorized) on `feature/studio-01` from main.
+- Never merge without the owner's word and a passing PR CI. Never stack branches.
