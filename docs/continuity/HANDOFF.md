@@ -2,7 +2,7 @@
 
 Unit: GEN-04, 05, 06, 08 and 09 are IMPLEMENTED + TESTED + RENDERED (agent-reviewed) on `feature/gen-04-09`, with one PR against main. **Not merged.** GEN-07 was deferred by the owner.
 Checkpoint: branch head is the checkpoint commit after edd3a3d (code at edd3a3d; renders from clean edd3a3d). main is still 4f588e3.
-Status: AWAITING OWNER REVIEW AND MERGE.
+Status: AWAITING OWNER REVIEW AND MERGE. PR #29 (https://github.com/SaridakisStamatisChristos/AetherMotionStudio/pull/29): CI 45659718843 test PASS on 6ad282c; render and compare skipped by policy.
 Authorized by: owner, 2026-11-25: "execute gen-04 to gen9 for gen 5 speech a bit slower. gen 6 yes i want these cuts for gen 07 i dont think its needed". Then: "can the instragram be a mode and in case i want i can generate longer videos?" and "after gen 9 finishes . write a handoff for the new session using the fod continue principles."
 Date: 2026-11-25
 Earlier handoffs: git history of this file (record branches `chore/record-*`). Binding facts are in CURRENT_STATE.md.

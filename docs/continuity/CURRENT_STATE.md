@@ -19,7 +19,7 @@ Updated 2026-11-25 (GEN-04..09 implemented on feature/gen-04-09, PR pending; GEN
 6. Source and approved decisions authoritative. This summary cannot discard binding facts; consult the source-specific contract when the task touches it. Keep state and handoff synchronized. No new native render runs on GitHub or release without authorization.
 
 ## Active unit
-GEN-04..09 (except GEN-07) — IMPLEMENTED + TESTED + RENDERED (agent-reviewed) on branch `feature/gen-04-09` (from `chore/record-gen-03` 30748d5 on main 4f588e3), one PR against main, awaiting owner review and merge. Not merged.
+GEN-04..09 (except GEN-07) — IMPLEMENTED + TESTED + RENDERED (agent-reviewed) on branch `feature/gen-04-09` (from `chore/record-gen-03` 30748d5 on main 4f588e3), PR #29 against main (CI 45659718843 test PASS on 6ad282c), awaiting owner review and merge. Not merged.
 - Owner authorization (2026-11-25): "execute gen-04 to gen9 for gen 5 speech a bit slower. gen 6 yes i want these cuts for gen 07 i dont think its needed". GEN-07 (re-stage older accepted films) DEFERRED by the owner, with the agent agreeing. GEN-09: owner asked that Instagram be "a mode" and that longer videos stay possible. The target was not named; the agent assumed Reels.
 - Owner asked for a FOD handoff after GEN-09 (done: HANDOFF.md).
 - Commits:
