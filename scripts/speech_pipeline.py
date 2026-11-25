@@ -9,6 +9,7 @@ from scipy.signal import resample_poly, butter, sosfilt
 from timeline_plan import RATE,SPF
 from speech_plan import allocate_mixed, slots, pronunciation, caption_cues, subtitles, caption_metrics
 import audio_master
+import speech_envelope
 from phrase_cache import PhraseCache,key_for,file_hash
 R=RATE
 
@@ -116,6 +117,7 @@ def compile_speech(scene,out,root,model_dir,kokoro):
     wavfile.write(out/'kokoro-narration.wav',R,pcm(speech))
     wavfile.write(out/'mix.wav',R,pcm(mix))
     dest=root/'public'/'audio'/(scene['id']+'.wav');dest.parent.mkdir(parents=True,exist_ok=True);wavfile.write(dest,R,pcm(mix))
+    if speech_envelope.wanted(scene):timeline['speechEnvelope']=speech_envelope.envelope(speech,target)
     (out/'timeline.json').write_text(json.dumps(timeline,indent=2,ensure_ascii=False),encoding='utf-8')
     (out/'voice-report.json').write_text(json.dumps({'backend':'kokoro-onnx','voice':scene['voice'],'sample_rate':R,'segments':segments},indent=2,ensure_ascii=False),encoding='utf-8')
     report={'version':1,'status':'prepared','targetFrames':target,'actualFrames':offset,'fixedShots':c['fixedShots'],'allocation':[{'shot':s['id'],'frames':n,'mode':'fixed' if b is not None else 'automatic'} for s,n,b in zip(shots,frames,budgets)],'speechSpeed':speed,'modelFingerprint':fingerprint,'cache':{'hits':cache.hits,'misses':cache.misses,'limitBytes':cache.limit},'alignment':caption_metrics(timeline['captions'],segments,c['captions']['maxCps']),'speechIntervals':speech_metrics,'mix':{'settings':cfg,'samplePeakProtectionGain':gain,'preProtectionPeak':raw_peak,'narration':metrics(speech),'music':metrics(music),'ambience':metrics(ambience),'sfx':metrics(sfx),'final':metrics(mix),'metricDefinition':'linear sample peak and RMS dBFS, not LUFS or true peak'},'cues':cue_report}
