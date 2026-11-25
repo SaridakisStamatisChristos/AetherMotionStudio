@@ -11,7 +11,7 @@ This is an actionable proposed sequence for future work, not an approved require
 | ART-03 | High-detail reusable assets | Extend existing Foundry recipes/packs with distinct high-quality hero props/sets, rigging and material/LOD budgets; inspection and thumbnails; explicit review/promotion, no unlicensed content. Avoid hundreds of near-duplicate aliases. |
 | ART-04 | Director and Studio authoring quality | Better retrieval and shot/action planning, fix duplicate shortlist when reproduced, compact IR, local editable preview; manual UI exercise and backward-compatible export/import. No mandatory cloud. |
 | ART-05 | Curated final showcase | User-defined topic/style/duration, coherent multi-shot film, meaningful movement, clear audio, assets/identities, visual review, selected CPU/Three outputs. No aesthetic auto-certification. |
-| POLISH-01 | Walking, identity handoffs, director interactions, longer film | DONE on `feature/polish-01` (PR awaiting merge): planted locomotion, ledger chains, solveHandoff + staging art-v2, "The Workshop — Extended" 64 s. |
+| POLISH-01 | Walking, identity handoffs, director interactions, longer film | MERGED (365a78e, PR #19): planted locomotion, ledger chains, solveHandoff + staging art-v2, "The Workshop — Extended" 64 s. |
 | POLISH-02 | Close the remaining quality gaps (see plan below) | Each item opt-in or test-pinned; measured before/after; one matched render; human review of the extended film. |
 | TALK-01 | Speaking faces (mouth + speaker binding) | Mouth channel on detail-2 humans and robot face panels; driven by a per-frame speech envelope from the measured narration PCM (prepared once, shared, hashed); speaker→character binding per phrase; both backends; deterministic. |
 | TALK-02 | Dialogue scenes | Two+ characters exchange lines with distinct Kokoro voices (existing speakers/shotSpeakers); listeners face the active speaker; captions name speakers; turn-taking from measured phrase bounds. |
@@ -37,7 +37,7 @@ The first two units close environment/reproducibility debt; user can explicitly 
 Ordered by payoff. Every item: opt-in or default-proven-unchanged, tests incl. negatives, matched local render, agent stills review, owner review for visual claims.
 
 ### POLISH-02 — quality gaps observed in this session (do first)
-1. **Pointing at targets** — `point` is a fixed forward arm; add an opt-in `aim:{target}` that solves arm pitch/spread (+ body cheat) toward an asset (seen: LEARNING BY WATCHING, the engineer's point aims at the robot, not the table).
+1. **Pointing at targets** — DONE 2535907 (opt-in `aim`, docs/CINEMATOGRAPHY.md POLISH-02). `point` is a fixed forward arm; add an opt-in `aim:{target}` that solves arm pitch/spread (+ body cheat) toward an asset (seen: LEARNING BY WATCHING, the engineer's point aims at the robot, not the table).
 2. **Turn-in-place steps** — pivots slide the planted foot 1–2 cm; add small stepping when yaw changes faster than a threshold while standing.
 3. **Robot reach** — service-robot arms cannot reach above the head (hands max ~1.5 vs head 1.9); add an opt-in longer-arm/elbow rig variant or shoulder raise.
 4. **Hand-to-object pickup/put-down** — attachments start at a hand pose; add solved reach-to-prop pickup from a surface and place-onto-surface with surface height detection (today place targets are authored/solved by script).
