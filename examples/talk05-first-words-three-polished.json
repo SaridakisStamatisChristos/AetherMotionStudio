@@ -1,0 +1,1384 @@
+{
+ "version": 2,
+ "id": "talk05-first-words-three-polished",
+ "title": "The Workshop — First Words",
+ "voice": "af_heart",
+ "speech": {
+  "version": 1,
+  "targetFrames": 2250,
+  "fixedShots": {
+   "shelf": 360,
+   "lights": 180
+  },
+  "placement": "lead",
+  "speakers": {
+   "eng": {
+    "name": "Engineer",
+    "voice": "af_heart",
+    "language": "en-us"
+   },
+   "sci": {
+    "name": "Scientist",
+    "voice": "bf_emma",
+    "language": "en-gb"
+   },
+   "robo": {
+    "name": "Robot",
+    "voice": "am_michael",
+    "language": "en-us"
+   }
+  },
+  "shotSpeakers": {
+   "morning": [
+    "eng",
+    "robo",
+    "eng"
+   ],
+   "tools": [
+    "sci",
+    "robo",
+    "sci"
+   ],
+   "shelf": [
+    "robo",
+    "robo"
+   ],
+   "table": [
+    "eng",
+    "robo",
+    "sci",
+    "eng",
+    "robo"
+   ],
+   "mistake": [
+    "robo",
+    "eng",
+    "robo"
+   ],
+   "thanks": [
+    "robo",
+    "sci",
+    "eng"
+   ],
+   "lights": [
+    "robo",
+    "robo"
+   ]
+  },
+  "pronunciations": {
+   "Wrrrench": "rrr rench"
+  },
+  "captions": {
+   "mode": "both",
+   "highlight": true,
+   "maxChars": 32,
+   "maxLines": 2,
+   "maxCps": 18
+  },
+  "mix": {
+   "narration": 1,
+   "music": 0.55,
+   "ambience": 0.35,
+   "sfx": 0.45,
+   "duck": 0.35,
+   "fadeSeconds": 0.25,
+   "peak": 0.92,
+   "master": "mix-v2"
+  },
+  "cues": [],
+  "syncActions": false
+ },
+ "shots": [
+  {
+   "id": "morning",
+   "template": "cinematic-graph",
+   "backend": "three",
+   "durationFrames": null,
+   "transitionFrames": 0,
+   "heading": "GOOD MORNING",
+   "subheading": "A first word.",
+   "environment": "amber",
+   "lighting": "parity-v1",
+   "effects": [],
+   "fidelity": {
+    "bloom": 0.6,
+    "atmosphere": 0.5,
+    "contactShadow": 0.75,
+    "surfaceDetail": 0.6,
+    "depthOfField": 0.15,
+    "motionBlur": 0,
+    "grain": 0.15,
+    "grade": 0.45,
+    "particles": 0.4,
+    "typography": 1
+   },
+   "cameraRig": {
+    "preset": "medium",
+    "framing": "medium",
+    "strength": 0.5,
+    "subject": "robot"
+   },
+   "camera": {
+    "x": [
+     [
+      0,
+      -0.2
+     ],
+     [
+      1,
+      0.2
+     ]
+    ],
+    "y": [
+     [
+      0,
+      2.8
+     ]
+    ],
+    "z": [
+     [
+      0,
+      7.4
+     ],
+     [
+      1,
+      7.1
+     ]
+    ],
+    "zoom": [
+     [
+      0,
+      1400
+     ],
+     [
+      1,
+      1500
+     ]
+    ]
+   },
+   "cameraInterpolation": {
+    "x": "flow",
+    "zoom": "flow"
+   },
+   "speakerAssets": {
+    "eng": "engineer",
+    "robo": "robot"
+   },
+   "dialogue": {
+    "listen": true,
+    "turn": 0.8,
+    "cheat": 1
+   },
+   "bodyLanguage": {
+    "beats": true,
+    "nods": true,
+    "blinks": true,
+    "sway": true
+   },
+   "assets": [
+    {
+     "id": "engineer",
+     "asset": "engineer",
+     "params": {
+      "detail": 2
+     },
+     "tracks": {
+      "x": [
+       [
+        0,
+        -0.8
+       ]
+      ],
+      "z": [
+       [
+        0,
+        0.3
+       ]
+      ]
+     },
+     "turnSteps": true
+    },
+    {
+     "id": "robot",
+     "asset": "service-robot",
+     "tracks": {
+      "x": [
+       [
+        0,
+        0.8
+       ]
+      ],
+      "z": [
+       [
+        0,
+        0.2
+       ]
+      ]
+     },
+     "turnSteps": true
+    }
+   ],
+   "narration": [
+    "Good morning! Can you say hello?",
+    "Hello.",
+    "Your very first word!"
+   ]
+  },
+  {
+   "id": "tools",
+   "template": "cinematic-graph",
+   "backend": "three",
+   "durationFrames": null,
+   "transitionFrames": 12,
+   "transition": "fade",
+   "heading": "NAME IT",
+   "subheading": "Point, then say it.",
+   "environment": "laboratory",
+   "lighting": "parity-v1",
+   "effects": [],
+   "fidelity": {
+    "bloom": 0.6,
+    "atmosphere": 0.5,
+    "contactShadow": 0.75,
+    "surfaceDetail": 0.6,
+    "depthOfField": 0.15,
+    "motionBlur": 0,
+    "grain": 0.15,
+    "grade": 0.45,
+    "particles": 0.4,
+    "typography": 1
+   },
+   "cameraRig": {
+    "preset": "medium",
+    "framing": "medium",
+    "strength": 0.5,
+    "subject": "scientist"
+   },
+   "camera": {
+    "x": [
+     [
+      0,
+      0.3
+     ],
+     [
+      1,
+      -0.1
+     ]
+    ],
+    "y": [
+     [
+      0,
+      2.8
+     ]
+    ],
+    "z": [
+     [
+      0,
+      8
+     ],
+     [
+      1,
+      7.7
+     ]
+    ],
+    "zoom": [
+     [
+      0,
+      1250
+     ],
+     [
+      1,
+      1320
+     ]
+    ]
+   },
+   "cameraInterpolation": {
+    "x": "flow",
+    "zoom": "flow"
+   },
+   "speakerAssets": {
+    "sci": "scientist",
+    "robo": "robot"
+   },
+   "dialogue": {
+    "listen": true,
+    "turn": 0.8,
+    "cheat": 1
+   },
+   "bodyLanguage": {
+    "beats": true,
+    "nods": true,
+    "blinks": true,
+    "sway": true
+   },
+   "assets": [
+    {
+     "id": "scientist",
+     "asset": "scientist",
+     "params": {
+      "detail": 2
+     },
+     "tracks": {
+      "x": [
+       [
+        0,
+        -0.7
+       ]
+      ],
+      "z": [
+       [
+        0,
+        0.3
+       ]
+      ]
+     },
+     "turnSteps": true
+    },
+    {
+     "id": "robot",
+     "asset": "service-robot",
+     "tracks": {
+      "x": [
+       [
+        0,
+        1
+       ]
+      ],
+      "z": [
+       [
+        0,
+        0.1
+       ]
+      ]
+     },
+     "turnSteps": true,
+     "actions": [
+      {
+       "name": "point",
+       "start": 0.4,
+       "end": 0.85,
+       "blend": 0.2
+      }
+     ],
+     "aim": {
+      "target": "toolbox",
+      "start": 0.4,
+      "end": 0.85,
+      "blend": 0.2,
+      "height": 0.35,
+      "cheat": 0.6
+     }
+    },
+    {
+     "id": "toolbox",
+     "asset": "toolbox",
+     "tracks": {
+      "x": [
+       [
+        0,
+        -2.1
+       ]
+      ],
+      "z": [
+       [
+        0,
+        -0.5
+       ]
+      ],
+      "scale": [
+       [
+        0,
+        0.9
+       ]
+      ]
+     }
+    }
+   ],
+   "narration": [
+    "Can you name that, over there?",
+    "That is a toolbox.",
+    "Very good."
+   ]
+  },
+  {
+   "id": "shelf",
+   "template": "cinematic-graph",
+   "backend": "three",
+   "durationFrames": 360,
+   "transitionFrames": 12,
+   "transition": "fade",
+   "heading": "TOP SHELF",
+   "subheading": "A book to read.",
+   "environment": "laboratory",
+   "lighting": "parity-v1",
+   "cameraRig": {
+    "preset": "medium",
+    "framing": "establishing",
+    "strength": 0.5,
+    "subject": "robot"
+   },
+   "camera": {
+    "x": [
+     [
+      0,
+      0.4
+     ],
+     [
+      1,
+      -0.4
+     ]
+    ],
+    "y": [
+     [
+      0,
+      3.2
+     ]
+    ],
+    "z": [
+     [
+      0,
+      9.4
+     ],
+     [
+      1,
+      9
+     ]
+    ]
+   },
+   "cameraInterpolation": {
+    "x": "flow"
+   },
+   "assets": [
+    {
+     "id": "robot",
+     "asset": "service-robot",
+     "params": {
+      "reach": 1.8
+     },
+     "tracks": {
+      "x": [
+       [
+        0,
+        0.45
+       ],
+       [
+        0.44,
+        0.45
+       ],
+       [
+        0.72,
+        -0.127
+       ]
+      ],
+      "z": [
+       [
+        0,
+        -0.715
+       ],
+       [
+        0.44,
+        -0.715
+       ],
+       [
+        0.72,
+        0.003
+       ]
+      ],
+      "yaw": [
+       [
+        0,
+        1.66
+       ],
+       [
+        0.3,
+        1.66
+       ],
+       [
+        0.46,
+        -0.676
+       ],
+       [
+        0.72,
+        -0.676
+       ],
+       [
+        0.84,
+        -0.958
+       ]
+      ],
+      "leftArmPitch": [
+       [
+        0,
+        0
+       ],
+       [
+        0.08,
+        0
+       ],
+       [
+        0.24,
+        -2.494
+       ],
+       [
+        0.3,
+        -2.494
+       ],
+       [
+        0.44,
+        -0.9
+       ],
+       [
+        0.76,
+        -0.9
+       ],
+       [
+        0.86,
+        -0.844
+       ],
+       [
+        0.9,
+        -0.844
+       ],
+       [
+        0.98,
+        0
+       ]
+      ],
+      "leftArmSpread": [
+       [
+        0,
+        0
+       ],
+       [
+        0.08,
+        0
+       ],
+       [
+        0.24,
+        -0.252
+       ],
+       [
+        0.3,
+        -0.252
+       ],
+       [
+        0.44,
+        0
+       ],
+       [
+        0.76,
+        0
+       ],
+       [
+        0.86,
+        0.46
+       ],
+       [
+        0.9,
+        0.46
+       ],
+       [
+        0.98,
+        0
+       ]
+      ],
+      "blink": [
+       [
+        0,
+        1
+       ],
+       [
+        0.5,
+        1
+       ],
+       [
+        0.53,
+        0.1
+       ],
+       [
+        0.56,
+        1
+       ]
+      ]
+     },
+     "interpolation": {
+      "x": "flow",
+      "z": "flow",
+      "yaw": "flow"
+     },
+     "locomotion": {
+      "mode": "stride",
+      "start": 0.44,
+      "end": 0.72
+     },
+     "turnSteps": true
+    },
+    {
+     "id": "shelf",
+     "asset": "bookshelf",
+     "tracks": {
+      "x": [
+       [
+        0,
+        1.3
+       ]
+      ],
+      "z": [
+       [
+        0,
+        -0.5
+       ]
+      ]
+     }
+    },
+    {
+     "id": "table",
+     "asset": "table",
+     "tracks": {
+      "x": [
+       [
+        0,
+        -1.1
+       ]
+      ],
+      "z": [
+       [
+        0,
+        -0.3
+       ]
+      ],
+      "scale": [
+       [
+        0,
+        0.85
+       ]
+      ]
+     }
+    },
+    {
+     "id": "book",
+     "asset": "book",
+     "tracks": {
+      "scale": [
+       [
+        0,
+        0.7
+       ]
+      ]
+     },
+     "restOn": {
+      "surface": "shelf",
+      "at": [
+       -0.4,
+       0.1
+      ]
+     },
+     "attachment": {
+      "parent": "robot",
+      "anchor": "left-hand",
+      "start": 0.27,
+      "end": 0.9,
+      "offset": "auto",
+      "release": {
+       "mode": "place",
+       "duration": 0.05,
+       "to": {
+        "surface": "table",
+        "at": [
+         0.5,
+         0.3
+        ]
+       }
+      }
+     }
+    }
+   ],
+   "effects": [],
+   "narration": [
+    "I found a book on the top shelf.",
+    "It says: words are tools too."
+   ],
+   "fidelity": {
+    "bloom": 0.6,
+    "atmosphere": 0.5,
+    "contactShadow": 0.75,
+    "surfaceDetail": 0.6,
+    "depthOfField": 0.15,
+    "motionBlur": 0,
+    "grain": 0.15,
+    "grade": 0.45,
+    "particles": 0.4,
+    "typography": 1
+   },
+   "speakerAssets": {
+    "robo": "robot"
+   }
+  },
+  {
+   "id": "table",
+   "template": "cinematic-graph",
+   "backend": "three",
+   "durationFrames": null,
+   "transitionFrames": 12,
+   "transition": "fade",
+   "heading": "AROUND THE TABLE",
+   "subheading": "Three voices.",
+   "environment": "amber",
+   "lighting": "parity-v1",
+   "effects": [],
+   "fidelity": {
+    "bloom": 0.6,
+    "atmosphere": 0.5,
+    "contactShadow": 0.75,
+    "surfaceDetail": 0.6,
+    "depthOfField": 0.15,
+    "motionBlur": 0,
+    "grain": 0.15,
+    "grade": 0.45,
+    "particles": 0.4,
+    "typography": 1
+   },
+   "cameraRig": {
+    "preset": "medium",
+    "framing": "medium",
+    "strength": 0.5,
+    "subject": "robot"
+   },
+   "camera": {
+    "x": [
+     [
+      0,
+      -0.3
+     ],
+     [
+      1,
+      0.3
+     ]
+    ],
+    "y": [
+     [
+      0,
+      2.8
+     ]
+    ],
+    "z": [
+     [
+      0,
+      8.2
+     ],
+     [
+      1,
+      7.8
+     ]
+    ],
+    "zoom": [
+     [
+      0,
+      1300
+     ],
+     [
+      1,
+      1380
+     ]
+    ]
+   },
+   "cameraInterpolation": {
+    "x": "flow",
+    "zoom": "flow"
+   },
+   "speakerAssets": {
+    "eng": "engineer",
+    "robo": "robot",
+    "sci": "scientist"
+   },
+   "dialogue": {
+    "listen": true,
+    "turn": 0.8,
+    "cheat": 1
+   },
+   "bodyLanguage": {
+    "beats": true,
+    "nods": true,
+    "blinks": true,
+    "sway": true
+   },
+   "assets": [
+    {
+     "id": "engineer",
+     "asset": "engineer",
+     "params": {
+      "detail": 2
+     },
+     "tracks": {
+      "x": [
+       [
+        0,
+        -1.35
+       ]
+      ],
+      "z": [
+       [
+        0,
+        0.35
+       ]
+      ]
+     },
+     "turnSteps": true
+    },
+    {
+     "id": "robot",
+     "asset": "service-robot",
+     "tracks": {
+      "x": [
+       [
+        0,
+        0
+       ]
+      ],
+      "z": [
+       [
+        0,
+        -0.2
+       ]
+      ]
+     },
+     "turnSteps": true
+    },
+    {
+     "id": "scientist",
+     "asset": "scientist",
+     "params": {
+      "detail": 2
+     },
+     "tracks": {
+      "x": [
+       [
+        0,
+        1.35
+       ]
+      ],
+      "z": [
+       [
+        0,
+        0.35
+       ]
+      ]
+     },
+     "turnSteps": true
+    },
+    {
+     "id": "table",
+     "asset": "table",
+     "tracks": {
+      "x": [
+       [
+        0,
+        0
+       ]
+      ],
+      "z": [
+       [
+        0,
+        -1.1
+       ]
+      ],
+      "scale": [
+       [
+        0,
+        0.8
+       ]
+      ]
+     }
+    }
+   ],
+   "narration": [
+    "So, what did you learn today?",
+    "Hello, toolbox, and book.",
+    "That is three new words.",
+    "And tomorrow, three more.",
+    "I would like that."
+   ]
+  },
+  {
+   "id": "mistake",
+   "template": "cinematic-graph",
+   "backend": "three",
+   "durationFrames": null,
+   "transitionFrames": 12,
+   "transition": "fade",
+   "heading": "ONE LETTER",
+   "subheading": "Wench, wrench.",
+   "environment": "laboratory",
+   "lighting": "parity-v1",
+   "effects": [],
+   "fidelity": {
+    "bloom": 0.6,
+    "atmosphere": 0.5,
+    "contactShadow": 0.75,
+    "surfaceDetail": 0.6,
+    "depthOfField": 0.15,
+    "motionBlur": 0,
+    "grain": 0.15,
+    "grade": 0.45,
+    "particles": 0.4,
+    "typography": 1
+   },
+   "cameraRig": {
+    "preset": "medium",
+    "framing": "medium",
+    "strength": 0.5,
+    "subject": "engineer"
+   },
+   "camera": {
+    "x": [
+     [
+      0,
+      0.2
+     ],
+     [
+      1,
+      -0.2
+     ]
+    ],
+    "y": [
+     [
+      0,
+      2.8
+     ]
+    ],
+    "z": [
+     [
+      0,
+      7.4
+     ],
+     [
+      1,
+      7.1
+     ]
+    ],
+    "zoom": [
+     [
+      0,
+      1400
+     ],
+     [
+      1,
+      1500
+     ]
+    ]
+   },
+   "cameraInterpolation": {
+    "x": "flow",
+    "zoom": "flow"
+   },
+   "speakerAssets": {
+    "eng": "engineer",
+    "robo": "robot"
+   },
+   "dialogue": {
+    "listen": true,
+    "turn": 0.8,
+    "cheat": 1
+   },
+   "bodyLanguage": {
+    "beats": true,
+    "nods": true,
+    "blinks": true,
+    "sway": true
+   },
+   "assets": [
+    {
+     "id": "engineer",
+     "asset": "engineer",
+     "params": {
+      "detail": 2
+     },
+     "tracks": {
+      "x": [
+       [
+        0,
+        -0.8
+       ]
+      ],
+      "z": [
+       [
+        0,
+        0.3
+       ]
+      ]
+     },
+     "turnSteps": true
+    },
+    {
+     "id": "robot",
+     "asset": "service-robot",
+     "tracks": {
+      "x": [
+       [
+        0,
+        0.8
+       ]
+      ],
+      "z": [
+       [
+        0,
+        0.2
+       ]
+      ]
+     },
+     "turnSteps": true
+    },
+    {
+     "id": "wrench",
+     "asset": "wrench",
+     "tracks": {
+      "x": [
+       [
+        0,
+        0
+       ]
+      ],
+      "z": [
+       [
+        0,
+        -0.9
+       ]
+      ],
+      "scale": [
+       [
+        0,
+        0.8
+       ]
+      ]
+     }
+    }
+   ],
+   "narration": [
+    "Please pass me the wench.",
+    "Wrench. There is an R.",
+    "Wrrrench. Thank you."
+   ]
+  },
+  {
+   "id": "thanks",
+   "template": "cinematic-graph",
+   "backend": "three",
+   "durationFrames": null,
+   "transitionFrames": 12,
+   "transition": "fade",
+   "heading": "THANK YOU",
+   "subheading": "Two small words.",
+   "environment": "amber",
+   "lighting": "parity-v1",
+   "effects": [],
+   "fidelity": {
+    "bloom": 0.6,
+    "atmosphere": 0.5,
+    "contactShadow": 0.75,
+    "surfaceDetail": 0.6,
+    "depthOfField": 0.15,
+    "motionBlur": 0,
+    "grain": 0.15,
+    "grade": 0.45,
+    "particles": 0.4,
+    "typography": 1
+   },
+   "cameraRig": {
+    "preset": "medium",
+    "framing": "medium",
+    "strength": 0.5,
+    "subject": "robot"
+   },
+   "camera": {
+    "x": [
+     [
+      0,
+      -0.2
+     ],
+     [
+      1,
+      0.2
+     ]
+    ],
+    "y": [
+     [
+      0,
+      2.7
+     ]
+    ],
+    "z": [
+     [
+      0,
+      7.6
+     ],
+     [
+      1,
+      7.3
+     ]
+    ],
+    "zoom": [
+     [
+      0,
+      1350
+     ],
+     [
+      1,
+      1430
+     ]
+    ]
+   },
+   "cameraInterpolation": {
+    "x": "flow",
+    "zoom": "flow"
+   },
+   "speakerAssets": {
+    "eng": "engineer",
+    "robo": "robot",
+    "sci": "scientist"
+   },
+   "dialogue": {
+    "listen": true,
+    "turn": 0.8,
+    "cheat": 1
+   },
+   "bodyLanguage": {
+    "beats": true,
+    "nods": true,
+    "blinks": true,
+    "sway": true
+   },
+   "assets": [
+    {
+     "id": "engineer",
+     "asset": "engineer",
+     "params": {
+      "detail": 2
+     },
+     "tracks": {
+      "x": [
+       [
+        0,
+        -1.2
+       ]
+      ],
+      "z": [
+       [
+        0,
+        0.2
+       ]
+      ]
+     },
+     "turnSteps": true
+    },
+    {
+     "id": "robot",
+     "asset": "service-robot",
+     "tracks": {
+      "x": [
+       [
+        0,
+        0
+       ]
+      ],
+      "z": [
+       [
+        0,
+        0.1
+       ]
+      ]
+     },
+     "turnSteps": true
+    },
+    {
+     "id": "scientist",
+     "asset": "scientist",
+     "params": {
+      "detail": 2
+     },
+     "tracks": {
+      "x": [
+       [
+        0,
+        1.2
+       ]
+      ],
+      "z": [
+       [
+        0,
+        0.2
+       ]
+      ]
+     },
+     "turnSteps": true
+    }
+   ],
+   "narration": [
+    "Thank you, both of you.",
+    "You are very welcome.",
+    "We are proud of you."
+   ]
+  },
+  {
+   "id": "lights",
+   "template": "cinematic-graph",
+   "backend": "three",
+   "durationFrames": 180,
+   "transitionFrames": 12,
+   "transition": "fade",
+   "heading": "LIGHTS OUT",
+   "subheading": "Goodnight.",
+   "environment": "midnight",
+   "lighting": "parity-v1",
+   "cameraRig": {
+    "preset": "close-up",
+    "subject": "robot",
+    "framing": "close-up",
+    "strength": 0.5
+   },
+   "camera": {
+    "x": [
+     [
+      0,
+      -0.6
+     ],
+     [
+      1,
+      0.5
+     ]
+    ],
+    "y": [
+     [
+      0,
+      2.4
+     ],
+     [
+      1,
+      2.3
+     ]
+    ],
+    "z": [
+     [
+      0,
+      6.4
+     ],
+     [
+      1,
+      6.1
+     ]
+    ],
+    "zoom": [
+     [
+      0,
+      1650
+     ],
+     [
+      1,
+      1850
+     ]
+    ]
+   },
+   "cameraInterpolation": {
+    "x": "flow",
+    "zoom": "flow"
+   },
+   "assets": [
+    {
+     "id": "robot",
+     "asset": "service-robot",
+     "tracks": {
+      "x": [
+       [
+        0,
+        0
+       ]
+      ],
+      "yaw": [
+       [
+        0,
+        0.25
+       ],
+       [
+        1,
+        -0.1
+       ]
+      ],
+      "blink": [
+       [
+        0,
+        1
+       ],
+       [
+        0.55,
+        1
+       ],
+       [
+        0.58,
+        0.1
+       ],
+       [
+        0.62,
+        1
+       ],
+       [
+        0.82,
+        1
+       ],
+       [
+        0.95,
+        0.1
+       ]
+      ],
+      "armPitch": [
+       [
+        0,
+        -0.3
+       ],
+       [
+        1,
+        0
+       ]
+      ],
+      "leftArmPitch": [
+       [
+        0,
+        -0.3
+       ],
+       [
+        1,
+        0
+       ]
+      ]
+     },
+     "interpolation": {
+      "yaw": "flow"
+     }
+    }
+   ],
+   "effects": [
+    {
+     "preset": "cyan-aura",
+     "target": "robot"
+    }
+   ],
+   "narration": [
+    "Goodnight, workshop.",
+    "See you in the morning."
+   ],
+   "fidelity": {
+    "bloom": 0.6,
+    "atmosphere": 0.5,
+    "contactShadow": 0.75,
+    "surfaceDetail": 0.6,
+    "depthOfField": 0.15,
+    "motionBlur": 0,
+    "grain": 0.15,
+    "grade": 0.45,
+    "particles": 0.4,
+    "typography": 1
+   },
+   "speakerAssets": {
+    "robo": "robot"
+   }
+  }
+ ]
+}

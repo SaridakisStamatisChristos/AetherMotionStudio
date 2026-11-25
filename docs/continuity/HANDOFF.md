@@ -1,8 +1,8 @@
-# Forward-only handoff — TALK-04 done (PR pending), TALK-05 next (owner types only "fod continue")
+# Forward-only handoff — TALK-04 (PR #25) and TALK-05 (stacked PR) await the owner
 
-Unit: TALK-05 (talking showcase film), stacked on TALK-04
-Checkpoint: `feature/talk-04` (from `chore/record-talk-02-03` 33193e6 on main 85d7a37): TALK-04 commits 0fd4824, 8d69270, 7fb7beb plus a docs/checkpoint commit. Pushed, PR against main.
-Status: TALK-04 IMPLEMENTED + TESTED + RENDERED (agent-reviewed), PR open, not merged. TALK-05: AUTHORIZED, next; branch `feature/talk-05` from `feature/talk-04`, stacked PR with base `feature/talk-04`.
+Unit: TALK-04 + TALK-05, both implemented and rendered; waiting for owner review and merge
+Checkpoint: `feature/talk-04` (PR #25 → main) and `feature/talk-05` (stacked PR, base `feature/talk-04`; commits 1803533, d58d7c7, a7b539b plus docs).
+Status: TALK-04 IMPLEMENTED + TESTED + RENDERED (talk04-dialogue-r2). TALK-05 IMPLEMENTED + TESTED + RENDERED (talk05-first-words-r3): owner visual and audio review requested, and the owner must approve the Claude-drafted lines. Nothing merged.
 Approved by: owner, 2026-11-25 (see the previous handoff text below: "… i would need to type only fod continue").
 Date: 2026-11-25
 
@@ -106,5 +106,23 @@ Other opt-in tools available for the films: `aim`, `turnSteps`, `params.reach`, 
 - Caption reading-speed findings appear on fast lines (≤18 characters per second); keep TALK-05 lines short.
 - An interrupted render left `out/talk03-body-r3-*` incomplete; it is superseded and left untouched.
 
+## TALK-05 checkpoint
+- Changed files:
+  - scripts/talk05-first-words.mjs; examples/talk05-first-words-{cpu,three}-polished.json; tests/talk05.test.js;
+  - docs/SHOWCASE.md TALK-05; continuity docs.
+- Results: see CURRENT_STATE (Active unit) and docs/SHOWCASE.md.
+- Open risks:
+  - The robot turns at 105°/s in two places.
+  - The table in AROUND THE TABLE is hidden.
+  - LRA is 20.7 LU.
+  - It has not been heard whether Kokoro says "Wrrrench" (rrr rench) convincingly.
+  - Every line is a draft.
+
 ## Next action
-- TALK-05 per NEXT_UNITS "TALK-05": branch `feature/talk-05` from `feature/talk-04`, generator scripts/talk05-first-words.mjs, Claude-drafted lines flagged for owner approval, matched render `talk05-first-words-r1` from a clean commit, stacked PR. Then report and ask the owner to merge the TALK-04 PR first.
+- Ask the owner to watch out/talk05-first-words-r3-{cpu,three}-polished/film.mp4 (and optionally out/talk04-dialogue-r2-*), and to approve or edit the lines.
+- On feedback: edit SCRIPT or staging in the generator, re-render with a new id (r4 …), and re-measure motion.
+- On "merge":
+  - merge PR #25 first;
+  - retarget the TALK-05 PR to main and merge it;
+  - watch main CI on the merge commit;
+  - record both merges on a new record branch.
