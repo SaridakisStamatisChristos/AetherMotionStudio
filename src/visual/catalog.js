@@ -22,9 +22,10 @@ function primitive(box,pose,palette,params={}){
  const tf=p=>add(ry(p.map((v,i)=>v*scale*dimensions[i]),yaw),origin);
  const [primary,secondary,accent]=palette;
  const col=[params.primary??primary,params.secondary??secondary,params.accent??accent,'#e9ddd0','#162333','#8a6650','#7ebdd0'];
- const b=(x,y,z,w,h,d,c=0,angle=0,axis='z',lit=false)=>{
+ // bias: CPU painter-sort depth bias only (Three ignores it); 0 for every legacy box.
+ const b=(x,y,z,w,h,d,c=0,angle=0,axis='z',lit=false,bias=0)=>{
   const local=p=>tf(add((axis==='x'?rx:axis==='y'?ry:rz)(p,angle),[x,y,z]));
-  box([0,0,0],[w,h,d],col[c],local,lit,0);
+  box([0,0,0],[w,h,d],col[c],local,lit,bias);
  };
  const rod=(a,c,width,color=1,depth=width,lit=false)=>{
   const dx=c[0]-a[0],dy=c[1]-a[1],dz=c[2]-a[2],len=Math.hypot(dx,dy,dz);
@@ -35,7 +36,7 @@ function primitive(box,pose,palette,params={}){
  const ring=(x,y,z,r,w,d,n=12,c=0,axis='z',phase=0)=>{for(let i=0;i<n;i++){const a=phase+(i+.5)*TAU/n,k=2*r*Math.tan(Math.PI/n)*1.03;if(axis==='y')b(x+r*Math.cos(a),y,z+r*Math.sin(a),k,d,w,c,-a-Math.PI/2,'y');else b(x+r*Math.cos(a),y+r*Math.sin(a),z,w,k,d,c,a,'z');}};
  // TALK-03 opt-in: the same builders with a local-space pre-transform (used to rotate the head about the neck).
  const headed=pre=>({
-  b:(x,y,z,w,h,d,c=0,angle=0,axis='z',lit=false)=>box([0,0,0],[w,h,d],col[c],p=>tf(pre(add((axis==='x'?rx:axis==='y'?ry:rz)(p,angle),[x,y,z]))),lit,0),
+  b:(x,y,z,w,h,d,c=0,angle=0,axis='z',lit=false,bias=0)=>box([0,0,0],[w,h,d],col[c],p=>tf(pre(add((axis==='x'?rx:axis==='y'?ry:rz)(p,angle),[x,y,z]))),lit,bias),
   rod:(a,c,width,color=1,depth=width,lit=false)=>{const dx=c[0]-a[0],dy=c[1]-a[1],dz=c[2]-a[2],len=Math.hypot(dx,dy,dz);if(len<1e-7)return;const u=[dx/len,dy/len,dz/len],ref=Math.abs(u[1])>.95?[1,0,0]:[0,1,0],right=norm(cross(ref,u)),forward=cross(right,u),mid=a.map((v,i)=>(v+c[i])/2);box([0,0,0],[width,len,depth],col[color],p=>tf(pre(mid.map((v,i)=>v+right[i]*p[0]+u[i]*p[1]+forward[i]*p[2]))),lit,0);}
  });
  return {b,rod,ring,headed};
@@ -48,6 +49,7 @@ function primitive(box,pose,palette,params={}){
 // hips (boxes whose centre and rod ends lie at or above hipY) leans about the ground point under the body, so the hips
 // move over one foot; the feet stay planted and leg rods stretch from the planted foot to the moved hip. The head
 // keeps its own nod/tilt on top. Absent = the original builders (unchanged geometry).
+export const ROBOT_MOUTH_BIAS=.08;
 function headRoute(P,b,rod,p,cut,half,pivot,hipY=Infinity){
  if(p.nod===undefined&&p.tilt===undefined&&p.hip===undefined)return [b,rod];
  const inHead=(x,y)=>y>=cut&&Math.abs(x)<=half;
@@ -87,7 +89,10 @@ const F={
  for(const s of [-1,1])b(s*w*.22,h*.85,d*.52,w*.14,h*.09*(p.blink??1),.035,2,0,'z',true);
  // TALK-01 opt-in mouth (pose.mouth 0..1, present only on a bound speaker): lit bar under the eyes that opens with speech.
  // GEN-10 opt-in pose.mouthWidth (estimated mouth shapes; absent = unchanged geometry) scales the bar width.
- if(p.mouth!==undefined)b(0,h*.775,d*.52,p.mouthWidth===undefined?w*.3:w*.3*p.mouthWidth,h*(.012+.03*p.mouth),.035,2,0,'z',true);
+ // Owner-approved repair (2026-11-25): on CPU the bar sat low on the face panel and its average depth sorted it 1 cm
+ // behind the panel, so the painter hid it (Three showed it). A CPU sort bias of 0.08 m keeps it in front; geometry
+ // and Three are unchanged.
+ if(p.mouth!==undefined)b(0,h*.775,d*.52,p.mouthWidth===undefined?w*.3:w*.3*p.mouthWidth,h*(.012+.03*p.mouth),.035,2,0,'z',true,ROBOT_MOUTH_BIAS);
  if(kind%2===0){rod([0,h*.97,0],[0,h*1.08,0],.045,1);b(0,h*1.08,0,.13,.13,.13,2,0,'z',true);}else for(const s of [-1,1])b(s*w*.58,h*.85,0,.13,.27,d*.5,0);
  if(kind>=3)b(0,h*.45,-d*.58,w*.65,h*.32,.24,1);
  },
