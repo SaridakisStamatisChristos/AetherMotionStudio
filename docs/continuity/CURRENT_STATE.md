@@ -19,6 +19,19 @@ Updated 2026-11-25 (handoff to TALK-04/05; TALK-01..03 merged). Authoritative ro
 6. Source and approved decisions authoritative. This summary cannot discard binding facts; consult the source-specific contract when the task touches it. Keep state and handoff synchronized. No new native render runs on GitHub or release without authorization.
 
 ## Active unit
+GEN-02 — group framing for vertical (9:16) social video, added to the GEN-01 branch/PR #27 at the owner's request ("lets do this first and then merge. if the videos are posted for example in instagram the charachers are samll", 2026-11-25). Status IMPLEMENTED + TESTED + RENDERED (agent-reviewed).
+- Done:
+  - opt-in `cameraRig.framing:'group'` + `subjects` (rest-pose bounds, one zoom per shot, 9:16 safe area);
+  - talk-v1 uses it with a tighter line;
+  - set pieces behind the gap (2 speakers) or beside and framed (3);
+  - the Director points after staging.
+- Speaker height as a share of the safe area: interview 0.285 → 0.445, network 0.267 → 0.373, TALK-05 0.41 → 0.49.
+- Evidence:
+  - `npm test` 314 tests, 313 pass, 0 fail, 1 skip (tests/gen02.test.js 3 incl. negatives); defaults identical.
+  - Renders from clean 1c526b6, all gates PASS, checks 0/0: `gen02-interview-r2` (CPU c74bb6949c2147cb…, Three 159219bd12f29aa4…) and `talk05-first-words-r7` (CPU d64de6b7e882ab0e…, Three f76eb7828a1ad92a…).
+  - r1/r6 (±0.75 spacing, overlap seen in stills) are superseded.
+- Known gap: the composition overlap metric ignores rigs without a right-hand anchor (explorer robot).
+
 GEN-01 — generalize the TALK/POLISH lessons to every project. Owner: "go" (2026-11-25), after asking that features generalize to every video. Status IMPLEMENTED + TESTED + RENDERED (agent-reviewed) on `feature/gen-01` (from `chore/record-talk-04-05` 219278a on main bf032ff); PR pending owner merge.
 - Done:
   - motion-speed-v1 + visibility-v1 checks (src/quality/motion-check.js; every production writes quality-checks.json; Studio Inspect);

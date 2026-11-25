@@ -73,3 +73,28 @@ All optional; absent fields keep historical behaviour (graph-state and preflight
   - a bounded memo for aim solves;
   - content-keyed caches for the locomotion and turn-step tables, alongside the per-object WeakMaps.
 - Results: graph time for the whole film 9.1 s → 0.5 s; teach's first frame in a fresh process about 20 ms. Poses of every shot except teach are byte-identical; teach changes only through the new aim search.
+
+## GEN-02 group framing for vertical social video (2026-11-25, opt-in)
+Owner: "if the videos are posted for example in instagram the characters are small".
+- **Contract:** `cameraRig.framing: 'group'` with `cameraRig.subjects: [2–4 asset IDs]`.
+  - `subjects` is only valid with `group`, the IDs must be distinct and known, and `subject` and `subjects` are exclusive. Every rule has a negative test.
+- **What it does** (src/core/cinematography.js `frameGroup`, `GROUP_FRAMING`):
+  - measures the subjects' bounds in rest pose (origin, scale and params only), so heads and arms turning never make the zoom breathe;
+  - aims the target at their centre (rig strength);
+  - uses **one zoom per shot**: the tightest fit over the rig's start, middle and end camera into the 9:16 safe area between heading and captions (half-width 336, half-height 340 on the 720×1280 reference), clamped to 700–2000.
+  - Fitting every frame was tried first and cancelled the preset's dolly (a dolly-zoom warp); a single zoom keeps the dolly readable and never crops at its closest point.
+  - An authored zoom track stays authoritative.
+- **Used by `talk-v1`** (docs/SPEECH.md GEN-01/02) on every shot it blocks:
+  - the line is tighter: two speakers at ±0.9 (r1 at ±0.75 overlapped), three at −1 / 0 (z −0.15) / 1;
+  - two speakers: the set piece stands behind their gap (visibility ≤ 0.7);
+  - three speakers: their gaps are too narrow (visibility-v1 measured a set piece behind them as fully hidden), so the set piece stands close beside the line (x 1.75) and is framed with the group.
+- **Result.** Mean speaker height as a share of the safe-area height, measured with the composition report and estimated line timing:
+
+  | Film | GEN-01 | GEN-02 |
+  |---|---|---|
+  | Fresh interview | 0.285 | 0.445 |
+  | TALK-04 network (3 speakers + set piece) | 0.267 | 0.373 |
+  | TALK-05 conversation shots | 0.26–0.38 | 0.38–0.51 |
+
+  The calmer, readable dolly also cleared the LOW_PROJECTED_MOTION review notes on the talk-v1 shots.
+- **Known gap:** the composition gate's overlap metric only counts rigs with a `right-hand` anchor. The explorer robot has none, so its overlap with the host was invisible to the gate and was caught in the stills. Candidate fix: count every catalog character.

@@ -1,4 +1,4 @@
-# Forward-only handoff — GEN-01 done, PR awaiting the owner
+# Forward-only handoff — GEN-01 + GEN-02 (group framing) in PR #27; owner said merge after GEN-02
 
 Unit: GEN-01 (implemented, tested and rendered; PR open, not merged)
 Checkpoint: `feature/gen-01` (commits 07a8df7, 55c41a6, e98fda2, da76b77, 1e89fdb plus docs) on `chore/record-talk-04-05` (main bf032ff + record 219278a).
@@ -21,6 +21,12 @@ Date: 2026-11-25
   - Visibility is box-based.
   - calmTurns only adjusts authored yaw keys in fixed-length shots.
   - The listed historical fast turns in accepted films stay as recorded findings.
+
+## GEN-02 addendum
+- Added on the same branch: group framing.
+- See CURRENT_STATE (Active unit) and docs/CINEMATOGRAPHY.md GEN-02.
+- Final renders: `gen02-interview-r2` and `talk05-first-words-r7` (1c526b6).
+- Owner instruction: "lets do this first and then merge".
 
 ## Next action
 - Ask the owner to review PR (and optionally out/gen01-interview-r2-*/film.mp4, out/talk05-first-words-r5-*/film.mp4), and to decide on caption speed.

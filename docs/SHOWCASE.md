@@ -89,3 +89,17 @@ A 75 s dialogue film. The engineer (af_heart), the scientist (bf_emma, en-gb) an
   - r4 is superseded for the same uncommitted-request reason.
 - Known: with automatic framing of a group plus its set piece, characters are fairly small in the frame. A framing improvement is a candidate follow-up.
 - Review status: agent stills review only.
+
+## GEN-02 renders (2026-11-25), both from clean commit 1c526b6
+- **`gen02-interview-r2`**: the same fresh request, now with group framing.
+  - Gates: all PASS; frame-glitch clean; checks 0 and 0 on both backends.
+  - −16.0 LUFS; 1 CAPTION_READING_SPEED warning.
+  - Render time CPU 124.0 s, Three 55.8 s (RTX util peak 61 %).
+  - Films: CPU c74bb6949c2147cb…, Three 159219bd12f29aa4….
+  - Turn peak 43°/s.
+  - r1 (8cf51c4, ±0.75 spacing) passed every gate, but its stills showed the robot overlapping the student's arm. It is superseded and left untouched.
+- **`talk05-first-words-r7`**: all gates PASS, checks 0 and 0, −16.0 LUFS.
+  - Render time CPU 110.8 s, Three 68.1 s.
+  - Films: CPU d64de6b7e882ab0e…, Three f76eb7828a1ad92a….
+  - The conversation shots are group-framed. r6 was the ±0.75 version and is superseded.
+- Review status: agent stills review only.
