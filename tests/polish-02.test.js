@@ -216,7 +216,8 @@ import {mockProvider} from '../src/director/providers.js';
 const loadReq=n=>JSON.parse(readFileSync(new URL('../examples/'+n+'.request.json',import.meta.url),'utf8'));
 const REQS=['director-cpu-polished','director-three-polished','release','continuity-cpu-polished','continuity-three-polished','speech-cpu-polished','speech-three-polished'];
 test('prompt v1.2: v1.1 stays the default and is byte-identical when selected explicitly',()=>{
- assert.deepEqual(PROMPT_VERSIONS,['director-ir-v1.1','director-ir-v1.2']);
+ // TALK-04 appended director-ir-v1.3 (dialogue only); the first two versions and their order are unchanged.
+ assert.deepEqual(PROMPT_VERSIONS.slice(0,2),['director-ir-v1.1','director-ir-v1.2']);
  for(const n of REQS){const a=directorRequest(loadReq(n)),b=directorRequest({...loadReq(n),promptVersion:'director-ir-v1.1'});assert.equal(buildPrompt(b,baseline(b)),buildPrompt(a,baseline(a)),n);}
 });
 test('prompt v1.2: ≤2000 estimated tokens for every request example and a 60 s / 6-shot film; objects listed once',()=>{

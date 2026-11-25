@@ -3,6 +3,7 @@ import {compactIdentities,validateIdentityRequest} from '../core/identity.js';
 import {ACTIONS,supportedChannels} from '../core/cinematography.js';
 import {validateSpeechConfig} from '../core/speech.js';
 import {VOICES} from '../core/contract.js';
+import {validateDialogueRequest,validateDialogueShot} from './dialogue.js';
 export const REQUEST_VERSION=1,IR_VERSION=1,MAX_JSON_BYTES=262144;
 const bad=(p,m)=>{throw Error(p+': '+m)};
 export function safeText(s,max,p){literal(s,max,p);if(/https?:\/\/|file:\/\/|javascript:|<\/?script\b|<iframe\b|\x60\x60\x60/i.test(s))bad(p,'URLs or executable markup not permitted');}
@@ -19,7 +20,7 @@ export function safeJson(raw){
 }
 export const normalize=s=>s.trim().replace(/\s+/g,' ');
 export function request(input){
- fields(input,['version','id','topic','script','seconds','audience','tone','style','language','voice','backend','profile','seed','identityLibrary','cast','story','speech','staging','promptVersion'], 'request',['version','id','topic','seconds']);
+ fields(input,['version','id','topic','script','seconds','audience','tone','style','language','voice','backend','profile','seed','identityLibrary','cast','story','speech','staging','promptVersion','dialogue'], 'request',['version','id','topic','seconds']);
  const q={audience:'general audience',tone:'clear',style:'cinematic explainer',language:'en',voice:'af_heart',backend:'cpu',profile:'polished',seed:0,...input};
  if(q.version!==REQUEST_VERSION)bad('request.version','unsupported');
  if(typeof q.id!=='string'||!/^[a-z0-9][a-z0-9-]{0,47}$/.test(q.id)||/^(con|prn|aux|nul|com[1-9]|lpt[1-9])$/.test(q.id))bad('request.id','unsafe ID');
@@ -31,7 +32,11 @@ export function request(input){
  if(q.language==='en-gb'&&!q.voice.startsWith('b')||q.language==='en-us'&&q.voice.startsWith('b'))bad('request.voice','language/voice mismatch');
  if(q.staging!==undefined)choice(q.staging,['art-v1','art-v2'],'request.staging');
  // POLISH-02: opt-in compact prompt; absent keeps director-ir-v1.1 (unchanged digests).
- if(q.promptVersion!==undefined)choice(q.promptVersion,['director-ir-v1.1','director-ir-v1.2'],'request.promptVersion');choice(q.backend,['cpu','three'],'request.backend');choice(q.profile,['original','polished'],'request.profile');validateIdentityRequest(q);if(q.speech!==undefined){validateSpeechConfig(q.speech);if(q.speech.targetFrames!==q.seconds*30)bad('speech','targetFrames must equal seconds*30');}return q;
+ if(q.promptVersion!==undefined)choice(q.promptVersion,['director-ir-v1.1','director-ir-v1.2','director-ir-v1.3'],'request.promptVersion');
+ // TALK-04: opt-in dialogue; its prompt is director-ir-v1.3 (selected automatically), which requires dialogue.
+ if(q.dialogue!==undefined){if(q.promptVersion===undefined)q.promptVersion='director-ir-v1.3';else if(q.promptVersion!=='director-ir-v1.3')bad('request.promptVersion','dialogue requires director-ir-v1.3');}
+ else if(q.promptVersion==='director-ir-v1.3')bad('request.promptVersion','director-ir-v1.3 requires request.dialogue');
+ choice(q.backend,['cpu','three'],'request.backend');choice(q.profile,['original','polished'],'request.profile');validateIdentityRequest(q);if(q.speech!==undefined){validateSpeechConfig(q.speech);if(q.speech.targetFrames!==q.seconds*30)bad('speech','targetFrames must equal seconds*30');}validateDialogueRequest(q);return q;
 }
 export function validateIR(ir,q,selection){
  fields(ir,['version','title','treatment','shots'],'ir',['version','title','treatment','shots']);
@@ -40,7 +45,7 @@ export function validateIR(ir,q,selection){
  if(!Array.isArray(ir.shots)||ir.shots.length!==selection.length)bad('ir.shots','required shot count '+selection.length);
  for(const [i,s] of ir.shots.entries()){
   const p='ir.shots['+i+']';
-  fields(s,['heading','subheading','narration','camera','environment','assets','effect','overlay','location','events'],p,['heading','subheading','narration','camera','environment','assets']);
+  fields(s,['heading','subheading','narration','camera','environment','assets','effect','overlay','location','events','speakers'],p,['heading','subheading','narration','camera','environment','assets']);
   if(q.identityLibrary){if(cast.get(s.location)?.kind!=='environment'||!Array.isArray(s.events)||s.events.length>32)bad(p,'location and explicit events required');}else if(s.location!==undefined||s.events!==undefined)bad(p,'identity library required');
   safeText(s.heading,42,p+'.heading');safeText(s.subheading,64,p+'.subheading');
   if(!Array.isArray(s.narration)||s.narration.length<1||s.narration.length>8)bad(p+'.narration','1–8 phrases');
@@ -71,6 +76,7 @@ export function validateIR(ir,q,selection){
    if(a.action!==undefined)choice(a.action,actions,v+'.action');
    if(a.x!==undefined)finite(a.x,-2.4,2.4,v+'.x');if(a.scale!==undefined)finite(a.scale,.5,1.25,v+'.scale');
   }
+  validateDialogueShot(s,q,p);
   // The final shared graph validator is the source of truth for cameras, overlays and effects.
   if(s.overlay!==undefined)fields(s.overlay,['type','slot','text','start','end','animation','data','unit','axis','from','to','edges'],p+'.overlay',['type','slot','text']);
  }
