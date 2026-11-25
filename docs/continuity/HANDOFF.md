@@ -1,4 +1,19 @@
-# Forward-only handoff — GEN-01 + GEN-02 (group framing) in PR #27; owner said merge after GEN-02
+# Forward-only handoff — GEN-01/02 merged; no unit authorized
+
+Unit: none (await the owner)
+Checkpoint: main 23f4198 (GEN-01 + GEN-02 merge, PR #27); record branch `chore/record-gen-01-02`.
+Status: MERGED; main CI 45622734798 test PASS.
+Date: 2026-11-25
+
+## Next action
+- Ask the owner what is next.
+- Candidates (none authorized):
+  - speaker-follow camera, so each speaker is larger during their line;
+  - a caption-speed decision: slower dialogue speech or captions lingering briefly;
+  - make the composition overlap metric count every catalog character;
+  - owner review of out/gen02-interview-r2-* and out/talk05-first-words-r7-*.
+
+## Previous handoff, kept for reference
 
 Unit: GEN-01 (implemented, tested and rendered; PR open, not merged)
 Checkpoint: `feature/gen-01` (commits 07a8df7, 55c41a6, e98fda2, da76b77, 1e89fdb plus docs) on `chore/record-talk-04-05` (main bf032ff + record 219278a).

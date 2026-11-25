@@ -19,7 +19,14 @@ Updated 2026-11-25 (handoff to TALK-04/05; TALK-01..03 merged). Authoritative ro
 6. Source and approved decisions authoritative. This summary cannot discard binding facts; consult the source-specific contract when the task touches it. Keep state and handoff synchronized. No new native render runs on GitHub or release without authorization.
 
 ## Active unit
-GEN-02 — group framing for vertical (9:16) social video, added to the GEN-01 branch/PR #27 at the owner's request ("lets do this first and then merge. if the videos are posted for example in instagram the charachers are samll", 2026-11-25). Status IMPLEMENTED + TESTED + RENDERED (agent-reviewed).
+None authorized. GEN-01 + GEN-02 MERGED to main as 23f4198 via PR #27 (owner: "lets do this first and then merge", 2026-11-25); main CI 45622734798 test PASS (render/compare skipped by policy). Agent-reviewed only; no human review of the GEN renders yet.
+- Candidate follow-ups (not authorized):
+  - count every catalog character in the composition overlap metric;
+  - a caption-speed option (owner decision);
+  - speaker-follow camera (bigger characters during each line);
+  - mesh-accurate visibility.
+
+Previous: GEN-02 — group framing for vertical (9:16) social video, added to the GEN-01 branch/PR #27 at the owner's request ("lets do this first and then merge. if the videos are posted for example in instagram the charachers are samll", 2026-11-25). Status IMPLEMENTED + TESTED + RENDERED (agent-reviewed).
 - Done:
   - opt-in `cameraRig.framing:'group'` + `subjects` (rest-pose bounds, one zoom per shot, 9:16 safe area);
   - talk-v1 uses it with a tighter line;
