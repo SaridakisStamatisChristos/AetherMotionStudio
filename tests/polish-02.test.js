@@ -277,3 +277,26 @@ test('performance: aim memo returns independent copies',()=>{
  const a=solveAim('engineer',{origin:[0,0,0],yaw:0},[1.5,0,.5]),b=solveAim('engineer',{origin:[0,0,0],yaw:0},[1.5,0,.5]);
  assert.deepEqual(a,b);a.armPitch=99;assert.notEqual(solveAim('engineer',{origin:[0,0,0],yaw:0},[1.5,0,.5]).armPitch,99);
 });
+
+// ---- Item 7: human detail 3 ----
+const HUMANS=['scientist','engineer','office-worker','astronaut','construction-worker','student','runner'];
+const boxesOf=(id,pose)=>{const out=[];emitAsset(id,(c,sz,col,tf=q=>q)=>out.push(JSON.stringify([tf(c).map(v=>+v.toFixed(9)),sz.map(v=>+v.toFixed(9)),col])),pose);return out;};
+test('detail 3: every human kind gains hair/clothing/fingers and keeps every detail-2 box',()=>{
+ for(const id of HUMANS)for(const pose of [{origin:[0,0,0],yaw:.2},{origin:[0,0,0],yaw:-.3,armPitch:-1.2,leftArmPitch:-2,grip:.5}]){
+  const two=boxesOf(id,{...pose,params:{detail:2}}),three=boxesOf(id,{...pose,params:{detail:3}}),set=new Set(three);
+  assert.ok(three.length>=two.length+5,id+' '+two.length+'→'+three.length);
+  const brows=two.filter(b=>!set.has(b));assert.ok(brows.length<=2,id+' only the brows may differ ('+brows.length+')');}
+});
+test('detail 3: fingers extend beyond the hand along the arm; grip hand keeps its grip fingers',()=>{
+ const pose={origin:[0,0,0],yaw:0,armPitch:-1.4,leftArmPitch:-1.4,params:{detail:3}},hand=catalogHandAnchor('engineer',pose,-1),shoulderZ=0;
+ const far=Math.max(...boxesOf('engineer',pose).map(b=>JSON.parse(b)[0]).filter(c=>c[0]<0).map(c=>c[2]));assert.ok(far>hand[2]+.05,'finger tips ahead of the left hand');assert.ok(far>shoulderZ);
+ const withGrip=boxesOf('engineer',{...pose,grip:1}),noGrip=boxesOf('engineer',pose);assert.ok(withGrip.length<noGrip.length+2,'grip hand does not double its fingers');
+});
+test('detail 3: negatives and generator reproduction',async()=>{
+ assert.throws(()=>validateProject(project([shot([{id:'r',asset:'service-robot',params:{detail:3},tracks:{x:[[0,0]]}}])])));
+ assert.throws(()=>validateProject(project([shot([{id:'h',asset:'engineer',params:{detail:4},tracks:{x:[[0,0]]}}])])));
+ validateProject(project([shot([{id:'h',asset:'engineer',params:{detail:3},tracks:{x:[[0,0]]}}])]));
+ const {build}=await import('../scripts/polish02-cast.mjs');
+ for(const b of ['cpu','three']){const want=JSON.parse(readFileSync(new URL('../examples/polish02-cast-'+b+'-polished.json',import.meta.url),'utf8'));assert.deepEqual(build(b),want);}
+ const p=build('cpu');assert.ok(p.shots[1].assets.filter(a=>HUMANS.includes(a.asset)).every(a=>a.params.detail===3));assert.ok(p.shots[0].assets.filter(a=>HUMANS.includes(a.asset)).every(a=>a.params.detail===2));
+});

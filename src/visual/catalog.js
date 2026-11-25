@@ -1,6 +1,6 @@
 import {localArm} from './catalog-rig.js';
 import {RECIPES} from './catalog-data.js';
-import {add,rx,ry,rz} from './vectors.js';
+import {add,sub,norm,cross,rx,ry,rz} from './vectors.js';
 const PALETTES={teal:['#309b9b','#29475b','#b6fff2'],amber:['#cf943d','#67452d','#ffe1a0'],white:['#d9e0df','#677f8d','#8ee6f4'],orange:['#c16b3b','#4b3840','#ffe19b'],slate:['#62758b','#253344','#83d7ed'],lime:['#7eaa5a','#3c6342','#d5f49b'],blue:['#486ea9','#253854','#8ce9ff'],violet:['#9373bc','#433450','#d5bcff'],wood:['#b17c4b','#634334','#e8c18e'],red:['#bc544e','#60343f','#ffbd9d'],pine:['#4c8968','#355347','#a9d49b']};
 const LEGACY={characters:['retro-robot'],technology:['energy-core'],everyday:['treasure-chest']};
 const TAU=Math.PI*2;
@@ -12,7 +12,7 @@ export function validateAssetParams(id,params){
  if(!Object.hasOwn(recipes,id))throw Error('asset params unsupported for '+id);
  if(!params||typeof params!=='object'||Array.isArray(params))throw Error('params object required');
  for(const [k,v] of Object.entries(params)){if(['primary','secondary','accent'].includes(k)){if(typeof v!=='string'||!/^#[0-9a-fA-F]{6}$/.test(v))throw Error('invalid asset color: '+k);}
- else if(k==='detail'){if(v!==1&&v!==2)throw Error('invalid asset detail: '+v);if(v===2&&recipes[id].family!=='human')throw Error('asset detail 2 unsupported for '+id);}
+ else if(k==='detail'){if(v!==1&&v!==2&&v!==3)throw Error('invalid asset detail: '+v);if(v>=2&&recipes[id].family!=='human')throw Error('asset detail '+v+' unsupported for '+id);}
  else if(k==='reach'){if(typeof v!=='number'||!Number.isFinite(v)||v<1||v>2)throw Error('invalid asset reach: '+v);if(recipes[id].family!=='robot')throw Error('asset reach unsupported for '+id);}
  else if(['width','height','depth'].includes(k)){if(typeof v!=='number'||!Number.isFinite(v)||v<.7||v>1.3)throw Error('invalid asset dimension: '+k);}else throw Error('unknown asset param: '+k);}
  return params;
@@ -38,6 +38,22 @@ function primitive(box,pose,palette,params={}){
 // POLISH-02 opt-in planted feet (turnSteps): per-foot yaw twist and local ankle offset from src/core/turnsteps.js
 // (pose keys footTwist*/footDx*/footDz*, present only with turnSteps).
 const planted=(p,s)=>s===1?[p.footTwistR,p.footDxR,p.footDzR]:[p.footTwistL,p.footDxL,p.footDzL];
+// POLISH-02 item 7 opt-in human detail 3 (extends detail 2): fingers + thumb along the arm, per-kind hair, brow tilt
+// and clothing silhouettes. Absent or detail 1/2 = unchanged geometry.
+const BROW={1:.12,2:-.1,3:.06,5:-.14,6:.1,7:-.06};
+function fingers(rod,a,c,s,w){
+ const dir=norm(sub(c,a)),lat=norm(cross(dir,Math.abs(dir[1])>.9?[0,0,1]:[0,1,0])),th=norm(cross(dir,lat)),at=(o,k)=>add(c,o.map(v=>v*k));
+ for(const j of [-1,0,1]){const base=add(at(dir,.07),lat.map(v=>v*j*.04));rod(base,add(base,dir.map(v=>v*.07)),.032,3);}
+ const tb=add(c,lat.map(v=>v*s*.06));rod(tb,add(tb,add(dir.map(v=>v*.03),th.map(v=>v*.05))),.032,3);
+}
+function detail3(b,w,h,d,k){
+ if(k===1){b(0,h*.9,-d*.3,w*.6,h*.12,d*.12,1);b(w*.15,h*1.0,d*.1,w*.3,.05,d*.5,1);b(0,h*.43,0,w*1.05,h*.07,d*1.05,0);}
+ if(k===2||k===5){b(0,h*1.0,0,w*.12,.04,d*.8,2);b(0,h*.47,0,w*1.03,.06,d*1.03,5);b(w*.3,h*.43,d*.4,w*.18,.1,.08,5);}
+ if(k===3){b(-w*.08,h*.985,d*.3,w*.4,.05,d*.14,1);b(0,h*.9,-d*.3,w*.6,h*.1,d*.1,1);for(const s of [-1,1])b(s*w*.16,h*.74,d*.505,w*.12,h*.12,.02,4,s*.35,'z');}
+ if(k===4)for(const s of [-1,1])b(s*w*.48,h*.8,0,w*.22,.08,d*.8,1);
+ if(k===6){for(const s of [-1,1])b(s*w*.3,h*.89,-d*.05,w*.06,h*.16,d*.55,1);b(0,h*.88,-d*.33,w*.62,h*.16,d*.1,1);b(0,h*.81,-d*.42,w*.55,h*.07,d*.2,2);}
+ if(k===7){b(0,h*.95,0,w*.64,.04,d*.76,2);b(0,h*.9,-d*.45,w*.12,h*.14,w*.12,1);b(0,h*.44,0,w*1.02,h*.06,d*1.02,1);}
+}
 const F={
  robot({b,rod},[w,h,d,legs,kind],p){const step=p.walking??0,open=p.open??0;
  b(0,h*.5,0,w,h*.37,d,0);b(0,h*.52,d*.51,w*.62,h*.18,.04,1);b(0,h*.54,d*.54,w*.36,.045,.035,2,0,'z',true);
@@ -54,7 +70,7 @@ const F={
  human({b,rod},[w,h,d,k],p){const walk=p.walking??0,open=p.open??0;
  for(const s of [-1,1]){const z=s*walk*.2,ly=p.footLift===undefined?0:Math.max(0,s*p.footLift)*.12;
   if(p.footTwistR===undefined){rod([s*w*.22,h*.48,0],[s*w*.24,.13+ly,z],w*.25,1);b(s*w*.24,.09+ly,z+.09,w*.34,.18,d*.65,4);}
-  else{const [q,dx,dz]=planted(p,s),fx=s*w*.24+dx,fz=z+dz;rod([s*w*.22,h*.48,0],[fx,.13+ly,fz],w*.25,1);b(...add([fx,.09+ly,fz],ry([0,0,.09],q)),w*.34,.18,d*.65,4,q,'y');}const {shoulder:a,hand:c}=localArm('human',[w,h],s,p);rod(a,c,w*.2,0);b(...c,w*.22,.16,.19,3);if(s===1&&p.grip!==undefined)for(const j of [-1,1])b(c[0]+j*(.07-.035*p.grip),c[1]-.1,c[2]+.04,.045,.1,.07,3);}
+  else{const [q,dx,dz]=planted(p,s),fx=s*w*.24+dx,fz=z+dz;rod([s*w*.22,h*.48,0],[fx,.13+ly,fz],w*.25,1);b(...add([fx,.09+ly,fz],ry([0,0,.09],q)),w*.34,.18,d*.65,4,q,'y');}const {shoulder:a,hand:c}=localArm('human',[w,h],s,p);rod(a,c,w*.2,0);b(...c,w*.22,.16,.19,3);if(p.params?.detail===3&&!(s===1&&p.grip!==undefined))fingers(rod,a,c,s,w);if(s===1&&p.grip!==undefined)for(const j of [-1,1])b(c[0]+j*(.07-.035*p.grip),c[1]-.1,c[2]+.04,.045,.1,.07,3);}
  b(0,h*.64,0,w,h*.36,d,0);b(0,h*.89,0,w*.57,h*.19,d*.69,3);b(0,h*.96,0,w*.62,.13,d*.74,k===4?0:1);
  if([2,5].includes(k))b(0,h*.96,.08,w*.85,.14,d*.9,2);
  if(k===4){b(0,h*.89,d*.36,w*.49,.13,.045,6);b(0,h*.64,-d*.61,w*.68,h*.33,.3,1);}
@@ -62,14 +78,14 @@ const F={
  if(k===1||k===3)b(0,h*.66,d*.51,w*.1,h*.23,.03,2);
  if(k===7)b(0,h*.69,d*.51,w*.85,.11,.025,2);
  // ART-03 opt-in detail 2: front cues (face, ears, collar) so facing reads at a glance; absent = recipe v1 geometry.
- if(p.params?.detail===2){
+ if(p.params?.detail===2||p.params?.detail===3){
   const z0=d*.69/2;
   if(k===4)b(-w*.12,h*.92,d*.36+.03,w*.1,h*.03,.02,6,0,'z',true);
   else{
    for(const s of [-1,1]){
     b(s*w*.12,h*.905,z0+.012,w*.085,h*.032,.03,4);
     b(s*w*.12+w*.02,h*.912,z0+.03,w*.025,h*.011,.012,6,0,'z',true);
-    b(s*w*.12,h*.935,z0+.012,w*.11,h*.012,.028,1);
+    b(s*w*.12,h*.935,z0+.012,w*.11,h*.012,.028,1,p.params.detail===3?s*(BROW[k]??0):0);
     b(s*(w*.285+.015),h*.89,0,.05,h*.06,d*.14,3);
    }
    b(0,h*.885,z0+.03,w*.06,h*.035,.07,3);
@@ -78,6 +94,7 @@ const F={
   b(0,h*.805,d*.505,w*.34,h*.03,.025,k===4?1:3);
   if([2,5,6].includes(k))for(let i=0;i<3;i++)b(0,h*(.75-.06*i),d*.51,w*.05,w*.05,.02,4);
  }
+ if(p.params?.detail===3)detail3(b,w,h,d,k);
  },
  animal({b,rod},[l,h,d,tail,k],p){b(0,h*.57,0,l*.72,h*.36,d,0);b(l*.38,h*.8,0,l*.33,h*.31,d*.76,1);b(l*.53,h*.82,0,.15,.1,d*.62,2,0,'z',true);for(const x of [-1,1])for(const z of [-1,1])rod([x*l*.25,h*.48,z*d*.35],[x*l*.25+(p.walking??0)*x*.11,.06,z*d*.35],.13,1);rod([-l*.36,h*.64,0],[-l*.36-tail*.6,h*.95,0],.09,0);
  if(k===2){for(const z of [-1,1])b(l*.37,h*.99,z*d*.22,.16,.19,.13,0);}if(k===3)rod([l*.22,h*.6,0],[l*.4,h*.92,0],.26,0);if(k===4){for(const s of [-1,1])b(0,h*.67,s*d*.64,.42,.09,d*.86,2,0,'z');}},
