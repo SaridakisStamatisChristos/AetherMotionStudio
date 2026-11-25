@@ -6,6 +6,7 @@ import {readFileSync,writeFileSync} from 'node:fs';
 import {validateProject} from '../src/core/timeline.js';
 import {stageProject} from '../src/core/staging.js';
 import {solveHandoff} from '../src/core/interaction.js';
+import {locomotionRig} from '../src/core/locomotion.js';
 import {inspectProject} from '../src/quality/preflight.js';
 import {compositionReport} from '../src/quality/composition.js';
 
@@ -48,7 +49,9 @@ function lights(){
 }
 function shots(){
  const keep=id=>structuredClone(base[id]);
- return [keep('workshop'),keep('plan'),toolbox(),keep('power'),steps(),teach(),keep('handoff'),keep('together'),lights()];
+ // POLISH-02 item 2: planted turn steps for every legged character in the new/upgraded shots (kept shots unchanged).
+ const turns=s=>{for(const a of s.assets)if(locomotionRig(a.asset))a.turnSteps=true;return s;};
+ return [keep('workshop'),keep('plan'),turns(toolbox()),keep('power'),turns(steps()),turns(teach()),keep('handoff'),keep('together'),lights()];
 }
 export function build(backend){
  const p={version:2,id:'workshop-extended-'+backend+'-polished',title:'The Workshop — Extended',voice:'af_heart',shots:shots().map(s=>({...s,backend}))};

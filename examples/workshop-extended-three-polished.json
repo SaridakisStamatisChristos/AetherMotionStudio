@@ -514,7 +514,8 @@
       "end": 1,
       "blend": 0.15,
       "offset": -1
-     }
+     },
+     "turnSteps": true
     },
     {
      "id": "engineer",
@@ -585,7 +586,8 @@
       "start": 0,
       "end": 1,
       "offset": -0.2
-     }
+     },
+     "turnSteps": true
     },
     {
      "id": "toolbox",
@@ -961,7 +963,8 @@
       "end": 0.85,
       "faceTravel": true,
       "blend": 0.12
-     }
+     },
+     "turnSteps": true
     },
     {
      "id": "engineer",
@@ -988,7 +991,8 @@
       "start": 0,
       "end": 1,
       "offset": -0.3
-     }
+     },
+     "turnSteps": true
     },
     {
      "id": "scientist",
@@ -1015,7 +1019,8 @@
       "start": 0,
       "end": 1,
       "offset": 0.3
-     }
+     },
+     "turnSteps": true
     }
    ],
    "effects": [],
@@ -1135,7 +1140,8 @@
       "end": 0.5,
       "blend": 0.12,
       "height": 0.7
-     }
+     },
+     "turnSteps": true
     },
     {
      "id": "robot",
@@ -1200,7 +1206,8 @@
       "blend": 0.12,
       "height": 0.7,
       "cheat": 0.6
-     }
+     },
+     "turnSteps": true
     },
     {
      "id": "table",

@@ -71,3 +71,63 @@ test('aim: Workshop Extended LEARNING BY WATCHING pointers aim at the table',()=
  const s=p.shots.find(x=>x.id==='teach');
  assert.ok(aimError(evaluateGraph(s,.3),'engineer','table',.7)<3);assert.ok(aimError(evaluateGraph(s,.75),'robot','table',.7)<5);
 });
+
+// ---- Item 2: planted feet / turn-in-place steps (turnSteps) ----
+import {emitAsset} from '../src/visual/assets.js';
+import {STEP_FRAMES,STEP_DIST,PIVOT} from '../src/core/turnsteps.js';
+const feetOf=a=>{const out=[];emitAsset(a.asset,(c,sz,col,tf=q=>q)=>out.push({w:tf(c),size:sz}),a.pose);const o=a.pose.origin,sc=a.pose.scale??1;return out.filter(b=>b.w[1]-o[1]<.3*sc&&b.size[1]<.3&&b.size[1]>.1);};
+// Max per-frame horizontal movement (cm) of any foot that is not lifted, plus the number of lift-offs.
+function stanceSlip(shot,id){let prev=null,max=0,steps=0,last=0;
+ for(let f=0;f<shot.durationFrames;f++){const a=evaluateGraph(shot,f/(shot.durationFrames-1)).assets.find(x=>x.id===id),ft=feetOf(a),l=a.pose.footLift??0;
+  if(Math.abs(l)>1e-6&&Math.abs(last)<=1e-6)steps++;last=l;
+  if(prev)for(let i=0;i<ft.length;i++){const side=i<ft.length/2?-1:1;if(l*side>1e-6||prev.l*side>1e-6)continue;max=Math.max(max,Math.hypot(ft[i].w[0]-prev.ft[i].w[0],ft[i].w[2]-prev.ft[i].w[2]));}
+  prev={ft,l};}
+ return {cm:max*100,steps};}
+const turner=(asset,extra={},yaw=[[0,0],[.2,0],[.8,1.6]])=>({id:'turn',template:'cinematic-graph',backend:'cpu',durationFrames:120,transitionFrames:0,heading:'T',subheading:'t',environment:'amber',camera:{},effects:[],narration:['x'],
+ assets:[{id:'w',asset,tracks:{x:[[0,0]],yaw},...extra}]});
+
+test('turnSteps: turning in place keeps planted feet fixed and takes alternating steps',()=>{
+ for(const asset of ['engineer','scientist','service-robot']){
+  const legacy=stanceSlip(turner(asset),'w'),planted=stanceSlip(turner(asset,{turnSteps:true}),'w');
+  assert.ok(legacy.cm>.3,asset+' legacy pivots ('+legacy.cm+')');assert.ok(planted.cm<.01,asset+' planted slip '+planted.cm);
+  assert.ok(planted.steps>=3,asset+' steps '+planted.steps);
+ }
+});
+test('turnSteps: twist bounded by the pivot cap; feet return under the hips after the turn',()=>{
+ const s=turner('engineer',{turnSteps:true},[[0,0],[.1,0],[.3,2.5]]);let maxT=0;
+ for(let f=0;f<120;f++){const p=evaluateGraph(s,f/119).assets[0].pose;maxT=Math.max(maxT,Math.abs(p.footTwistR),Math.abs(p.footTwistL));}
+ assert.ok(maxT<=PIVOT+1e-9);
+ const end=evaluateGraph(s,1).assets[0].pose;for(const k of ['R','L']){assert.ok(Math.hypot(end['footDx'+k],end['footDz'+k])<STEP_DIST,k);assert.ok(Math.abs(end['footTwist'+k])<=.35,k);}
+ assert.equal(end.footLift,0);
+});
+test('turnSteps: standing still is identical to no turnSteps apart from zero foot keys',()=>{
+ const yaw=[[0,.4]],a=evaluateGraph(turner('engineer',{},yaw),.5).assets[0],b=evaluateGraph(turner('engineer',{turnSteps:true},yaw),.5).assets[0];
+ const {footDxR,footDzR,footDxL,footDzL,footTwistR,footTwistL,footLift,...rest}=b.pose;
+ for(const v of [footDxR,footDzR,footDxL,footDzL,footTwistR,footTwistL,footLift])assert.ok(Math.abs(v)<1e-12);
+ assert.deepEqual(rest,a.pose);
+ const ga=[],gb=[];emitAsset(a.asset,(c,sz,col,tf=q=>q)=>ga.push(tf(c).map(v=>+v.toFixed(9))),a.pose);emitAsset(b.asset,(c,sz,col,tf=q=>q)=>gb.push(tf(c).map(v=>+v.toFixed(9))),b.pose);
+ assert.deepEqual(gb,ga,'geometry equal when feet are home');
+});
+test('turnSteps: with locomotion the stance foot stays planted through turns and the closing step',()=>{
+ const s=turner('engineer',{turnSteps:true,locomotion:{mode:'stride',start:.1,end:.6,faceTravel:true,blend:.15}},[[0,0]]);
+ s.assets[0].tracks={x:[[.1,-1.2],[.6,.4]],z:[[.1,0],[.6,.8]]};
+ const plain=structuredClone(s);delete plain.assets[0].turnSteps;
+ assert.ok(stanceSlip(plain,'w').cm>.5,'legacy walk turn pivots');assert.ok(stanceSlip(s,'w').cm<.01);
+});
+test('turnSteps: deterministic, cached per asset, independent of evaluation order',()=>{
+ const s=turner('service-robot',{turnSteps:true}),fwd=[],rev=[];
+ for(let f=0;f<120;f+=7)fwd.push(JSON.stringify(evaluateGraph(s,f/119).assets[0].pose));
+ const s2=structuredClone(s);for(let f=119;f>=0;f--)if(f%7===0)rev.unshift(JSON.stringify(evaluateGraph(s2,f/119).assets[0].pose));
+ assert.deepEqual(rev,fwd);assert.equal(STEP_FRAMES,8);
+});
+test('turnSteps: negatives',()=>{
+ const bad=(extra,asset='engineer')=>assert.throws(()=>validateProject(project([turner(asset,extra)]))); 
+ bad({turnSteps:true},'retro-robot');bad({turnSteps:true},'table');bad({turnSteps:true},'robot-dog');
+ bad({turnSteps:false});bad({turnSteps:'yes'});bad({turnSteps:[]});bad({turnSteps:{step:.1}});bad({turnSteps:{step:.9}});bad({turnSteps:{pivot:.3}});
+ validateProject(project([turner('engineer',{turnSteps:{step:.5}})]));
+});
+test('turnSteps: Workshop Extended new/upgraded shots have planted feet; kept shots unchanged',()=>{
+ const p=JSON.parse(readFileSync(new URL('../examples/workshop-extended-cpu-polished.json',import.meta.url),'utf8'));
+ for(const [shot,id] of [['toolbox','scientist'],['toolbox','engineer'],['steps','robot'],['teach','robot']])assert.ok(stanceSlip(p.shots.find(x=>x.id===shot),id).cm<.01,shot+'/'+id);
+ for(const id of ['workshop','plan','power','handoff','together','lights'])assert.ok(p.shots.find(x=>x.id===id).assets.every(a=>!a.turnSteps),id);
+});
