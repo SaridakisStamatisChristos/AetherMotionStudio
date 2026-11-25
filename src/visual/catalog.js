@@ -37,7 +37,7 @@ function primitive(box,pose,palette,params={}){
 const F={
  robot({b,rod},[w,h,d,legs,kind],p){const step=p.walking??0,open=p.open??0;
  b(0,h*.5,0,w,h*.37,d,0);b(0,h*.52,d*.51,w*.62,h*.18,.04,1);b(0,h*.54,d*.54,w*.36,.045,.035,2,0,'z',true);
- if(legs){for(const s of [-1,1]){rod([s*w*.27,h*.36,0],[s*w*.28,.13,s*step*.17],w*.24,1);b(s*w*.28,.11,.12+s*step*.17,w*.38,.22,d*.66,0);}}
+ if(legs){for(const s of [-1,1]){const ly=p.footLift===undefined?0:Math.max(0,s*p.footLift)*.1;rod([s*w*.27,h*.36,0],[s*w*.28,.13+ly,s*step*.17],w*.24,1);b(s*w*.28,.11+ly,.12+s*step*.17,w*.38,.22,d*.66,0);}}
  else b(0,h*.17,0,w*1.13,h*.22,d*.95,1);
  for(const s of [-1,1]){const {shoulder:a,hand:c}=localArm('robot',[w,h],s,p);rod(a,c,w*.22,0);b(...c,w*.28,.18,.22,3);if(s===1&&p.grip!==undefined)for(const j of [-1,1])b(c[0]+j*(.09-.045*p.grip),c[1]-.12,c[2]+.05,.055,.13,.08,1);}
  b(0,h*.83,0,w*(1.05+kind*.035),h*.27,d*.96,3);b(0,h*.84,d*.49,w*.85,h*.17,.045,1);
@@ -46,7 +46,7 @@ const F={
  if(kind>=3)b(0,h*.45,-d*.58,w*.65,h*.32,.24,1);
  },
  human({b,rod},[w,h,d,k],p){const walk=p.walking??0,open=p.open??0;
- for(const s of [-1,1]){const z=s*walk*.2;rod([s*w*.22,h*.48,0],[s*w*.24,.13,z],w*.25,1);b(s*w*.24,.09,z+.09,w*.34,.18,d*.65,4);const {shoulder:a,hand:c}=localArm('human',[w,h],s,p);rod(a,c,w*.2,0);b(...c,w*.22,.16,.19,3);if(s===1&&p.grip!==undefined)for(const j of [-1,1])b(c[0]+j*(.07-.035*p.grip),c[1]-.1,c[2]+.04,.045,.1,.07,3);}
+ for(const s of [-1,1]){const z=s*walk*.2,ly=p.footLift===undefined?0:Math.max(0,s*p.footLift)*.12;rod([s*w*.22,h*.48,0],[s*w*.24,.13+ly,z],w*.25,1);b(s*w*.24,.09+ly,z+.09,w*.34,.18,d*.65,4);const {shoulder:a,hand:c}=localArm('human',[w,h],s,p);rod(a,c,w*.2,0);b(...c,w*.22,.16,.19,3);if(s===1&&p.grip!==undefined)for(const j of [-1,1])b(c[0]+j*(.07-.035*p.grip),c[1]-.1,c[2]+.04,.045,.1,.07,3);}
  b(0,h*.64,0,w,h*.36,d,0);b(0,h*.89,0,w*.57,h*.19,d*.69,3);b(0,h*.96,0,w*.62,.13,d*.74,k===4?0:1);
  if([2,5].includes(k))b(0,h*.96,.08,w*.85,.14,d*.9,2);
  if(k===4){b(0,h*.89,d*.36,w*.49,.13,.045,6);b(0,h*.64,-d*.61,w*.68,h*.33,.3,1);}
