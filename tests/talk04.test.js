@@ -93,7 +93,7 @@ test('compile: speech from the dialogue, staged speakers with TALK-01..03 opt-in
   assert.equal(p.speech.placement,'lead');assert.equal(p.speech.mix.master,'mix-v2');assert.equal(p.speech.targetFrames,1800);
   for(const [i,s] of p.shots.entries()){
    assert.deepEqual(p.speech.shotSpeakers[s.id],x.ir.shots[i].speakers);assert.equal(s.durationFrames,null);
-   assert.deepEqual(s.speakerAssets,{eng:'eng',robo:'robo',sci:'sci'});assert.deepEqual(s.dialogue,{listen:true,turn:.8,cheat:1});
+   assert.deepEqual(s.speakerAssets,{eng:'eng',robo:'robo',sci:'sci'});assert.deepEqual(s.dialogue,{listen:true,turn:.8,cheat:1,camera:'follow'}); // GEN-03: camera follows the speaker
    assert.deepEqual(s.bodyLanguage,{beats:true,nods:true,blinks:true,sway:true});assert.equal(s.lighting,'parity-v1');
    assert.deepEqual(s.assets.map(a=>a.id),['eng','robo','sci','object-1']);
    // GEN-02: shared talk-v1 line (tighter for 9:16), framed as a group with the set piece beside it.

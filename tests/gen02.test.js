@@ -46,3 +46,35 @@ test('group framing contract negatives; other framings unchanged',()=>{
  const z=rig({framing:'group',subjects:['engineer','robot']});z.shots[0].camera.zoom=[[0,900]];delete z.shots[0].cameraInterpolation.zoom;
  assert.equal(evaluateGraph(z.shots[0],.5).camera.zoom,900);
 });
+
+// ---- GEN-03 speaker follow (dialogue.camera 'follow') ----
+import {followPlan,FOLLOW_PLAN} from '../src/core/dialogue.js';
+import {FOLLOW} from '../src/core/cinematography.js';
+import {CAMERA_POLICY} from '../src/quality/motion-check.js';
+import {createProjection} from '../src/visual/mesh.js';
+test('follow plan: establishes on the group, skips short lines, holds on repeated speakers, never overlaps moves',()=>{
+ const s={cameraRig:{framing:'group',subjects:['a','b']},speakerAssets:{x:'a',y:'b'}},F=30*1600,t={startFrame:0,endFrame:600,segments:[
+  {speaker:'x',startSample:0,endSample:3*F},{speaker:'x',startSample:3.5*F,endSample:6*F},{speaker:'y',startSample:6.2*F,endSample:6.9*F},{speaker:'y',startSample:8*F,endSample:11*F},{speaker:'x',startSample:11.2*F,endSample:14*F},{speaker:'x',startSample:19.5*F,endSample:20*F}]};
+ const plan=followPlan(s,t);assert.deepEqual(plan.map(f=>f.subject),['a','b','a']);
+ assert.ok(plan[0].at>=FOLLOW_PLAN.establish/20-1e-9,'group first');assert.ok(plan.every((f,k)=>!k||f.at>=plan[k-1].at+plan[k-1].blend-1e-9));assert.ok(plan.every(f=>f.at+f.blend<=1));
+ assert.equal(plan[0].blend,+(FOLLOW_PLAN.transition/20).toFixed(6));
+});
+test('follow: the speaker is larger while speaking, fully in frame, and the camera stays within the calm budget',async()=>{
+ const p=await project('gen01-interview'),t=estimatedTimeline(p,plannedTimeline(p)),m=motionCheck(p,t);assert.deepEqual(m.warnings,[]);
+ for(const s of m.shots){assert.ok(s.camera.panDegPerSec.value<=CAMERA_POLICY.maxPanDegPerSec&&s.camera.zoomPerSec.value<=CAMERA_POLICY.maxZoomPerSec,JSON.stringify(s.camera));}
+ assert.ok(p.shots.every(s=>s.dialogue.camera==='follow'));
+ let gained=0,checked=0;
+ for(const [i,s0] of p.shots.entries()){const s=dialogueShot(s0,t.shots[i]),ts=t.shots[i],n=ts.endFrame-ts.startFrame;if(!s.cameraRig.focus)continue;
+  for(const f of s.cameraRig.focus){const k=Math.min(n-1,Math.round((f.at+f.blend)*(n-1))+2),st=evaluateGraph({...s,durationFrames:n},k/(n-1)),base=evaluateGraph({...s,cameraRig:{...s.cameraRig,focus:undefined},durationFrames:n},k/(n-1));
+   assert.ok(st.camera.zoom<=base.camera.zoom*FOLLOW.push+1e-6);if(st.camera.zoom>base.camera.zoom*1.05)gained++;checked++;
+   const a=st.assets.find(x=>x.id===f.subject),pr=createProjection(st.camera.position,st.camera.target,st.camera.zoom,[360,650]);
+   for(const y of [0,1.8])for(const dx of [-.35,.35]){const q=pr([a.pose.origin[0]+dx,y,a.pose.origin[2]]);assert.ok(q[0]>0&&q[0]<720&&q[1]>250&&q[1]<1100,'speaker in frame '+q.map(v=>v.toFixed(0)));}}}
+ assert.ok(checked>=4&&gained>=checked/2,gained+'/'+checked);
+});
+test('follow contract negatives',()=>{
+ const p=read('talk02-dialogue-cpu-polished'),withRig=(rig,dlg)=>{const x=structuredClone(p);x.shots[0].cameraRig={preset:'medium',...rig};if(dlg)x.shots[0].dialogue={...x.shots[0].dialogue,...dlg};return x;};
+ const G={framing:'group',subjects:['engineer','robot']};validateProject(withRig({...G,focus:[{at:.2,subject:'robot',blend:.1},{at:.5,subject:null,blend:.1}]},{camera:'follow'}));
+ for(const [r,d,re] of [[{},{camera:'follow'},/follow requires/],[G,{camera:'pan'},/follow requires/],[{...G,focus:[]},null,/focus/],[{focus:[{at:.2,subject:null,blend:.1}]},null,/focus/],
+  [{...G,focus:[{at:.2,subject:'scientist',blend:.1}]},null,/subject/],[{...G,focus:[{at:.5,subject:null,blend:.1},{at:.2,subject:null,blend:.1}]},null,/time order/],
+  [{...G,focus:[{at:.2,subject:null,blend:0}]},null,/blend/],[{...G,focus:[{at:.2,subject:null}]},null,/blend|required/]])assert.throws(()=>validateProject(withRig(r,d)),re,JSON.stringify([r,d]));
+});
