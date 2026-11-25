@@ -141,7 +141,16 @@ Exit criteria: checks run on every example in tests and stay digest-neutral for 
   - The owner rejected r2 ("the camera move makes characters out of screen").
   - Fixed with the follow constraint and the OFF_FRAME check.
 
-## Candidates after GEN-03 (proposed 2026-11-25, none authorized; the owner picks)
+## Candidates after GEN-03 (proposed 2026-11-25; the owner picks)
+Status 2026-11-25 (owner: "execute gen-04 to gen9"):
+- GEN-04, GEN-05 (option a: pace 0.92), GEN-06 (true singles), GEN-08 and GEN-09 (Reels mode; length only warns) are IMPLEMENTED + TESTED + RENDERED (agent-reviewed) on `feature/gen-04-09`, PR pending the owner's merge.
+- GEN-07 is DEFERRED (owner: "i dont think its needed").
+- Next proposals in the owner's order: GEN-10 mouth shapes, GEN-11 idle weight shift, GEN-12 topic sets, GEN-13 music and sound, GEN-14 real dialogue writing; then the look track GEN-15..18. In the table below, the GEN-09 row is done; the numbering is kept.
+- Possible small follow-ups from GEN-09 (owner decision):
+  - wider staging for Reels singles;
+  - captions over the lower body in Reels for bigger characters;
+  - caption lingering for the last fast cue.
+
 
 | ID | What | Why | Needs the owner? |
 |---|---|---|---|
