@@ -14,7 +14,10 @@ import {VOICES} from '../src/core/contract.js';
 import {CAMERA_RIGS,ACTIONS} from '../src/core/cinematography.js';
 import {MOTION_PRESETS,EFFECT_PRESETS} from '../src/core/presets.js';
 import {inspectProject} from '../src/quality/preflight.js';
-import {motionCheck,visibilityCheck,estimatedTimeline} from '../src/quality/motion-check.js';
+import {motionCheck,estimatedTimeline} from '../src/quality/motion-check.js';
+import {crowdingCheck} from '../src/quality/crowding.js';
+import {visibility2Check} from '../src/quality/visibility.js';
+import {reelsCheck} from '../src/core/reels.js';
 import {plannedTimeline} from '../src/studio/model.js';
 const ROOT=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const MAX_BODY=1024*1024,MAX_LOG=40000,MAX_JOBS=40;
@@ -162,7 +165,7 @@ export async function createStudio({root=ROOT,dataDir=join(root,'studio-data'),r
    }
    if(method==='POST'&&path==='/api/inspect'){const x=await body(req);keys(x,['project']);const report=inspectProject(x.project);
     // GEN-01: motion-speed and visibility checks on the draft (estimated line timing until prepared).
-    if(x.project?.version===2&&x.project.shots.some(s=>s.template==='cinematic-graph'))report.checks={motion:motionCheck(x.project,estimatedTimeline(x.project,plannedTimeline(x.project))),visibility:visibilityCheck(x.project)};
+    if(x.project?.version===2&&x.project.shots.some(s=>s.template==='cinematic-graph')){const t=estimatedTimeline(x.project,plannedTimeline(x.project));report.checks={motion:motionCheck(x.project,t),visibility:visibility2Check(x.project,t),crowding:crowdingCheck(x.project,t),...(x.project.delivery?{reels:reelsCheck(x.project,t)}:{})};}
     return send(res,200,report);}
    if(method==='POST'&&path==='/api/jobs')return send(res,202,await startJob(await body(req)));
    if(method==='GET'&&path==='/api/jobs')return send(res,200,{jobs:[...jobs.values()].reverse().map(publicJob),active});

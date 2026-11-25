@@ -7,7 +7,7 @@ import numpy as np
 from scipy.io import wavfile
 from scipy.signal import resample_poly, butter, sosfilt
 from timeline_plan import RATE,SPF
-from speech_plan import allocate_mixed, slots, pronunciation, caption_cues, subtitles, caption_metrics
+from speech_plan import allocate_mixed, slots, pronunciation, caption_cues, subtitles, caption_metrics, speed_ladder, phrase_speed
 import audio_master
 import speech_envelope
 from phrase_cache import PhraseCache,key_for,file_hash
@@ -50,19 +50,33 @@ def compile_speech(scene,out,root,model_dir,kokoro):
         v=v.astype('<f4');cache.put(key,v.tobytes());return v
     texts=[s['narration'] for s in shots]
     budgets=[c['fixedShots'].get(s['id']) for s in shots]
-    for speed in (1.,1.08,1.16,1.25):
+    # GEN-05 opt-in speech.pace (<1): start slower. If the budget cannot fit it, the usual ladder continues from 1.0
+    # and the report says the pace was not kept (never silent).
+    pace=float(c.get('pace',1.))
+    for speed in speed_ladder(pace):
         waves=[[synth(t,speed,who(s,i)[1]) for i,t in enumerate(s['narration'])] for s in shots]
         lengths=[[len(v) for v in a] for a in waves]
         try:frames=allocate_mixed(lengths,texts,budgets,target);break
         except ValueError as e:
             if speed==1.25:raise RuntimeError('Measured speech cannot fit fixed/global budget; revise script or duration. No truncation.') from e
+    speeds=[[speed]*len(s['narration']) for s in shots];readable=None
+    # GEN-05b readable captions: a phrase spoken faster than captions.maxCps is spoken again a little slower (never
+    # below PACE_MIN), if the budget still fits; otherwise every phrase keeps the film speed and the report says so.
+    if c['captions'].get('readable'):
+        slow=[[phrase_speed(t,len(w),speed,c['captions']['maxCps'],R) for t,w in zip(s['narration'],a)] for s,a in zip(shots,waves)]
+        changed=[{'shot':s['id'],'phrase':i,'speed':v} for s,a in zip(shots,slow) for i,v in enumerate(a) if v<speed]
+        readable={'slowed':changed,'kept':True}
+        if changed:
+            new=[[synth(t,v,who(s,i)[1]) if v<speed else w for i,(t,v,w) in enumerate(zip(s['narration'],a,ws))] for s,a,ws in zip(shots,slow,waves)]
+            try:frames=allocate_mixed([[len(v) for v in a] for a in new],texts,budgets,target);waves,speeds=new,slow;lengths=[[len(v) for v in a] for a in waves]
+            except ValueError:readable['kept']=False;print('Readable captions: slower phrases do not fit the budget; kept at speed',speed,flush=True)
     timeline={'version':1,'fps':30,'sampleRate':R,'durationFrames':target,'shots':[],'alignment':'estimated-word/measured-phrase'}
     N=target*SPF;speech=np.zeros(N,dtype=np.float32);offset=0;segments=[];speech_metrics=[]
-    for s,n,ls,ws in zip(shots,frames,lengths,waves):
+    for s,n,ls,ws,vs in zip(shots,frames,lengths,waves,speeds):
         entry={'id':s['id'],'startFrame':offset,'endFrame':offset+n,'transitionFrames':s['transitionFrames'],'segments':[]}
         for i,((a,b),w,text) in enumerate(zip(slots(ls,s['narration'],n,placement),ws,s['narration'])):
             a+=offset*SPF;b+=offset*SPF;sid,sp=who(s,i)
-            seg={'text':text,'startSample':a,'endSample':b,'speed':speed,'speaker':sid,'voice':sp['voice'],'language':sp['language']}
+            seg={'text':text,'startSample':a,'endSample':b,'speed':vs[i],'speaker':sid,'voice':sp['voice'],'language':sp['language']}
             entry['segments'].append(seg);segments.append(seg);speech[a:b]=w
             block=R//50;low=longest=0
             for start in range(0,len(w),block):
@@ -71,7 +85,7 @@ def compile_speech(scene,out,root,model_dir,kokoro):
             speech_metrics.append({'phrase':len(segments)-1,'rms':float(np.sqrt(np.mean(w*w))),'peak':float(np.max(np.abs(w))),'longestLowEnergySamples':longest})
         timeline['shots'].append(entry);offset+=n
     assert offset==target
-    timeline['captions']=caption_cues(segments,c['captions'])
+    timeline['captions']=caption_cues(segments,c['captions'],[e['endFrame']*SPF for e in timeline['shots'] for _ in e['segments']])
     labels={k:v['name'] for k,v in c['speakers'].items()}
     if any(s['speaker']=='default' for s in segments):labels['default']='Narrator'
     srt,vtt=subtitles(timeline['captions'],labels)
@@ -120,6 +134,7 @@ def compile_speech(scene,out,root,model_dir,kokoro):
     if speech_envelope.wanted(scene):timeline['speechEnvelope']=speech_envelope.envelope(speech,target)
     (out/'timeline.json').write_text(json.dumps(timeline,indent=2,ensure_ascii=False),encoding='utf-8')
     (out/'voice-report.json').write_text(json.dumps({'backend':'kokoro-onnx','voice':scene['voice'],'sample_rate':R,'segments':segments},indent=2,ensure_ascii=False),encoding='utf-8')
-    report={'version':1,'status':'prepared','targetFrames':target,'actualFrames':offset,'fixedShots':c['fixedShots'],'allocation':[{'shot':s['id'],'frames':n,'mode':'fixed' if b is not None else 'automatic'} for s,n,b in zip(shots,frames,budgets)],'speechSpeed':speed,'modelFingerprint':fingerprint,'cache':{'hits':cache.hits,'misses':cache.misses,'limitBytes':cache.limit},'alignment':caption_metrics(timeline['captions'],segments,c['captions']['maxCps']),'speechIntervals':speech_metrics,'mix':{'settings':cfg,'samplePeakProtectionGain':gain,'preProtectionPeak':raw_peak,'narration':metrics(speech),'music':metrics(music),'ambience':metrics(ambience),'sfx':metrics(sfx),'final':metrics(mix),'metricDefinition':'linear sample peak and RMS dBFS, not LUFS or true peak'},'cues':cue_report}
+    report={'version':1,'status':'prepared','targetFrames':target,'actualFrames':offset,'fixedShots':c['fixedShots'],'allocation':[{'shot':s['id'],'frames':n,'mode':'fixed' if b is not None else 'automatic'} for s,n,b in zip(shots,frames,budgets)],'speechSpeed':speed,**({'pace':{'requested':pace,'kept':speed==pace}} if 'pace' in c else {}),**({'readablePhrases':readable} if readable is not None else {}),'modelFingerprint':fingerprint,'cache':{'hits':cache.hits,'misses':cache.misses,'limitBytes':cache.limit},'alignment':caption_metrics(timeline['captions'],segments,c['captions']['maxCps']),'speechIntervals':speech_metrics,'mix':{'settings':cfg,'samplePeakProtectionGain':gain,'preProtectionPeak':raw_peak,'narration':metrics(speech),'music':metrics(music),'ambience':metrics(ambience),'sfx':metrics(sfx),'final':metrics(mix),'metricDefinition':'linear sample peak and RMS dBFS, not LUFS or true peak'},'cues':cue_report}
     (out/'speech-report.json').write_text(json.dumps(report,indent=2,ensure_ascii=False),encoding='utf-8')
+    if 'pace' in c and speed!=pace:print('Speech pace',pace,'not kept: budget needs speed',speed,flush=True)
     print('Speech-first compiled:',offset,'frames;',offset/30,'seconds;',len(timeline['captions']),'caption cues; estimated word timing',flush=True)

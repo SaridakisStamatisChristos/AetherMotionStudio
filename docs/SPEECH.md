@@ -196,3 +196,25 @@ The Director can now produce a dialogue project from a topic (docs/DIRECTOR.md T
 - **`aim.phrase: k`** (contract extension, validated): at render the aim window follows narration line k's measured bounds (`phraseAims`, applied in `dialogueShot`). The authored start/end is the estimate used before preparation.
 - **TALK-05** now uses these general passes instead of hand staging (see docs/SHOWCASE.md).
 - **Caption reading speed:** splitting lines does not help. Speech ran at speed 1.0, and Kokoro naturally speaks short lines at about 18–20 characters per second ("We are proud of you." takes 1.1 s). The real options are slightly slower speech for dialogue, or captions lingering briefly after a line. Both change the audio or caption contracts and are left for the owner to decide.
+
+## GEN-05 slightly slower speech (2026-11-25)
+Owner choice for the caption reading-speed finding (1–2 cues per film at 18–20 characters per second): "speech a bit slower" (option a).
+- **Contract:** opt-in `speech.pace` is a number from 0.85 to 1, the Kokoro speed tried first. Absent means 1, the historical behaviour.
+  - Validation: src/core/speech.js. Timeline segment speeds may go down to the project's pace, never below it (src/core/timeline.js, scripts/verify.py).
+- **Pipeline** (scripts/speech_pipeline.py, `speed_ladder` in scripts/speech_plan.py):
+  - The pace is tried first, then the historical ladder 1.0 / 1.08 / 1.16 / 1.25.
+  - If the shot budgets cannot fit the slower speech, synthesis continues up the ladder. The log prints `Speech pace … not kept`, and speech-report.json records `pace {requested, kept}`. Nothing is truncated or silently changed.
+- **Where it is used:**
+  - Director dialogue (TALK-04/GEN-01) sets `pace` 0.92 by default. `request.dialogue.pace` (0.85–1) overrides it; 1 gives the TALK-04 speed and an otherwise identical project.
+  - The TALK-05 generator uses 0.92.
+  - Non-dialogue projects are unchanged; the Director digests are identical.
+- Tests: tests/gen05.test.js (contract, timeline bounds, Director, negatives) and tests/test_speech_pace.py (ladder).
+- The effect on reading speed is measured from the GEN render (see docs/continuity/CURRENT_STATE.md), not assumed.
+
+## GEN-05b readable captions (2026-11-25)
+Owner: "the captions must be generalized in speed not only from the sample video". The fastest GEN-06 caption (19.1 characters per second) came from two things: the greedy splitter left one word ("together.") alone on a second cue, and that line was spoken faster than 18 characters per second. Opt-in `speech.captions.readable: true`, on for every production through `defaultSpeech` (Director films, Studio); authored examples without the flag are unchanged.
+- **Balanced split** (`scripts/speech_plan.py` `balanced`): a phrase that needs k cues is cut into k cues of even reading speed (the fastest cue as slow as possible), still within maxChars/maxLines/10 words.
+- **Hold:** a phrase's last cue stays shown into the following pause (`holdSample`) until it reads at most `maxCps`, at least 0.7 s in all, at most 1 s later, never past its shot's end or 0.1 s before the next cue. The SRT/VTT sidecars use the same times. Word highlight follows the speech only.
+- **Per-phrase pace** (`phrase_speed`): a phrase still spoken faster than `maxCps` is spoken again slower (3 % headroom, never below the 0.85 floor), if the time budget still fits. Otherwise all phrases keep the film speed and the report says so (`readablePhrases {slowed, kept}`). Timeline speeds may then go down to 0.85 (contract: timeline.js, verify.py).
+- Metrics: `alignment.maxCps` and `readingSpeedOutliers` measure the time each cue is shown; `speechMaxCps` and `heldCues` are added when a cue holds.
+- Tests: tests/test_captions_readable.py (300 random scripts spoken within the limit: 0 fast cues; faster scripts: fewer fast cues; holds never overlap), tests/gen05b.test.js (contract and negatives).

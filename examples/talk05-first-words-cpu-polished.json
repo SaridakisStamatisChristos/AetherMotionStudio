@@ -11,6 +11,7 @@
    "lights": 180
   },
   "placement": "lead",
+  "pace": 0.92,
   "speakers": {
    "eng": {
     "name": "Engineer",

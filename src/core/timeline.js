@@ -14,7 +14,9 @@ function integer(x,min,max,p){if(!Number.isSafeInteger(x)||x<min||x>max)fail(p,'
 function slug(x,p){if(typeof x!=='string'||!/^[a-z0-9][a-z0-9-]{0,47}$/.test(x)||/^(con|prn|aux|nul|com[1-9]|lpt[1-9])$/.test(x))fail(p,'unsafe ID');}
 export function validateProject(s){
  if(s?.version===1)return validateScene(s);
- fields(s,['version','id','title','voice','shots'],'film',['identityLibrary','speech','audio']);
+ fields(s,['version','id','title','voice','shots'],'film',['identityLibrary','speech','audio','delivery']);
+ // GEN-09 opt-in delivery layout (src/core/reels.js); absent = the historical layout.
+ if(s.delivery!==undefined&&s.delivery!=='reels-v1')fail('film.delivery','reels-v1 or absent');
  if(s.version!==2)fail('version','only 1 or 2 supported');
  // POLISH-02 item 8: opt-in mastering profile for the timeline mixer (speech projects keep their own mix contract).
  if(s.audio!==undefined){if(!s.audio||typeof s.audio!=='object'||Array.isArray(s.audio))fail('audio','object required');const ks=Object.keys(s.audio);if(!ks.length)fail('audio','master or placement required');for(const k of ks)if(!['master','placement'].includes(k))fail('audio.'+k,'unknown field');if(s.audio.master!==undefined&&s.audio.master!=='mix-v2')fail('audio.master','mix-v2 required');
@@ -25,7 +27,9 @@ export function validateProject(s){
  const ids=new Set();let minimum=0;
  for(const [i,x] of s.shots.entries()){
   const p='shots['+i+']',chapter=x?.template==='blockchain-chapter',graph=x?.template==='cinematic-graph';
-  fields(x,['id','template','durationFrames','transitionFrames','narration',...(chapter?['chapter','heading','subheading']:graph?['backend','heading','subheading','environment','camera','assets','effects']:['copy'])],p,graph?['fidelity','cameraRig','overlays','layers','transition','continuity','geometryProfile','materialProfile','lodPolicy','cameraInterpolation','lighting','speakerAssets','dialogue','bodyLanguage']:[]);
+  fields(x,['id','template','durationFrames','transitionFrames','narration',...(chapter?['chapter','heading','subheading']:graph?['backend','heading','subheading','environment','camera','assets','effects']:['copy'])],p,graph?['fidelity','cameraRig','overlays','layers','transition','continuity','geometryProfile','materialProfile','lodPolicy','cameraInterpolation','lighting','speakerAssets','dialogue','bodyLanguage','titleHold']:[]);
+  if(Object.hasOwn(x,'titleHold')&&x.titleHold!==true)fail(p+'.titleHold','true or absent');
+  if(x.titleHold&&i===0)fail(p+'.titleHold','the first shot has nothing to continue');
   slug(x.id,p+'.id');if(ids.has(x.id))fail(p,'duplicate ID');ids.add(x.id);
   if(x.durationFrames!==null)integer(x.durationFrames,60,MAX_SHOT,p+'.durationFrames');
   integer(x.transitionFrames,0,15,p+'.transitionFrames');if(i===0&&x.transitionFrames!==0)fail(p,'first shot must start without transition');if(Object.hasOwn(x,'transition')&&!['cut','fade','wipe','slide','match'].includes(x.transition))fail(p+'.transition','unknown transition');if(x.transition==='cut'&&x.transitionFrames!==0)fail(p,'cut requires zero transitionFrames');
@@ -63,7 +67,8 @@ export function validateTimeline(s,t){
    if(a.text!==y.narration[j])fail(p,'speech text mismatch');
    integer(a.startSample,last,x.endFrame*SAMPLES_PER_FRAME-1,p+'.startSample');
    integer(a.endSample,a.startSample+1,x.endFrame*SAMPLES_PER_FRAME,p+'.endSample');
-   if(!Number.isFinite(a.speed)||a.speed<1||a.speed>1.25)fail(p,'speed out of range');
+   // GEN-05b: readable captions may slow single phrases down to the pace floor (0.85)
+   if(!Number.isFinite(a.speed)||a.speed<(s.speech?.captions?.readable?.85:s.speech?.pace??1)||a.speed>1.25)fail(p,'speed out of range');
    last=a.endSample;
   }
   previous=x.endFrame;

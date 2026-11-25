@@ -134,3 +134,56 @@ The TALK-01..04 features are already general project and Director contracts that
 5. **Readable dialogue lines:** the offline dialogue splits sentences over ~18 characters per second into shorter turns, without changing the words.
 6. **Director interactions:** when a line names the set piece, the speaker points at it (aim) if the rig allows.
 Exit criteria: checks run on every example in tests and stay digest-neutral for existing outputs; one matched render of a fresh topic request through the Director with no hand edits, reviewed by the owner.
+
+## GEN-02 group framing and GEN-03 speaker follow — MERGED
+- GEN-02 (merged with GEN-01 in 23f4198, PR #27): `cameraRig.framing 'group'` for 9:16. Owner: "if the videos are posted for example in instagram the charachers are samll".
+- GEN-03 (merged 4f588e3, PR #28): speaker-follow camera. Owner: "do 1".
+  - The owner rejected r2 ("the camera move makes characters out of screen").
+  - Fixed with the follow constraint and the OFF_FRAME check.
+
+## Candidates after GEN-03 (proposed 2026-11-25; the owner picks)
+Status 2026-11-25 (owner: "execute gen-04 to gen9"):
+- GEN-04, GEN-05 (option a: pace 0.92), GEN-06 (true singles), GEN-08 and GEN-09 (Reels mode; length only warns) are IMPLEMENTED + TESTED + RENDERED (agent-reviewed) on `feature/gen-04-09`, PR pending the owner's merge.
+- GEN-07 is DEFERRED (owner: "i dont think its needed").
+- Next proposals in the owner's order: GEN-10 mouth shapes, GEN-11 idle weight shift, GEN-12 topic sets, GEN-13 music and sound, GEN-14 real dialogue writing; then the look track GEN-15..18. In the table below, the GEN-09 row is done; the numbering is kept.
+- Possible small follow-ups from GEN-09 (owner decision):
+  - wider staging for Reels singles;
+  - captions over the lower body in Reels for bigger characters;
+  - caption lingering for the last fast cue.
+
+
+| ID | What | Why | Needs the owner? |
+|---|---|---|---|
+| GEN-04 (recommended first) | The composition overlap metric counts every catalog character (humans and robots, not only rigs with a right-hand anchor); recalibrate and record known findings | The explorer robot's crowding was invisible to the gate in GEN-02 r1 | No |
+| GEN-05 | Caption reading speed: (a) opt-in slightly slower dialogue speech (Kokoro speed about 0.92 in speech projects), or (b) captions linger up to about 0.4 s into the following pause | 1–2 cues per film at 18–20 characters per second | Yes: choose (a) or (b) |
+| GEN-06 | Variety for vertical feeds without cropping: optional cut to a clean single of the speaker as its own shot on long lines (a separate shot, so nobody is cut at an edge), driven by measured lines | Follow cannot enlarge two-person shots, because both already fill the width | Yes: confirm that cuts to singles are wanted |
+| GEN-07 | Re-stage older accepted films flagged by the checks (off-frame characters, hidden tables, fast turns) using the general passes; produce new revisions, never overwrite | The checks list findings in 9+ older films | Yes: these films were accepted |
+| GEN-08 | Visibility check from projected geometry boxes instead of whole-asset boxes | Fewer false alarms for thin shapes | No |
+
+| GEN-09 | Instagram export preset: Reels duration limits, a chosen cover frame / thumbnail, caption and UI-safe zones for the app overlay, optional seamless loop; opt-in profile, default export unchanged | Ready to post without extra steps | Yes: confirm the target (Reels, Stories, both) |
+| GEN-10 | Mouth shapes from sounds: opt-in local phoneme estimate driving visemes, labelled estimated (never "lip-sync"/"forced alignment" unless truly aligned); envelope mouths stay the default | Mouths only open with loudness today | Yes: a new local tool/dependency |
+| GEN-11 | Idle weight shift: opt-in hip joint on human/robot rigs, slow calm shifts; geometry digests unchanged without it | Characters look stiff while listening | No (within the motion-taste budget) |
+| GEN-12 | Topic-fitting sets: environment and set-piece variety chosen per topic from the catalog/Foundry packs, checked by visibility/composition gates | Series will look repetitive | No |
+| GEN-13 | Music and sound design: mood-based music beds and small action sound effects from local, licence-clear sources; mix-v2 loudness preserved | Audio is mostly voice + bed | Yes: music sources/licences |
+| GEN-14 | Real dialogue writing: an opt-in local model provider (no paid API, loopback) writes back-and-forth conversation through prompt director-ir-v1.3; the offline split stays the default; every line still validated, and every line flagged as model-written | Offline dialogue is explanatory narration split into turns | Yes: which local model/provider to install (new local dependency) |
+| GEN-15 | Look track step 1, art direction in the current style: rounded/bevelled catalog shapes (opt-in recipe detail level, both backends), better material palettes, softer shading, richer sets; old geometry digests unchanged without the opt-in | The box look reads as basic on social feeds | No (within current rules) |
+| GEN-16 | Look track step 2, Three.js cinematic profile: ambient occlusion, depth of field, image-based sky lighting, better shadows; opt-in profile, recorded as a deliberate CPU/Three difference (never a silent switch) | A clearly more cinematic GPU render | Yes: confirm Three may look clearly better than CPU under an opt-in profile |
+| GEN-17 | Look track step 3, real animated 3D characters: skinned glTF import (skeletons and animation) from licence-clear local sources (CC0 libraries, bought or commissioned), mapped onto the speaking, dialogue and body contracts | A big jump in character quality | Yes: a policy change. The CPU renderer would need a triangle/z-buffer path or stay a preview; only the owner can change the equal-backends rule |
+| GEN-18 | Look track step 4 (optional): locally generated backgrounds/textures on the RTX 4060, as opt-in, hashed and pinned assets; never characters | Variety of backdrops | Yes: a large local model install, licence review; not deterministic until pinned |
+
+Order set by the owner (2026-11-25: "let gen 09 as last put it as gen 14. change the order"): after GEN-04..08 come GEN-09 Instagram export, GEN-10 mouth shapes, GEN-11 idle weight shift, GEN-12 topic sets, GEN-13 music and sound, and real dialogue writing as GEN-14; then the look track GEN-15..18 (owner: "add them after the gen 14"). Added at the owner's request ("yes add them of course"); proposals only, none authorized.
+
+Render cleanup plan (owner, 2026-11-25: old renders are deleted once the graphical update is reached):
+1. When GEN-15 starts, delete the old renders in out/ and public/audio except a "before" reference set: the latest interview (gen03-interview-r3), network (gen03-network-r1) and First Words (talk05-first-words-r10) films, plus out/bench.
+2. Once the owner accepts the GEN-15 look, delete the reference set too.
+- Fingerprints and findings stay in the docs.
+- Show the exact list and confirm with the owner before each deletion.
+- Never touch git, .venv, node_modules or models.
+
+Rules for any pick:
+- Opt-in or default-proven-unchanged (fod-digests).
+- Tests including negatives.
+- A matched render from a clean commit.
+- The checks must stay at 0 for new outputs.
+- Stills at the middle of every spoken line.
+- Ask before merging.

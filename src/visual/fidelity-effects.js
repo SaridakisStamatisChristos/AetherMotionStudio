@@ -52,7 +52,9 @@ export function particleTrails(ctx,state,project,f){
  ctx.restore();}
 }
 export function polishedType(ctx,s,env,p,amount){
- ctx.save();ctx.globalAlpha=Math.min(1,p*15);const shift=(1-Math.min(1,p*12))*14*amount;
+ // GEN-06 opt-in titleHold: a shot that continues the previous one after a cut keeps its heading steady (no fade-in).
+ const hold=s.titleHold===true;
+ ctx.save();ctx.globalAlpha=hold?1:Math.min(1,p*15);const shift=hold?0:(1-Math.min(1,p*12))*14*amount;
  ctx.translate(0,shift);
  roundedBox(ctx,232,61,256,32,16,'rgba(9,16,30,.8)',env.accent+'70');
  text(ctx,'A E T H E R   /   F I L M',360,77,13,env.accent,700);

@@ -65,7 +65,8 @@ test('follow plan: opens on an early first speaker, skips short lines, holds on 
 import {FRAME_POLICY} from '../src/quality/motion-check.js';
 test('follow never puts a character out of frame; it only moves when that is possible (three speakers), calmly',async()=>{
  for(const n of ['gen01-interview','talk04-dialogue']){const p=await project(n),t=estimatedTimeline(p,plannedTimeline(p)),m=motionCheck(p,t);
-  assert.deepEqual(m.warnings,[],n);assert.ok(p.shots.every(s=>s.dialogue.camera==='follow'));
+  assert.deepEqual(m.warnings,[],n);// GEN-06: singles (one speaker, framing 'single') have no follow; every group shot still follows.
+  assert.ok(p.shots.filter(s=>s.cameraRig.framing==='group').every(s=>s.dialogue.camera==='follow'));assert.ok(p.shots.filter(s=>s.cameraRig.framing!=='group').every(s=>s.id.endsWith('-single')&&!s.dialogue?.camera));
   for(const s of m.shots){for(const v of Object.values(s.offFrame))assert.equal(v.outside,0,n+' '+s.shot);
    assert.ok(s.camera.panDegPerSec.value<=CAMERA_POLICY.maxPanDegPerSec&&s.camera.zoomPerSec.value<=CAMERA_POLICY.maxZoomPerSec,JSON.stringify(s.camera));}}
  const p5=read('talk05-first-words-cpu-polished'),m5=motionCheck(p5,estimatedTimeline(p5,plannedTimeline(p5)));assert.deepEqual(m5.warnings,[]);

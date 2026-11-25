@@ -44,7 +44,8 @@ export function motionShot(project,t,index){
    for(const k of ['nod','tilt']){const v=Math.abs((body?.[id]?.[k]??a[k]??0)-(prevBody?.[id]?.[k]??b[k]??0))*30*DEG;if(v>p[k][0])p[k]=[v,f];}}
   if(f%FRAME_POLICY.every===0)for(const id of ids){const a=st.assets.find(x=>x.id===id),b=a&&geometryBounds([a]);if(!b)continue;const pr=createProjection(st.camera.position,st.camera.target,st.camera.zoom,[360,650]);let x0=Infinity,x1=-Infinity,y0=Infinity,y1=-Infinity;
    for(const x of [b.lo[0],b.hi[0]])for(const y of [b.lo[1],b.hi[1]])for(const z of [b.lo[2],b.hi[2]]){const q=pr([x,y,z]);x0=Math.min(x0,q[0]);x1=Math.max(x1,q[0]);y0=Math.min(y0,q[1]);y1=Math.max(y1,q[1]);}
-   const area=Math.max(1e-9,(x1-x0)*(y1-y0)),inside=Math.max(0,Math.min(x1,FRAME_POLICY.width)-Math.max(x0,0))*Math.max(0,Math.min(y1,FRAME_POLICY.height)-Math.max(y0,0)),out=1-inside/area;
+   // GEN-06: a character entirely outside the frame (e.g. the listener during a single) is not cut by an edge: 0.
+   const area=Math.max(1e-9,(x1-x0)*(y1-y0)),inside=Math.max(0,Math.min(x1,FRAME_POLICY.width)-Math.max(x0,0))*Math.max(0,Math.min(y1,FRAME_POLICY.height)-Math.max(y0,0)),out=inside>0?1-inside/area:0;
    const o=offFrame[id]??=[0,0];if(out>o[0])offFrame[id]=[out,f];}
   if(prevCam){const a=dir(st.camera),b=dir(prevCam),pan=Math.acos(Math.min(1,a[0]*b[0]+a[1]*b[1]+a[2]*b[2]))*30*DEG,zoom=Math.abs(st.camera.zoom/prevCam.zoom-1)*30;if(pan>cam.pan[0])cam.pan=[pan,f];if(zoom>cam.zoom[0])cam.zoom=[zoom,f];}
   prev=pose;prevBody=body;prevCam=st.camera;

@@ -73,7 +73,35 @@ def wrap(tokens,max_chars):
         else: lines[-1]+=' '+w
     return lines
 
-def caption_cues(segments,cfg):
+# GEN-05b readable captions (opt-in captions.readable, set for every production by defaultSpeech). Owner: "the captions
+# must be generalized in speed not only from the sample video". Two rules, for any script:
+# 1. balanced split: a phrase needing k cues is cut into k cues of even reading speed (no orphan last word that leaves the
+#    other cue too fast);
+# 2. hold: a phrase's last cue stays on screen into the following pause (holdSample) until it reads at most maxCps,
+#    at most HOLD_MAX later, never past the next cue (HOLD_GAP before it) or the end of its shot.
+HOLD_MAX=RATE;HOLD_GAP=RATE//10
+def fits(ws,cfg):return len(ws)<=10 and len(wrap([x['text'] for x in ws],cfg['maxChars']))<=cfg['maxLines']
+def cue_cps(ws,end=None):return len(' '.join(x['text'] for x in ws))*RATE/((end or ws[-1]['endSample'])-ws[0]['startSample'])
+def balanced(words,k,cfg):
+    # contiguous split into exactly k fitting groups minimising the fastest group, then the spread of group lengths
+    n=len(words);best={}
+    def go(i,left):
+        if (i,left) in best:return best[(i,left)]
+        if left==1:
+            r=((cue_cps(words[i:]),0),[n]) if fits(words[i:],cfg) else None
+        else:
+            r=None
+            for j in range(i+1,n-left+2):
+                if not fits(words[i:j],cfg):break
+                rest=go(j,left-1)
+                if rest is None:continue
+                score=(max(cue_cps(words[i:j]),rest[0][0]),rest[0][1]+(len(' '.join(x['text'] for x in words[i:j])))**2)
+                if r is None or score<r[0]:r=(score,[j]+rest[1])
+        best[(i,left)]=r;return r
+    r=go(0,k)
+    if r is None:return None
+    cuts=[0]+r[1];return [words[a:b] for a,b in zip(cuts,cuts[1:])]
+def caption_cues(segments,cfg,shot_ends=None):
     cues=[]
     for i,s in enumerate(segments):
         words=estimate_words(s['text'],s['startSample'],s['endSample']);groups=[]
@@ -87,9 +115,18 @@ def caption_cues(segments,cfg):
         if len(groups)>1 and groups[-1][-1]['endSample']-groups[-1][0]['startSample']<RATE*.7:
             joined=groups[-2]+groups[-1]
             if len(wrap([x['text'] for x in joined],cfg['maxChars']))<=cfg['maxLines'] and len(joined)<=12:groups[-2:]=[joined]
+        if cfg.get('readable') and len(groups)>1:groups=balanced(words,len(groups),cfg) or groups
         for g in groups:
             cues.append({'phrase':i,'speaker':s['speaker'],'startSample':g[0]['startSample'],'endSample':g[-1]['endSample'],'lines':wrap([x['text'] for x in g],cfg['maxChars']),'words':g})
+    if cfg.get('readable'):
+        for k,c in enumerate(cues):
+            if k+1<len(cues) and cues[k+1]['phrase']==c['phrase']:continue
+            limit=min(c['endSample']+HOLD_MAX,cues[k+1]['startSample']-HOLD_GAP if k+1<len(cues) else c['endSample']+HOLD_MAX,shot_ends[c['phrase']] if shot_ends else c['endSample']+HOLD_MAX)
+            need=c['startSample']-(-len(' '.join(c['lines']))*RATE//cfg['maxCps'])
+            hold=min(limit,max(need,c['startSample']+int(.7*RATE)))
+            if hold>c['endSample']:c['holdSample']=hold
     return cues
+def shown_end(c):return c.get('holdSample',c['endSample'])
 
 def millis(sample):return (sample*1000+RATE//2)//RATE
 def stamp(ms,separator):
@@ -98,7 +135,7 @@ def stamp(ms,separator):
 def subtitles(cues,speakers):
     srt=[];vtt=['WEBVTT',''];last=0
     for i,c in enumerate(cues,1):
-        a,b=millis(c['startSample']),millis(c['endSample'])
+        a,b=millis(c['startSample']),millis(shown_end(c))
         if not last<=a<b: raise ValueError('subtitle rounding overlap or zero length')
         lines=c['lines'][:]
         if len(speakers)>1:lines[0]=speakers.get(c['speaker'],'Narrator')+': '+lines[0]
@@ -116,6 +153,30 @@ def caption_metrics(cues,segments,max_cps):
         cs=by_phrase[i];errors.extend([abs(cs[0]['startSample']-s['startSample']),abs(cs[-1]['endSample']-s['endSample'])])
         covered+=sum(c['endSample']-c['startSample'] for c in cs)
         if ' '.join(w['text'] for c in cs for w in c['words'])!=' '.join(s['text'].split()):raise ValueError('caption text coverage mismatch')
-    rates=[len(' '.join(c['lines']))*RATE/(c['endSample']-c['startSample']) for c in cues]
+    # reading speed over the time a cue is shown (its hold included); the speech-only speed is reported beside it
+    rates=[len(' '.join(c['lines']))*RATE/(shown_end(c)-c['startSample']) for c in cues]
     duration=sum(s['endSample']-s['startSample'] for s in segments)
-    return {'alignment':'estimated-word/measured-phrase','independentWordAlignmentError':None,'phraseBoundaryErrorSamples':max(errors,default=0),'coverage':covered/duration,'cueCount':len(cues),'maxCps':max(rates,default=0),'readingSpeedOutliers':sum(x>max_cps for x in rates),'shortCues':sum(c['endSample']-c['startSample']<.7*RATE for c in cues)}
+    out={'alignment':'estimated-word/measured-phrase','independentWordAlignmentError':None,'phraseBoundaryErrorSamples':max(errors,default=0),'coverage':covered/duration,'cueCount':len(cues),'maxCps':max(rates,default=0),'readingSpeedOutliers':sum(x>max_cps for x in rates),'shortCues':sum(shown_end(c)-c['startSample']<.7*RATE for c in cues)}
+    if any('holdSample' in c for c in cues):out['speechMaxCps']=max(len(' '.join(c['lines']))*RATE/(c['endSample']-c['startSample']) for c in cues);out['heldCues']=sum('holdSample' in c for c in cues)
+    return out
+
+
+SPEEDS = (1., 1.08, 1.16, 1.25)
+PACE_MIN = .85
+
+
+def speed_ladder(pace=1.):
+    """GEN-05: Kokoro speeds tried in order. pace 1 (default) gives the historical ladder unchanged; a pace below 1
+    is tried first, then the historical ladder (the speech report records whether the pace was kept)."""
+    pace = float(pace)
+    if not PACE_MIN <= pace <= 1:
+        raise ValueError('speech pace out of range')
+    return ([pace] if pace < 1 else []) + list(SPEEDS)
+
+def phrase_speed(text, samples, speed, max_cps, rate=RATE):
+    """GEN-05b: Kokoro speed for one phrase so that it is spoken at most max_cps characters per second (with 3 %
+    headroom), never faster than the film speed and never below PACE_MIN. Rounded to 0.01 (stable cache keys)."""
+    cps = len(' '.join(text.split())) * rate / samples
+    if cps <= max_cps:
+        return speed
+    return max(PACE_MIN, min(speed, round(speed * max_cps / cps * .97 - .005, 2)))

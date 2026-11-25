@@ -1,5 +1,5 @@
 # Current state — AetherMotion Studio
-Updated 2026-11-25 (handoff to TALK-04/05; TALK-01..03 merged). Authoritative rolling checkpoint for new coding sessions; update at verified transitions. This file references the historical ledger rather than replacing source or evidence. Baseline product merge: `04e3491bb21b4ebc3d54755a2a211b1a7affb3fa` (PR #13 merged into main). The handoff documentation commit may be newer; inspect git HEAD. No release publication implied.
+Updated 2026-11-25 (GEN-04..09 implemented on feature/gen-04-09, PR pending; GEN-07 deferred). Authoritative rolling checkpoint for new coding sessions; update at verified transitions. This file references the historical ledger rather than replacing source or evidence. Baseline product merge: `04e3491bb21b4ebc3d54755a2a211b1a7affb3fa` (PR #13 merged into main). The handoff documentation commit may be newer; inspect git HEAD. No release publication implied.
 
 ## Current status and authority
 - v1.0 core pipeline and Asset Foundry AF01–AF09 implementation merged; do not reimplement.
@@ -19,7 +19,55 @@ Updated 2026-11-25 (handoff to TALK-04/05; TALK-01..03 merged). Authoritative ro
 6. Source and approved decisions authoritative. This summary cannot discard binding facts; consult the source-specific contract when the task touches it. Keep state and handoff synchronized. No new native render runs on GitHub or release without authorization.
 
 ## Active unit
-GEN-03 — speaker follow camera. Owner: "do 1" (2026-11-25). Owner review of gen03-interview-r2: "the camera move makes characters out of screen. this must be fixed" → fixed in 0054e76: follow keeps every character fully in the safe area (two-speaker shots no longer move; three-speaker shots +13 %), and a new OFF_FRAME check (motion-speed-v1) runs on every production. Renders gen03-interview-r3, gen03-network-r1 and talk05-first-words-r10 from clean 0054e76: all gates PASS, checks 0/0, max off-frame 0; `npm test` 318 tests, 317 pass, 0 fail, 1 skip. r2 is superseded (owner-rejected). Status IMPLEMENTED + TESTED + RENDERED (agent-reviewed) on `feature/gen-03` (from `chore/record-gen-01-02` 6612699 on main 23f4198); PR pending owner merge.
+GEN-04..09 (except GEN-07) — IMPLEMENTED + TESTED + RENDERED (agent-reviewed) on branch `feature/gen-04-09` (from `chore/record-gen-03` 30748d5 on main 4f588e3), PR #29 against main (CI 45659718843 test PASS on 6ad282c), awaiting owner review and merge. Not merged.
+- Owner authorization (2026-11-25): "execute gen-04 to gen9 for gen 5 speech a bit slower. gen 6 yes i want these cuts for gen 07 i dont think its needed". GEN-07 (re-stage older accepted films) DEFERRED by the owner, with the agent agreeing. GEN-09: owner asked that Instagram be "a mode" and that longer videos stay possible. The target was not named; the agent assumed Reels.
+- Owner asked for a FOD handoff after GEN-09 (done: HANDOFF.md).
+- Commits:
+  - b33021d GEN-04 crowding-v1;
+  - 8dd4b19 GEN-05 speech.pace;
+  - 6532ec2 GEN-06 singles;
+  - de5870c GEN-08 visibility-v2;
+  - 19bd7e4 GEN-09 Reels mode;
+  - edd3a3d only true singles + nine samples (found in GEN-09 r1 stills).
+- What each unit does (details in docs/QUALITY.md, SPEECH.md, CINEMATOGRAPHY.md, REELS.md):
+  - **GEN-04:** a new check, crowding-v1 (src/quality/crowding.js). It counts every catalog character, including robot animals, in rendered poses (turns, follow, aims, beats), every third frame, and measures overlap between projected parts. composition-v1 is unchanged. **Canonical correction:** the GEN-02 note "explorer robot has no right-hand anchor" was wrong; it has hands. The r1 miss came from 9-sample, beat-free sampling.
+  - **GEN-05:** opt-in `speech.pace` (0.85–1). Director dialogue and TALK-05 use 0.92, and `request.dialogue.pace` overrides it. If the speech does not fit, the speed rises and the report says so.
+  - **GEN-06:** `singles-v1` (src/core/singles.js). The first line of 10+ words in an eligible shot becomes its own shot, a true single of the speaker:
+    - new rig framing `'single'`;
+    - the speaker is whole in the safe area, and nobody else is in view;
+    - assets the single never shows whole are left out;
+    - new shot flag `titleHold` keeps the heading steady after a cut;
+    - OFF_FRAME now treats a character wholly outside the frame as not cut.
+    - The Director uses it by default for dialogue (`dialogue.singles:false` turns it off). Three speakers 1 m apart get no single (reported).
+    - Two pinned assertions were narrowed to group shots (gen02 follow, talk04 bindings).
+  - **GEN-08:** visibility-v2 (src/quality/visibility.js): projected parts with a depth test, threshold 0.70. Production and Studio use it; v1 is unchanged and tested. It found the cinematography/homes guide half inside the cottage (recorded).
+  - **GEN-09:** Reels mode `delivery:'reels-v1'` (src/core/reels.js, reels-layout.js, scripts/reels-export.mjs; Director `request.delivery`):
+    - smaller heading, with captions under it;
+    - framing inside the Reels-safe area;
+    - check reels-safe-v1;
+    - export step (cover + report);
+    - length only warns.
+    - Also: the Director eases into pointing over 0.12 of the shot (was 0.08), after a 120.7°/s turn under Reels framing.
+- Evidence:
+  - `npm test` 338 tests, 337 pass, 0 fail, 1 skip. Python 41 OK. Protocol plan OK.
+  - Defaults identical: `node scripts/fod-digests.mjs . --exclude talk04,talk05,gen01,gen09` → graph 3d33fbaee198acad, geometry 14dec244d171dc56, detail2 e3f80439a292f21a, director 2cbf9916e65da935. gen09 is excluded because it is a new dialogue request.
+  - Renders from clean edd3a3d (vulkan, c8), all gates PASS (speech verify, native verify, quality pass-with-findings 0 errors, compare_release shared hashes exact), checks 0 (motion, visibility-v2, crowding, reels), frame-glitch clean, −16.0 LUFS:
+    - `gen06-interview-r1` (default layout, 3 singles): CPU 8b3278cf336ca49e… (103.9 s), Three 14673933adf21772… (54.9 s); RTX peak 44 %, 1,422 MiB.
+    - `gen09-reels-r2` (Reels, no singles possible): CPU 75f9259bf3391d68… (114.1 s), Three 5a9157feec85dba7… (53.0 s); RTX peak 42 %, 1,405 MiB. `reels-export` PASS, cover frame 59.
+  - `gen09-reels-r1` (19bd7e4) is superseded: its stills showed "singles" that still had the neighbour in view.
+  - Quality findings, both films: 1 CAPTION_READING_SPEED warning plus review notes.
+- Measured results (agent stills at the middle of every line, both backends; not human-reviewed):
+  - Pace 0.92 was kept. The fastest caption went from 20.0 to 19.1 characters per second; 1 cue is still above 18.
+  - Singles show the speaker at 0.72–0.74 of the safe height (group shots 0.56).
+  - In Reels mode, characters are clearly smaller (speaker about 0.39 of the default safe height) and the lower frame is mostly floor.
+- Owner decisions open:
+  1. Reels character size: accept it, or try captions over the lower body / a wider stage for Reels singles.
+  2. Reading speed: still 1 cue at 19 characters per second. Options: pace 0.85, or captions lingering (GEN-05 option b).
+  3. Merge the PR.
+
+Previous: GEN-03 — none active after it. Checkpoint main 4f588e3 (GEN-03 merged via PR #28; owner: "ok merge it", 2026-11-25; main CI 45635552428 test PASS).
+
+Previous unit: GEN-03 — speaker follow camera. MERGED 4f588e3. Owner: "do 1" (2026-11-25). Owner review of gen03-interview-r2: "the camera move makes characters out of screen. this must be fixed" → fixed in 0054e76: follow keeps every character fully in the safe area (two-speaker shots no longer move; three-speaker shots +13 %), and a new OFF_FRAME check (motion-speed-v1) runs on every production. Renders gen03-interview-r3, gen03-network-r1 and talk05-first-words-r10 from clean 0054e76: all gates PASS, checks 0/0, max off-frame 0; `npm test` 318 tests, 317 pass, 0 fail, 1 skip. r2 is superseded (owner-rejected). Status IMPLEMENTED + TESTED + RENDERED (agent-reviewed) on `feature/gen-03` (from `chore/record-gen-01-02` 6612699 on main 23f4198); PR pending owner merge.
 - Done:
   - opt-in `dialogue.camera:'follow'` + generated `cameraRig.focus` from measured lines (calm: ≥1.5 s lines, 1.8 s pans, push ≤1.25×, open on an early first speaker);
   - camera pan/zoom rates in motion-speed-v1;
@@ -164,6 +212,11 @@ LOCAL-02 — matched CPU/Three production for authored v2 projects. Status IMPLE
 LOCAL-01 — establish a local, reproducible baseline. Status IMPLEMENTED + VERIFIED locally 2026-11-24 at 1e0adcd, awaiting owner acceptance. Results: initially JS 157/158 (tests/foundry-import.test.js symlink fixture EPERM — Windows needs Developer Mode/admin). Owner-authorized fix: symlink case split into its own test, skipped only on win32+EPERM via a capability probe with explicit reason (negative-tested: EPERM on linux and EACCES on win32 still fail); production lstat/realpath rejection unchanged; full enforcement on Linux CI. After fix: JS 160 tests, 159 pass, 0 fail, 1 skip. package-lock.json (lockfileVersion 3, 297 entries, all registry+integrity, all platform binaries optional incl. linux-x64-gnu) reviewed and committed for reproducible installs; Python 11/11 on .venv 3.11.9; compileall scripts OK; foundry-qualify plan OK (9 pairs). Renders (verify.py PASS: native 360-frame MP4, 12s, full decode, Kokoro per-phrase audio): cinematic-cpu-polished renderSeconds 55.9, sha256 45A364E0…B4F6; cinematic-three-polished vulkan 34.3s sha256 4B12D823…B68D (kept at out/local01-three-vulkan); swangle 155.7s sha256 0D5065A3…97C5 (out/local01-three-swangle). Review stills at 6.0s inspected by agent: both backends coherent, same composition. Not human-reviewed; not a matched shared-speech pair. Start with setup and fast tests, then one small existing CPU fixture and one matched GPU-enabled Three.js fixture only as authorized locally. Avoid rerunning all 48 films. After baseline, ask/confirm next scoped visual improvement or follow the user's immediate task. [NEXT_UNITS](NEXT_UNITS.md) is a proposed sequence, not already implemented work.
 
 ## Outstanding obligations
+- Local cleanup (owner: "ok clean it up the way yuo want", 2026-11-25): superseded, failed or rejected renders were deleted from the git-ignored out/ and public/audio. 182 paths, 2.3 GB; out/ is now 3.3 GB.
+  - Removed runs: art01-handoff-r1; art02-studio-r1, r2; art05-workshop-r1; talk01-faces-r1; talk02-dialogue-r1; talk03-body-r1..r4; talk04-dialogue-r1; talk05-first-words-r1, r2, r4, r6, r8, r9; gen01-interview-r1; gen02-interview-r1; gen03-interview-r1, r2 (owner-rejected); workshop-extended-r2, r4, r5; local-02-cinematic.
+  - Their recorded hashes and findings remain in the docs.
+  - Kept: every unit's final and merge-evidence render, accepted films, bench, fixtures and the speech cache.
+  - Future sessions must not expect the removed runs on disk.
 - Historical regression comparison is resolved (45447693269, 15/15). Preserve evidence; do not reopen or rerender it by default. Future reproducibility engineering remains separate from that completed qualification.
 - Shared-audio generalization to authored v2 fixtures: done locally in LOCAL-02 (verified on one single-shot pair). Multi-shot authored pairs are covered by unit tests only; first multi-shot matched render belongs to LOCAL-03 measurement.
 - GPU identity verified (LOCAL-01: vulkan → RTX on this hybrid laptop). Still open (LOCAL-03): warm/cold measurements, memory/VRAM growth on long renders, repeated controlled runs, concurrency effects. Native helper still fixed at concurrency=2, default swangle; software WebGL timings are not RTX benchmarks.

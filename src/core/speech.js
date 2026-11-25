@@ -2,6 +2,7 @@ import {VOICES} from './contract.js';
 import {fields,finite,choice,literal} from './cinematography.js';
 export const VOICE_METADATA=Object.freeze(VOICES.map(id=>Object.freeze({id,language:id.startsWith('b')?'en-gb':'en-us',engine:'kokoro-onnx'})));
 const fail=(p,m)=>{throw Error(p+': '+m)};
+export const SPEECH_PACE=Object.freeze({min:.85,dialogue:.92});
 const words=s=>s.trim().split(/\s+/);
 const norm=s=>words(s).join(' ');
 const int=(v,a,b,p)=>{if(!Number.isSafeInteger(v)||v<a||v>b)fail(p,'integer out of range');};
@@ -9,9 +10,11 @@ function arr(x,max,p){if(!Array.isArray(x)||x.length>max)fail(p,'invalid array')
 const bool=(x,p)=>{if(typeof x!=='boolean')fail(p,'boolean required');};
 const map=(x,p,max)=>{if(!x||typeof x!=='object'||Array.isArray(x)||Object.keys(x).length>max)fail(p,'invalid mapping');};
 export function validateSpeechConfig(c,shots=null){
- fields(c,['version','targetFrames','fixedShots','speakers','shotSpeakers','pronunciations','captions','mix','cues','syncActions','placement'],'speech',['version','targetFrames','fixedShots','speakers','shotSpeakers','pronunciations','captions','mix','cues','syncActions']);
+ fields(c,['version','targetFrames','fixedShots','speakers','shotSpeakers','pronunciations','captions','mix','cues','syncActions','placement','pace'],'speech',['version','targetFrames','fixedShots','speakers','shotSpeakers','pronunciations','captions','mix','cues','syncActions']);
  // POLISH-03 opt-ins: placement of narration inside shots, and mastering profile mix-v2 inside speech.mix.
  if(c.placement!==undefined&&!['center','lead'].includes(c.placement))fail('speech.placement','center or lead required');
+ // GEN-05 opt-in: starting Kokoro speed below 1 (slightly slower, easier-to-read speech). Absent = 1 (unchanged).
+ if(c.pace!==undefined)finite(c.pace,SPEECH_PACE.min,1,'speech.pace');
  if(c.version!==1)fail('speech.version','unsupported');int(c.targetFrames,180,9000,'speech.targetFrames');
  const ids=shots?new Map(shots.map(s=>[s.id,s])):null;
  const shotId=(id,p)=>{if(!/^[a-z0-9][a-z0-9-]{0,47}$/.test(id)||['constructor','prototype'].includes(id)||ids&&!ids.has(id))fail(p,'unknown or unsafe shot');};
@@ -28,7 +31,9 @@ export function validateSpeechConfig(c,shots=null){
  map(c.shotSpeakers,'shotSpeakers',60);
  for(const [id,v] of Object.entries(c.shotSpeakers)){shotId(id,'shotSpeakers');arr(v,8,'shotSpeakers');if(!v.length||ids&&v.length!==ids.get(id).narration.length||v.some(k=>!Object.hasOwn(c.speakers,k)))fail('shotSpeakers','unknown speaker or phrase count mismatch');}
  map(c.pronunciations,'pronunciations',64);for(const [k,v] of Object.entries(c.pronunciations)){if(!/^[A-Za-z0-9][A-Za-z0-9'-]{0,31}$/.test(k)||['constructor','prototype'].includes(k))fail('pronunciations','invalid token');if(typeof v!=='string'||!/^[A-Za-z0-9][A-Za-z0-9 ',-]{0,79}$/.test(v))fail('pronunciations','invalid replacement');}
- fields(c.captions,['mode','highlight','maxChars','maxLines','maxCps'],'captions',['mode','highlight','maxChars','maxLines','maxCps']);choice(c.captions.mode,['burn-in','sidecar','both'],'captions.mode');bool(c.captions.highlight,'captions.highlight');int(c.captions.maxChars,24,36,'captions.maxChars');int(c.captions.maxLines,1,2,'captions.maxLines');int(c.captions.maxCps,12,24,'captions.maxCps');
+ fields(c.captions,['mode','highlight','maxChars','maxLines','maxCps','readable'],'captions',['mode','highlight','maxChars','maxLines','maxCps']);
+ // GEN-05b opt-in: balanced cue splits and a short hold into the following pause (scripts/speech_plan.py caption_cues)
+ if(c.captions.readable!==undefined&&c.captions.readable!==true)fail('captions.readable','true or absent required');choice(c.captions.mode,['burn-in','sidecar','both'],'captions.mode');bool(c.captions.highlight,'captions.highlight');int(c.captions.maxChars,24,36,'captions.maxChars');int(c.captions.maxLines,1,2,'captions.maxLines');int(c.captions.maxCps,12,24,'captions.maxCps');
  if(ids&&shots.some(s=>s.narration.some(t=>words(t).some(w=>Array.from(w).length>c.captions.maxChars))))fail('captions','word exceeds configured line limit');
  fields(c.mix,['narration','music','ambience','sfx','duck','fadeSeconds','peak','master'],'mix',['narration','music','ambience','sfx','duck','fadeSeconds','peak']);
  if(c.mix.master!==undefined&&c.mix.master!=='mix-v2')fail('mix.master','mix-v2 required');
@@ -49,7 +54,7 @@ export function validateSpeechTimeline(scene,t){
   if(a.speaker!==expected.id||a.voice!==expected.voice||a.language!==expected.language)fail('speech','speaker binding mismatch');
  }
  for(const x of t.captions){
-  fields(x,['phrase','speaker','startSample','endSample','lines','words'],'caption',['phrase','speaker','startSample','endSample','lines','words']);
+  fields(x,['phrase','speaker','startSample','endSample','lines','words','holdSample'],'caption',['phrase','speaker','startSample','endSample','lines','words']);
   int(x.phrase,0,segments.length-1,'caption.phrase');const a=segments[x.phrase];
   int(x.startSample,Math.max(previous,a.startSample),a.endSample-1,'caption.start');int(x.endSample,x.startSample+1,a.endSample,'caption.end');
   if(x.speaker!==a.speaker)fail('caption','speaker mismatch');
@@ -57,7 +62,10 @@ export function validateSpeechTimeline(scene,t){
   arr(x.words,180,'caption.words');if(!x.words.length)fail('caption','empty words');
   let cursor=x.startSample;for(const w of x.words){fields(w,['text','startSample','endSample'],'word',['text','startSample','endSample']);literal(w.text,c.captions.maxChars,'word.text');if(/\s/.test(w.text)||w.startSample!==cursor)fail('word','invalid token or gap');int(w.endSample,cursor+1,x.endSample,'word.end');cursor=w.endSample;}
   if(cursor!==x.endSample||x.words.map(w=>w.text).join(' ')!==x.lines.join(' '))fail('caption','word coverage mismatch');
-  groups[x.phrase].push(x);previous=x.endSample;
+  // GEN-05b: a readable caption may stay shown into the pause after its phrase (≤ 1 s), never into the next caption
+  if(x.holdSample!==undefined){if(!c.captions.readable)fail('caption.hold','captions.readable required');int(x.holdSample,x.endSample+1,Math.min(x.endSample+48000,t.durationFrames*1600),'caption.hold');}
+  if(x.holdSample!==undefined&&x.startSample<previous)fail('caption.hold','overlaps the previous caption');
+  groups[x.phrase].push(x);previous=x.holdSample??x.endSample;
  }
  for(const [i,a] of segments.entries()){
   const xs=groups[i];let cursor=a.startSample;
@@ -68,7 +76,7 @@ export function validateSpeechTimeline(scene,t){
 export function cueAt(t,frame){
  if(!t.captions)return null;
  const sample=frame*1600+800;let lo=0,hi=t.captions.length;
- while(lo<hi){const m=(lo+hi)>>1;if(t.captions[m].endSample<=sample)lo=m+1;else hi=m;}
+ while(lo<hi){const m=(lo+hi)>>1;if((t.captions[m].holdSample??t.captions[m].endSample)<=sample)lo=m+1;else hi=m;}
  const cue=t.captions[lo];return cue&&cue.startSample<=sample?{cue,active:cue.words.findIndex(w=>w.startSample<=sample&&sample<w.endSample)}:null;
 }
 export function speechDrivenShot(s,t,c){
