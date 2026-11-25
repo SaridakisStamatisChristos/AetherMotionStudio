@@ -11,8 +11,10 @@ function integer(x,min,max,p){if(!Number.isSafeInteger(x)||x<min||x>max)fail(p,'
 function slug(x,p){if(typeof x!=='string'||!/^[a-z0-9][a-z0-9-]{0,47}$/.test(x)||/^(con|prn|aux|nul|com[1-9]|lpt[1-9])$/.test(x))fail(p,'unsafe ID');}
 export function validateProject(s){
  if(s?.version===1)return validateScene(s);
- fields(s,['version','id','title','voice','shots'],'film',['identityLibrary','speech']);
+ fields(s,['version','id','title','voice','shots'],'film',['identityLibrary','speech','audio']);
  if(s.version!==2)fail('version','only 1 or 2 supported');
+ // POLISH-02 item 8: opt-in mastering profile for the timeline mixer (speech projects keep their own mix contract).
+ if(s.audio!==undefined){if(!s.audio||typeof s.audio!=='object'||Array.isArray(s.audio))fail('audio','object required');for(const k of Object.keys(s.audio))if(k!=='master')fail('audio.'+k,'unknown field');if(s.audio.master!=='mix-v2')fail('audio.master','mix-v2 required');if(s.speech!==undefined)fail('audio','speech projects use speech.mix');}
  slug(s.id,'id');str(s.title,'title',100);if(!VOICES.includes(s.voice))fail('voice','unsupported');
  if(!Array.isArray(s.shots)||s.shots.length<1||s.shots.length>60)fail('shots','1–60 required');
  const ids=new Set();let minimum=0;

@@ -79,7 +79,8 @@ function shots(){
  return [keep('workshop'),keep('plan'),turns(toolbox()),keep('power'),turns(steps()),turns(teach()),shelf(),keep('handoff'),keep('together'),lights()];
 }
 export function build(backend){
- const p={version:2,id:'workshop-extended-'+backend+'-polished',title:'The Workshop — Extended',voice:'af_heart',shots:shots().map(s=>({...s,backend}))};
+ // POLISH-02 item 8: opt-in mastering (consistent phrase levels, -16 LUFS, -1 dBTP).
+ const p={version:2,id:'workshop-extended-'+backend+'-polished',title:'The Workshop — Extended',voice:'af_heart',audio:{master:'mix-v2'},shots:shots().map(s=>({...s,backend}))};
  validateProject(p);return stageProject(p);
 }
 if(process.argv[1]&&import.meta.url.endsWith(process.argv[1].replaceAll('\\','/').split('/').pop())){

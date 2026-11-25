@@ -3,6 +3,9 @@
  "id": "workshop-extended-cpu-polished",
  "title": "The Workshop — Extended",
  "voice": "af_heart",
+ "audio": {
+  "master": "mix-v2"
+ },
  "shots": [
   {
    "id": "workshop",

@@ -7,6 +7,7 @@ from scipy.io import wavfile
 from scipy.signal import resample_poly, butter, sosfilt
 from kokoro_onnx import Kokoro
 from timeline_plan import RATE,SPF,MAX_FRAMES,allocate,required_samples,allocate_global
+import audio_master
 R=RATE
 root=Path(__file__).resolve().parents[1]
 scene=json.loads(Path(sys.argv[1]).read_text(encoding='utf-8'))
@@ -20,6 +21,7 @@ if scene.get('speech') is not None:
 voice=scene['voice']
 lang='en-gb' if voice.startswith('b') else 'en-us'
 highpass=butter(2,90,btype='highpass',fs=R,output='sos')
+mastered=audio_master.enabled(scene)
 
 def synth(text,speed):
     v,sr=kokoro.create(text,voice=voice,speed=speed,lang=lang)
@@ -32,7 +34,8 @@ def synth(text,speed):
     v=sosfilt(highpass,v)
     rms=float(np.sqrt(np.mean(v*v)))
     if rms<=.001: raise RuntimeError('inaudible phrase')
-    v*=min(.17/rms,.66/(np.max(np.abs(v))+1e-8))
+    if mastered: v=audio_master.level_phrase(v)
+    else: v*=min(.17/rms,.66/(np.max(np.abs(v))+1e-8))
     ramp=min(int(.012*R),len(v)//2)
     if ramp:
         v[:ramp]*=np.linspace(0,1,ramp);v[-ramp:]*=np.linspace(1,0,ramp)
@@ -101,7 +104,10 @@ for a,b,v in pieces:
     duck[a:b]=np.minimum(duck[a:b],.43)
     duck[b:h]=np.minimum(duck[b:h],np.linspace(.43,1,h-b))
 fade=np.minimum(t/.05,1)*np.minimum((seconds-t)/.25,1)
-mix=np.tanh((music*duck+speech)*1.12)*fade
+if mastered:
+    mix,master_report=audio_master.master(music*duck+speech,R);mix=mix*fade
+    (out/'audio-master.json').write_text(json.dumps(master_report,indent=2),encoding='utf-8')
+else: mix=np.tanh((music*duck+speech)*1.12)*fade
 wavfile.write(out/'kokoro-narration.wav',R,np.int16(np.clip(speech,-1,1)*32767))
 (out/'timeline.json').write_text(json.dumps(compiled,indent=2,ensure_ascii=False),encoding='utf-8')
 report={'backend':'kokoro-onnx','voice':voice,'sample_rate':R,'segments':[a for s in compiled['shots'] for a in s['segments']]}

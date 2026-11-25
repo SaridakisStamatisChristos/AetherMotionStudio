@@ -300,3 +300,13 @@ test('detail 3: negatives and generator reproduction',async()=>{
  for(const b of ['cpu','three']){const want=JSON.parse(readFileSync(new URL('../examples/polish02-cast-'+b+'-polished.json',import.meta.url),'utf8'));assert.deepEqual(build(b),want);}
  const p=build('cpu');assert.ok(p.shots[1].assets.filter(a=>HUMANS.includes(a.asset)).every(a=>a.params.detail===3));assert.ok(p.shots[0].assets.filter(a=>HUMANS.includes(a.asset)).every(a=>a.params.detail===2));
 });
+
+// ---- Item 8: opt-in mastering profile (audio.master = mix-v2) ----
+test('audio master: project field validation and the extended film opts in',()=>{
+ const base=project([shot([{id:'r',asset:'engineer',tracks:{x:[[0,0]]}}])]);validateProject(base);
+ validateProject({...base,audio:{master:'mix-v2'}});
+ assert.throws(()=>validateProject({...base,speech:{},audio:{master:'mix-v2'}}),/speech projects use speech.mix/);
+ for(const bad of [{master:'loud'},{master:'mix-v2',gain:3},'mix-v2',[],null])assert.throws(()=>validateProject({...base,audio:bad}),/audio/);
+ const p=JSON.parse(readFileSync(new URL('../examples/workshop-extended-cpu-polished.json',import.meta.url),'utf8'));assert.deepEqual(p.audio,{master:'mix-v2'});
+ for(const f of readdirSync(new URL('../examples/',import.meta.url)).filter(f=>f.endsWith('.json')&&!f.startsWith('workshop-extended'))){const x=JSON.parse(readFileSync(new URL('../examples/'+f,import.meta.url),'utf8'));assert.equal(x.audio,undefined,f+' unchanged');}
+});
