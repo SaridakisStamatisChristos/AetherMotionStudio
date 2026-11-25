@@ -5,7 +5,7 @@
 //   decide where to cut.
 // - The single uses the camera rig (new opt-in framing 'single' = the GEN-02 group fit on one subject, plus targetOffset
 //   and padding), shared by both backends like every other camera.
-// - Framing is chosen by measuring the real camera at the start, middle and end of the shot: the speaker must be fully
+// - Framing is chosen by measuring the real camera at nine points through the shot: the speaker must be fully
 //   inside the 9:16 safe area, and every other character fully outside the frame or fully inside it, never cut by an
 //   edge. If no candidate passes, the line stays in the group shot and the report says why.
 // - Only safe shots are split: speech-driven (automatic duration), dialogue with speaker bindings, characters standing
@@ -14,9 +14,10 @@ import {evaluateGraph} from './graph.js';
 import {geometryBounds,CAMERA_RIGS} from './cinematography.js';
 import {createProjection} from '../visual/mesh.js';
 import {recipeSpec} from '../visual/catalog-rig.js';
+import {REELS} from './reels-layout.js';
 
 export const SINGLES=Object.freeze({version:'singles-v1',minWords:10,maxPerShot:1,offsets:Object.freeze([0,.2,.4,.6]),paddings:Object.freeze([.05,.1,.2]),presets:Object.freeze(['medium','close-up']),
- frame:Object.freeze({width:720,height:1280}),safe:Object.freeze({x:[24,696],y:[310,1040]}),margin:12,maxShots:60});
+ frame:Object.freeze({width:720,height:1280}),inside:Object.freeze({x:Object.freeze([0,720]),y:Object.freeze([0,1280])}),samples:Object.freeze([0,.125,.25,.375,.5,.625,.75,.875,1]),safe:Object.freeze({x:[24,696],y:[310,1040]}),margin:12,maxShots:60});
 const isChar=asset=>asset==='retro-robot'||['human','robot','animal'].includes(recipeSpec(asset)?.family);
 const words=t=>String(t).trim().split(/\s+/).filter(Boolean).length;
 const still=a=>Object.entries(a.tracks??{}).every(([k,v])=>!['x','y','z'].includes(k)||v.length===1)&&!a.actions&&!a.attachment&&!a.locomotion&&!a.aim;
@@ -28,15 +29,15 @@ function box(a,project){const b=geometryBounds([a]);if(!b)return null;let x0=Inf
 // Does this candidate single shot keep the speaker whole and every other character either whole or gone?
 export function singleFits(shot,speakerId,P=SINGLES){
  let height=Infinity;const cut=new Set();
- for(const progress of [0,.5,1]){
+ for(const progress of P.samples){
   const st=evaluateGraph(shot,progress),c=st.camera,project=createProjection(c.position,c.target,c.zoom,[P.frame.width/2,P.frame.height/2]);
   for(const a of st.assets){const b=box(a,project);
-   if(!b||!(b[0]>=0&&b[2]<=P.frame.width&&b[1]>=0&&b[3]<=P.frame.height))cut.add(a.id);
+   const I=P.inside;if(!b||!(b[0]>=I.x[0]&&b[2]<=I.x[1]&&b[1]>=I.y[0]&&b[3]<=I.y[1]))cut.add(a.id);
    if(!isChar(a.asset))continue;
    if(a.id===speakerId){if(!b||b[0]<P.safe.x[0]||b[2]>P.safe.x[1]||b[1]<P.safe.y[0]||b[3]>P.safe.y[1])return null;height=Math.min(height,(b[3]-b[1])/(P.safe.y[1]-P.safe.y[0]));continue;}
    if(!b)continue;
    const out=b[2]<-P.margin||b[0]>P.frame.width+P.margin||b[3]<-P.margin||b[1]>P.frame.height+P.margin;
-   const inside=b[0]>=0&&b[2]<=P.frame.width&&b[1]>=0&&b[3]<=P.frame.height;
+   const inside=b[0]>=P.inside.x[0]&&b[2]<=P.inside.x[1]&&b[1]>=P.inside.y[0]&&b[3]<=P.inside.y[1];
    if(!out&&!inside)return null;
   }
  }
@@ -60,7 +61,9 @@ export function solveSingle(shot,speakerId,P=SINGLES){
  return best;
 }
 // Split long lines of eligible shots into singles. Returns {project, report}; the input is not modified.
-export function singleShots(project,P=SINGLES){
+export function singleShots(project,P0=SINGLES){
+ // GEN-09: a Reels delivery solves singles for the Reels character area (below captions, above the app overlay).
+ const P=project.delivery===REELS.version?{...P0,safe:REELS.characters,inside:REELS.ui}:P0;
  const speech=project.speech,report={version:P.version,singles:[],kept:[]};
  if(!speech?.shotSpeakers)return {project,report};
  const out=structuredClone(project),shots=[];let total=project.shots.length;

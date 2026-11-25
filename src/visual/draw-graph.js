@@ -8,6 +8,7 @@ import {applyBody} from '../core/body.js';
 import {shutterSamples} from '../core/fidelity.js';
 import {floorStops,castShadow,PARITY} from './lighting-parity.js';
 import {beginFilm,finishFilm,atmosphere,contactShadows,detailedFace,particleTrails,polishedType} from './fidelity-effects.js';
+import {REELS} from '../core/reels-layout.js';
 const TAU=Math.PI*2;
 // TALK-01: `talk` = {assetId: mouth} for this frame (null when the shot binds no speakers).
 function world(ctx,p,W,H,s,three,talk=null,body=null){
@@ -64,13 +65,15 @@ export function drawGraph(ctx,p,W,H,s,three,frames=360,talk=null,body=null){
   finishFilm(ctx,a,f,focus,Math.round(p*(frames-1)));
  }
  ctx.save();ctx.scale(W/720,H/1280);
- if(f&&f.typography>0)polishedType(ctx,s,env,p,f.typography);
+ // GEN-09 Reels layout: a smaller heading only, inside the Reels-safe area (no pill, subheading or progress bar).
+ if(s.delivery===REELS.version){const H=REELS.heading;ctx.save();ctx.globalAlpha=s.titleHold||!(f&&f.typography>0)?1:Math.min(1,p*15);ctx.shadowColor='rgba(0,0,0,.7)';ctx.shadowBlur=10;text(ctx,s.heading,H.x,H.y,H.size,'#f8f3ea',900,'Arial',H.maxWidth);ctx.restore();}
+ else if(f&&f.typography>0)polishedType(ctx,s,env,p,f.typography);
  else{
  text(ctx,'AETHER LAB / CINEMATIC STUDIES',360,77,15,env.accent,700);
  text(ctx,s.heading,360,194,58,'#f4efe5',900);text(ctx,s.subheading,360,274,27,env.accent,700);
 
  }
  drawOverlays(ctx,s.overlays,p);
- ctx.fillStyle=env.accent+'35';ctx.fillRect(54,1212,612,3);ctx.fillStyle=env.accent;ctx.fillRect(54,1212,612*p,3);
+ if(s.delivery!==REELS.version){ctx.fillStyle=env.accent+'35';ctx.fillRect(54,1212,612,3);ctx.fillStyle=env.accent;ctx.fillRect(54,1212,612*p,3);}
  ctx.restore();
 }

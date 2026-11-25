@@ -1,3 +1,4 @@
+import {REELS} from './reels-layout.js';
 import {generatedBounds} from '../foundry/generator.js';
 import {surfacePoint,validateSurfaceRef} from './surface.js';
 import {importedBounds} from '../foundry/import-bundle.js';
@@ -39,7 +40,9 @@ export const CAMERA_RIGS=Object.freeze({
 // ART-02: zoom ceiling raised 1550→2400 for authored telephoto product framing (validation widening only; auto-framing still clamps to 1550).
 export const RIG_CAMERA_LIMITS={x:[-5,5],y:[1.8,6],z:[6,12],zoom:[700,2400]};
 export function validateCameraRig(x,ids,p){
- fields(x,['preset','subject','subjects','framing','padding','targetOffset','strength','focus'],p,['preset']);
+ fields(x,['preset','subject','subjects','framing','padding','targetOffset','strength','focus','safeArea'],p,['preset']);
+ // GEN-09 opt-in: fit group/single framings into a delivery's safe area (Reels: below the captions, above the app overlay).
+ if(x.safeArea!==undefined){choice(x.safeArea,Object.keys(SAFE_AREAS),p+'.safeArea');if(!['group','single'].includes(x.framing))fail(p+'.safeArea','framing group or single required');}
  choice(x.preset,Object.keys(CAMERA_RIGS),p+'.preset');
  if(x.subject!==undefined&&!ids.has(x.subject))fail(p+'.subject','unknown subject');
  if(x.framing!==undefined)choice(x.framing,['establishing','medium','close-up','group','single'],p+'.framing');
@@ -74,6 +77,8 @@ export function geometryBounds(assets){
 // and arms never make the zoom breathe), target at their centre, zoom fitted in and out to the safe area between the
 // heading and the captions (720×1280 reference: half-width 336, half-height 340 around the projection centre).
 export const GROUP_FRAMING=Object.freeze({halfWidth:336,halfHeight:340,zoom:[700,2000],padding:.08});
+// GEN-09: delivery safe areas for group/single fits (see src/core/reels.js for the Reels layout they come from).
+export const SAFE_AREAS=Object.freeze({'reels-v1':REELS.frame});
 // GEN-03 speaker follow: optional rig.focus [{at, subject|null, blend}] (generated at render by dialogueShot from the
 // measured lines; see src/core/dialogue.js). Each entry eases (smoothstep over blend) from the current framing to one
 // that shifts FOLLOW.shift of the way toward the subject and pushes in up to FOLLOW.push, never tighter than the
@@ -81,7 +86,7 @@ export const GROUP_FRAMING=Object.freeze({halfWidth:336,halfHeight:340,zoom:[700
 export const FOLLOW=Object.freeze({push:1.25,shift:.65,steps:13});
 const restOf=(assets,ids)=>{const set=new Set(ids);return assets.filter(a=>set.has(a.id)).map(a=>({...a,pose:{origin:a.pose.origin,yaw:0,scale:a.pose.scale??1,...(a.pose.params?{params:a.pose.params}:{})}}));};
 function fitZoom(b,desired,rig,tracks,strength){
- const G=GROUP_FRAMING;let fit=Infinity;
+ const G=SAFE_AREAS[rig.safeArea]??GROUP_FRAMING;let fit=Infinity;
  for(const p of [0,.5,1]){const cam=sampleCameraRig(rig,p,tracks),tgt=add(cam.target,sub(desired,cam.target).map(v=>clamp(v,-2.4,2.4)*strength)),proj=createProjection(cam.position,tgt,1,[0,0]);let maxX=0,maxY=0;
   for(const x of [b.lo[0],b.hi[0]])for(const y of [b.lo[1],b.hi[1]])for(const z of [b.lo[2],b.hi[2]]){const q=proj([x,y,z]);maxX=Math.max(maxX,Math.abs(q[0]));maxY=Math.max(maxY,Math.abs(q[1]));}
   fit=Math.min(fit,G.halfWidth/Math.max(maxX,1e-6),G.halfHeight/Math.max(maxY,1e-6));}

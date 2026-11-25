@@ -97,12 +97,15 @@ export function stageDialogueAssets(q,prop){
 const stem=w=>w.length>3&&w.endsWith('s')?w.slice(0,-1):w;
 export function mentions(text,assetId){const w=String(text).toLowerCase().split(/[^a-z0-9]+/).filter(Boolean).map(stem),parts=assetId.split('-');
  for(let i=0;i+parts.length<=w.length;i++)if(parts.every((p,j)=>w[i+j]===p))return true;return false;}
+// GEN-09 finding (Reels network film, 120.7°/s): a longer ease into the pointing keeps the body-cheat turn calm
+// whatever the camera (was 0.08 of the shot).
+export const AIM_BLEND=.12;
 export function pointAtSetPiece(q,s,assets){
  const prop=assets.find(a=>a.id==='object-1'),k=prop?s.narration.findIndex(t=>mentions(t,prop.asset)):-1;if(k<0)return assets;
  const who=assets.find(a=>a.id===s.speakers[k]);if(!who||!aimSupported(who.asset))return assets;
  const words=s.narration.map(t=>t.trim().split(/s+/).length),total=words.reduce((a,b)=>a+b,0),before=words.slice(0,k).reduce((a,b)=>a+b,0);
  const start=+(.05+.9*before/total).toFixed(3),end=+(.05+.9*(before+words[k])/total).toFixed(3);
- return assets.map(a=>a===who?{...a,aim:{target:'object-1',start,end,blend:.08,cheat:.5,phrase:k}}:a);
+ return assets.map(a=>a===who?{...a,aim:{target:'object-1',start,end,blend:AIM_BLEND,cheat:.5,phrase:k}}:a);
 }
 export function dialogueShotFields(q){
  return {speakerAssets:Object.fromEntries(q.dialogue.speakers.map(s=>[s.id,s.id]))};

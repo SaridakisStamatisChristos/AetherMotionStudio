@@ -20,7 +20,9 @@ export function safeJson(raw){
 }
 export const normalize=s=>s.trim().replace(/\s+/g,' ');
 export function request(input){
- fields(input,['version','id','topic','script','seconds','audience','tone','style','language','voice','backend','profile','seed','identityLibrary','cast','story','speech','staging','promptVersion','dialogue'], 'request',['version','id','topic','seconds']);
+ fields(input,['version','id','topic','script','seconds','audience','tone','style','language','voice','backend','profile','seed','identityLibrary','cast','story','speech','staging','promptVersion','dialogue','delivery'], 'request',['version','id','topic','seconds']);
+ // GEN-09 opt-in delivery mode (Instagram Reels layout and framing); absent = unchanged output.
+ if(input.delivery!==undefined&&input.delivery!=='reels-v1')bad('request.delivery','reels-v1 or absent');
  const q={audience:'general audience',tone:'clear',style:'cinematic explainer',language:'en',voice:'af_heart',backend:'cpu',profile:'polished',seed:0,...input};
  if(q.version!==REQUEST_VERSION)bad('request.version','unsupported');
  if(typeof q.id!=='string'||!/^[a-z0-9][a-z0-9-]{0,47}$/.test(q.id)||/^(con|prn|aux|nul|com[1-9]|lpt[1-9])$/.test(q.id))bad('request.id','unsafe ID');

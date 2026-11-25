@@ -14,7 +14,9 @@ function integer(x,min,max,p){if(!Number.isSafeInteger(x)||x<min||x>max)fail(p,'
 function slug(x,p){if(typeof x!=='string'||!/^[a-z0-9][a-z0-9-]{0,47}$/.test(x)||/^(con|prn|aux|nul|com[1-9]|lpt[1-9])$/.test(x))fail(p,'unsafe ID');}
 export function validateProject(s){
  if(s?.version===1)return validateScene(s);
- fields(s,['version','id','title','voice','shots'],'film',['identityLibrary','speech','audio']);
+ fields(s,['version','id','title','voice','shots'],'film',['identityLibrary','speech','audio','delivery']);
+ // GEN-09 opt-in delivery layout (src/core/reels.js); absent = the historical layout.
+ if(s.delivery!==undefined&&s.delivery!=='reels-v1')fail('film.delivery','reels-v1 or absent');
  if(s.version!==2)fail('version','only 1 or 2 supported');
  // POLISH-02 item 8: opt-in mastering profile for the timeline mixer (speech projects keep their own mix contract).
  if(s.audio!==undefined){if(!s.audio||typeof s.audio!=='object'||Array.isArray(s.audio))fail('audio','object required');const ks=Object.keys(s.audio);if(!ks.length)fail('audio','master or placement required');for(const k of ks)if(!['master','placement'].includes(k))fail('audio.'+k,'unknown field');if(s.audio.master!==undefined&&s.audio.master!=='mix-v2')fail('audio.master','mix-v2 required');
