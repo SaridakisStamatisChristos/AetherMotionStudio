@@ -6,7 +6,7 @@
 // its existing offline narration into sentences and hands them out in turns. Absent `dialogue`: nothing changes.
 import {fields,choice,literal} from '../core/cinematography.js';
 import {VOICES} from '../core/contract.js';
-import {VOICE_METADATA} from '../core/speech.js';
+import {VOICE_METADATA,SPEECH_PACE} from '../core/speech.js';
 import {mouthSupported} from '../core/talk.js';
 import {recipeSpec} from '../visual/catalog-rig.js';
 import {locomotionRig} from '../core/locomotion.js';
@@ -26,8 +26,9 @@ const human=asset=>recipeSpec(asset)?.family==='human';
 export function validateDialogueRequest(q){
  if(q.dialogue===undefined)return;
  const d=q.dialogue,p='request.dialogue';
- fields(d,['speakers','style'],p,['speakers']);
+ fields(d,['speakers','style','pace'],p,['speakers']);
  if(d.style!==undefined)choice(d.style,DIALOGUE_STYLES,p+'.style');
+ if(d.pace!==undefined&&(typeof d.pace!=='number'||!Number.isFinite(d.pace)||d.pace<SPEECH_PACE.min||d.pace>1))bad(p+'.pace','number from '+SPEECH_PACE.min+' to 1 required');
  if(!Array.isArray(d.speakers)||d.speakers.length<2||d.speakers.length>3)bad(p+'.speakers','2–3 speakers required');
  const ids=new Set();
  d.speakers.forEach((s,i)=>{
@@ -78,7 +79,9 @@ export function offlineDialogue(q,ir){
 export function dialogueSpeech(q,ir){
  const base=q.speech??defaultSpeech(q.seconds);
  return {...base,speakers:Object.fromEntries(q.dialogue.speakers.map(s=>[s.id,{name:s.name,voice:s.voice,language:s.language}])),
-  shotSpeakers:Object.fromEntries(ir.shots.map((s,i)=>['shot-'+(i+1),[...s.speakers]])),placement:'lead',mix:{...base.mix,master:'mix-v2'}};
+  shotSpeakers:Object.fromEntries(ir.shots.map((s,i)=>['shot-'+(i+1),[...s.speakers]])),placement:'lead',mix:{...base.mix,master:'mix-v2'},
+  // GEN-05 (owner: "speech a bit slower"): dialogue speaks at pace 0.92 unless the request sets dialogue.pace (1 = TALK-04 speed).
+  ...((q.dialogue.pace??SPEECH_PACE.dialogue)<1?{pace:q.dialogue.pace??SPEECH_PACE.dialogue}:{})};
 }
 // Speakers (bound by ID) and the set piece; compile then applies staging talk-v1, which places the line and the set piece
 // beside it and adds dialogue/bodyLanguage/lighting. A provider's set-piece x is replaced when talk-v1 places it.

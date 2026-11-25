@@ -37,7 +37,7 @@ if timeline:
   for text,actual in zip(authored['narration'],shot['segments']):
    a,b=actual['startSample'],actual['endSample']
    assert text==actual['text'] and last<=a<b<=shot['endFrame']*1600
-   assert 1<=actual['speed']<=1.25
+   assert (scene.get('speech') or {}).get('pace',1)<=actual['speed']<=1.25
    assert np.sqrt(np.mean(samples[a:b]**2))>.005
    last=b;flat.append(actual)
   prev=shot['endFrame']

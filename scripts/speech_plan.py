@@ -119,3 +119,16 @@ def caption_metrics(cues,segments,max_cps):
     rates=[len(' '.join(c['lines']))*RATE/(c['endSample']-c['startSample']) for c in cues]
     duration=sum(s['endSample']-s['startSample'] for s in segments)
     return {'alignment':'estimated-word/measured-phrase','independentWordAlignmentError':None,'phraseBoundaryErrorSamples':max(errors,default=0),'coverage':covered/duration,'cueCount':len(cues),'maxCps':max(rates,default=0),'readingSpeedOutliers':sum(x>max_cps for x in rates),'shortCues':sum(c['endSample']-c['startSample']<.7*RATE for c in cues)}
+
+
+SPEEDS = (1., 1.08, 1.16, 1.25)
+PACE_MIN = .85
+
+
+def speed_ladder(pace=1.):
+    """GEN-05: Kokoro speeds tried in order. pace 1 (default) gives the historical ladder unchanged; a pace below 1
+    is tried first, then the historical ladder (the speech report records whether the pace was kept)."""
+    pace = float(pace)
+    if not PACE_MIN <= pace <= 1:
+        raise ValueError('speech pace out of range')
+    return ([pace] if pace < 1 else []) + list(SPEEDS)

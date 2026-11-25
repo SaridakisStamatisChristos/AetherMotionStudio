@@ -5,6 +5,7 @@
 // Usage: node scripts/talk05-first-words.mjs [--check]  (writes examples/talk05-first-words-{cpu,three}-polished.json)
 import {readFileSync,writeFileSync} from 'node:fs';
 import {validateProject} from '../src/core/timeline.js';
+import {SPEECH_PACE} from '../src/core/speech.js';
 import {inspectProject} from '../src/quality/preflight.js';
 import {compositionGate} from '../src/quality/composition.js';
 import {build as extended} from './workshop-extended.mjs';
@@ -50,7 +51,7 @@ function shots(){
 }
 export function build(backend){
  const list=shots(),p={version:2,id:'talk05-first-words-'+backend+'-polished',title:'The Workshop — First Words',voice:'af_heart',
-  speech:{version:1,targetFrames:2250,fixedShots:{shelf:270,lights:180},placement:'lead',
+  speech:{version:1,targetFrames:2250,fixedShots:{shelf:270,lights:180},placement:'lead',pace:SPEECH_PACE.dialogue,
    speakers:{eng:{name:'Engineer',voice:'af_heart',language:'en-us'},sci:{name:'Scientist',voice:'bf_emma',language:'en-gb'},robo:{name:'Robot',voice:'am_michael',language:'en-us'}},
    shotSpeakers:Object.fromEntries(list.map(s=>[s.id,SCRIPT[s.id].map(l=>l[0])])),pronunciations:{Wrrrench:'rrr rench'},
    captions:{mode:'both',highlight:true,maxChars:32,maxLines:2,maxCps:18},

@@ -196,3 +196,17 @@ The Director can now produce a dialogue project from a topic (docs/DIRECTOR.md T
 - **`aim.phrase: k`** (contract extension, validated): at render the aim window follows narration line k's measured bounds (`phraseAims`, applied in `dialogueShot`). The authored start/end is the estimate used before preparation.
 - **TALK-05** now uses these general passes instead of hand staging (see docs/SHOWCASE.md).
 - **Caption reading speed:** splitting lines does not help. Speech ran at speed 1.0, and Kokoro naturally speaks short lines at about 18–20 characters per second ("We are proud of you." takes 1.1 s). The real options are slightly slower speech for dialogue, or captions lingering briefly after a line. Both change the audio or caption contracts and are left for the owner to decide.
+
+## GEN-05 slightly slower speech (2026-11-25)
+Owner choice for the caption reading-speed finding (1–2 cues per film at 18–20 characters per second): "speech a bit slower" (option a).
+- **Contract:** opt-in `speech.pace` is a number from 0.85 to 1, the Kokoro speed tried first. Absent means 1, the historical behaviour.
+  - Validation: src/core/speech.js. Timeline segment speeds may go down to the project's pace, never below it (src/core/timeline.js, scripts/verify.py).
+- **Pipeline** (scripts/speech_pipeline.py, `speed_ladder` in scripts/speech_plan.py):
+  - The pace is tried first, then the historical ladder 1.0 / 1.08 / 1.16 / 1.25.
+  - If the shot budgets cannot fit the slower speech, synthesis continues up the ladder. The log prints `Speech pace … not kept`, and speech-report.json records `pace {requested, kept}`. Nothing is truncated or silently changed.
+- **Where it is used:**
+  - Director dialogue (TALK-04/GEN-01) sets `pace` 0.92 by default. `request.dialogue.pace` (0.85–1) overrides it; 1 gives the TALK-04 speed and an otherwise identical project.
+  - The TALK-05 generator uses 0.92.
+  - Non-dialogue projects are unchanged; the Director digests are identical.
+- Tests: tests/gen05.test.js (contract, timeline bounds, Director, negatives) and tests/test_speech_pace.py (ladder).
+- The effect on reading speed is measured from the GEN render (see docs/continuity/CURRENT_STATE.md), not assumed.
