@@ -38,3 +38,25 @@ Predecessor scoped CI 45355048931 passed and user accepted current motion qualit
 - v1.2 lists each retrieved object once (`n|id|short description|action group`), shares action lists as lettered groups and gives each shot its object indices. The IR schema and validation are unchanged. With identities it also documents hold chains (2–4 windows) and the `handoff` event `{type, prop, from, fromAnchor, to, toAnchor, at}`. With `staging` it says what the staging pass will do (art-v2: planted walks, solved handoff for two characters plus one small prop).
 - Size (estimate = characters/4, not a provider tokenizer): 60 s / 6-shot director request 6,640 → 829; every request example 756–1,206 (previously 3,525–6,776). The offline director is unaffected (it uses no tokens); v1.2 offline projects equal v1.1 projects.
 - Tests: tests/polish-02.test.js. They check v1.1 is unchanged, v1.2 stays ≤2,000 tokens with each object listed once, the chains and staging text appears, a mock provider that reads only the v1.2 prompt round-trips to a valid project, and invalid versions are rejected.
+
+## TALK-04: dialogue authoring, prompt director-ir-v1.3 (2026-11-25, opt-in)
+- `request.dialogue: {speakers: [{id, name, voice, language, character}], style?: 'conversation' | 'interview'}`. Rules:
+  - 2–3 speakers; IDs are lowercase slugs, unique, not `default` and not `object-*`;
+  - the voice and language must match (`b*` voices are en-gb);
+  - `character` is a catalog human or robot with a mouth (humans get `params.detail: 2` automatically).
+  - The field cannot be combined with `identityLibrary`, `story`/`cast` or `staging`. A supplied `speech` may set captions, mix, pronunciations and fixed shots, but its `speakers`/`shotSpeakers` must be empty because the dialogue derives them.
+  - Absent `dialogue`: nothing changes. Director outputs are digest-identical (2cbf9916e65da935), and the v1.1/v1.2 prompts are byte-identical (test-pinned digest 5570443b9a8ebe03).
+- IR: each shot carries `speakers: [speakerId]`, one per narration line. In dialogue mode a shot takes exactly one set-piece object, and its camera is one of `medium, dolly-in, push-in, pull-back, establishing`. `speakers` without `request.dialogue` is rejected.
+- Offline director: it writes no new lines. It splits its normal offline narration into sentences (only at whitespace after `. ! ?`, so the words are unchanged; at most 8 per shot) and hands them out in turns:
+  - conversation: round-robin across the whole film;
+  - interview: the host (first speaker) alternates with each guest.
+  - The treatment says "the offline narration split into turns". A supplied script stays verbatim.
+- Compile:
+  - `project.speech` = the request speech or `defaultSpeech(seconds)`, plus `speakers`, `shotSpeakers`, `placement: 'lead'` and `mix.master: 'mix-v2'`;
+  - every shot stages the speakers in an open line facing the camera (x −1.35 / 0 / 1.35 with the middle at z −0.2, or ±1 for two), with `turnSteps`;
+  - the set piece stands beside the line (x 2.4, z −0.6, scale 0.85; r1 had it behind the line, where it was hidden);
+  - each shot also gets `speakerAssets`, `dialogue {listen, turn: 0.8, cheat: 1}`, `bodyLanguage {beats, nods, blinks, sway}` and `lighting: 'parity-v1'`;
+  - the camera rig frames the whole line (no single subject).
+- Prompt `director-ir-v1.3` is selected automatically with `dialogue` and rejected without it. It is the v1.2 compact layout plus a `Dialogue (style): speakers id=Name (role, character); …` line. It also adds `speakers` to the schema, the one-set-piece rule and the dialogue cameras. 60 s example: ~903 estimated tokens.
+- Studio: the Director form has a Dialogue option (engineer / robot / scientist). The Speakers panel edits speaker names and voices, the speaker of each line, and which character each speaker appears as (docs/STUDIO.md).
+- Evidence: example examples/talk04-dialogue.request.json; tests in tests/talk04.test.js; render `talk04-dialogue-r2` (docs/SPEECH.md TALK-04).

@@ -162,3 +162,23 @@ Acceptance fixture: A message travels across a network, supplied script and six 
     - no nod from an addressee who speaks next, since the reply acknowledges the line;
     - sway 0.015 rad (was 0.03).
   - Result in the meeting: 1 nod per character (was 1–3), nodding 5 % of the time; arm beats unchanged at 2 per character.
+
+## TALK-04 director dialogue authoring (2026-11-25, opt-in)
+The Director can now produce a dialogue project from a topic (docs/DIRECTOR.md TALK-04). The result uses the TALK-01..03 contracts unchanged: `speech.speakers`/`shotSpeakers`, `speakerAssets`, `dialogue`, `bodyLanguage`, placement `lead` and mix-v2. Mouths, looks and gestures stay envelope- and phrase-driven: no lip-sync, forced alignment or word alignment.
+- Render `talk04-dialogue-r2` from clean commit 7fb7beb (`node scripts/produce.mjs --request examples/talk04-dialogue.request.json --backend both --id talk04-dialogue-r2`). 60 s, 6 shots, 11 lines, 3 voices.
+  - Gates: 1 preparation; speech verify, native verify and compare_release (shared hashes exact) all PASS; frame-glitch clean on both films.
+  - Quality: pass-with-findings, 0 errors, 2 CAPTION_READING_SPEED warnings (18.7 and 19.9 characters per second). They come from the long offline sentences. Review notes: 3 SHORT_CAPTION and LOW_PROJECTED_MOTION on shot 6.
+  - Loudness −16.0 LUFS on both films.
+  - Render time CPU 141.4 s, Three-vulkan 54.7 s; RTX observed at util peak 68 % and 1,404 MiB.
+  - Films: CPU 8054ce8b52559f09…, Three 7552e5cad785486f….
+- Motion per character over 60 s:
+
+  | Character | Beats | Nods |
+  |---|---|---|
+  | Engineer | 4 | 4 |
+  | Robot | 4 | 1 |
+  | Scientist | 3 | 1 |
+
+  That is ≤1.1 nods and ≤1.1 beats per 17 s, within the accepted TALK-03 level. Peak speeds equal TALK-03 r5: turns 41.7°/s, nods 14.9°/s, sway 1.1°/s.
+- `talk04-dialogue-r1` (8d69270) also passed every gate, but its stills showed the set piece hidden behind the middle speaker in every shot. Fixed in 7fb7beb; r1 is superseded and left untouched.
+- Review status: agent stills review only. No human review yet.

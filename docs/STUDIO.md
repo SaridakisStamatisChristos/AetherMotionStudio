@@ -12,3 +12,13 @@ Install the existing pinned Node and Python dependencies, local media tools and 
 
 ## Verification
 Tests cover transactional edits, estimated budget, reference rejection, atomic project roundtrip/revision conflict, cross-origin writes, path denial, duplicate simultaneous jobs, immutable snapshot and explicit runner failure. CI native acceptance uses actual HTTP service to import matched 50-second fixture, persist and edit first shot, inspect, start exactly one real CLI render with quality/repair, retrieve report and byte-range MP4, verify measured 1500 frames, copy output to fixture artifact folder. Matched Three.js fixture retained for authorized full matrix. Browser manual interaction and WebGL preview are distinct verification surfaces; HTTP acceptance does not certify them. Human artistic review remains required. No automatic merge.
+
+## Speakers (TALK-04)
+- The Director form option "Dialogue" generates a three-speaker conversation (engineer af_heart, robot am_michael, scientist bf_emma). It replaces the art-v1 staging option.
+- The Speakers panel works on speech projects:
+  - edit speaker names and voices (the language follows the voice), add or remove speakers, then "Apply speakers";
+  - for the selected shot, pick the speaker of each line and which character each speaker appears as.
+- Line and character edits apply immediately. They go through `setSpeakers`, `setLineSpeaker` and `bindSpeaker` (src/studio/model.js), which edit a validated copy, so a rejected edit changes nothing and the reason shows in the status bar. Examples of rejected edits: removing a speaker who still has lines, a character without a mouth, or leaving a dialogue shot with fewer than two bound speakers.
+- The first speaker set on a shot that had no line speakers voices every line of that shot. The narrator cannot be mixed with named speakers.
+- Changing a dialogue shot's line count is rejected until its line speakers match.
+- Manual exercise (2026-11-25, headless Chrome from the pinned Remotion renderer, loopback server, temp data): every step was observed working, with no browser errors. Steps: generate a dialogue project, change a line speaker, rename a speaker and change its voice, unbind a character, then two rejected edits.

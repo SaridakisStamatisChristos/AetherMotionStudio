@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "id": "talk04-dialogue",
+  "topic": "How computers send messages across a network",
+  "seconds": 60,
+  "audience": "curious beginners",
+  "tone": "warm",
+  "style": "workshop conversation",
+  "language": "en-us",
+  "voice": "af_heart",
+  "backend": "cpu",
+  "profile": "polished",
+  "seed": 0,
+  "dialogue": {
+    "style": "conversation",
+    "speakers": [
+      {"id": "eng", "name": "Engineer", "voice": "af_heart", "language": "en-us", "character": "engineer"},
+      {"id": "robo", "name": "Robot", "voice": "am_michael", "language": "en-us", "character": "service-robot"},
+      {"id": "sci", "name": "Scientist", "voice": "bf_emma", "language": "en-gb", "character": "scientist"}
+    ]
+  }
+}

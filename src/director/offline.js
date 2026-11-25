@@ -1,5 +1,6 @@
 import {deliveryBeats,applyIdentityStory} from './identity-story.js';
 import {retrieveAssets,directorCatalog} from './catalog.js';
+import {offlineDialogue} from './dialogue.js';
 const beat=(heading,subheading,narration,assets)=>({heading,subheading,narration:[narration],assets});
 // Finite, explicitly authored knowledge patterns; no claim of universal topic comprehension.
 const patterns=[
@@ -84,5 +85,6 @@ export function offlineIR(q,plan){
   assets.push({asset:'retro-robot',action:i===0?'wave':i%2?'point':'inspect',x:-1.5,scale:.72});
   return {heading:b.heading,subheading:b.subheading,narration:b.narration,camera:cameras[(i+q.seed%cameras.length)%cameras.length],environment:q.style.toLowerCase().includes('warm')?'amber':i%2?'midnight':'laboratory',assets,effect:i%2?'cyan-aura':'gold-sparks',overlay:{type:'lower-third',slot:'lower',text:trunc(b.subheading,56),animation:'slide',start:.18,end:.93}};
  })};
- return q.identityLibrary?applyIdentityStory(q,plan,ir):ir;
+ // TALK-04: dialogue splits this same narration into turns (no new lines); identity stories are not combinable.
+ return q.identityLibrary?applyIdentityStory(q,plan,ir):q.dialogue?offlineDialogue(q,ir):ir;
 }
