@@ -2,7 +2,7 @@
 
 Unit: POLISH-01
 Checkpoint: branch `feature/polish-01` (from main 1ff0c60 + local record commit 2889c75); commits 67f3e20 (parts 1–3), ea9bde3 (part 4), plus this checkpoint commit. PR opened against main; merge only on owner authorization.
-Status: VERIFIED locally (tests + matched renders + agent stills); not yet owner-reviewed; not merged.
+Status: MERGED to main as 365a78e via PR #19 (2026-11-25; head 632fdd4 CI 45522286133, main CI on 365a78e green, test-only). Owner authorized the merge; no separate visual comment on the extended film.
 Approved by: owner requested the unit ("implement all 4 … then write down a handoff with fod principles"); ART-03..05 previously accepted and merged (1ff0c60, "really nice video").
 Date: 2026-11-25
 
@@ -38,7 +38,7 @@ Date: 2026-11-25
 - The model-facing director prompt is unchanged on purpose (keeps existing prompt digests); providers are not yet told about hold chains/staging.
 
 ## Open issues, threads, and debts
-- POLISH-02 list (pointing at targets, turn-in-place steps, robot reach, solved pickup/put-down, versioned prompt for chains, composition gates in tests, human detail 3, audio review, long-film performance) — NEXT_UNITS "Plan after POLISH-01".
+- POLISH-02 list (pointing at targets, turn-in-place steps, robot reach, solved pickup/put-down, versioned prompt for chains, composition gates in tests, human detail 3, audio review, long-film performance, compact director prompt ~7.1k → ≤2k tokens) — NEXT_UNITS "Plan after POLISH-01".
 - Literal casting stages a handoff in every interaction beat; add variety (alternate giver/receiver, place-on-surface beats).
 - Local record commit 2889c75 (ART-05 merge + owner review) rides on this branch.
 
