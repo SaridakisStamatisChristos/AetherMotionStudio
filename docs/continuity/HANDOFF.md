@@ -1,4 +1,4 @@
-# Latest handoff — ART-03, ART-04, ART-05 complete (delegated), PR awaiting owner merge
+# Latest handoff — ART-03, ART-04, ART-05 accepted and merged (1ff0c60)
 Checkpoint: branch `feature/art-03-04` from main 0981ac9 (ART-02 merged via PR #17; main CI 45509387381 green). Commits d4224bb (record ART-02 merge), c018850 + 74e64b8 (ART-03), 6bd2b0b + 3ade829 (ART-04), 96878cc + 6b80a19 (ART-05), plus this checkpoint commit. Date 2026-11-25.
 Status: ART-03/04/05 IMPLEMENTED + TESTED + RENDERED locally; agent-reviewed only. Owner delegated all three ("you take over … come back after art 05 is finished"; "record the progress … i will just allow the merge at the end"). Stop point: PR open + CI green, before merge.
 
@@ -12,8 +12,8 @@ Status: ART-03/04/05 IMPLEMENTED + TESTED + RENDERED locally; agent-reviewed onl
 - Default-unchanged proofs vs pre-unit commits: geometry, graph-state and preflight digests over all pre-existing examples; director output digests (timing field excluded); Foundry search digest; CPU regression render (ART-02) byte-identical to the LOCAL-01 film.
 
 ## Next action
-1. Owner: watch out/art05-workshop-r2-three-polished/film.mp4 and out/art05-workshop-r2-cpu-polished/film.mp4 (also art03-cast-r1); then allow merge of the PR.
-2. After merge: record merge commit + main CI at the start of the next unit.
+1. Done: owner watched the showcase and accepted it ("really nice video"); PR #18 merged as 1ff0c60, main CI 45519807052 green. This record is on local branch chore/record-art05-merge (not pushed) — fold it into the next unit's PR.
+2. Next unit: owner to choose; roadmap ART-01..05 complete.
 3. Follow-ups (not started): identity ledger for handoff chains; foot-planted walking; director use of handoff/place; human visual/audio review.
 
 ## Environment (PowerShell, repo root)
