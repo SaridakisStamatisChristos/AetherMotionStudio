@@ -1,12 +1,15 @@
 import {pinAsset} from '../foundry/packs.js';
 import {validateProject,validateTimeline} from '../core/timeline.js';
 import {FIDELITY_DEFAULTS} from '../core/fidelity.js';
+import {stageProject} from '../core/staging.js';
 const fail=m=>{throw Error(m)};
 export function editProject(project,fn){
  const candidate=structuredClone(project);fn(candidate);validateProject(candidate);return candidate;
 }
 export function setBackend(project,backend){return editProject(project,p=>{if(p.version!==2)fail('Graph backend selection requires v2');for(const s of p.shots)if(s.template==='cinematic-graph')s.backend=backend;});}
 export function setProfile(project,profile){if(!['original','polished'].includes(profile))fail('Invalid profile');return editProject(project,p=>{if(p.version!==2)fail('Graph profile selection requires v2');for(const s of p.shots)if(s.template==='cinematic-graph'){if(profile==='original')delete s.fidelity;else s.fidelity={...FIDELITY_DEFAULTS};}});}
+// ART-04: one-click staging pass for hand-authored or generated projects (pure, validated).
+export function setStaging(project,mode='art-v1'){return stageProject(project,mode);}
 export function applyShotEdit(project,index,changes){
  return editProject(project,p=>{
   if(p.version!==2||!p.shots[index])fail('Unknown shot');
