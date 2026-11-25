@@ -1,42 +1,21 @@
-# Forward-only handoff — after GEN-10/11 (owner types only "fod continue")
+# Forward-only handoff — after GEN-12 (owner types only "fod continue")
 
-Unit: GEN-10 (estimated mouth shapes) and GEN-11 (idle weight shift) are IMPLEMENTED + TESTED + RENDERED (agent-reviewed) on `feature/gen-10-11`, which is stacked on `feature/gen-04-09` (PR #29). PR #29 also got the owner-requested revisions: Reels captions low at normal size, and GEN-05b readable captions. **Update: PR #29 and PR #30 are MERGED (5668031, main CI success). The CPU robot mouth fix is on `fix/cpu-robot-mouth` (owner approved the fix; the merge still needs the owner's word). The Instagram test upload is deferred to the end (owner).**
-Checkpoint: the head of `feature/gen-10-11` (code at be66483 plus this checkpoint); `feature/gen-04-09` is at 33e576f; main is still 4f588e3.
-Authorized by: owner, 2026-11-25: "the cap[tions must be generalized in speed not only from the sample video. also lets do it seriallized. Gen10 and onwards." Reels: "if on top it will cover the face.... so i think bottom is prefered."
+Unit: GEN-12 (topic-fitting sets), plus a GEN-05b audit regression fix, is IMPLEMENTED + TESTED + RENDERED (agent-reviewed) on `feature/gen-12`. PR pending owner merge. main 3ac0f01 already has GEN-04..11 and the CPU robot mouth fix (PRs #29, #30 and #31 merged).
+Authorized by: owner, 2026-11-25: "merge and continue" (after "lets do it seriallized. Gen10 and onwards").
 Date: 2026-11-25
-Earlier handoffs: git history of this file. Binding facts are in CURRENT_STATE.md ("Active unit").
 
 ## What "fod continue" must do
-1. Bootstrap (CLAUDE.md):
-   - `git status --short --branch` and `git rev-parse HEAD`;
-   - read AGENTS.md, CURRENT_STATE.md, this file and NEXT_UNITS.md;
-   - report active unit | checkpoint | state loaded | blockers | next action.
-2. `git fetch`. Then check the PR state of #29 and of the GEN-10/11 PR with `gh pr list --state all`.
-   - If merged, record the merge on a `chore/record-*` branch.
-3. Baseline: `node scripts/fod-digests.mjs . --exclude talk04,talk05,gen01,gen09` must print:
-   - graph 3d33fbaee198acad;
-   - geometry 14dec244d171dc56;
-   - detail2 e3f80439a292f21a;
-   - director 2cbf9916e65da935.
-   Then `npm test` must end with `# fail 0` (349 tests, 1 Windows skip), and `PYTHONPATH=scripts python -m unittest discover -s tests -p "test_*.py"` must give 50 OK.
-4. Next unit: **GEN-12 topic-fitting sets** (no owner decision needed).
-   - Today the Director picks only from the environments laboratory, midnight and amber (offline.js: `warm` style → amber, else alternating). There are also 3 layered backdrops (solar-field, city-dusk, energy-hub), and there is one set piece per dialogue shot.
-   - Plan: choose the environment, the layered backdrop and the set piece by topic, from the catalog categories (src/director/catalog.js aliases).
-   - Use an opt-in request field or a new prompt version, so that the director digest stays unchanged.
-   - Pass visibility-v2, composition and crowding.
-   - Prove it on 2–3 fresh topics.
-5. GEN-13 (music sources and licences) and GEN-14 (local model) need owner decisions. Ask before starting them.
-6. Ask the owner too:
-   - merge PR #29 and then the GEN-10/11 PR?
-   - fix the CPU robot mouth (below)?
-
-## Questions for the owner
-| # | Question | Facts |
-|---|---|---|
-| 1 | Merge PR #29, then the GEN-10/11 PR? | All gates pass on all new films. Agent-reviewed stills only. |
-| 2 | Fix the CPU robot mouth? | Pre-existing: on CPU, the catalog robot's lit mouth bar does not show in close shots (Three shows it). Human mouths are fine. The fix changes CPU re-renders of robot speakers. |
-| 3 | Exact mouth timing later? | It needs a Kokoro model export that reports phoneme durations (a model download and a new voice fingerprint). |
-| 4 | Instagram check | Please upload one test Reel (gen09-reels-r3) and check that captions and faces are clear of the app's buttons. |
+1. Bootstrap (CLAUDE.md): git status and HEAD; read AGENTS.md, CURRENT_STATE.md, this file and NEXT_UNITS.md; report.
+2. `git fetch`; check the GEN-12 PR with `gh pr list --state all --head feature/gen-12`. If it was merged, record it on a `chore/record-*` branch.
+3. Baseline: `node scripts/fod-digests.mjs . --exclude talk04,talk05,gen01,gen09,gen12` (**gen12 is now excluded**) must print graph 3d33fbaee198acad, geometry 14dec244d171dc56, detail2 e3f80439a292f21a, director 7 requests 2cbf9916e65da935.
+   - `npm test` must give fail 0 (355 tests, 1 Windows skip).
+   - `PYTHONPATH=scripts python -m unittest discover -s tests -p "test_*.py"` must give 51 OK.
+4. Ask the owner, in plain language:
+   - merge the GEN-12 PR (wait for its CI first);
+   - GEN-13 music and sound: which local, licence-clear sources? Options: procedural music generated in code (no licences), or CC0 packs the owner downloads;
+   - GEN-14 real dialogue writing: which local model and provider (a new local dependency).
+   Do not start GEN-13 or GEN-14 without those answers. The look track GEN-15..18 follows; GEN-15 needs no decision.
+5. The Instagram test upload is deferred to the end of everything (owner).
 
 ## Owner working agreement and taste (binding; see also auto-memory)
 - **Delegation:** the owner delegates whole units and wants plain-language reports with short tables. Stop only for direction-changing or risky actions: backend defaults, dependencies, deletions, system settings, anything outside the repo, or changing accepted films.
