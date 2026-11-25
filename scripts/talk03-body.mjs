@@ -7,6 +7,8 @@ import {build as dialogue} from './talk02-dialogue.mjs';
 
 export function build(backend){
  const p=dialogue(backend);p.id='talk03-body-'+backend+'-polished';p.title='TALK-03 body language';
+ // Slower turns toward the speaker than the TALK-02 default (owner review: heads moved too fast).
+ if(p.shots[0].dialogue)p.shots[0].dialogue.turn=.8;
  for(const s of p.shots){s.bodyLanguage={beats:true,nods:true,blinks:true,sway:true};
   // Generated blinks replace the hand-authored robot blink track (authored tracks always take precedence).
   for(const a of s.assets)if(a.tracks?.blink)delete a.tracks.blink;}

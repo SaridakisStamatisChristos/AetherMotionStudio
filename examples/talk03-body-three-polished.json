@@ -146,7 +146,7 @@
    },
    "dialogue": {
     "listen": true,
-    "turn": 0.4,
+    "turn": 0.8,
     "cheat": 1
    },
    "assets": [

@@ -68,3 +68,10 @@ test('TALK-03 example: generator reproduces both backends; dialogue identical to
  assert.deepEqual(p.speech,d.speech);assert.deepEqual(p.shots.map(s=>s.narration),d.shots.map(s=>s.narration));
  assert.ok(p.shots.every(s=>s.bodyLanguage.beats&&s.bodyLanguage.nods&&s.bodyLanguage.blinks&&s.bodyLanguage.sway));
 });
+
+test('head motion speed: nods and sway stay gentle and continuous across speaker changes (owner review)',()=>{
+ const p=load('cpu'),t=timeline(p),deg=r=>r*30*180/Math.PI;let prev=null;const peak={nod:0,tilt:0};
+ for(let f=0;f<500;f++){const b=bodyAt(p,t,f,0);if(prev)for(const id of ['engineer','scientist','robot'])for(const k of ['nod','tilt'])peak[k]=Math.max(peak[k],deg(Math.abs((b[id][k]??0)-(prev[id][k]??0))));prev=b;}
+ assert.ok(peak.nod<=35,'nod peak '+peak.nod.toFixed(1)+' deg/s');assert.ok(peak.tilt<=5,'sway peak '+peak.tilt.toFixed(1)+' deg/s');
+ assert.equal(load('cpu').shots[0].dialogue.turn,.8,'example turns slowed to 0.8 s');
+});

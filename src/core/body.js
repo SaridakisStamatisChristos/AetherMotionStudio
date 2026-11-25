@@ -4,14 +4,16 @@
 //   not word-level or forced alignment), with a small head nod;
 // - nods: listeners nod as another speaker finishes a phrase;
 // - blinks: each bound character blinks on a fixed per-character schedule (hash of its ID);
-// - sway: listeners' heads tilt slowly.
+// - sway: heads of all bound characters tilt slowly and continuously.
 // Applied after graph evaluation (head pose keys, blink, additive arm pitch). Beats skip characters that hold props,
 // aim, or have authored arm tracks/actions, so attachments and aims never drift. Bounded and deterministic.
 import {speakerAt} from './talk.js';
 import {smooth} from './motion.js';
 
 const fail=(p,m)=>{throw Error(p+': '+m)};
-export const BODY=Object.freeze({beatFrames:10,minGap:20,peakMin:600,peakRadius:5,beatPitch:.35,beatNod:.07,nodFrames:14,nodLead:6,listenNod:.16,swayAmp:.04,swayPeriod:96,blinkFrames:[.55,.15,.1,.35,.8]});
+// Speeds tuned after owner review ("the heads move too fast"): first version peaked ~93°/s on nods and the sway jumped
+// when a listener became the speaker. Now: gentle nods (≤ ~30°/s), continuous sway on every bound character.
+export const BODY=Object.freeze({beatFrames:18,beatNodFrames:20,minGap:20,peakMin:600,peakRadius:5,beatPitch:.35,beatNod:.05,nodFrames:30,nodLead:10,listenNod:.12,swayAmp:.03,swayPeriod:150,blinkFrames:[.55,.15,.1,.35,.8]});
 const KEYS=['beats','nods','blinks','sway'];
 const ARM_ACTIONS=['point','wave','reach','grasp','release','carry'];
 export function validateBodyLanguage(project){
@@ -25,8 +27,8 @@ export function validateBodyLanguage(project){
  });
 }
 const hash=s=>{let h=2166136261;for(const c of s)h=Math.imul(h^c.charCodeAt(0),16777619)>>>0;return h;};
-// Rise fast (30 %), settle slowly: 0 at u=0 and u=1, 1 at u=.3.
-const bump=u=>u<0||u>=1?0:u<.3?smooth(u/.3):1-smooth((u-.3)/.7);
+// Rise (40 %) then settle: 0 at u=0 and u=1, 1 at u=.4.
+const bump=u=>u<0||u>=1?0:u<.4?smooth(u/.4):1-smooth((u-.4)/.6);
 const peakCache=new WeakMap();
 // Emphasis peaks: local maxima of the envelope above peakMin, at least minGap frames apart (earliest wins on ties).
 export function emphasisPeaks(t){
@@ -47,18 +49,20 @@ export function beatEligible(s,id){
 // Per bound character at `frame` of timeline shot `index`: {nod?, tilt?, blink?, beat?}.
 export function bodyAt(project,t,frame,index){
  const s=project.shots[index],bl=s?.bodyLanguage;if(!bl||!s.speakerAssets)return null;
- const ts=t.shots[index],speaker=speakerAt(t,index,frame),active=speaker===null?null:s.speakerAssets[speaker],out={};
+ const ts=t.shots[index],out={};
  for(const [sp,id] of Object.entries(s.speakerAssets)){
   const o={};
-  if(bl.beats&&id===active&&beatEligible(s,id)){
-   const p=emphasisPeaks(t).filter(f=>f<=frame&&f>=ts.startFrame&&frame-f<BODY.beatFrames&&speakerAt(t,index,f)===sp).at(-1);
-   if(p!==undefined){const k=bump((frame-p)/BODY.beatFrames);o.beat=-BODY.beatPitch*k;o.nod=BODY.beatNod*k;}
+  // A started beat or nod always finishes (no cut when the speaker changes): gated by the peak's own phrase speaker.
+  if(bl.beats&&beatEligible(s,id)){
+   const span=Math.max(BODY.beatFrames,BODY.beatNodFrames),p=emphasisPeaks(t).filter(f=>f<=frame&&f>=ts.startFrame&&frame-f<span&&speakerAt(t,index,f)===sp).at(-1);
+   if(p!==undefined){const a=bump((frame-p)/BODY.beatFrames),n=bump((frame-p)/BODY.beatNodFrames);if(a>0)o.beat=-BODY.beatPitch*a;if(n>0)o.nod=BODY.beatNod*n;}
   }
-  if(bl.nods&&id!==active){
+  if(bl.nods){
    for(const g of ts.segments){const e=Math.floor(g.endSample/1600),who=s.speakerAssets[g.speaker??'default'];if(who===undefined||who===id)continue;
     const u=(frame-(e-BODY.nodLead))/BODY.nodFrames;if(u>=0&&u<1){o.nod=Math.max(o.nod??0,BODY.listenNod*bump(u));}}
   }
-  if(bl.sway&&id!==active)o.tilt=BODY.swayAmp*Math.sin(2*Math.PI*frame/BODY.swayPeriod+(hash(id)%628)/100);
+  // Sway on every bound character (continuous across speaker changes).
+  if(bl.sway)o.tilt=BODY.swayAmp*Math.sin(2*Math.PI*frame/BODY.swayPeriod+(hash(id)%628)/100);
   if(bl.blinks&&!Object.hasOwn(s.assets.find(x=>x.id===id)?.tracks??{},'blink')){
    const h=hash(id),period=75+h%60,phase=(frame+h%period)%period;o.blink=phase<BODY.blinkFrames.length?BODY.blinkFrames[phase]:1;
   }
