@@ -4,6 +4,7 @@ import {meshCommands} from '../foundry/instances.js';
 import {toBufferGeometry} from '../foundry/three.js';
 import * as THREE from 'three';
 import {RoundedBoxGeometry} from 'three/addons/geometries/RoundedBoxGeometry.js';
+import {chamferedBox,craftedColor} from './crafted.js';
 import {hashNoise} from '../core/fidelity.js';
 import {emitGraph,boxBasis} from '../core/graph.js';
 // Explicit real WebGL renderer. No silent fallback. Remotion CI uses software GL.
@@ -22,6 +23,15 @@ export function createThreeBackend(){
  const pixels=new Uint8Array(64*64*4);for(let y=0;y<64;y++)for(let x=0;x<64;x++){const i=(y*64+x)*4,v=Math.round(145+80*hashNoise(x,y,17));pixels[i]=pixels[i+1]=pixels[i+2]=v;pixels[i+3]=255;}
  const roughnessMap=new THREE.DataTexture(pixels,64,64,THREE.RGBAFormat);roughnessMap.wrapS=roughnessMap.wrapT=THREE.RepeatWrapping;roughnessMap.magFilter=THREE.LinearFilter;roughnessMap.minFilter=THREE.LinearMipmapLinearFilter;roughnessMap.generateMipmaps=true;roughnessMap.needsUpdate=true;
  const geometry=new RoundedBoxGeometry(1,1,1,2,.065),materialCache=new Map(),foundryGeometry=new Map(),pool=[];
+ // GEN-15 opt-in look 'crafted-v1': the CPU painter's chamfered polygons as real-size geometry (cached by size) and
+ // matte, non-metallic materials in the softened palette.
+ const craftedGeometry=new Map(),craftedMaterials=new Map();
+ function crafted(size){const key=size.map(v=>Math.round(v*1e4)).join(',');let g=craftedGeometry.get(key);if(g)return g;
+  const pos=[],nor=[];for(const {verts} of chamferedBox(size)){const [a,b,c]=verts,u=[b[0]-a[0],b[1]-a[1],b[2]-a[2]],w=[c[0]-a[0],c[1]-a[1],c[2]-a[2]],n=[u[1]*w[2]-u[2]*w[1],u[2]*w[0]-u[0]*w[2],u[0]*w[1]-u[1]*w[0]],l=Math.hypot(...n)||1;
+   for(let k=1;k+1<verts.length;k++)for(const p of [verts[0],verts[k],verts[k+1]]){pos.push(...p);nor.push(n[0]/l,n[1]/l,n[2]/l);}}
+  g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('normal',new THREE.Float32BufferAttribute(nor,3));
+  if(craftedGeometry.size>4000){for(const x of craftedGeometry.values())x.dispose();craftedGeometry.clear();}craftedGeometry.set(key,g);return g;}
+ function craftedMaterial(color,emissive,detail=0){const k=color+':'+emissive+':'+detail;if(!craftedMaterials.has(k)){const c=craftedColor(color);craftedMaterials.set(k,new THREE.MeshStandardMaterial({color:c,roughness:emissive?.35:(.66+detail*.08),roughnessMap:!emissive&&detail>0?roughnessMap:null,metalness:emissive?.02:.06,emissive:emissive?c:'#000000',emissiveIntensity:emissive?.9:0}));}return craftedMaterials.get(k)}
  function material(color,emissive,detail=0){const k=color+':'+emissive+':'+detail;if(!materialCache.has(k)){materialCache.set(k,new THREE.MeshStandardMaterial({color,roughness:emissive?.3:(.48+detail*.16),roughnessMap:!emissive&&detail>0?roughnessMap:null,metalness:emissive?.05:(.28+detail*.14),emissive:emissive?color:'#000000',emissiveIntensity:emissive?.95:0}));}return materialCache.get(k)}
  const premium=createMaterialLibrary(renderer);
  let width=0,height=0;
@@ -33,13 +43,13 @@ export function createThreeBackend(){
   scene.environment=premium.begin(state.materialProfile);if(state.materialProfile){key.position.set(...materialLight(state.materialProfile.lighting,state.progress).map(x=>x*8));}else key.position.set(-3,6,5);
   let i=0;if(state.geometryProfile){const commands=meshCommands(state);if(state.geometryProfile==='foundry-af05'){const needed=new Set(commands.map(c=>c.meshKey));for(const [k,g] of foundryGeometry)if(!needed.has(k)){g.dispose();foundryGeometry.delete(k)}}for(const cmd of commands){if(!foundryGeometry.has(cmd.meshKey))foundryGeometry.set(cmd.meshKey,toBufferGeometry(cmd.mesh));let mesh=pool[i++];if(!mesh){mesh=new THREE.Mesh();mesh.matrixAutoUpdate=false;scene.add(mesh);pool.push(mesh);}mesh.geometry=foundryGeometry.get(cmd.meshKey);mesh.material=cmd.surface?premium.get(cmd.surface,cmd.importTexture):material(cmd.color,cmd.emissive,detail);mesh.castShadow=!cmd.emissive&&cmd.surface?.alphaMode!=='blend';mesh.receiveShadow=true;mesh.visible=true;mesh.matrix.makeBasis(...cmd.axes.map(a=>new THREE.Vector3(...a)));mesh.matrix.setPosition(...cmd.origin);mesh.matrixWorldNeedsUpdate=true;}}else emitGraph(state,(center,size,color,tf=p=>p,emissive=false)=>{
    let mesh=pool[i++];if(!mesh){mesh=new THREE.Mesh(geometry,material(color,emissive,detail));mesh.matrixAutoUpdate=false;scene.add(mesh);pool.push(mesh);}
-   mesh.geometry=geometry;mesh.material=material(color,emissive,detail);mesh.castShadow=!emissive;mesh.receiveShadow=true;mesh.visible=true;
-   const {origin,axes}=boxBasis(center,tf),v=axes.map((a,j)=>new THREE.Vector3(...a).multiplyScalar(size[j]));
+   const look=state.look==='crafted-v1';mesh.geometry=look?crafted(size):geometry;mesh.material=look?craftedMaterial(color,emissive,detail):material(color,emissive,detail);mesh.castShadow=!emissive;mesh.receiveShadow=true;mesh.visible=true;
+   const {origin,axes}=boxBasis(center,tf),v=axes.map((a,j)=>new THREE.Vector3(...a).multiplyScalar(look?1:size[j]));
    mesh.matrix.makeBasis(...v);mesh.matrix.setPosition(...origin);mesh.matrixWorldNeedsUpdate=true;
   });
   for(;i<pool.length;i++)pool[i].visible=false;
   renderer.render(scene,camera);return renderer.domElement;
  }
- function dispose(){premium.dispose();roughnessMap.dispose();geometry.dispose();for(const g of foundryGeometry.values())g.dispose();floorGeo.dispose();floorMat.dispose();grid.geometry.dispose();grid.material.dispose();for(const m of materialCache.values())m.dispose();key.shadow.map?.dispose();renderer.dispose();renderer.forceContextLoss();}
+ function dispose(){premium.dispose();roughnessMap.dispose();geometry.dispose();for(const g of foundryGeometry.values())g.dispose();floorGeo.dispose();floorMat.dispose();grid.geometry.dispose();grid.material.dispose();for(const m of materialCache.values())m.dispose();for(const g of craftedGeometry.values())g.dispose();for(const m of craftedMaterials.values())m.dispose();key.shadow.map?.dispose();renderer.dispose();renderer.forceContextLoss();}
  return {render,dispose};
 }

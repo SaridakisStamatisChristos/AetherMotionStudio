@@ -146,6 +146,7 @@ Status 2026-11-25 (owner: "lets do it seriallized. Gen10 and onwards"):
 - GEN-10 (estimated mouth shapes, no new dependency) and GEN-11 (idle weight shift) are IMPLEMENTED + TESTED + RENDERED on `feature/gen-10-11` (stacked on PR #29).
 - GEN-10/11 MERGED (5668031), CPU robot mouth fix MERGED (3ac0f01). GEN-12 (topic sets) IMPLEMENTED + TESTED + RENDERED on `feature/gen-12`.
 - The Instagram test upload was moved by the owner to the end of the roadmap.
+- GEN-12 MERGED (fae67c1). GEN-13 and GEN-14 SKIPPED for now (owner). GEN-15 step 1 (crafted look) IMPLEMENTED + TESTED + RENDERED on `feature/gen-15`.
 - GEN-13 needs music sources and licences, and GEN-14 needs a local model; both are owner decisions.
 - PR #29 revised: Reels captions low at normal size; GEN-05b readable captions.
 Status 2026-11-25 (owner: "execute gen-04 to gen9"):

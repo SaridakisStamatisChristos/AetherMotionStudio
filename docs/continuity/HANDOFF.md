@@ -1,4 +1,12 @@
-# Forward-only handoff — after GEN-12 (owner types only "fod continue")
+# Forward-only handoff — after GEN-15 step 1 (owner types only "fod continue")
+
+**Update (latest):** GEN-12 MERGED (fae67c1). GEN-15 step 1, the crafted look, is on `feature/gen-15` (PR pending; docs/LOOK.md). GEN-13 and GEN-14 are skipped for now (owner). Next action:
+- ask the owner to merge the GEN-15 PR, after its CI;
+- ask whether the look is accepted, and whether to tune Three, which is slightly washed out;
+- get confirmation for the render cleanup list;
+- then continue the look track: richer sets and part materials (GEN-15 step 2). GEN-16 needs an owner decision.
+- The owner wants one branch per unit from main, never stacked ("dont mess the code sequence").
+
 
 Unit: GEN-12 (topic-fitting sets), plus a GEN-05b audit regression fix, is IMPLEMENTED + TESTED + RENDERED (agent-reviewed) on `feature/gen-12`. PR pending owner merge. main 3ac0f01 already has GEN-04..11 and the CPU robot mouth fix (PRs #29, #30 and #31 merged).
 Authorized by: owner, 2026-11-25: "merge and continue" (after "lets do it seriallized. Gen10 and onwards").
