@@ -88,3 +88,24 @@ Acceptance fixture: A message travels across a network, supplied script and six 
 - Evidence: `talk01-faces-r2` (source 18fe699 clean): speech verify and native verify PASS, compare_release PASS (shared hashes exact, envelope included), frame-glitch clean on both. Quality is pass-with-findings with 1 CAPTION_READING_SPEED warning. r1 (da5ff50) also passed every gate, but its stills showed unreadable mouths (thin lip line, faces near profile); that led to the dark inner mouth, the stronger cheat and the tighter two-shot. Agent stills show the speaker's mouth open and the listener's closed, with every mouth closed in pauses, on both backends.
 - Defaults vs main 01051f1: graph+preflight 1b75bee2197e90db (170 shots, excluding the new example), geometry 14dec244d171dc56, human detail 2 e3f80439a292f21a, director 2cbf9916e65da935, all identical.
 - Tests: tests/talk01.test.js (binding and envelope negatives, talkAt, geometry, applyTalk, generator reproduction) and tests/test_speech_envelope.py.
+
+## TALK-02 dialogue scenes (2026-11-25, opt-in)
+- `shot.dialogue: {listen: true, turn?: 0.1–1.5 s (default 0.35), cheat?: 0–1 rad (default 0.5)}` on a cinematic-graph shot with at least two bound speakers (`speakerAssets`). Bound characters may not have an authored `face`, because dialogue drives it.
+- Looking rule (src/core/dialogue.js `focusPlan`, from the measured phrase start samples in the timeline):
+  - every bound character looks at whoever is speaking;
+  - a character that is speaking keeps looking at the previous speaker;
+  - before anyone else has spoken, a speaker looks at the next speaker.
+- How it is applied:
+  - `dialogueShot` turns the plan into face chains, one window per focus change, each blending over `turn` seconds and cheated toward the camera by `cheat` (sign from the characters' authored x positions); the last window holds;
+  - it runs in drawFilm before graph evaluation, so planted feet (`turnSteps`) and aims see the turns.
+- Graph contract: `assets[].face` may be a chain of 2–16 sequential windows. A window that touches the previous one blends from that window's target instead of snapping back to the authored yaw. A single window is unchanged.
+- Captions already name the speaker whenever a project has more than one speaker.
+- Example `examples/talk02-dialogue-{cpu,three}-polished.json` (scripts/talk02-dialogue.mjs):
+  - engineer (af_heart), scientist (bf_emma, en-gb) and robot (am_michael);
+  - six alternating lines at a table, then a robot close-up;
+  - lead placement, mix-v2, turnSteps on the speakers, cheat 1.0 (humans 21–46° from camera).
+- Evidence, `talk02-dialogue-r2` (bd38377 clean): CPU 39.3 s, Three/vulkan 23.1 s; all verifies PASS; compare_release PASS; frame-glitch clean; 2 CAPTION_READING_SPEED findings. Films: CPU d7f532ba14036eac…, Three f6d2e31718606b32….
+- r1 (40fc324) passed every gate but its 30 s target left about 10 s of silence after the meeting; fixed with a 20 s target.
+- Agent stills (both backends): listeners face each active speaker; the speaker's mouth is open.
+- Defaults vs 7f121e7 identical: graph 5cc713071a6ddb6f (176 shots, excluding the new example), geometry 14dec244d171dc56, director 2cbf9916e65da935, extended film per shot.
+- Tests: tests/talk02.test.js (face chains, continuity, validation negatives, looking rules, smooth generated turns, generator reproduction).

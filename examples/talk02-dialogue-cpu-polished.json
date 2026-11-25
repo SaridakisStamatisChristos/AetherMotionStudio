@@ -1,0 +1,397 @@
+{
+ "version": 2,
+ "id": "talk02-dialogue-cpu-polished",
+ "title": "TALK-02 dialogue",
+ "voice": "af_heart",
+ "speech": {
+  "version": 1,
+  "targetFrames": 600,
+  "fixedShots": {},
+  "placement": "lead",
+  "speakers": {
+   "eng": {
+    "name": "Engineer",
+    "voice": "af_heart",
+    "language": "en-us"
+   },
+   "sci": {
+    "name": "Scientist",
+    "voice": "bf_emma",
+    "language": "en-gb"
+   },
+   "robo": {
+    "name": "Robot",
+    "voice": "am_michael",
+    "language": "en-us"
+   }
+  },
+  "shotSpeakers": {
+   "meeting": [
+    "eng",
+    "sci",
+    "robo",
+    "eng",
+    "sci",
+    "robo"
+   ],
+   "ready": [
+    "robo"
+   ]
+  },
+  "pronunciations": {},
+  "captions": {
+   "mode": "both",
+   "highlight": true,
+   "maxChars": 32,
+   "maxLines": 2,
+   "maxCps": 18
+  },
+  "mix": {
+   "narration": 1,
+   "music": 0.55,
+   "ambience": 0.35,
+   "sfx": 0.45,
+   "duck": 0.35,
+   "fadeSeconds": 0.25,
+   "peak": 0.92,
+   "master": "mix-v2"
+  },
+  "cues": [],
+  "syncActions": false
+ },
+ "shots": [
+  {
+   "id": "meeting",
+   "template": "cinematic-graph",
+   "backend": "cpu",
+   "durationFrames": null,
+   "transitionFrames": 0,
+   "heading": "MORNING MEETING",
+   "subheading": "Three voices, one table.",
+   "environment": "amber",
+   "lighting": "parity-v1",
+   "effects": [],
+   "fidelity": {
+    "bloom": 0.6,
+    "atmosphere": 0.5,
+    "contactShadow": 0.75,
+    "surfaceDetail": 0.6,
+    "depthOfField": 0.15,
+    "motionBlur": 0,
+    "grain": 0.15,
+    "grade": 0.45,
+    "particles": 0.4,
+    "typography": 1
+   },
+   "narration": [
+    "Good morning, team. What did we learn yesterday?",
+    "The robot can lift twice its own weight now.",
+    "And I can say thank you.",
+    "Then today, we teach it to say please.",
+    "Please is the hardest word of all.",
+    "Please. Thank you. I am ready."
+   ],
+   "cameraRig": {
+    "preset": "medium",
+    "framing": "medium",
+    "strength": 0.5,
+    "subject": "robot"
+   },
+   "camera": {
+    "x": [
+     [
+      0,
+      -0.3
+     ],
+     [
+      1,
+      0.3
+     ]
+    ],
+    "y": [
+     [
+      0,
+      2.8
+     ]
+    ],
+    "z": [
+     [
+      0,
+      8.2
+     ],
+     [
+      1,
+      7.8
+     ]
+    ],
+    "zoom": [
+     [
+      0,
+      1300
+     ],
+     [
+      1,
+      1380
+     ]
+    ]
+   },
+   "cameraInterpolation": {
+    "x": "flow",
+    "zoom": "flow"
+   },
+   "speakerAssets": {
+    "eng": "engineer",
+    "sci": "scientist",
+    "robo": "robot"
+   },
+   "dialogue": {
+    "listen": true,
+    "turn": 0.4,
+    "cheat": 1
+   },
+   "assets": [
+    {
+     "id": "engineer",
+     "asset": "engineer",
+     "params": {
+      "detail": 2
+     },
+     "tracks": {
+      "x": [
+       [
+        0,
+        -1.35
+       ]
+      ],
+      "z": [
+       [
+        0,
+        0.35
+       ]
+      ]
+     },
+     "turnSteps": true
+    },
+    {
+     "id": "robot",
+     "asset": "service-robot",
+     "tracks": {
+      "x": [
+       [
+        0,
+        0
+       ]
+      ],
+      "z": [
+       [
+        0,
+        -0.2
+       ]
+      ],
+      "blink": [
+       [
+        0,
+        1
+       ],
+       [
+        0.3,
+        1
+       ],
+       [
+        0.32,
+        0.1
+       ],
+       [
+        0.34,
+        1
+       ],
+       [
+        0.75,
+        1
+       ],
+       [
+        0.77,
+        0.1
+       ],
+       [
+        0.79,
+        1
+       ]
+      ]
+     },
+     "turnSteps": true
+    },
+    {
+     "id": "scientist",
+     "asset": "scientist",
+     "params": {
+      "detail": 2
+     },
+     "tracks": {
+      "x": [
+       [
+        0,
+        1.35
+       ]
+      ],
+      "z": [
+       [
+        0,
+        0.35
+       ]
+      ]
+     },
+     "turnSteps": true
+    },
+    {
+     "id": "table",
+     "asset": "table",
+     "tracks": {
+      "x": [
+       [
+        0,
+        0
+       ]
+      ],
+      "z": [
+       [
+        0,
+        -1.1
+       ]
+      ],
+      "scale": [
+       [
+        0,
+        0.8
+       ]
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "id": "ready",
+   "template": "cinematic-graph",
+   "backend": "cpu",
+   "durationFrames": null,
+   "transitionFrames": 12,
+   "transition": "fade",
+   "heading": "READY",
+   "subheading": "A new word.",
+   "environment": "amber",
+   "lighting": "parity-v1",
+   "effects": [],
+   "fidelity": {
+    "bloom": 0.6,
+    "atmosphere": 0.5,
+    "contactShadow": 0.75,
+    "surfaceDetail": 0.6,
+    "depthOfField": 0.15,
+    "motionBlur": 0,
+    "grain": 0.15,
+    "grade": 0.45,
+    "particles": 0.4,
+    "typography": 1
+   },
+   "narration": [
+    "I will practise all night."
+   ],
+   "cameraRig": {
+    "preset": "close-up",
+    "framing": "close-up",
+    "strength": 0.5,
+    "subject": "robot"
+   },
+   "camera": {
+    "x": [
+     [
+      0,
+      0.3
+     ],
+     [
+      1,
+      -0.3
+     ]
+    ],
+    "y": [
+     [
+      0,
+      2.5
+     ]
+    ],
+    "z": [
+     [
+      0,
+      6.4
+     ],
+     [
+      1,
+      6.1
+     ]
+    ],
+    "zoom": [
+     [
+      0,
+      1650
+     ],
+     [
+      1,
+      1800
+     ]
+    ]
+   },
+   "cameraInterpolation": {
+    "x": "flow",
+    "zoom": "flow"
+   },
+   "speakerAssets": {
+    "robo": "robot"
+   },
+   "assets": [
+    {
+     "id": "robot",
+     "asset": "service-robot",
+     "tracks": {
+      "x": [
+       [
+        0,
+        0
+       ]
+      ],
+      "yaw": [
+       [
+        0,
+        -0.15
+       ],
+       [
+        1,
+        0.1
+       ]
+      ],
+      "blink": [
+       [
+        0,
+        1
+       ],
+       [
+        0.5,
+        1
+       ],
+       [
+        0.53,
+        0.1
+       ],
+       [
+        0.56,
+        1
+       ]
+      ]
+     },
+     "interpolation": {
+      "yaw": "flow"
+     }
+    }
+   ]
+  }
+ ]
+}

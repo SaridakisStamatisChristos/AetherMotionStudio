@@ -1,5 +1,5 @@
 # Current state — AetherMotion Studio
-Updated 2026-11-25 (TALK-01). Authoritative rolling checkpoint for new coding sessions; update at verified transitions. This file references the historical ledger rather than replacing source or evidence. Baseline product merge: `04e3491bb21b4ebc3d54755a2a211b1a7affb3fa` (PR #13 merged into main). The handoff documentation commit may be newer; inspect git HEAD. No release publication implied.
+Updated 2026-11-25 (TALK-02). Authoritative rolling checkpoint for new coding sessions; update at verified transitions. This file references the historical ledger rather than replacing source or evidence. Baseline product merge: `04e3491bb21b4ebc3d54755a2a211b1a7affb3fa` (PR #13 merged into main). The handoff documentation commit may be newer; inspect git HEAD. No release publication implied.
 
 ## Current status and authority
 - v1.0 core pipeline and Asset Foundry AF01–AF09 implementation merged; do not reimplement.
@@ -19,7 +19,12 @@ Updated 2026-11-25 (TALK-01). Authoritative rolling checkpoint for new coding se
 6. Source and approved decisions authoritative. This summary cannot discard binding facts; consult the source-specific contract when the task touches it. Keep state and handoff synchronized. No new native render runs on GitHub or release without authorization.
 
 ## Active unit
-TALK-01 — speaking faces. Status IMPLEMENTED + TESTED + RENDERED (agent-reviewed) on branch `feature/talk-01` (from local record branch `chore/record-polish-02-03` 87ce2e9 on main 01051f1); owner: "start talk-01" (2026-11-25). PR opened against main; not merged.
+TALK-02 — dialogue scenes. Status IMPLEMENTED + TESTED + RENDERED (agent-reviewed) on branch `feature/talk-02` from main 7f121e7; owner: "yes perfect. merge it and continue" (2026-11-25, after TALK-01). PR against main; not merged.
+- Opt-in `shot.dialogue {listen, turn?, cheat?}` (src/core/dialogue.js): listeners look at the active speaker from measured phrase bounds; speaker keeps previous speaker; generated face chains (new graph contract: `face` may be a 2–16 window chain, contiguous windows blend from the previous target) applied in drawFilm before evaluation. docs/SPEECH.md TALK-02.
+- Evidence: `npm test` 283 tests, 282 pass, 0 fail, 1 skip; Python bare mirror OK. Defaults identical vs 7f121e7 (graph 5cc713071a6ddb6f / 176 shots excl. new example, geometry, director, extended film). Render `talk02-dialogue-r2` at bd38377 clean: all verifies + compare_release PASS, glitch clean, 2 CAPTION_READING_SPEED findings; films CPU d7f532ba14036eac…, Three f6d2e31718606b32…. r1 superseded (pacing).
+
+## Previous unit (TALK-01)
+TALK-01 — speaking faces. Status MERGED to main as 7f121e7 via PR #22 (main CI 45593318561 test PASS); owner: "yes perfect. merge it and continue" (2026-11-25). Earlier status: IMPLEMENTED + TESTED + RENDERED (agent-reviewed) on branch `feature/talk-01` (from local record branch `chore/record-polish-02-03` 87ce2e9 on main 01051f1); owner: "start talk-01" (2026-11-25).
 - Opt-in `shot.speakerAssets {speakerId: assetId}`; shared `timeline.speechEnvelope` (per-frame narration RMS, permille, prepared once, in the hashed timeline; required when bound); `talkAt`/`applyTalk` (src/core/talk.js) open the active phrase speaker's mouth (1-2-1 smoothed), others closed; human detail-2/3 dark inner mouth, robot lit mouth bar. Envelope-driven, not phoneme alignment. docs/SPEECH.md TALK-01.
 - Evidence: `npm test` 277 tests, 276 pass, 0 fail, 1 skip; Python 38 OK (bare mirror OK). Defaults identical vs 01051f1 (graph 1b75bee2197e90db excl. new example, geometry 14dec244d171dc56, detail-2 e3f80439a292f21a, director 2cbf9916e65da935). Render `talk01-faces-r2` at 18fe699 clean: CPU 32.0 s / Three-vulkan 21.3 s, all verifies + compare_release PASS, frame-glitch clean; 1 CAPTION_READING_SPEED finding. Films CPU a4a144e160c8d0c8…, Three d7890d9760b474f8….
 
