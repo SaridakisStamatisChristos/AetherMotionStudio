@@ -1,5 +1,5 @@
 # Current state — AetherMotion Studio
-Updated 2026-11-25 (TALK-02). Authoritative rolling checkpoint for new coding sessions; update at verified transitions. This file references the historical ledger rather than replacing source or evidence. Baseline product merge: `04e3491bb21b4ebc3d54755a2a211b1a7affb3fa` (PR #13 merged into main). The handoff documentation commit may be newer; inspect git HEAD. No release publication implied.
+Updated 2026-11-25 (TALK-03). Authoritative rolling checkpoint for new coding sessions; update at verified transitions. This file references the historical ledger rather than replacing source or evidence. Baseline product merge: `04e3491bb21b4ebc3d54755a2a211b1a7affb3fa` (PR #13 merged into main). The handoff documentation commit may be newer; inspect git HEAD. No release publication implied.
 
 ## Current status and authority
 - v1.0 core pipeline and Asset Foundry AF01–AF09 implementation merged; do not reimplement.
@@ -19,7 +19,12 @@ Updated 2026-11-25 (TALK-02). Authoritative rolling checkpoint for new coding se
 6. Source and approved decisions authoritative. This summary cannot discard binding facts; consult the source-specific contract when the task touches it. Keep state and handoff synchronized. No new native render runs on GitHub or release without authorization.
 
 ## Active unit
-TALK-02 — dialogue scenes. Status IMPLEMENTED + TESTED + RENDERED (agent-reviewed) on branch `feature/talk-02` from main 7f121e7; owner: "yes perfect. merge it and continue" (2026-11-25, after TALK-01). PR against main; not merged.
+TALK-03 — body language while talking. Status IMPLEMENTED + TESTED + RENDERED (agent-reviewed) on branch `feature/talk-03`, stacked on `feature/talk-02` (PR #23, not merged; owner did not ask to merge it); owner: "yes please implement talk-03" (2026-11-25). PR opened with base feature/talk-02; not merged.
+- Opt-in `shot.bodyLanguage {beats?, nods?, blinks?, sway?}` (src/core/body.js): speaker arm beats + nod at measured envelope emphasis peaks (≥0.67 s apart), listener nods at other speakers' phrase ends, per-character blink schedule, listener head sway; applied after evaluation; beats skip prop holders/aimers/authored arm motion. Catalog opt-in head rotation (pose.nod/tilt) and human blink. Not done: idle weight shifts (no hip joint), word-stress beats (measured peaks used instead). docs/SPEECH.md TALK-03.
+- Evidence: `npm test` 290 tests, 289 pass, 0 fail, 1 skip; Python bare mirror OK. Defaults identical vs aacab42 (graph 9629764b6193cf5c / 180 shots excl. new example, geometry, detail 2, director). Render `talk03-body-r1` at e3ddfd5 clean: all verifies + compare_release PASS, glitch clean, 2 CAPTION_READING_SPEED findings; films CPU 6df5a6ca5b8ae8aa…, Three 48c209810bf6afbe….
+
+## Previous unit (TALK-02, PR #23 awaiting merge)
+TALK-02 — dialogue scenes. Status IMPLEMENTED + TESTED + RENDERED (agent-reviewed) on branch `feature/talk-02` from main 7f121e7; owner: "yes perfect. merge it and continue" (2026-11-25, after TALK-01). PR #23 against main (CI test PASS at aacab42); not merged.
 - Opt-in `shot.dialogue {listen, turn?, cheat?}` (src/core/dialogue.js): listeners look at the active speaker from measured phrase bounds; speaker keeps previous speaker; generated face chains (new graph contract: `face` may be a 2–16 window chain, contiguous windows blend from the previous target) applied in drawFilm before evaluation. docs/SPEECH.md TALK-02.
 - Evidence: `npm test` 283 tests, 282 pass, 0 fail, 1 skip; Python bare mirror OK. Defaults identical vs 7f121e7 (graph 5cc713071a6ddb6f / 176 shots excl. new example, geometry, director, extended film). Render `talk02-dialogue-r2` at bd38377 clean: all verifies + compare_release PASS, glitch clean, 2 CAPTION_READING_SPEED findings; films CPU d7f532ba14036eac…, Three f6d2e31718606b32…. r1 superseded (pacing).
 
