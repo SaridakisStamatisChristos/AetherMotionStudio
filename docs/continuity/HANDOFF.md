@@ -1,4 +1,15 @@
-# Forward-only handoff — TALK-04 (PR #25) and TALK-05 (stacked PR) await the owner
+# Forward-only handoff — TALK-04/05 merged; GEN-01 proposed (owner types "fod continue" after authorizing)
+
+Unit: GEN-01 (proposed, NOT authorized)
+Checkpoint: main bf032ff (TALK-05 merge; TALK-04 merge 5c61d3f). Record branch `chore/record-talk-04-05` (pushed).
+Status: TALK-04 and TALK-05 MERGED (owner: "merge it", 2026-11-25); main CI 45611675937 test PASS. TALK-05 lines are Claude drafts; no explicit human visual or audio review yet.
+Date: 2026-11-25
+
+## Next action
+- If the owner authorizes GEN-01, branch `feature/gen-01` from `chore/record-talk-04-05` and implement NEXT_UNITS "GEN-01" items 1→6. Start with the two checks (motion speed, visibility) and run them on every example before changing staging.
+- Keep: `fod-digests` defaults identical, tests including negatives, a matched render from a clean commit, and an owner review.
+
+## Previous handoff (TALK-04/05), kept for reference
 
 Unit: TALK-04 + TALK-05, both implemented and rendered; waiting for owner review and merge
 Checkpoint: `feature/talk-04` (PR #25 → main) and `feature/talk-05` (stacked PR, base `feature/talk-04`; commits 1803533, d58d7c7, a7b539b plus docs).

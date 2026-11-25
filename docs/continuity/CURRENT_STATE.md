@@ -19,6 +19,11 @@ Updated 2026-11-25 (handoff to TALK-04/05; TALK-01..03 merged). Authoritative ro
 6. Source and approved decisions authoritative. This summary cannot discard binding facts; consult the source-specific contract when the task touches it. Keep state and handoff synchronized. No new native render runs on GitHub or release without authorization.
 
 ## Active unit
+None authorized yet. Proposed next: GEN-01 (generalize the TALK/POLISH lessons into automatic checks and staging for every project; NEXT_UNITS "GEN-01"), awaiting the owner's go.
+
+## Previous units (TALK-04 + TALK-05, MERGED 2026-11-25)
+Owner: "merge it" (2026-11-25), asking also that the features generalize to every video, not only the showcase films. TALK-04 MERGED as 5c61d3f (PR #25), TALK-05 MERGED as bf032ff (PR #26, retargeted to main after #25); main CI 45611675937 on bf032ff test PASS (render/compare skipped by policy). Owner had not given an explicit visual/audio review or line approval before merging; the TALK-05 lines remain Claude drafts the owner may edit.
+
 TALK-05 — talking showcase "The Workshop — First Words" (75 s, 7 shots). Status IMPLEMENTED + TESTED + RENDERED (agent-reviewed) on branch `feature/talk-05` (stacked on `feature/talk-04`), stacked PR with base `feature/talk-04`; awaiting owner visual + audio review and approval of the Claude-drafted lines; not merged. Generator scripts/talk05-first-words.mjs, tests/talk05.test.js (3), docs/SHOWCASE.md TALK-05.
 - Evidence: `npm test` 304 tests, 303 pass, 0 fail, 1 skip; defaults identical (`fod-digests --exclude talk04,talk05`). Render `talk05-first-words-r3` at a7b539b clean: all gates PASS, frame-glitch clean, −16.0 LUFS (LRA 20.7 LU, TP −3.7 dBFS), 2 CAPTION_READING_SPEED warnings; CPU 109.3 s / Three-vulkan 68.4 s (RTX util peak 46 %, 1,444 MiB); films CPU 5b83b6f65c7234a1…, Three 4a0ced6180aea44a…. Motion: nods 2/2/4, beats 1/2/3 (engineer/scientist/robot) over 75 s; peak nod 14.9°/s; robot turn peaks 105°/s (shelf carry, middle-position THANK YOU). r1 preparation failed (LIGHTS OUT fixed duration missing from fixedShots, fixed + test); r2 (d58d7c7) passed gates but shelf turn 224°/s → slowed; r1/r2 superseded, untouched.
 
