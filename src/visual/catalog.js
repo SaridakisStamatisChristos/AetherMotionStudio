@@ -13,6 +13,7 @@ export function validateAssetParams(id,params){
  if(!params||typeof params!=='object'||Array.isArray(params))throw Error('params object required');
  for(const [k,v] of Object.entries(params)){if(['primary','secondary','accent'].includes(k)){if(typeof v!=='string'||!/^#[0-9a-fA-F]{6}$/.test(v))throw Error('invalid asset color: '+k);}
  else if(k==='detail'){if(v!==1&&v!==2)throw Error('invalid asset detail: '+v);if(v===2&&recipes[id].family!=='human')throw Error('asset detail 2 unsupported for '+id);}
+ else if(k==='reach'){if(typeof v!=='number'||!Number.isFinite(v)||v<1||v>2)throw Error('invalid asset reach: '+v);if(recipes[id].family!=='robot')throw Error('asset reach unsupported for '+id);}
  else if(['width','height','depth'].includes(k)){if(typeof v!=='number'||!Number.isFinite(v)||v<.7||v>1.3)throw Error('invalid asset dimension: '+k);}else throw Error('unknown asset param: '+k);}
  return params;
 }

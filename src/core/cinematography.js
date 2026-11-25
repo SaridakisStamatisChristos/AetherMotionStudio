@@ -1,4 +1,5 @@
 import {generatedBounds} from '../foundry/generator.js';
+import {surfacePoint,validateSurfaceRef} from './surface.js';
 import {importedBounds} from '../foundry/import-bundle.js';
 import {emitHeroBoxes,heroBounds} from '../foundry/hero.js';
 import {smooth,clamp,keyframes,interpolate,mix} from './motion.js';
@@ -143,19 +144,20 @@ export function validateAttachments(assets,p){
    const parent=byId.get(x.parent);
    if(!parent||!recipeRig(parent.asset).anchors.includes('right-hand'))fail(r,'parent must have a supported hand rig');
    choice(x.anchor,['right-hand','left-hand'],r+'.anchor');window(x,r);
-   if(x.offset!==undefined)vector(x.offset,-1,1,r+'.offset');
+   // POLISH-02: offset 'auto' (first window only) keeps the prop exactly where it was relative to the hand at pickup.
+   if(x.offset==='auto'){if(i>0)fail(r+'.offset','auto offset only on the first window');}else if(x.offset!==undefined)vector(x.offset,-1,1,r+'.offset');
    if(x.blendIn!==undefined)finite(x.blendIn,0,Math.min(.2,x.end-x.start),r+'.blendIn');
    if(i>0&&x.start<list[i-1].end)fail(r,'handoff windows must be sequential');
-   if(x.release!==undefined){if(i!==list.length-1)fail(r+'.release','only the last window may release');validateRelease(x.release,x.end,r+'.release');}
+   if(x.release!==undefined){if(i!==list.length-1)fail(r+'.release','only the last window may release');validateRelease(x.release,x.end,r+'.release',byId,a.id);}
   });
   const seen=new Set(),stack=list.map(x=>x.parent);
   while(stack.length){const id=stack.pop();if(id===a.id)fail(q,'attachment cycle');if(seen.has(id))continue;seen.add(id);const b=byId.get(id);if(b?.attachment)stack.push(...attachmentWindows(b.attachment).map(x=>x.parent));}
  }
 }
-function validateRelease(x,end,q){
+function validateRelease(x,end,q,byId,self){
  fields(x,['mode','duration','to'],q,['mode','duration']);choice(x.mode,['drop','place'],q+'.mode');finite(x.duration,.02,.5,q+'.duration');
  if(end+x.duration>1+1e-9)fail(q,'release must complete within the shot');
- if(x.mode==='place'){vector(x.to,-2.4,2.4,q+'.to');finite(x.to[1],0,1.5,q+'.to');}else if(x.to!==undefined)fail(q+'.to','drop lands on the floor; use place for a target');
+ if(x.mode==='place'){if(x.to&&typeof x.to==='object'&&!Array.isArray(x.to)){validateSurfaceRef(x.to,new Set(byId.keys()),self,q+'.to',fail);if(byId.get(x.to.surface).attachment)fail(q+'.to.surface','surface must not be attached');}else{vector(x.to,-2.4,2.4,q+'.to');finite(x.to[1],0,1.5,q+'.to');}}else if(x.to!==undefined)fail(q+'.to','drop lands on the floor; use place for a target');
 }
 export function resolveAttachments(authored,p,sample){
  const byId=new Map(authored.map(a=>[a.id,a]));
@@ -163,6 +165,12 @@ export function resolveAttachments(authored,p,sample){
  function held(a,k,time){
   const ws=attachmentWindows(a.attachment),x=ws[k],parent=at(byId.get(x.parent),time);
   const anchor=handAnchor(parent.asset,parent.pose,x.anchor==='right-hand'?1:-1);
+  if(x.offset==='auto'){
+   // Grip as found: the prop's offset from the hand (in the holder's frame) and its yaw relative to the holder at pickup.
+   const p0=at(byId.get(x.parent),x.start),h0=handAnchor(p0.asset,p0.pose,x.anchor==='right-hand'?1:-1),l0=sample(a,x.start).pose;
+   const off=ry(l0.origin.map((v,i)=>v-h0[i]),-p0.pose.yaw);
+   return {origin:add(anchor,ry(off.map(v=>v*parent.pose.scale/(p0.pose.scale??1)),parent.pose.yaw)),yaw:l0.yaw+parent.pose.yaw-p0.pose.yaw};
+  }
   const offset=ry((x.offset??[0,0,0]).map(v=>v*parent.pose.scale),parent.pose.yaw),target=add(anchor,offset);
   const local=sample(a,time).pose,blend=x.blendIn?smooth(clamp((time-x.start)/x.blendIn)):1;
   if(k===0)return {origin:blend===1?target:lerp3(local.origin,target,blend),yaw:local.yaw+parent.pose.yaw*blend};
@@ -176,7 +184,7 @@ export function resolveAttachments(authored,p,sample){
   let k=0;for(let i=1;i<ws.length;i++)if(t>=ws[i].start)k=i;
   // World pose freezes at detach; no previous-frame dependency. Opt-in release drops or places it.
   const x=ws[k];let pose=held(a,k,Math.min(t,x.end));
-  if(x.release&&t>x.end){const u=clamp((t-x.end)/x.release.duration);pose=x.release.mode==='drop'?{...pose,origin:[pose.origin[0],pose.origin[1]*(1-u*u),pose.origin[2]]}:{...pose,origin:lerp3(pose.origin,x.release.to,smooth(u))};}
+  if(x.release&&t>x.end){const u=clamp((t-x.end)/x.release.duration);pose=x.release.mode==='drop'?{...pose,origin:[pose.origin[0],pose.origin[1]*(1-u*u),pose.origin[2]]}:{...pose,origin:lerp3(pose.origin,Array.isArray(x.release.to)?x.release.to:surfacePoint(sample(byId.get(x.release.to.surface),t),x.release.to.at),smooth(u))};}
   item.pose={...item.pose,...pose};
   return item;
  }

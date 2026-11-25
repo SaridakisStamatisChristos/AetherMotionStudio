@@ -103,13 +103,14 @@ test('closing step: legs ease to standing after the window instead of snapping',
  assert.ok(maxStep<.2,'no pop: '+maxStep);assert.equal(w(1),0);assert.equal(evaluateGraph(s,1).assets[0].pose.footLift,0);
 });
 
-test('extended film: generator reproduces the pair; 64 s, 9 shots; accepted ART-05 shots reused unchanged',async()=>{
+// POLISH-02 added the HIGH SHELF shot (270 frames): 64 s / 9 shots became 73 s / 10 shots. Other checks unchanged.
+test('extended film: generator reproduces the pair; 73 s, 10 shots; accepted ART-05 shots reused unchanged',async()=>{
  const {build}=await import('../scripts/workshop-extended.mjs');
  const read=b=>JSON.parse(readFileSync(new URL('../examples/workshop-extended-'+b+'-polished.json',import.meta.url),'utf8'));
  for(const b of ['cpu','three'])assert.deepEqual(build(b),read(b));
  const p=read('cpu'),t=read('three'),art05=JSON.parse(readFileSync(new URL('../examples/art05-workshop-cpu-polished.json',import.meta.url),'utf8'));
  validateProject(p);validateProject(t);assert.deepEqual(p.shots,t.shots.map(s=>({...s,backend:'cpu'})));
- assert.equal(p.shots.reduce((n,s)=>n+s.durationFrames,0),1920);assert.equal(p.shots.length,9);
+ assert.equal(p.shots.reduce((n,s)=>n+s.durationFrames,0),2190);assert.equal(p.shots.length,10);
  for(const id of ['workshop','plan','power','handoff','together'])assert.deepEqual(p.shots.find(s=>s.id===id),art05.shots.find(s=>s.id===id),id);
  assert.deepEqual(inspectProject(p).issues,[]);
  for(const s of p.shots)for(const v of Object.values(compositionReport(s).characters))assert.equal(v.backToCameraSamples,0,s.id);

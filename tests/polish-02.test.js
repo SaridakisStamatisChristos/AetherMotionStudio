@@ -131,3 +131,79 @@ test('turnSteps: Workshop Extended new/upgraded shots have planted feet; kept sh
  for(const [shot,id] of [['toolbox','scientist'],['toolbox','engineer'],['steps','robot'],['teach','robot']])assert.ok(stanceSlip(p.shots.find(x=>x.id===shot),id).cm<.01,shot+'/'+id);
  for(const id of ['workshop','plan','power','handoff','together','lights'])assert.ok(p.shots.find(x=>x.id===id).assets.every(a=>!a.turnSteps),id);
 });
+
+// ---- Item 3: telescoping robot reach (params.reach) ----
+import {catalogHandAnchor} from '../src/visual/catalog-rig.js';
+import {handAnchor} from '../src/core/cinematography.js';
+const topOf=(id,pose={origin:[0,0,0],yaw:0})=>{let t=0;emitAsset(id,(c,sz,col,tf=q=>q)=>{for(const dy of [-.5,.5])t=Math.max(t,tf([c[0],c[1]+dy*sz[1],c[2]])[1]);},pose);return t;};
+const maxHand=(id,params)=>{let b=0;for(let p=-2.8;p<=1;p+=.05)for(let s=-.4;s<=.9;s+=.05)b=Math.max(b,catalogHandAnchor(id,{armPitch:p,armSpread:s,...(params?{params}:{})},1)[1]);return b;};
+test('reach: robots reach above their heads only with the opt-in telescoping arm',()=>{
+ for(const id of ['service-robot','medical-robot','explorer-robot','floating-robot']){const head=topOf(id);
+  assert.ok(maxHand(id)<head,id+' default cannot reach above head');assert.ok(maxHand(id,{reach:1.8})>head,id+' reach 1.8 above head');}
+});
+test('reach: rest, forward and lowered poses are unchanged; reach 1 is identical to none',()=>{
+ for(const pose of [{},{armPitch:-1.15},{armPitch:-.5,armSpread:.3},{armPitch:.5}])
+  assert.deepEqual(catalogHandAnchor('service-robot',{...pose,params:{reach:1.8}},1),catalogHandAnchor('service-robot',pose,1));
+ assert.deepEqual(catalogHandAnchor('service-robot',{armPitch:-2.6,params:{reach:1}},1),catalogHandAnchor('service-robot',{armPitch:-2.6},1));
+ const g=[],h=[];emitAsset('service-robot',(c,sz,col,tf=q=>q)=>g.push(tf(c)),{origin:[0,0,0],yaw:0,armPitch:-1});emitAsset('service-robot',(c,sz,col,tf=q=>q)=>h.push(tf(c)),{origin:[0,0,0],yaw:0,armPitch:-1,params:{reach:1.6}});assert.deepEqual(h,g);
+});
+test('reach: negatives',()=>{
+ const bad=(asset,params)=>assert.throws(()=>validateProject(project([shot([{id:'r',asset,params,tracks:{x:[[0,0]]}}])])));
+ bad('engineer',{reach:1.5});bad('service-robot',{reach:.9});bad('service-robot',{reach:2.1});bad('service-robot',{reach:'long'});bad('table',{reach:1.2});
+ validateProject(project([shot([{id:'r',asset:'service-robot',params:{reach:1.5},tracks:{x:[[0,0]]}}])]));
+});
+
+// ---- Item 4: surfaces, restOn, auto grip, place onto a surface, solveReach ----
+import {surfaceTop,surfacePoint} from '../src/core/surface.js';
+import {solveReach} from '../src/core/interaction.js';
+const tableAt={id:'tb',asset:'table',tracks:{x:[[0,1]],z:[[0,-.3]],scale:[[0,.85]]}};
+test('surface: top height comes from the rendered geometry; off the surface is null',()=>{
+ const pose={origin:[1,0,-.3],yaw:0,scale:.85};assert.ok(Math.abs(surfaceTop('table',pose,1,-.3)-topOf('table',pose))<1e-9);
+ assert.equal(surfaceTop('table',pose,3,-.3),null);assert.throws(()=>surfacePoint({asset:'table',pose},[1.4,0]));
+});
+test('restOn: a prop sits on the surface top; negatives',()=>{
+ const s=shot([tableAt,{id:'bk',asset:'book',tracks:{scale:[[0,.7]]},restOn:{surface:'tb',at:[-.3,.2]}}]);validateProject(project([s]));
+ const st=evaluateGraph(s,.5),b=st.assets.find(a=>a.id==='bk').pose.origin,t=st.assets.find(a=>a.id==='tb').pose;
+ assert.ok(Math.abs(b[1]-surfaceTop('table',t,b[0],b[2]))<1e-9&&Math.abs(b[0]-(1-.3*.85))<1e-9&&Math.abs(b[2]-(-.3+.2*.85))<1e-9);
+ const bad=(x,tracks={})=>assert.throws(()=>validateProject(project([shot([tableAt,{id:'bk',asset:'book',tracks,restOn:x}])])));
+ bad({surface:'nope'});bad({surface:'bk'});bad({surface:'tb',at:[2,0]});bad({surface:'tb',at:[0]});bad({surface:'tb',extra:1});bad('tb');bad({surface:'tb'},{x:[[0,1]]});bad({surface:'tb'},{y:[[0,.5]]});
+ assert.throws(()=>validateProject(project([shot([{...tableAt,restOn:{surface:'bk'}},{id:'bk',asset:'book',tracks:{},restOn:{surface:'tb'}}])])));
+});
+function carryShot(extra={}){
+ const pick=solveReach('service-robot',[1-.3*.85,.81,-.3+.3*.85],{params:{reach:1.8},avoid:[{center:[1,-.3],half:[.65,.37]}],clearance:.3,hands:['left']});
+ return {pick,s:shot([{id:'r',asset:'service-robot',params:{reach:1.8},tracks:{x:[[0,pick.x]],z:[[0,pick.z]],yaw:[[0,pick.yaw]],leftArmPitch:[[0,0],[.2,pick.armPitch],[.4,pick.armPitch],[.7,-.9]],leftArmSpread:[[0,0],[.2,pick.armSpread],[.4,pick.armSpread],[.7,0]]}},
+  tableAt,{id:'bk',asset:'book',tracks:{scale:[[0,.7]]},restOn:{surface:'tb',at:[-.3,.3]},attachment:{parent:'r',anchor:'left-hand',start:.3,end:.8,offset:'auto',...extra}}])};
+}
+test('solveReach: the hand meets the target; avoid boxes and camera limits respected; deterministic',()=>{
+ const {pick}=carryShot();assert.ok(pick.gap<.01,'gap '+pick.gap);
+ assert.ok(!(Math.abs(pick.x-1)<.65+.32&&Math.abs(pick.z+.3)<.37+.32),'outside the table keep-out');
+ assert.deepEqual(carryShot().pick,pick);
+ const high=surfacePoint({asset:'bookshelf',pose:{origin:[-1.3,0,-.5],yaw:0}},[.38,.2]),o={avoid:[{center:[-1.3,-.5],half:[.52,.29]}],clearance:.3,spreadDeg:85,hands:['left']};
+ assert.ok(solveReach('service-robot',[high[0],high[1]+.06,high[2]],o).gap>.1,'no reach: misses the shelf top');
+ assert.ok(solveReach('service-robot',[high[0],high[1]+.06,high[2]],{...o,params:{reach:1.8}}).gap<.01,'reach 1.8 meets it');
+});
+test('auto grip: no pop at pickup and the prop then follows the hand rigidly',()=>{
+ const {s}=carryShot();validateProject(project([s]));
+ const bk=t=>evaluateGraph(s,t).assets.find(a=>a.id==='bk').pose.origin,hand=t=>handAnchor('service-robot',evaluateGraph(s,t).assets.find(a=>a.id==='r').pose,-1);
+ const d=(a,b)=>Math.hypot(a[0]-b[0],a[1]-b[1],a[2]-b[2]);
+ assert.ok(d(bk(.2999),bk(.3001))<1e-3,'continuous at pickup');
+ const g0=d(bk(.3),hand(.3));for(const t of [.45,.6,.75])assert.ok(Math.abs(d(bk(t),hand(t))-g0)<1e-9,'rigid grip at '+t);
+ assert.ok(d(bk(.6),bk(.2))>.05,'the prop moved with the arm');
+});
+test('place onto a surface lands on its top; negatives for auto offset and surface targets',()=>{
+ const {s}=carryShot({release:{mode:'place',duration:.1,to:{surface:'tb',at:[.3,.2]}}});validateProject(project([s]));
+ const st=evaluateGraph(s,1),b=st.assets.find(a=>a.id==='bk').pose.origin;assert.ok(Math.abs(b[1]-surfaceTop('table',st.assets.find(a=>a.id==='tb').pose,b[0],b[2]))<1e-9);
+ const bad=extra=>{const {s}=carryShot(extra);assert.throws(()=>validateProject(project([s])));};
+ bad({release:{mode:'place',duration:.1,to:{surface:'nope'}}});bad({release:{mode:'place',duration:.1,to:{surface:'bk'}}});bad({release:{mode:'drop',duration:.1,to:{surface:'tb'}}});
+ const chain=carryShot().s;chain.assets[2].attachment=[{parent:'r',anchor:'left-hand',start:.3,end:.5},{parent:'r',anchor:'right-hand',start:.5,end:.8,offset:'auto'}];
+ assert.throws(()=>validateProject(project([chain])),/auto offset only on the first window/);
+});
+test('Workshop Extended HIGH SHELF: solved pickup and place, book lands on the table top, planted feet',()=>{
+ const p=JSON.parse(readFileSync(new URL('../examples/workshop-extended-cpu-polished.json',import.meta.url),'utf8')),s=p.shots.find(x=>x.id==='shelf');
+ assert.equal(p.shots.map(x=>x.id).join(),'workshop,plan,toolbox,power,steps,teach,shelf,handoff,together,lights');
+ const at=t=>evaluateGraph(s,t),bk=t=>at(t).assets.find(a=>a.id==='book').pose.origin,hand=t=>handAnchor('service-robot',at(t).assets.find(a=>a.id==='robot').pose,-1);
+ const gap=Math.hypot(...bk(.27).map((v,i)=>v-hand(.27)[i]));assert.ok(gap<.08,'hand at the book when picking up ('+gap+')');
+ assert.ok(bk(.2)[1]>1.8,'book starts on the high shelf');
+ const e=bk(1),tb=at(1).assets.find(a=>a.id==='table').pose;assert.ok(Math.abs(e[1]-surfaceTop('table',tb,e[0],e[2]))<1e-9,'book on the table top');
+ assert.ok(stanceSlip(s,'robot').cm<.01);
+});
