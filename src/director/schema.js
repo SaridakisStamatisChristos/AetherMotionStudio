@@ -29,7 +29,7 @@ export function request(input){
  if(!Number.isSafeInteger(q.seed)||q.seed<0||q.seed>2147483647)bad('request.seed','invalid seed');
  choice(q.language,['en','en-us','en-gb'],'request.language');choice(q.voice,VOICES,'request.voice');
  if(q.language==='en-gb'&&!q.voice.startsWith('b')||q.language==='en-us'&&q.voice.startsWith('b'))bad('request.voice','language/voice mismatch');
- if(q.staging!==undefined)choice(q.staging,['art-v1'],'request.staging');choice(q.backend,['cpu','three'],'request.backend');choice(q.profile,['original','polished'],'request.profile');validateIdentityRequest(q);if(q.speech!==undefined){validateSpeechConfig(q.speech);if(q.speech.targetFrames!==q.seconds*30)bad('speech','targetFrames must equal seconds*30');}return q;
+ if(q.staging!==undefined)choice(q.staging,['art-v1','art-v2'],'request.staging');choice(q.backend,['cpu','three'],'request.backend');choice(q.profile,['original','polished'],'request.profile');validateIdentityRequest(q);if(q.speech!==undefined){validateSpeechConfig(q.speech);if(q.speech.targetFrames!==q.seconds*30)bad('speech','targetFrames must equal seconds*30');}return q;
 }
 export function validateIR(ir,q,selection){
  fields(ir,['version','title','treatment','shots'],'ir',['version','title','treatment','shots']);
@@ -55,9 +55,12 @@ export function validateIR(ir,q,selection){
     actions=Object.keys(ACTIONS).filter(n=>Object.keys(ACTIONS[n]).every(ch=>supportedChannels(d.asset).includes(ch)));
     if(a.hold!==undefined){
      if(d.kind!=='prop')bad(v,'only props may be held');
-     fields(a.hold,['holder','anchor','start','end','offset'],v+'.hold',['holder','anchor','start','end']);
-     const h=cast.get(a.hold.holder);if(h?.kind!=='character'||!['right-hand','left-hand'].includes(a.hold.anchor)||!h.rig.anchors.includes(a.hold.anchor))bad(v,'unknown holder or anchor');
-     finite(a.hold.start,0,1,v+'.hold.start');finite(a.hold.end,0,1,v+'.hold.end');if(a.hold.start>=a.hold.end)bad(v,'invalid hold window');
+     // POLISH-01: hold may be one window or a handoff chain of 2–4 sequential windows.
+     const holds=Array.isArray(a.hold)?a.hold:[a.hold];if(Array.isArray(a.hold)&&(holds.length<2||holds.length>4))bad(v,'hold chain requires 2–4 windows');
+     holds.forEach((x,k)=>{const q=Array.isArray(a.hold)?v+'.hold['+k+']':v+'.hold';
+      fields(x,['holder','anchor','start','end','offset'],q,['holder','anchor','start','end']);
+      const h=cast.get(x.holder);if(h?.kind!=='character'||!['right-hand','left-hand'].includes(x.anchor)||!h.rig.anchors.includes(x.anchor))bad(v,'unknown holder or anchor');
+      finite(x.start,0,1,q+'.start');finite(x.end,0,1,q+'.end');if(x.start>=x.end)bad(v,'invalid hold window');if(k&&x.start<holds[k-1].end)bad(v,'hold windows must be sequential');});
     }
    }else{
     if(a.variant!==undefined||a.hold!==undefined||!allowed.has(a.asset))bad(v,'unknown asset or orphan identity fields');key='asset:'+a.asset;actions=allowed.get(a.asset).actions;

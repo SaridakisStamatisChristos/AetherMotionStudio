@@ -1,5 +1,5 @@
 import {deliveryBeats,applyIdentityStory} from './identity-story.js';
-import {retrieveAssets} from './catalog.js';
+import {retrieveAssets,directorCatalog} from './catalog.js';
 const beat=(heading,subheading,narration,assets)=>({heading,subheading,narration:[narration],assets});
 // Finite, explicitly authored knowledge patterns; no claim of universal topic comprehension.
 const patterns=[
@@ -38,6 +38,12 @@ export function splitScript(text){
  const words=text.split(' '),out=[];let line='';
  for(const w of words){if(w.length>180)throw Error('request.script: individual word exceeds phrase limit');if(line&&(line.length+w.length+1>145||/[.!?]$/.test(line))){out.push(line);line='';}line+=(line?' ':'')+w;}if(line)out.push(line);return out;
 }
+// POLISH-01 (staging art-v2 only): catalog assets literally named in the topic, in order of mention.
+export function literalCast(topic){
+ const words=String(topic).toLowerCase().split(/[^a-z0-9]+/).filter(Boolean).map(w=>w.length>3&&w.endsWith('s')?w.slice(0,-1):w);
+ const hits=[];for(const o of directorCatalog().objects){const parts=o.id.split('-');for(let i=0;i+parts.length<=words.length;i++)if(parts.every((p,j)=>words[i+j]===p)){hits.push([i,o.id]);break;}}
+ return hits.sort((a,b)=>a[0]-b[0]||(a[1]<b[1]?-1:1)).map(h=>h[1]).filter((v,i,a)=>a.indexOf(v)===i).slice(0,3);
+}
 function group(arr,n){return Array.from({length:n},(_,i)=>arr.slice(Math.floor(i*arr.length/n),Math.floor((i+1)*arr.length/n)));}
 export function baseline(q){
  const nominal=Math.max(2,Math.min(30,Math.round(q.seconds/10)));
@@ -57,13 +63,21 @@ export function baseline(q){
   const n=Math.min(nominal,questions.length);
   beats=Array.from({length:n},(_,i)=>({heading:roles[i].toUpperCase(),subheading:trunc(q.topic,64),narration:[i===0?'Let us explore '+topic+'. '+questions[i]:questions[i]],assets:[]}));
  }
- const selection=beats.map(b=>retrieveAssets(q.topic+' '+b.heading+' '+b.narration.join(' '),8,[...b.assets,'retro-robot']));
+ const cast=q.staging==='art-v2'&&kind==='generic-question-outline'?literalCast(q.topic):[];
+ const selection=beats.map(b=>retrieveAssets(q.topic+' '+b.heading+' '+b.narration.join(' '),8,[...b.assets,...cast,'retro-robot']));
+ if(cast.length>=2)return {kind,beats,selection,cast};
  return {kind,beats,selection};
 }
 const cameras=['establishing','dolly-in','lateral-tracking','orbit','crane','reveal'];
 export function offlineIR(q,plan){
  const n=plan.beats.length;
  const ir={version:1,title:trunc(q.topic,100),treatment:'A '+q.tone+' '+q.style+' for '+q.audience+'. '+(plan.kind==='generic-question-outline'?'Question-led outline, not factual topic synthesis.':'A structured sequence of explanatory beats.'),shots:plan.beats.map((b,i)=>{
+  if(plan.cast){
+   // Literal cast (art-v2): interaction beats keep the cast idle so staging can solve a handoff; walk beats move.
+   const walkBeat=/\b(?:walk|walks|walking|step|steps)\b/i.test(q.topic)&&i%2===1,assets=plan.cast.map((asset,j)=>({asset,action:walkBeat&&j===0?'walk':'idle',x:[-1.3,.1,1.4][j]??0}));
+   if(assets.length<3)assets.push({asset:'retro-robot',action:i===0?'wave':'idle',x:-2,scale:.72});
+   return {heading:b.heading,subheading:b.subheading,narration:b.narration,camera:['establishing','dolly-in','lateral-tracking'][(i+q.seed)%3],environment:q.style.toLowerCase().includes('warm')?'amber':i%2?'midnight':'laboratory',assets};
+  }
   const selected=plan.selection[i],preferred=b.assets.filter((v,j,a)=>a.indexOf(v)===j);
   const objects=(preferred.length?preferred:selected.filter(o=>o.id!=='retro-robot').slice(0,1).map(o=>o.id)).slice(0,2);
   const assets=objects.map((asset,j)=>({asset,action:j===0?'presentation-turn':'idle',scale:objects.length===1?1.15:.86,x:objects.length===1?.5:j===0?-.1:1.35}));

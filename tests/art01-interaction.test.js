@@ -95,9 +95,16 @@ test('negative: malformed chains, releases and facing are rejected with field pa
  bad((s,t)=>{const w=s.assets.find(x=>x.id==='watcher');w.attachment=[{parent:'receiver',anchor:'right-hand',start:0,end:.2},{parent:'receiver',anchor:'left-hand',start:.3,end:.4}];s.assets.find(x=>x.id==='receiver').attachment={parent:'watcher',anchor:'right-hand',start:0,end:.1};},/attachment cycle/);
 });
 
-test('negative: identity continuity ledger rejects handoff chains explicitly',async()=>{
+test('identity ledger models handoff chains: declared handoff passes, undeclared is rejected (POLISH-01)',async()=>{
  const q=JSON.parse(readFileSync(new URL('../examples/continuity-cpu-polished.request.json',import.meta.url)));
- const {project:p}=await direct(q),s=p.shots.find(x=>x.assets.some(a=>a.attachment&&a.identity)),a=s.assets.find(x=>x.attachment&&x.identity);
- const w=a.attachment;a.attachment=[{...w,end:Math.min(w.end,w.start+.1)},{...w,start:Math.min(w.end,w.start+.1)+.05,end:Math.min(1,Math.min(w.end,w.start+.1)+.15)}].map(({blendIn,...x})=>x);
- assert.throws(()=>continuityLedger(p),/handoff chains are not yet supported by the identity continuity ledger/);
+ const {project:p}=await direct(q),rel=x=>x.attachment&&x.identity&&x.attachment.end<1,s=p.shots.find(x=>x.assets.some(rel)),a=s.assets.find(rel);
+ const w=a.attachment,mid=+(w.start+(w.end-w.start)/2).toFixed(3),{blendIn,...base}=w;
+ a.attachment=[{...base,end:mid},{...base,start:mid,anchor:'left-hand',blendIn:.04}];
+ let err='';try{continuityLedger(p);}catch(e){err=e.message;}
+ assert.match(err,/explicit state transition mismatch/);assert.match(err,/"type":"handoff"/);
+ const expected=JSON.parse(err.slice(err.indexOf('expected ')+9));s.continuity.events=expected;
+ const ledger=continuityLedger(p),row=ledger.shots.find(x=>x.shot===s.id),h=row.events.find(e=>e.type==='handoff');
+ assert.equal(h.fromAnchor,'right-hand');assert.equal(h.toAnchor,'left-hand');assert.equal(h.at,mid);
+ assert.ok(row.events.some(e=>e.type==='release'&&e.anchor==='left-hand'),'released from the left hand');
+ validateProject(p);
 });

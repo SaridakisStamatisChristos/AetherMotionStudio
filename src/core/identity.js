@@ -62,7 +62,8 @@ export function compileIdentityAssets(q,shot,assets){
  const map=validateLibrary(q.identityLibrary),byIdentity=new Map();
  const result=assets.map((a,i)=>{const ir=shot.assets[i];if(!ir.identity)return a;byIdentity.set(ir.identity,a.id);return {...a,...resolveIdentity(map,ir.identity,ir.variant??'base')};});
  for(const [i,ir] of shot.assets.entries())if(ir.hold){
-  if(!ir.identity||!byIdentity.has(ir.hold.holder))fail('hold','unknown holder or prop');
+  if(!ir.identity||!(Array.isArray(ir.hold)?ir.hold:[ir.hold]).every(h=>byIdentity.has(h.holder)))fail('hold','unknown holder or prop');
+  if(Array.isArray(ir.hold)){result[i].attachment=ir.hold.map(({holder,...h},k)=>({...h,parent:byIdentity.get(holder),...(h.start>0?{blendIn:Math.min(k?.05:.08,(h.end-h.start)/2)}:{})}));continue;}
   const {holder,...hold}=ir.hold;result[i].attachment={...hold,parent:byIdentity.get(holder),...(hold.start>0?{blendIn:Math.min(.08,(hold.end-hold.start)/2)}:{})};
  }
  return result;
@@ -98,17 +99,21 @@ export function continuityLedger(project){
   for(const [prop,h] of held)if(!seen.has(prop)||!seen.has(h.holder))fail(p,'held prop or holder disappeared');
   const startHeld=new Map(held),intervals=[];
   for(const a of s.assets){
-   if(Array.isArray(a.attachment)&&(a.identity||a.attachment.some(x=>byLocal.get(x.parent)?.identity)))fail(p,'handoff chains are not yet supported by the identity continuity ledger');
-   if(!a.identity){if(a.attachment&&byLocal.get(a.attachment.parent)?.identity)fail(p,'untracked prop on tracked character');continue;}
-   const def=map.get(a.identity),old=held.get(a.identity),x=a.attachment;
-   if(!x){if(old)fail(p,'held prop detached without release');continue;}
-   const parent=byLocal.get(x.parent);
-   if(def.kind!=='prop'||!parent?.identity||map.get(parent.identity)?.kind!=='character')fail(p,'attachment requires tracked prop and character');
-   const h={holder:parent.identity,anchor:x.anchor};
-   if(old){if(x.start!==0||!equal(old,h))fail(p,'unexplained holder or hand change');}
-   else expected.push({type:'pickup',prop:a.identity,...h,at:x.start});
-   intervals.push({key:h.holder+':'+h.anchor,start:x.start,end:x.end});
-   if(x.end<1){expected.push({type:'release',prop:a.identity,...h,at:x.end});held.delete(a.identity);}else held.set(a.identity,h);
+   const windows=a.attachment===undefined?[]:Array.isArray(a.attachment)?a.attachment:[a.attachment];
+   if(!a.identity){if(windows.some(x=>byLocal.get(x.parent)?.identity))fail(p,'untracked prop on tracked character');continue;}
+   const def=map.get(a.identity),old=held.get(a.identity);
+   if(!windows.length){if(old)fail(p,'held prop detached without release');continue;}
+   // POLISH-01: handoff chains — contiguous windows are a handoff between holders; a gap is release + pickup.
+   const holds=windows.map(x=>{const parent=byLocal.get(x.parent);if(def.kind!=='prop'||!parent?.identity||map.get(parent.identity)?.kind!=='character')fail(p,'attachment requires tracked prop and character');return {holder:parent.identity,anchor:x.anchor};});
+   if(old){if(windows[0].start!==0||!equal(old,holds[0]))fail(p,'unexplained holder or hand change');}
+   else expected.push({type:'pickup',prop:a.identity,...holds[0],at:windows[0].start});
+   for(let k=1;k<windows.length;k++){
+    if(windows[k].start===windows[k-1].end)expected.push({type:'handoff',prop:a.identity,from:holds[k-1].holder,fromAnchor:holds[k-1].anchor,to:holds[k].holder,toAnchor:holds[k].anchor,at:windows[k].start});
+    else{expected.push({type:'release',prop:a.identity,...holds[k-1],at:windows[k-1].end});expected.push({type:'pickup',prop:a.identity,...holds[k],at:windows[k].start});}
+   }
+   windows.forEach((x,k)=>intervals.push({key:holds[k].holder+':'+holds[k].anchor,start:x.start,end:x.end}));
+   const lastW=windows.at(-1),lastH=holds.at(-1);
+   if(lastW.end<1){expected.push({type:'release',prop:a.identity,...lastH,at:lastW.end,...(lastW.release?{mode:lastW.release.mode}:{})});held.delete(a.identity);}else held.set(a.identity,lastH);
   }
   for(let i=0;i<intervals.length;i++)for(let j=i+1;j<intervals.length;j++){const a=intervals[i],b=intervals[j];if(a.key===b.key&&Math.max(a.start,b.start)<Math.min(a.end,b.end))fail(p,'hand occupied by multiple props');}
   if(!equal(s.continuity.events.map(canonical).sort(),expected.map(canonical).sort()))fail(p,'explicit state transition mismatch; expected '+JSON.stringify(expected));
