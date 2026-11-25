@@ -30,21 +30,28 @@ function arm(asset,pose,pitch,spread){
  return [w(shoulder),w(hand)];
 }
 function score(asset,pose,pitch,spread,target){const [s,h]=arm(asset,pose,pitch,spread);return Math.acos(clamp(dot(norm(sub(h,s)),norm(sub(target,s))),-1,1));}
+// POLISH-02 item 9: coarse 20x8 grid + halving refinement (was 39x14); same limits, ~3x fewer evaluations.
 function solveArm(asset,pose,target){
  const [p0,p1]=AIM_LIMITS.pitch,[s0,s1]=AIM_LIMITS.spread;let best=null;
- for(let i=0;i<=38;i++)for(let j=0;j<=13;j++){const pitch=p0+(p1-p0)*i/38,spread=s0+(s1-s0)*j/13,e=score(asset,pose,pitch,spread,target);if(!best||e<best.e-1e-12)best={pitch,spread,e};}
- for(let step=.05;step>.002;step/=2)for(const [dp,ds] of [[step,0],[-step,0],[0,step],[0,-step]]){
+ for(let i=0;i<=19;i++)for(let j=0;j<=7;j++){const pitch=p0+(p1-p0)*i/19,spread=s0+(s1-s0)*j/7,e=score(asset,pose,pitch,spread,target);if(!best||e<best.e-1e-12)best={pitch,spread,e};}
+ for(let step=.1;step>.002;step/=2)for(const [dp,ds] of [[step,0],[-step,0],[0,step],[0,-step]]){
   const pitch=clamp(best.pitch+dp,p0,p1),spread=clamp(best.spread+ds,s0,s1),e=score(asset,pose,pitch,spread,target);if(e<best.e-1e-12)best={pitch,spread,e};}
  return best;
 }
 // Returns {armPitch, armSpread, yaw, error} (error in radians between pointing ray and target ray).
+// Memo of solved aims by every input the solve reads (bounded); repeated frame evaluations reuse results.
+const memo=new Map(),MEMO_LIMIT=20000;
 export function solveAim(asset,pose,targetOrigin,{height=DEFAULT_HEIGHT,cheat=0}={}){
  if(!aimSupported(asset))throw Error('aim unsupported for '+asset);
+ const key=JSON.stringify([asset,pose.origin??null,pose.yaw??0,pose.scale??1,pose.params??null,pose.open??0,targetOrigin,height,cheat]);
+ if(memo.has(key))return {...memo.get(key)};
  const target=[targetOrigin[0],targetOrigin[1]+height,targetOrigin[2]],yaw=pose.yaw??0;let best=null;
- const n=Math.round(cheat/.05);
- for(let i=-n;i<=n;i++){const c=i*.05,r=solveArm(asset,{...pose,yaw:yaw+c},target),cost=r.e+.15*Math.abs(c);
-  if(!best||cost<best.cost-1e-12)best={cost,armPitch:r.pitch,armSpread:r.spread,yaw:yaw+c,error:r.e};}
- return {armPitch:+best.armPitch.toFixed(4),armSpread:+best.armSpread.toFixed(4),yaw:best.yaw,error:best.error};
+ const at=c=>{const r=solveArm(asset,{...pose,yaw:yaw+c},target),cost=r.e+.15*Math.abs(c);if(!best||cost<best.cost-1e-12)best={cost,c,armPitch:r.pitch,armSpread:r.spread,yaw:yaw+c,error:r.e};};
+ // Body-yaw cheat: coarse 0.15 rad candidates, then refine around the best (bounded by cheat).
+ const n=Math.floor(cheat/.15+1e-9);for(let i=-n;i<=n;i++)at(i*.15);if(cheat>0)at(cheat),at(-cheat);
+ if(cheat>0)for(const st of [.075,.0375]){const c0=best.c;for(const d of [-st,st]){const c=c0+d;if(Math.abs(c)<=cheat+1e-12)at(c);}}
+ const out={armPitch:+best.armPitch.toFixed(4),armSpread:+best.armSpread.toFixed(4),yaw:best.yaw,error:best.error};
+ if(memo.size>=MEMO_LIMIT)memo.clear();memo.set(key,out);return {...out};
 }
 // Frame evaluation: blends the solved arm (and cheat yaw) over the authored pose inside the window.
 export function applyAim(a,pose,origin,targetOrigin,t){

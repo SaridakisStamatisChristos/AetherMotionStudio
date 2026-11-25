@@ -264,3 +264,16 @@ test('composition-v1: negatives — back to camera, heavy overlap and tiny subje
  const tiny=compositionGate(null,{...rep,subjectHeightOfSafe:{min:.01,mean:.02,max:.03}});assert.ok(tiny.warnings.some(w=>w.code==='SUBJECT_SIZE'));
  const many=compositionGate(null,{...rep,characters:Object.fromEntries(Array.from({length:30},(_,i)=>['c'+i,{backToCameraSamples:3}]))});assert.equal(many.warnings.length,COMPOSITION_POLICY.maxWarnings);assert.equal(many.truncated,true);
 });
+
+// ---- Item 9: evaluation performance (content-keyed caches, faster aim solve) ----
+import {performance} from 'node:perf_hooks';
+test('performance: cloned-per-frame evaluation of the heaviest shots is fast and identical to cached evaluation',()=>{
+ const p=JSON.parse(readFileSync(new URL('../examples/workshop-extended-cpu-polished.json',import.meta.url),'utf8'));
+ for(const id of ['teach','shelf','toolbox']){const s=p.shots.find(x=>x.id===id),N=s.durationFrames,t0=performance.now();
+  for(let f=0;f<N;f+=4)assert.deepEqual(evaluateGraph(structuredClone(s),f/(N-1)),evaluateGraph(s,f/(N-1)),id+' frame '+f);
+  assert.ok(performance.now()-t0<8000,id+' took '+(performance.now()-t0)+' ms');}
+});
+test('performance: aim memo returns independent copies',()=>{
+ const a=solveAim('engineer',{origin:[0,0,0],yaw:0},[1.5,0,.5]),b=solveAim('engineer',{origin:[0,0,0],yaw:0},[1.5,0,.5]);
+ assert.deepEqual(a,b);a.armPitch=99;assert.notEqual(solveAim('engineer',{origin:[0,0,0],yaw:0},[1.5,0,.5]).armPitch,99);
+});

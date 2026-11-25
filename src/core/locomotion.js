@@ -14,17 +14,18 @@ export function strideLength(asset,scale=1,depth=1){const r=locomotionRig(asset)
 export function tri(u){const f=u-Math.floor(u);return f<.25?4*f:f<.75?2-4*f:4*f-4;}
 // Signed lift: >0 right foot (s=+1) in swing, <0 left foot in swing; magnitude sin over the swing.
 export function lift(u){const g=((u-Math.floor(u))+.25)%1;return g<.5?Math.sin(2*Math.PI*g):-Math.sin(2*Math.PI*(g-.5));}
-const cache=new WeakMap();
+// Cached per asset object, and by content so re-parsed/cloned shots (one per frame in some hosts) also hit.
+const cache=new WeakMap(),byContent=new Map(),LIMIT=256;
 // pathOf(t) -> {x,z,yaw} of the asset root (without locomotion) at shot progress t.
 function table(a,pathOf){
- let c=cache.get(a);if(c)return c;
+ let c=cache.get(a);if(c)return c;const key=JSON.stringify(a);c=byContent.get(key);if(c){cache.set(a,c);return c;}
  const x=a.locomotion,ts=[],pos=[],dist=[0],head=[];
  for(let i=0;i<=GRID;i++){const t=x.start+(x.end-x.start)*i/GRID,p=pathOf(t);ts.push(t);pos.push(p);}
  for(let i=1;i<=GRID;i++){const dx=pos[i].x-pos[i-1].x,dz=pos[i].z-pos[i-1].z,len=Math.hypot(dx,dz);head.push(len>1e-9?Math.atan2(dx,dz):null);
   const yaw=x.faceTravel===true&&len>1e-9?Math.atan2(dx,dz):pos[i].yaw;dist.push(dist[i-1]+(dx*Math.sin(yaw)+dz*Math.cos(yaw)));}
  // Fill stationary segments with the nearest moving heading (deterministic, forward then backward pass).
  for(let i=1;i<head.length;i++)if(head[i]===null)head[i]=head[i-1];for(let i=head.length-2;i>=0;i--)if(head[i]===null)head[i]=head[i+1];
- c={ts,dist,head};cache.set(a,c);return c;
+ c={ts,dist,head};cache.set(a,c);if(byContent.size>=LIMIT)byContent.clear();byContent.set(key,c);return c;
 }
 export function locomote(a,t,pathOf,baseYaw){
  const x=a.locomotion,c=table(a,pathOf),u=clamp((t-x.start)/(x.end-x.start)),f=u*GRID,i=Math.min(GRID-1,Math.floor(f)),k=f-i;

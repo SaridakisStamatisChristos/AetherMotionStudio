@@ -76,7 +76,7 @@ export const ENVIRONMENTS=Object.freeze({
 function evaluateGraphRaw(s,p){
  if(!Number.isFinite(p)||p<0||p>1)fail('progress','out of range');
  const c=sample(s.camera,cameraDefaults,p,s.cameraInterpolation);
- const byId=new Map(s.assets.map(a=>[a.id,a]));
+ const byId=new Map(s.assets.map(a=>[a.id,a]));let key=null;const shotKey=()=>key??=JSON.stringify(s);
  function poseOf(a,t){
   const d={...defaults,...a.identityPose};for(const ch of ['armPitch','armSpread','grip'])if(Object.hasOwn(a.tracks,ch)||(a.actions??[]).some(x=>['point','wave','reach','grasp','release','carry'].includes(x.name)))d[ch]=d[ch]??0;
   for(const ch of LEFT_ARM)if(Object.hasOwn(a.tracks,ch))d[ch]=0;
@@ -95,7 +95,7 @@ function evaluateGraphRaw(s,p){
   let {x,y,z,pose}=bodyPose(a,t);
   if(a.restOn)[x,y,z]=surfacePoint(surfacePose(a.restOn.surface,t),a.restOn.at);
   // POLISH-02 opt-in turn steps (frame grid = shot frames; shots without durationFrames use 360).
-  if(a.turnSteps){const {footLift,...m}=turnSteps(a,t,s.durationFrames??360,u=>{const b=bodyPose(a,u);return {...b.pose,x:b.x,z:b.z};});Object.assign(pose,m);pose.footLift=(pose.footLift??0)+footLift;}
+  if(a.turnSteps){const {footLift,...m}=turnSteps(a,t,s.durationFrames??360,u=>{const b=bodyPose(a,u);return {...b.pose,x:b.x,z:b.z};},shotKey()+'#'+a.id);Object.assign(pose,m);pose.footLift=(pose.footLift??0)+footLift;}
   return {id:a.id,asset:a.asset,...(a.asset===GENERATED_ID?{generatedRef:a.generatedRef}:a.asset===IMPORT_ID?{importBundle:a.importBundle}:[HERO_PROFILE,IMPORT_PROFILE,GENERATED_PROFILE].includes(s.geometryProfile)?{heroRevision:'hero-1.0.0'}:{}),...(a.identity?{identity:a.identity,variant:a.variant}:{}),pose:{origin:[x,y,z],...pose,...(a.params?{params:a.params}:{})},...(a.assembly?{assembly:a.assembly,progress:t}:{})};
  }
  const assets=s.assets.some(a=>a.attachment)?resolveAttachments(s.assets,p,sampleAsset):s.assets.map(a=>sampleAsset(a,p));
