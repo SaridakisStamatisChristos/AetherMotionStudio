@@ -52,3 +52,11 @@ test('shot look contract; state carries it; Director default for dialogue, none 
  const bad=f=>{const x=structuredClone(p);f(x.shots[0]);assert.throws(()=>validateProject(x),/look/);};
  bad(s=>s.look='glossy');bad(s=>s.look=true);
 });
+test('Three tune (owner: "tune three js"): lighter palette touch for Three only; CPU palette unchanged',()=>{
+ const sat=h=>{const n=parseInt(h.slice(1),16),c=[n>>16&255,n>>8&255,n&255];return Math.max(...c)-Math.min(...c);};
+ assert.equal(craftedColor('#e2582c'),craftedColor('#e2582c',CRAFTED.palette),'CPU default palette');
+ assert.equal(craftedColor('#e2582c'),'#da663e','CPU palette pinned (GEN-15 step 1 value)');
+ for(const h of ['#e2582c','#2c7be2','#8a3fd1']){const t=craftedColor(h,CRAFTED.three.palette),c=craftedColor(h);assert.ok(sat(t)>=sat(c),h);}
+ assert.ok(parseInt(craftedColor('#000000',CRAFTED.three.palette).slice(1,3),16)<parseInt(craftedColor('#000000').slice(1,3),16),'less lift on Three');
+ assert.ok(CRAFTED.three.ambient<1&&CRAFTED.three.exposure<1&&CRAFTED.three.metalness>.06);
+});

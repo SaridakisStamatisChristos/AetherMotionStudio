@@ -20,6 +20,15 @@ Owner: "lets skip 13 and 14 for now and go to the better looking shapes and mate
   - Possible tuning after the owner's review: Three contrast and roughness.
 - The owner has not reviewed it yet. Accepting the look starts cleanup step 2 (delete the "before" reference set).
 
+## Three tune (owner: "tune three js", 2026-11-25)
+- **Cause of the washed-out Three look:** the CPU palette lifts dark colours, which the painter needs, but Three already has ambient light and tone mapping, and the fully matte materials added more flat light.
+- **Fix:** Three alone (`CRAFTED.three`) gets a lighter palette touch (saturation 0.94, lift 0.015, warm 0.012), ambient × 0.78, exposure × 0.93, roughness 0.56 and metalness 0.12. CPU is unchanged.
+- **Render `gen15-forest-r2`** from clean 35ffc7c:
+  - CPU 0a996a7262fe460c…, byte-identical to r1, which proves CPU is unchanged;
+  - Three c1be7010ecad39c0…;
+  - all gates PASS.
+- **Agent comparison:** Three colours and contrast are back near their pre-GEN-15 strength, and the bevels stay.
+
 ## Next steps on the look track
 Richer sets and set dressing; material accents per part (metal trims, glass screens); GEN-16 needs an owner decision (a Three-only cinematic profile).
 
