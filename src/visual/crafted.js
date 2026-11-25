@@ -9,7 +9,11 @@
 //   non-metallic materials with the same chamfered geometry.
 export const CRAFTED=Object.freeze({version:'crafted-v1',bevel:Object.freeze({max:.035,share:.22,min:.004}),
  palette:Object.freeze({saturation:.86,lift:.06,warm:.018}),
- light:Object.freeze({ambient:.66,key:.32,fill:.1,bevel:.06})});
+ light:Object.freeze({ambient:.66,key:.32,fill:.1,bevel:.06}),
+ // Owner-requested tune (2026-11-25, "tune three js"): Three already has ambient light and tone mapping, so the CPU
+ // palette lift and fully matte materials washed it out. Three uses a lighter palette touch, a little less ambient
+ // light and exposure, and slightly less matte materials. CPU is unchanged.
+ three:Object.freeze({palette:Object.freeze({saturation:.94,lift:.015,warm:.012}),ambient:.78,exposure:.93,roughness:.56,roughnessDetail:.08,metalness:.12})});
 export const LOOKS=Object.freeze(['crafted-v1']);
 
 export function bevelRadius(size){const m=Math.min(...size.map(Math.abs));return m<=0?0:Math.min(CRAFTED.bevel.max,m*CRAFTED.bevel.share);}
@@ -40,10 +44,10 @@ function orient(verts,kind){const m=verts.reduce((s,p)=>s.map((x,i)=>x+p[i]/vert
  return {verts:dot(n,m)<0?[...verts].reverse():verts,kind};}
 // Softened colour (hex in, hex out), cached.
 const colours=new Map();
-export function craftedColor(hex){
- if(colours.has(hex))return colours.get(hex);
- const m=/^#?([0-9a-f]{6})$/i.exec(hex);if(!m){colours.set(hex,hex);return hex;}
- const n=parseInt(m[1],16),rgb=[n>>16&255,n>>8&255,n&255].map(v=>v/255),P=CRAFTED.palette,grey=(rgb[0]+rgb[1]+rgb[2])/3;
+export function craftedColor(hex,P=CRAFTED.palette){
+ const ck=hex+'|'+P.saturation+'|'+P.lift+'|'+P.warm;if(colours.has(ck))return colours.get(ck);
+ const m=/^#?([0-9a-f]{6})$/i.exec(hex);if(!m){colours.set(ck,hex);return hex;}
+ const n=parseInt(m[1],16),rgb=[n>>16&255,n>>8&255,n&255].map(v=>v/255),grey=(rgb[0]+rgb[1]+rgb[2])/3;
  const out=rgb.map((v,i)=>{let x=grey+(v-grey)*P.saturation;x=P.lift+x*(1-P.lift);x+=i===0?P.warm:i===2?-P.warm:0;return Math.max(0,Math.min(1,x));});
- const h='#'+out.map(v=>Math.round(v*255).toString(16).padStart(2,'0')).join('');colours.set(hex,h);return h;
+ const h='#'+out.map(v=>Math.round(v*255).toString(16).padStart(2,'0')).join('');colours.set(ck,h);return h;
 }
