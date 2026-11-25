@@ -1,5 +1,5 @@
 # Current state — AetherMotion Studio
-Updated 2026-11-25 (main 3ac0f01 has GEN-04..11 and the CPU mouth fix; GEN-12 on feature/gen-12, PR pending). Authoritative rolling checkpoint for new coding sessions; update at verified transitions. This file references the historical ledger rather than replacing source or evidence. Baseline product merge: `04e3491bb21b4ebc3d54755a2a211b1a7affb3fa` (PR #13 merged into main). The handoff documentation commit may be newer; inspect git HEAD. No release publication implied.
+Updated 2026-11-25 (main fae67c1 has GEN-04..12; GEN-15 step 1 on feature/gen-15, PR pending). Authoritative rolling checkpoint for new coding sessions; update at verified transitions. This file references the historical ledger rather than replacing source or evidence. Baseline product merge: `04e3491bb21b4ebc3d54755a2a211b1a7affb3fa` (PR #13 merged into main). The handoff documentation commit may be newer; inspect git HEAD. No release publication implied.
 
 ## Current status and authority
 - v1.0 core pipeline and Asset Foundry AF01–AF09 implementation merged; do not reimplement.
@@ -19,6 +19,18 @@ Updated 2026-11-25 (main 3ac0f01 has GEN-04..11 and the CPU mouth fix; GEN-12 on
 6. Source and approved decisions authoritative. This summary cannot discard binding facts; consult the source-specific contract when the task touches it. Keep state and handoff synchronized. No new native render runs on GitHub or release without authorization.
 
 ## Active unit
+GEN-15 step 1, the crafted look — IMPLEMENTED + TESTED + RENDERED (agent-reviewed) on `feature/gen-15` (from main fae67c1). PR pending; not merged.
+- Owner: "lets skip 13 and 14 for now and go to the better looking shapes and materials"; then "wait merge pr 32 and dont branch… lets dont mess the code sequence".
+  - PR #32 was merged (fae67c1, after its CI passed on the PR head; main CI 45702405758 success). GEN-15 was then restarted from main, not stacked.
+  - GEN-13 and GEN-14 are skipped for now (owner).
+- 75c451a: shot field `look:'crafted-v1'` and request field `look` (default for dialogue films). Chamfered boxes with an absolute bevel on both renderers, softened palette, softer CPU light, matte Three. Doc: docs/LOOK.md.
+- Defaults unchanged with `--exclude talk04,talk05,gen01,gen09,gen12`. npm 359 run, 358 pass, 0 fail, 1 Windows skip.
+- Render `gen15-forest-r1`: CPU 0a996a7262fe460c…, Three 7f81ed48893f2bec…. All gates PASS.
+  - CPU is clearly improved.
+  - Three is slightly washed out (tuning possible after the owner's review).
+- Render cleanup step 1 (NEXT_UNITS plan): the exact list is shown to the owner for confirmation. Nothing has been deleted yet.
+
+## Previous active unit (GEN-12, MERGED fae67c1)
 GEN-12 topic-fitting sets — IMPLEMENTED + TESTED + RENDERED (agent-reviewed) on `feature/gen-12` (from main 3ac0f01). PR pending; not merged. Owner: "merge and continue" (PR #31 merged 3ac0f01; main CI 45696108860 success).
 - b26b3f9: `request.sets` ('topic-v1' / 'none'; absent means topic-v1 for dialogue films and unchanged output otherwise). It gives one palette plus layered backdrop per film from the topic category, and dialogue set pieces re-picked from that category without repeats (everyday never random). Doc: docs/SETS.md.
 - 2d86bfa **GEN-05b regression fix (merged code):** the media quality audit (quality_metrics.expected_subtitles, quality_media reading speed) ignored `holdSample`.
