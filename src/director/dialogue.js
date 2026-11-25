@@ -17,7 +17,7 @@ export const DIALOGUE_STYLES=Object.freeze(['conversation','interview']);
 // Cameras that keep an open line of speakers readable (frontal or gently angled); others show backs or lose faces.
 export const DIALOGUE_CAMERAS=Object.freeze(['medium','dolly-in','push-in','pull-back','establishing']);
 // Calm defaults from the owner's TALK-03 reviews: 0.8 s turns, cheat 1.0, body language as merged in TALK-03.
-export const DIALOGUE_STAGE=Object.freeze({turn:.8,cheat:1,line:{2:[[-1,.35],[1,.35]],3:[[-1.35,.35],[0,-.2],[1.35,.35]]},propZ:-1.1,propScale:.6});
+export const DIALOGUE_STAGE=Object.freeze({turn:.8,cheat:1,line:{2:[[-1,.35],[1,.35]],3:[[-1.35,.35],[0,-.2],[1.35,.35]]},prop:{2:[2,-.5],3:[2.4,-.6]},propScale:.85});
 const human=asset=>recipeSpec(asset)?.family==='human';
 
 export function validateDialogueRequest(q){
@@ -77,11 +77,12 @@ export function dialogueSpeech(q,ir){
  return {...base,speakers:Object.fromEntries(q.dialogue.speakers.map(s=>[s.id,{name:s.name,voice:s.voice,language:s.language}])),
   shotSpeakers:Object.fromEntries(ir.shots.map((s,i)=>['shot-'+(i+1),[...s.speakers]])),placement:'lead',mix:{...base.mix,master:'mix-v2'}};
 }
-// Speakers in an open line facing the camera (TALK-02/03 layout: x ±1.35, middle z −0.2), the set piece behind them.
+// Speakers in an open line facing the camera (TALK-02/03 layout: x ±1.35, middle z −0.2), the set piece beside the line
+// (r1 render: placed behind the line it was hidden by the middle speaker in every shot).
 export function stageDialogueAssets(q,prop){
- const sp=q.dialogue.speakers,line=DIALOGUE_STAGE.line[sp.length];
+ const sp=q.dialogue.speakers,line=DIALOGUE_STAGE.line[sp.length],[px,pz]=DIALOGUE_STAGE.prop[sp.length];
  const chars=sp.map((s,j)=>({id:s.id,asset:s.character,...(human(s.character)?{params:{detail:2}}:{}),tracks:{x:[[0,line[j][0]]],z:[[0,line[j][1]]]},...(locomotionRig(s.character)?{turnSteps:true}:{})}));
- const object={id:'object-1',asset:prop.asset,tracks:{x:[[0,prop.x??0]],z:[[0,DIALOGUE_STAGE.propZ]],scale:[[0,prop.scale??DIALOGUE_STAGE.propScale]]},...(prop.action&&prop.action!=='idle'?{actions:[{name:prop.action,start:.06,end:.94,blend:.1,...(['walk','run'].includes(prop.action)?{mode:'loop',speed:2}:{})}]}:{})};
+ const object={id:'object-1',asset:prop.asset,tracks:{x:[[0,prop.x??px]],z:[[0,pz]],scale:[[0,prop.scale??DIALOGUE_STAGE.propScale]]},...(prop.action&&prop.action!=='idle'?{actions:[{name:prop.action,start:.06,end:.94,blend:.1,...(['walk','run'].includes(prop.action)?{mode:'loop',speed:2}:{})}]}:{})};
  return [...chars,object];
 }
 export function dialogueShotFields(q){
