@@ -7,6 +7,7 @@ import {build,SCRIPT} from '../scripts/talk05-first-words.mjs';
 import {validateProject} from '../src/core/timeline.js';
 import {plannedTimeline} from '../src/studio/model.js';
 import {dialogueShot} from '../src/core/dialogue.js';
+import {evaluateGraph} from '../src/core/graph.js';
 import {inspectProject} from '../src/quality/preflight.js';
 import {compositionGate,compositionReport} from '../src/quality/composition.js';
 import {normalizedProject} from '../src/studio/production.js';
@@ -19,7 +20,7 @@ test('talk05: examples are fresh generator output and an exact backend pair',()=
 });
 test('talk05: speech project with three voices, lead placement, mix-v2 and a pronunciation fix',()=>{
  const p=validateProject(load('cpu')),c=p.speech;
- assert.equal(c.targetFrames,2250);assert.equal(c.placement,'lead');assert.equal(c.mix.master,'mix-v2');assert.deepEqual(c.fixedShots,{shelf:270,lights:180});
+ assert.equal(c.targetFrames,2250);assert.equal(c.placement,'lead');assert.equal(c.mix.master,'mix-v2');assert.deepEqual(c.fixedShots,{shelf:360,lights:180});
  // r1 preparation failed: a shot with fixed durationFrames was missing from fixedShots. Every fixed shot must be listed.
  for(const s of p.shots)assert.equal(s.durationFrames===null,!Object.hasOwn(c.fixedShots,s.id),s.id);
  assert.deepEqual(Object.keys(c.speakers),['eng','sci','robo']);assert.equal(c.speakers.sci.language,'en-gb');
@@ -40,4 +41,8 @@ test('talk05: composition gate passes with listener turns applied; calm defaults
  assert.equal(p.shots.filter(s=>s.dialogue).length,5);
  const tools=p.shots[1].assets.find(a=>a.id==='robot');assert.equal(tools.aim.target,'toolbox');
  assert.equal(p.shots[2].assets.find(a=>a.id==='robot').params.reach,1.8,'high-shelf reach reused');
+ // r2 measured a 224°/s whole-body turn in the shelf shot; the calmer copy stays under 120°/s.
+ const sh=p.shots[2],n=sh.durationFrames;let prev=null,peak=0;
+ for(let f=0;f<n;f++){const y=evaluateGraph(sh,f/(n-1)).assets.find(a=>a.id==='robot').pose.yaw;if(prev!==null)peak=Math.max(peak,Math.abs(y-prev)*30*180/Math.PI);prev=y;}
+ assert.ok(peak<120,'shelf turn peak '+peak.toFixed(1)+' deg/s');
 });

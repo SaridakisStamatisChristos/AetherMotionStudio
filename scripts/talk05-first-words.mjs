@@ -31,12 +31,15 @@ export const SCRIPT={
 function shots(){
  const table=()=>({id:'table',asset:'table',tracks:{x:[[0,0]],z:[[0,-1.1]],scale:[[0,.8]]}});
  const shelf=structuredClone(ext.shelf),lights=structuredClone(ext.lights);
+ // Calmer turn than the extended film (r2 measured 224°/s for the 134° turn with the book): 360 frames and the turn
+ // spread over .30–.46 (~1.9 s) instead of .34–.44 at 270 frames. Only this copy changes; the extended film is untouched.
+ shelf.durationFrames=360;const ry=shelf.assets.find(a=>a.id==='robot').tracks.yaw;ry[1][0]=.3;ry[2][0]=.46;
  return [
   shot('morning','amber','GOOD MORNING','A first word.',{...cam(-.2,.2,7.4,7.1,1400,1500),speakerAssets:{eng:'engineer',robo:'robot'},dialogue:TALK,bodyLanguage:BODY,assets:[eng(-.8,.3),robo(.8,.2)]}),
   // The robot points past the scientist at the toolbox (aim, body cheat) while it names it.
   shot('tools','laboratory','NAME IT','Point, then say it.',{...cam(.3,-.1,8,7.7,1250,1320,'scientist'),speakerAssets:{sci:'scientist',robo:'robot'},dialogue:TALK,bodyLanguage:BODY,
-   assets:[sci(-.7,.3),{...robo(1,.1),actions:[{name:'point',start:.4,end:.85,blend:.12}],aim:{target:'toolbox',start:.4,end:.85,blend:.12,height:.35,cheat:.6}},{id:'toolbox',asset:'toolbox',tracks:{x:[[0,-2.1]],z:[[0,-.5]],scale:[[0,.9]]}}]}),
-  // Reused POLISH-02 HIGH SHELF choreography (fixed 270 frames); the robot speaks after setting the book down.
+   assets:[sci(-.7,.3),{...robo(1,.1),actions:[{name:'point',start:.4,end:.85,blend:.2}],aim:{target:'toolbox',start:.4,end:.85,blend:.2,height:.35,cheat:.6}},{id:'toolbox',asset:'toolbox',tracks:{x:[[0,-2.1]],z:[[0,-.5]],scale:[[0,.9]]}}]}),
+  // Reused POLISH-02 HIGH SHELF choreography (360 frames here); the robot speaks after setting the book down.
   {...shelf,heading:'TOP SHELF',subheading:'A book to read.',speakerAssets:{robo:'robot'}},
   shot('table','amber','AROUND THE TABLE','Three voices.',{...cam(-.3,.3,8.2,7.8,1300,1380),speakerAssets:{eng:'engineer',robo:'robot',sci:'scientist'},dialogue:TALK,bodyLanguage:BODY,assets:[eng(-1.35),robo(0),sci(1.35),table()]}),
   shot('mistake','laboratory','ONE LETTER','Wench, wrench.',{...cam(.2,-.2,7.4,7.1,1400,1500,'engineer'),speakerAssets:{eng:'engineer',robo:'robot'},dialogue:TALK,bodyLanguage:BODY,
@@ -47,7 +50,7 @@ function shots(){
 }
 export function build(backend){
  const list=shots(),p={version:2,id:'talk05-first-words-'+backend+'-polished',title:'The Workshop — First Words',voice:'af_heart',
-  speech:{version:1,targetFrames:2250,fixedShots:{shelf:270,lights:180},placement:'lead',
+  speech:{version:1,targetFrames:2250,fixedShots:{shelf:360,lights:180},placement:'lead',
    speakers:{eng:{name:'Engineer',voice:'af_heart',language:'en-us'},sci:{name:'Scientist',voice:'bf_emma',language:'en-gb'},robo:{name:'Robot',voice:'am_michael',language:'en-us'}},
    shotSpeakers:Object.fromEntries(list.map(s=>[s.id,SCRIPT[s.id].map(l=>l[0])])),pronunciations:{Wrrrench:'rrr rench'},
    captions:{mode:'both',highlight:true,maxChars:32,maxLines:2,maxCps:18},

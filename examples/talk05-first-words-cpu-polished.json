@@ -7,7 +7,7 @@
   "version": 1,
   "targetFrames": 2250,
   "fixedShots": {
-   "shelf": 270,
+   "shelf": 360,
    "lights": 180
   },
   "placement": "lead",
@@ -357,14 +357,14 @@
        "name": "point",
        "start": 0.4,
        "end": 0.85,
-       "blend": 0.12
+       "blend": 0.2
       }
      ],
      "aim": {
       "target": "toolbox",
       "start": 0.4,
       "end": 0.85,
-      "blend": 0.12,
+      "blend": 0.2,
       "height": 0.35,
       "cheat": 0.6
      }
@@ -404,7 +404,7 @@
    "id": "shelf",
    "template": "cinematic-graph",
    "backend": "cpu",
-   "durationFrames": 270,
+   "durationFrames": 360,
    "transitionFrames": 12,
    "transition": "fade",
    "heading": "TOP SHELF",
@@ -490,11 +490,11 @@
         1.66
        ],
        [
-        0.34,
+        0.3,
         1.66
        ],
        [
-        0.44,
+        0.46,
         -0.676
        ],
        [
