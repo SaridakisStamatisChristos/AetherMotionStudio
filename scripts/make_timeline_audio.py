@@ -105,7 +105,7 @@ for a,b,v in pieces:
     duck[b:h]=np.minimum(duck[b:h],np.linspace(.43,1,h-b))
 fade=np.minimum(t/.05,1)*np.minimum((seconds-t)/.25,1)
 if mastered:
-    mix,master_report=audio_master.master(music*duck+speech,R);mix=mix*fade
+    mix,master_report=audio_master.master(music*audio_master.BED_GAIN*duck+speech,R);mix=mix*fade
     (out/'audio-master.json').write_text(json.dumps(master_report,indent=2),encoding='utf-8')
 else: mix=np.tanh((music*duck+speech)*1.12)*fade
 wavfile.write(out/'kokoro-narration.wav',R,np.int16(np.clip(speech,-1,1)*32767))

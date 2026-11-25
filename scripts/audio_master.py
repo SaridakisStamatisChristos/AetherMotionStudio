@@ -1,5 +1,6 @@
 """POLISH-02 item 8: opt-in mastering profile "mix-v2" (project field audio.master).
 
+- Bed: the music bed is raised by BED_GAIN (+6 dB) before ducking, so gaps between phrases do not drop out.
 - Phrase levelling: each narration phrase is set to a common RMS and soft-limited (tanh) instead of being capped by its
   own peak, so phrase loudness stays consistent.
 - Master: integrated loudness measured per ITU-R BS.1770-4 (K-weighting, 400 ms blocks, 75 % overlap, -70 LUFS absolute
@@ -16,6 +17,9 @@ TARGET_LUFS = -16.0
 CEILING_DBTP = -1.0
 PHRASE_RMS = .17
 PHRASE_LIMIT = .8
+# Bed gain relative to the historical bed: keeps bed-only gaps between phrases from feeling like dropouts once
+# speech is levelled up (r4 review: bed-only -33 dB vs speech -16 dB, LRA 17.7 LU). Ducking under speech unchanged.
+BED_GAIN = 2.0
 
 
 def enabled(scene):
