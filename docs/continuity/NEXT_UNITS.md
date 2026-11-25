@@ -57,3 +57,69 @@ Existing foundations to reuse (do not rebuild): speech config `speakers` (≤8, 
 4. TALK-04 authoring: director dialogue scripts + speaker casting; Studio speaker editor.
 5. TALK-05 showcase: "The Workshop — First Words" dialogue film.
 Risks: lip-sync quality without phoneme alignment (envelope-driven mouth is honest and deterministic; viseme/phoneme alignment would need an opt-in local aligner and must be labelled estimated unless truly aligned); Kokoro voice variety (English voices only); keep audio/visual sync measured, not assumed.
+
+## Plan for TALK-04 and TALK-05 (authorized by the owner 2026-11-25; execute in a new session via "fod continue")
+Owner request: "write me a handoff … so i can start the talk-04 and -05 in new session and take it over from there … i would need to type only fod continue."
+
+### Binding constraints (carry into both units)
+- Every new behaviour is opt-in, and old outputs are proven unchanged with `node scripts/fod-digests.mjs` (base worktree vs working tree).
+- Tests include negatives. Matched CPU/Three local production comes from a clean commit; run frame_glitch and an agent stills review on both backends.
+- The owner's motion taste (three TALK-03 reviews): calm and sparse.
+  - Defaults: `dialogue.turn` 0.8 s, `cheat` about 1.0; body language as merged in TALK-03 (≤1 arm beat per line, ≤1 small nod per character per 8 s, no nod when the addressee replies next, sway 0.015 rad).
+  - Measure per-character counts and peak angular speeds before showing a render.
+- Never call envelope- or loudness-driven motion "lip-sync", "forced alignment" or "word alignment".
+- The model-facing prompt versions v1.1 and v1.2 must keep their digests; dialogue prompting is a new version.
+- No new dependencies, no paid API, no CI or backend-default changes. Only the owner merges.
+
+### TALK-04 — director dialogue authoring (next)
+Goal: from a topic (or a supplied script) the Director produces a ready dialogue project, which the owner can edit in Studio.
+1. **Request:** opt-in `request.dialogue: {speakers: [{id, name, voice, language, character}], style?: 'conversation'|'interview'}`.
+   - 2–3 speakers; voices from VOICES with language and voice consistent (`bf_*`/`bm_*` → en-gb).
+   - `character` is a catalog asset with a mouth: a human (detail 2/3 is set automatically) or a catalog robot.
+   - Negatives for everything.
+   - Absent → director output digest-identical (director line of fod-digests).
+2. **IR:** per shot, an optional `speakers: [speakerId]` parallel to `narration` (same length), validated in src/director/schema.js `validateIR`. Absent when dialogue is off.
+3. **Offline director (no model):** deterministic dialogue.
+   - Split the offline beat narration into sentences and assign them in turns (round-robin starting with the first speaker; an interview style alternates host/guest).
+   - It must be documented as a split of the offline narration into turns, not invented facts. Keep the existing topic patterns.
+4. **Provider prompt:** new `director-ir-v1.3`, built on the v1.2 compact layout plus a "Dialogue:" block (speaker ids, names and roles; each shot's lines must alternate sensibly; every line needs a speaker).
+   - Tests: ≤2,000 estimated tokens for a 60 s request; a mock provider round trip; v1.1/v1.2 prompts byte-identical.
+5. **Compile (src/director/index.js `compile`)** with dialogue on:
+   - `project.speech` from `defaultSpeech(seconds)` (src/studio/production.js) plus `speakers`, `shotSpeakers`, `placement: 'lead'` and `mix.master: 'mix-v2'`;
+   - per shot: the speaking characters as assets, `speakerAssets`, `dialogue {listen, turn: .8, cheat: 1}`, and `bodyLanguage {beats, nods, blinks, sway}`;
+   - staging of 2–3 speakers in an open line facing the camera (see the TALK-02/03 examples: x ±1.35, robot z −0.2, `turnSteps`).
+   - Possibly as staging mode `talk-v1` in src/core/staging.js (opt-in, existing modes unchanged).
+6. **Studio speaker editor (opt-in model functions + UI):**
+   - src/studio/model.js: `setSpeakers(project, speakers)`, `setLineSpeaker(project, shotIndex, phraseIndex, speakerId)`, `bindSpeaker(project, shotIndex, speakerId, assetId)`; transactional, validated, with negatives.
+   - studio/app.js + studio/index.html: a minimal panel to edit speakers and line speakers.
+   - A manual UI exercise via `npm run studio:local`, reported as observed or not observed.
+7. **Evidence:**
+   - examples/talk04-dialogue.request.json, then `node scripts/produce.mjs --request examples/talk04-dialogue.request.json --backend both --id talk04-…` (check the flags in scripts/produce.mjs first);
+   - all gates PASS, motion counts, stills;
+   - docs/DIRECTOR.md and docs/SPEECH.md sections.
+
+Exit: tests incl. negatives; digests unchanged without `dialogue`; one matched render; PR.
+
+### TALK-05 — talking showcase film (after TALK-04; may stack on the TALK-04 branch)
+Goal: "The Workshop — First Words", a 60–90 s dialogue film using TALK-01..03 and the POLISH features, for owner visual and audio review.
+- Cast: engineer (af_heart, detail 2), scientist (bf_emma, en-gb, detail 2) and robot (am_michael, service-robot, `reach` 1.8 if it reaches).
+- Proposed outline, 7 shots, about 75 s. Owner may change it; keep lines short for ≤18 characters per second.
+  1. Workshop, morning: the engineer greets; the robot answers its first word.
+  2. The scientist asks the robot to name tools; the robot points (aim) and names them.
+  3. The robot fetches a book from the high shelf (reuse the HIGH SHELF pattern) and reads a line.
+  4. A three-way conversation at the table (TALK-02/03 pattern).
+  5. A mistake and a correction: the robot mispronounces a word (a pronunciation entry) and the engineer corrects it.
+  6. A robot close-up: "Thank you." The listeners react with one nod each, at most.
+  7. Lights out (callback to the extended film); the robot whispers goodnight.
+- Generator scripts/talk05-first-words.mjs → examples/talk05-first-words-{cpu,three}-polished.json.
+  - Speech project with lead placement and mix-v2; dialogue, bodyLanguage and turnSteps on speaking shots.
+  - Composition gate and preflight clean; caption reading-speed findings minimised.
+- Evidence:
+  - matched production `talk05-first-words-r1` from a clean commit; all gates;
+  - delivered loudness about −16 LUFS (ebur128 on both films);
+  - per-character motion counts within the owner's budget;
+  - stills of every shot on both backends;
+  - owner visual and audio review requested explicitly.
+- Optional: author the first draft with the TALK-04 director, then hand-polish in the generator, recording which parts are director-made.
+
+Exit: the owner watches and accepts the film; PR merged on the owner's word.

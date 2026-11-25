@@ -23,6 +23,7 @@ Update CURRENT_STATE.md (cumulative canon, active status, durable obligations) a
 
 ## Reusable commands (natural language, not external tools)
 FOD RESUME — read the bootstrap set and resume current authorized work.
+FOD CONTINUE — same as FOD RESUME (the owner usually types "fod continue"): bootstrap, then execute the "Next action" of docs/continuity/HANDOFF.md.
 FOD CHECKPOINT — verify active changes and update state/handoff.
 FOD AUDIT <topic> — targeted source/evidence inspection.
 FOD BACKPORT <reason> — scoped repair with impact assessment.
