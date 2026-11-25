@@ -134,3 +134,27 @@ The TALK-01..04 features are already general project and Director contracts that
 5. **Readable dialogue lines:** the offline dialogue splits sentences over ~18 characters per second into shorter turns, without changing the words.
 6. **Director interactions:** when a line names the set piece, the speaker points at it (aim) if the rig allows.
 Exit criteria: checks run on every example in tests and stay digest-neutral for existing outputs; one matched render of a fresh topic request through the Director with no hand edits, reviewed by the owner.
+
+## GEN-02 group framing and GEN-03 speaker follow — MERGED
+- GEN-02 (merged with GEN-01 in 23f4198, PR #27): `cameraRig.framing 'group'` for 9:16. Owner: "if the videos are posted for example in instagram the charachers are samll".
+- GEN-03 (merged 4f588e3, PR #28): speaker-follow camera. Owner: "do 1".
+  - The owner rejected r2 ("the camera move makes characters out of screen").
+  - Fixed with the follow constraint and the OFF_FRAME check.
+
+## Candidates after GEN-03 (proposed 2026-11-25, none authorized; the owner picks)
+
+| ID | What | Why | Needs the owner? |
+|---|---|---|---|
+| GEN-04 (recommended first) | The composition overlap metric counts every catalog character (humans and robots, not only rigs with a right-hand anchor); recalibrate and record known findings | The explorer robot's crowding was invisible to the gate in GEN-02 r1 | No |
+| GEN-05 | Caption reading speed: (a) opt-in slightly slower dialogue speech (Kokoro speed about 0.92 in speech projects), or (b) captions linger up to about 0.4 s into the following pause | 1–2 cues per film at 18–20 characters per second | Yes: choose (a) or (b) |
+| GEN-06 | Variety for vertical feeds without cropping: optional cut to a clean single of the speaker as its own shot on long lines (a separate shot, so nobody is cut at an edge), driven by measured lines | Follow cannot enlarge two-person shots, because both already fill the width | Yes: confirm that cuts to singles are wanted |
+| GEN-07 | Re-stage older accepted films flagged by the checks (off-frame characters, hidden tables, fast turns) using the general passes; produce new revisions, never overwrite | The checks list findings in 9+ older films | Yes: these films were accepted |
+| GEN-08 | Visibility check from projected geometry boxes instead of whole-asset boxes | Fewer false alarms for thin shapes | No |
+
+Rules for any pick:
+- Opt-in or default-proven-unchanged (fod-digests).
+- Tests including negatives.
+- A matched render from a clean commit.
+- The checks must stay at 0 for new outputs.
+- Stills at the middle of every spoken line.
+- Ask before merging.
