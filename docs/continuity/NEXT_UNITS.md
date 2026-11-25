@@ -12,7 +12,7 @@ This is an actionable proposed sequence for future work, not an approved require
 | ART-04 | Director and Studio authoring quality | Better retrieval and shot/action planning, fix duplicate shortlist when reproduced, compact IR, local editable preview; manual UI exercise and backward-compatible export/import. No mandatory cloud. |
 | ART-05 | Curated final showcase | User-defined topic/style/duration, coherent multi-shot film, meaningful movement, clear audio, assets/identities, visual review, selected CPU/Three outputs. No aesthetic auto-certification. |
 | POLISH-01 | Walking, identity handoffs, director interactions, longer film | MERGED (365a78e, PR #19): planted locomotion, ledger chains, solveHandoff + staging art-v2, "The Workshop — Extended" 64 s. |
-| POLISH-02 | Close the remaining quality gaps (see plan below) | Each item opt-in or test-pinned; measured before/after; one matched render; human review of the extended film. |
+| POLISH-02 | Close the remaining quality gaps (see plan below) | Each item opt-in or test-pinned; measured before/after; one matched render; human review of the extended film. Items 1–4 IMPLEMENTED on `feature/polish-02` (PR awaiting owner merge); items 5–10 still planned. |
 | TALK-01 | Speaking faces (mouth + speaker binding) | Mouth channel on detail-2 humans and robot face panels; driven by a per-frame speech envelope from the measured narration PCM (prepared once, shared, hashed); speaker→character binding per phrase; both backends; deterministic. |
 | TALK-02 | Dialogue scenes | Two+ characters exchange lines with distinct Kokoro voices (existing speakers/shotSpeakers); listeners face the active speaker; captions name speakers; turn-taking from measured phrase bounds. |
 | TALK-03 | Body language while talking | Beat gestures on stressed words (estimated word timing, never called forced alignment), head nods/tilts, blinks, idle weight shifts; bounded and deterministic. |
@@ -38,9 +38,9 @@ Ordered by payoff. Every item: opt-in or default-proven-unchanged, tests incl. n
 
 ### POLISH-02 — quality gaps observed in this session (do first)
 1. **Pointing at targets** — DONE 2535907 (opt-in `aim`, docs/CINEMATOGRAPHY.md POLISH-02). `point` is a fixed forward arm; add an opt-in `aim:{target}` that solves arm pitch/spread (+ body cheat) toward an asset (seen: LEARNING BY WATCHING, the engineer's point aims at the robot, not the table).
-2. **Turn-in-place steps** — pivots slide the planted foot 1–2 cm; add small stepping when yaw changes faster than a threshold while standing.
-3. **Robot reach** — service-robot arms cannot reach above the head (hands max ~1.5 vs head 1.9); add an opt-in longer-arm/elbow rig variant or shoulder raise.
-4. **Hand-to-object pickup/put-down** — attachments start at a hand pose; add solved reach-to-prop pickup from a surface and place-onto-surface with surface height detection (today place targets are authored/solved by script).
+2. **Turn-in-place steps** — DONE 7e847ea (opt-in `turnSteps`, planted feet incl. inside locomotion). pivots slide the planted foot 1–2 cm; add small stepping when yaw changes faster than a threshold while standing.
+3. **Robot reach** — DONE 0087fa7 (opt-in `params.reach` telescoping arm). service-robot arms cannot reach above the head (hands max ~1.5 vs head 1.9); add an opt-in longer-arm/elbow rig variant or shoulder raise.
+4. **Hand-to-object pickup/put-down** — DONE 0087fa7/52c01fd (surface.js, `restOn`, place `to:{surface}`, `offset:'auto'`, `solveReach`; HIGH SHELF shot). attachments start at a hand pose; add solved reach-to-prop pickup from a surface and place-onto-surface with surface height detection (today place targets are authored/solved by script).
 5. **Director prompt for chains** — teach provider prompts about hold chains and staging (versioned prompt; keep existing prompt digests for old versions).
 6. **Composition gates in CI tests** — promote compositionReport thresholds (no back-to-camera, overlap bound) to tests for every showcase fixture; consider a bounded preflight warning (new versioned policy only).
 7. **Human recipe detail 3** — hair/brows variety, hands with fingers, clothing silhouettes per kind (pure opt-in, digest-proven).
