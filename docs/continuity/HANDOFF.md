@@ -2,7 +2,7 @@
 
 Unit: TALK-03
 Checkpoint: branch `feature/talk-03`, stacked on `feature/talk-02` (PR #23, TALK-02, not merged; the owner did not ask to merge it). Commits: e3ddfd5 (TALK-03), plus this checkpoint commit. Pushed; PR with base `feature/talk-02`. Merge #23 first, then retarget this PR to main. Not merged.
-Status: IMPLEMENTED + TESTED + RENDERED; agent-reviewed only.
+Status: MERGED. PR #23 (TALK-02) → main e17870c; PR #24 (TALK-03, retargeted to main) → main 85d7a37; main CI 45603403014 test PASS on 85d7a37. Owner: "merge it for now" (2026-11-25) after motion revisions r2/r4/r5 (final r5: 1 nod and 2 beats per character in the 17 s meeting).
 Approved by: owner "yes please implement talk-03" (2026-11-25).
 Date: 2026-11-25
 
@@ -47,5 +47,5 @@ Date: 2026-11-25
 - Arm beats are additive arm pitch only; there are no hand or finger gestures yet.
 
 ## Next action
-- Owner: watch out/talk03-body-r1-cpu-polished/film.mp4; decide on #23 and then this PR.
+- Done: both PRs merged; record on branch `chore/record-talk-02-03`. The owner's "for now" means motion amounts may be revisited; nods and sway can be switched off per shot.
 - Then TALK-04 (director dialogue authoring) or TALK-05 (talking showcase film), per the roadmap.
