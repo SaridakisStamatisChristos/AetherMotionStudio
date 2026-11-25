@@ -67,6 +67,8 @@ Date: 2026-11-25
 | GEN-05 pace | src/core/speech.js `SPEECH_PACE`, timeline.js, scripts/speech_pipeline.py, speech_plan.py `speed_ladder`, verify.py, src/director/dialogue.js, tests/gen05.test.js, test_speech_pace.py, docs/SPEECH.md | `speech.pace`, `request.dialogue.pace`; the report records `pace {requested, kept}` |
 | GEN-06 singles | src/core/singles.js, cinematography.js (`framing:'single'`), timeline.js (`titleHold`), fidelity-effects.js, motion-check.js OFF_FRAME, director/index.js, tests/gen06.test.js, docs/CINEMATOGRAPHY.md | `singles-v1`; only true singles; `request.dialogue.singles` |
 | GEN-08 visibility | src/quality/visibility.js, produce.mjs, studio-server.mjs, tests/gen08.test.js, docs/QUALITY.md | `visibility-v2`, threshold 0.70; v1 kept |
+| GEN-12 sets | src/director/sets.js (`SETS`, `topicSet`, `applySet`, `fitPieces`), director/index.js, schema.js (`request.sets`), examples/gen12-forest.request.json, tests/gen12.test.js, docs/SETS.md | `topic-v1` |
+| GEN-05b audit fix | scripts/quality_metrics.py `expected_subtitles`, quality_media.py reading speed, tests/test_captions_readable.py | holds honoured |
 | GEN-10 mouths | scripts/visemes.py, speech_pipeline.py, src/core/talk.js (`VISEMES`, `visemeAt`, `validateVisemes`), catalog.js (`mouthWidth`), speech.js (`mouths`), timeline.js, production.js, tests/gen10.test.js, test_visemes.py, docs/MOUTHS.md | `viseme-estimated-v1`, `speech.mouths` |
 | GEN-11 weight | src/core/body.js (`WEIGHT`, `weightAt`), catalog.js `headRoute` (`pose.hip`), director/index.js, tests/gen11.test.js, docs/IDLE.md | `bodyLanguage.weight` |
 | GEN-05b captions | scripts/speech_plan.py (`balanced`, `phrase_speed`, holds), speech_pipeline.py, verify.py, speech.js (`readable`, `holdSample`, `cueAt`), timeline.js, tests/gen05b.test.js, test_captions_readable.py, docs/SPEECH.md | `captions.readable` |
@@ -87,6 +89,6 @@ Date: 2026-11-25
 - Still open from before: mouths follow loudness only (GEN-10); no idle weight shift (GEN-11); "Wrrrench" not heard by the owner; TALK-05 has a wide LRA.
 
 ## Next action
-- Run "fod continue": bootstrap, PR states, baseline digests and tests.
-- Ask the owner questions 1–4. Then start GEN-12 (no owner decision needed) on `feature/gen-12`, branched from `feature/gen-10-11`, or from main if it is merged.
-- Do not merge without the owner's word. Do not start GEN-13 or GEN-14 without the owner's decision on sources and model.
+- Run "fod continue": bootstrap, the GEN-12 PR state, baseline (with gen12 excluded) and tests.
+- Ask the owner: merge GEN-12? GEN-13 sources? GEN-14 model?
+- Do not merge without the owner's word, and only after PR CI has reported.
