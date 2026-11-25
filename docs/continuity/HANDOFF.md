@@ -93,7 +93,9 @@ Earlier handoffs: git history of this file (each record branch `chore/record-*`)
 - `gen03-interview-r3`, `gen03-network-r1` and `talk05-first-words-r10` at 0054e76:
   - all gates PASS; checks 0/0; no character outside the frame; −16.0 LUFS;
   - films listed in docs/SHOWCASE.md.
-- Owner-rejected: `gen03-interview-r2` (characters off screen). Superseded runs are kept untouched in out/.
+- Owner-rejected: `gen03-interview-r2` (characters off screen).
+- Superseded, failed and rejected runs were deleted on 2026-11-25 at the owner's request (list in CURRENT_STATE, Outstanding obligations); their hashes stay in the docs.
+- The never-delete rule still applies to accepted and evidence renders. Ask before any further cleanup.
 - Human review: the owner watched GEN-03 r2 and rejected it, then said "merge it" after the fix description. No explicit human visual or audio acceptance of r3/r10 is recorded.
 
 ## Open issues (not blockers)
