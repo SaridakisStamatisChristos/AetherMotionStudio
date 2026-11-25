@@ -10,6 +10,30 @@ export function setBackend(project,backend){return editProject(project,p=>{if(p.
 export function setProfile(project,profile){if(!['original','polished'].includes(profile))fail('Invalid profile');return editProject(project,p=>{if(p.version!==2)fail('Graph profile selection requires v2');for(const s of p.shots)if(s.template==='cinematic-graph'){if(profile==='original')delete s.fidelity;else s.fidelity={...FIDELITY_DEFAULTS};}});}
 // ART-04: one-click staging pass for hand-authored or generated projects (pure, validated).
 export function setStaging(project,mode='art-v1'){return stageProject(project,mode);}
+// TALK-04 speaker editor. Transactional (edits a clone; the full project validator is the gate), so a rejected edit
+// never changes the project. Speakers live in speech.speakers, line speakers in speech.shotSpeakers, and the
+// speaker→character binding in shot.speakerAssets (TALK-01 contract).
+const speechShot=(p,index)=>{if(p.version!==2||!p.speech)fail('Speakers require a v2 speech project');const s=p.shots[index];if(!s)fail('Unknown shot');return s;};
+export function setSpeakers(project,speakers){
+ return editProject(project,p=>{speechShot(p,0);if(!speakers||typeof speakers!=='object'||Array.isArray(speakers))fail('Speakers must be an object');p.speech.speakers=structuredClone(speakers);});
+}
+// Sets the speaker of one narration line. A shot without line speakers is voiced entirely by the default narrator, which
+// cannot be mixed with named speakers, so the first assignment gives every line of that shot this speaker.
+export function setLineSpeaker(project,shotIndex,phraseIndex,speakerId){
+ return editProject(project,p=>{const s=speechShot(p,shotIndex);
+  if(!Number.isSafeInteger(phraseIndex)||phraseIndex<0||phraseIndex>=s.narration.length)fail('Unknown narration line');
+  if(typeof speakerId!=='string'||!Object.hasOwn(p.speech.speakers,speakerId))fail('Unknown speaker');
+  const list=Object.hasOwn(p.speech.shotSpeakers,s.id)?[...p.speech.shotSpeakers[s.id]]:s.narration.map(()=>speakerId);
+  list[phraseIndex]=speakerId;p.speech.shotSpeakers[s.id]=list;});
+}
+// Binds a speaker to a character in one shot (assetId null removes the binding; an empty map removes speakerAssets).
+export function bindSpeaker(project,shotIndex,speakerId,assetId){
+ return editProject(project,p=>{const s=speechShot(p,shotIndex);if(s.template!=='cinematic-graph')fail('Select a graph shot');
+  if(typeof speakerId!=='string'||speakerId!=='default'&&!Object.hasOwn(p.speech.speakers,speakerId))fail('Unknown speaker');
+  const map={...(s.speakerAssets??{})};
+  if(assetId===null)delete map[speakerId];else{if(typeof assetId!=='string'||!s.assets.some(a=>a.id===assetId))fail('Unknown character in this shot');map[speakerId]=assetId;}
+  if(Object.keys(map).length)s.speakerAssets=map;else delete s.speakerAssets;});
+}
 export function applyShotEdit(project,index,changes){
  return editProject(project,p=>{
   if(p.version!==2||!p.shots[index])fail('Unknown shot');
