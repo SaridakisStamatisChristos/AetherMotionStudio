@@ -109,3 +109,56 @@ Acceptance fixture: A message travels across a network, supplied script and six 
 - Agent stills (both backends): listeners face each active speaker; the speaker's mouth is open.
 - Defaults vs 7f121e7 identical: graph 5cc713071a6ddb6f (176 shots, excluding the new example), geometry 14dec244d171dc56, director 2cbf9916e65da935, extended film per shot.
 - Tests: tests/talk02.test.js (face chains, continuity, validation negatives, looking rules, smooth generated turns, generator reproduction).
+
+## TALK-03 body language while talking (2026-11-25, opt-in)
+- `shot.bodyLanguage: {beats?, nods?, blinks?, sway?}`: booleans, at least one true, and the shot needs `speakerAssets`. src/core/body.js derives everything per frame from the measured timeline. Values live in `BODY`.
+  - **beats:** the active speaker's arm lifts by up to 0.35 rad, with a 0.07 rad head nod, at emphasis peaks of the shared speech envelope. A peak is a local maximum within ±5 frames, at least 600 per mille, and at least 20 frames (0.67 s) after the previous one. That gives 2–3 beats per line in the example. These are measured loudness peaks, not word-level or forced alignment.
+  - **nods:** listeners nod (up to 0.16 rad, 14 frames) as another speaker's phrase ends.
+  - **blinks:** each bound character blinks on a fixed schedule (every 75–134 frames, from a hash of its ID). An authored blink track always wins.
+  - **sway:** listeners' heads tilt slowly (±0.04 rad, 96-frame period).
+- Applied after graph evaluation, together with TALK-01 mouths, on the CPU, Three and motion-blur paths.
+  - Beats skip characters that hold a prop, aim, or have authored arm tracks or arm actions, so attachments and aims never drift.
+  - Arm pitch is additive and clamped to the rig limits.
+- Geometry (src/visual/catalog.js):
+  - with `pose.nod` / `pose.tilt` present, head-region boxes and rods rotate about the neck through a pre-transformed builder (`headed`); boxes are routed by height and |x|;
+  - human detail-2/3 eyes scale with `pose.blink`;
+  - absent keys run the original builders, so geometry digests are identical.
+- Not done:
+  - idle weight shifts (the rigs have no hip joint; head sway is used instead);
+  - beat gestures on estimated stressed words (measured peaks are used instead, which is more honest).
+- Example `examples/talk03-body-{cpu,three}-polished.json` (scripts/talk03-body.mjs): the TALK-02 meeting with all four behaviours on; the dialogue is identical.
+- Evidence, `talk03-body-r1` (e3ddfd5 clean): CPU 39.2 s, Three/vulkan 24.6 s, RTX peak 31 %; all verifies PASS, compare_release PASS, frame-glitch clean; 2 CAPTION_READING_SPEED findings, as in TALK-02. Films: CPU 6df5a6ca5b8ae8aa…, Three 48c209810bf6afbe….
+- Agent side-by-side against TALK-02 r2 (frames 63 and 88): the engineer's arm beat, the listeners' head sway, and the listeners nodding as her line ends; body and feet unchanged.
+- Defaults vs aacab42 identical: graph 9629764b6193cf5c (180 shots, excluding the new example), geometry 14dec244d171dc56, human detail 2 e3f80439a292f21a, director 2cbf9916e65da935.
+- Tests: tests/talk03.test.js (validation negatives, peaks, per-role behaviour and bounds, eligibility, applyBody clamping, head-only rotation, blink geometry, generator reproduction).
+- TALK-03 speed revision (owner review: "the heads move too fast"). Commit 5e25225, render `talk03-body-r2`: all gates PASS, frame-glitch clean; films CPU 8826b0964be4e8e7…, Three ec5fac8abbab77ec….
+  - r1 measured peaks: nods ~93°/s; sway ~68°/s, a bug where the tilt dropped to 0 in one frame when a listener became the speaker; dialogue turns ~80°/s.
+  - Changes:
+    - listener nods 0.12 rad over 30 frames, starting 10 frames before the line ends;
+    - beat head nods 0.05 rad over 20 frames, now separate from the arm beat (18 frames);
+    - beats and nods always finish rather than being cut at speaker changes;
+    - sway 0.03 rad with a 150-frame period on every bound character;
+    - the TALK-03 example uses `dialogue.turn: 0.8` s.
+  - New peaks: nods 26°/s, sway 2°/s, turns ~42°/s. A regression test pins nods at ≤35°/s and sway at ≤5°/s.
+- TALK-03 calmer revision (second owner review: "too many movements and nods"). Commit 79d1932, render `talk03-body-r4`: all gates PASS, frame-glitch clean; films CPU 50abf7073ade3e5f…, Three c8f565da010dbf5d….
+  - `bodyPlan` builds a per-shot event plan from the measured timeline (cached):
+    - at most one arm beat per line, on its loudest envelope frame, only for lines of at least 45 frames;
+    - no head nod on beats;
+    - as a line ends, only the addressee (whom the speaker is looking at, per the TALK-02 focus rule) nods, at most once per 120 frames.
+  - Result in the 17 s meeting, per character:
+
+    | | r2 | r4 |
+    |---|---|---|
+    | Arm beats | 4–5 | 2 |
+    | Nods | 8–9 | 1–3 |
+    | Share of time the head moves | ~33 % | 5–14 % |
+
+  - Budget regression test added.
+  - `talk03-body-r3` was interrupted mid-render by a session break; its incomplete output is left untouched and superseded by r4.
+- TALK-03 third revision (owner: "still a bit much of movement, especially in nodding"). Commit cb74c7b, render `talk03-body-r5`: all gates PASS, frame-glitch clean; films CPU 38cef1baf4adeaf0…, Three 97207a4d5f90af43….
+  - Changes:
+    - nods 0.07 rad (was 0.12);
+    - at most one nod per character per 240 frames (8 s);
+    - no nod from an addressee who speaks next, since the reply acknowledges the line;
+    - sway 0.015 rad (was 0.03).
+  - Result in the meeting: 1 nod per character (was 1–3), nodding 5 % of the time; arm beats unchanged at 2 per character.

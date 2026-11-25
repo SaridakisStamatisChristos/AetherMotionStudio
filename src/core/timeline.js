@@ -4,6 +4,7 @@ import {continuityLedger} from './identity.js';
 import {validateSpeechConfig,validateSpeechTimeline} from './speech.js';
 import {validateSpeakerAssets,validateEnvelope} from './talk.js';
 import {validateDialogue} from './dialogue.js';
+import {validateBodyLanguage} from './body.js';
 export const FPS=30,SAMPLE_RATE=48000,SAMPLES_PER_FRAME=1600,MAX_FRAMES=9000,MAX_SHOT=3600;
 export const CHAPTERS=Object.freeze(['transactions','blocks','hashes','network','verification']);
 const fail=(p,m)=>{throw Error(p+': '+m)};
@@ -24,7 +25,7 @@ export function validateProject(s){
  const ids=new Set();let minimum=0;
  for(const [i,x] of s.shots.entries()){
   const p='shots['+i+']',chapter=x?.template==='blockchain-chapter',graph=x?.template==='cinematic-graph';
-  fields(x,['id','template','durationFrames','transitionFrames','narration',...(chapter?['chapter','heading','subheading']:graph?['backend','heading','subheading','environment','camera','assets','effects']:['copy'])],p,graph?['fidelity','cameraRig','overlays','layers','transition','continuity','geometryProfile','materialProfile','lodPolicy','cameraInterpolation','lighting','speakerAssets','dialogue']:[]);
+  fields(x,['id','template','durationFrames','transitionFrames','narration',...(chapter?['chapter','heading','subheading']:graph?['backend','heading','subheading','environment','camera','assets','effects']:['copy'])],p,graph?['fidelity','cameraRig','overlays','layers','transition','continuity','geometryProfile','materialProfile','lodPolicy','cameraInterpolation','lighting','speakerAssets','dialogue','bodyLanguage']:[]);
   slug(x.id,p+'.id');if(ids.has(x.id))fail(p,'duplicate ID');ids.add(x.id);
   if(x.durationFrames!==null)integer(x.durationFrames,60,MAX_SHOT,p+'.durationFrames');
   integer(x.transitionFrames,0,15,p+'.transitionFrames');if(i===0&&x.transitionFrames!==0)fail(p,'first shot must start without transition');if(Object.hasOwn(x,'transition')&&!['cut','fade','wipe','slide','match'].includes(x.transition))fail(p+'.transition','unknown transition');if(x.transition==='cut'&&x.transitionFrames!==0)fail(p,'cut requires zero transitionFrames');
@@ -39,6 +40,7 @@ export function validateProject(s){
  continuityLedger(s);if(s.speech!==undefined)validateSpeechConfig(s.speech,s.shots);
  validateSpeakerAssets(s);
  validateDialogue(s);
+ validateBodyLanguage(s);
  return s;
 }
 export function validateTimeline(s,t){

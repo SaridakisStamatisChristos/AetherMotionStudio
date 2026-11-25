@@ -1,6 +1,7 @@
 import {cueAt,speechDrivenShot} from './speech.js';
 import {talkAt} from './talk.js';
 import {dialogueShot} from './dialogue.js';
+import {bodyAt} from './body.js';
 import {shotAt,transitionAlpha} from './timeline.js';
 import {RENDERERS} from '../templates/registry.js';
 import {drawGraph} from '../visual/draw-graph.js';
@@ -14,7 +15,7 @@ export function drawFilm(ctx,scene,timeline,frame,width,height,three=null){
  if(scene.version===1){RENDERERS[scene.template](ctx,frame/30,width,height,scene);return;}
  const a=shotAt(timeline,frame),s=dialogueShot(speechDrivenShot(scene.shots[a.index],a.shot,scene.speech),a.shot),p=a.progress;
  if(s.template==='blockchain-chapter')drawChapter(ctx,p,width,height,s,a.index,scene.shots.length);
- else if(s.template==='cinematic-graph')drawGraph(ctx,p,width,height,s,three,a.shot.endFrame-a.shot.startFrame,talkAt(scene,timeline,frame,a.index));
+ else if(s.template==='cinematic-graph')drawGraph(ctx,p,width,height,s,three,a.shot.endFrame-a.shot.startFrame,talkAt(scene,timeline,frame,a.index),bodyAt(scene,timeline,frame,a.index));
  else RENDERERS[s.template](ctx,a.local/(a.shot.endFrame-a.shot.startFrame)*12,width,height,{copy:s.copy,captions:[]});
  const incoming=a.shot.transitionFrames,outgoing=timeline.shots[a.index+1]?.transitionFrames??0,n=a.shot.endFrame-a.shot.startFrame;
  const inAlpha=incoming?Math.max(0,1-a.local/incoming):0,outAlpha=outgoing?Math.max(0,1-(n-1-a.local)/outgoing):0;

@@ -16,7 +16,7 @@ This is an actionable proposed sequence for future work, not an approved require
 | POLISH-03 | Narration placement + mix-v2 for speech projects | MERGED 01051f1 (PR #21): placement 'lead', speech.mix.master, film lines. |
 | TALK-01 | Speaking faces (mouth + speaker binding) — MERGED 7f121e7 (PR #22) | Mouth channel on detail-2 humans and robot face panels; driven by a per-frame speech envelope from the measured narration PCM (prepared once, shared, hashed); speaker→character binding per phrase; both backends; deterministic. |
 | TALK-02 | Dialogue scenes — IMPLEMENTED on `feature/talk-02` (PR awaiting owner merge) | Two+ characters exchange lines with distinct Kokoro voices (existing speakers/shotSpeakers); listeners face the active speaker; captions name speakers; turn-taking from measured phrase bounds. |
-| TALK-03 | Body language while talking | Beat gestures on stressed words (estimated word timing, never called forced alignment), head nods/tilts, blinks, idle weight shifts; bounded and deterministic. |
+| TALK-03 | Body language while talking — IMPLEMENTED on `feature/talk-03` (stacked on PR #23; awaiting owner merge) | Beat gestures on stressed words (estimated word timing, never called forced alignment), head nods/tilts, blinks, idle weight shifts; bounded and deterministic. |
 | TALK-04 | Director dialogue authoring | Director/Studio produce dialogue scripts with speakers from a topic; staging places speakers, cheats faces, plans listener reactions; editable in Studio. |
 | TALK-05 | Talking showcase | A 60–90 s dialogue film (e.g. the makers teaching the robot to speak); matched CPU/Three; human visual + audio review. |
 
