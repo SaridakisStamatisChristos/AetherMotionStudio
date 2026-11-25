@@ -93,6 +93,23 @@ class Readable(unittest.TestCase):
         self.assertEqual(phrase_speed(text, RATE, .92, 18), PACE_MIN, 'never below the floor')
         self.assertEqual(phrase_speed(text, RATE, 1.08, 18), PACE_MIN)
 
+    def test_quality_audit_matches_held_sidecars(self):
+        # regression (gen12-forest-r1): the media audit rebuilt subtitles without the hold and failed SUBTITLE_MISMATCH
+        from speech_plan import subtitles
+        from quality_metrics import expected_subtitles, parse_subtitles
+        text = 'Signals move over wired or wireless links quickly.'
+        n = int(len(text) * RATE / 21)
+        seg = [{'text': text, 'startSample': 0, 'endSample': n, 'speaker': 'a'},
+               {'text': 'Next line here.', 'startSample': n + RATE, 'endSample': n + 2 * RATE, 'speaker': 'b'}]
+        cues = caption_cues(seg, {**CFG, 'readable': True}, [n + 10 * RATE] * 2)
+        self.assertIn('holdSample', cues[0])
+        labels = {'a': 'A', 'b': 'B'}
+        srt, vtt = subtitles(cues, labels)
+        self.assertEqual(parse_subtitles(srt, 'srt'), expected_subtitles(cues, labels))
+        self.assertEqual(parse_subtitles(vtt, 'vtt'), expected_subtitles(cues, labels))
+        plain = caption_cues(seg, CFG)
+        self.assertEqual(parse_subtitles(subtitles(plain, labels)[0], 'srt'), expected_subtitles(plain, labels), 'unchanged without holds')
+
 
 if __name__ == '__main__':
     unittest.main()
