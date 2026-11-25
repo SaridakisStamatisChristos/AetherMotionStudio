@@ -31,7 +31,8 @@ test('detail 2 adds front-facing features in front of the head for every human; 
 });
 
 test('negative: detail validation',()=>{
- assert.throws(()=>validateAssetParams('engineer',{detail:3}),/invalid asset detail/);
+ // POLISH-02 item 7 added detail 3 for humans; the out-of-range negative moves to 4.
+ assert.throws(()=>validateAssetParams('engineer',{detail:4}),/invalid asset detail/);
  assert.throws(()=>validateAssetParams('engineer',{detail:'2'}),/invalid asset detail/);
  assert.throws(()=>validateAssetParams('service-robot',{detail:2}),/asset detail 2 unsupported for service-robot/);
  assert.deepEqual(validateAssetParams('service-robot',{detail:1}),{detail:1});
