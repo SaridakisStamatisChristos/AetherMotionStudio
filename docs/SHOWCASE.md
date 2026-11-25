@@ -30,3 +30,42 @@ Curated final showcase for the ART track. Topic, style and duration were chosen 
   - films: CPU 70867e20fa4248d0…, Three e9eb27517f4dc71a…;
   - delivered loudness −16.0 LUFS, LRA 11.7 LU, true peak −2.5 dBFS (both films).
 - r4 and r5 were intermediate mastering iterations (bed level, then loudness bookkeeping); both passed all gates and are superseded.
+
+## TALK-05: "The Workshop — First Words" (2026-11-25)
+A 75 s dialogue film. The engineer (af_heart), the scientist (bf_emma, en-gb) and the robot (am_michael) teach the robot to speak. Generator scripts/talk05-first-words.mjs → examples/talk05-first-words-{cpu,three}-polished.json; tests in tests/talk05.test.js.
+- **All lines are a Claude draft awaiting the owner's approval.** They are in `SCRIPT` in the generator, and the owner may edit any line.
+- Shots:
+
+  | Shot | Who | What happens |
+  |---|---|---|
+  | GOOD MORNING | engineer, robot | first word: "Hello." |
+  | NAME IT | scientist, robot | the robot points at the toolbox (aim with body cheat) and names it |
+  | TOP SHELF | robot | the POLISH-02 high-shelf book choreography, slowed for this film (360 frames, turn ~1.9 s); the robot reads a line |
+  | AROUND THE TABLE | all three | conversation |
+  | ONE LETTER | engineer, robot | "wench" corrected to "wrench"; the elongated "Wrrrench" uses the pronunciation entry `Wrrrench → rrr rench` |
+  | THANK YOU | all three | thanks |
+  | LIGHTS OUT | robot | goodnight (reused shot, new lines) |
+
+- Every conversation shot uses TALK-02 dialogue (turn 0.8 s, cheat 1) and TALK-03 body language. The film uses placement lead and mix-v2.
+- Render `talk05-first-words-r3` from clean commit a7b539b (`node scripts/produce.mjs --project examples/talk05-first-words-cpu-polished.json --pair examples/talk05-first-words-three-polished.json --backend both --id talk05-first-words-r3`):
+  - 1 preparation, 2250 frames on each backend; speech verify, native verify and compare_release (shared hashes exact) all PASS; frame-glitch clean on both films.
+  - Quality: pass-with-findings, 0 errors, 2 CAPTION_READING_SPEED warnings (19.3 and 18.1 characters per second).
+  - Loudness −16.0 LUFS, true peak −3.7 dBFS, LRA 20.7 LU. The range is wide: the long shelf shot has two short lines.
+  - Render time CPU 109.3 s, Three-vulkan 68.4 s; RTX observed at util peak 46 % and 1,444 MiB.
+  - Films: CPU 5b83b6f65c7234a1…, Three 4a0ced6180aea44a….
+- Motion over 75 s:
+
+  | Character | Lines | Beats | Nods |
+  |---|---|---|---|
+  | Engineer | 6 | 1 | 2 |
+  | Scientist | 4 | 2 | 2 |
+  | Robot | 11 | 3 | 4 |
+
+  - Peak speeds: nods 14.9°/s, sway 1.1°/s, conversation turns ~42°/s.
+  - The robot is faster in three places: 105°/s while carrying the book on the shelf and in THANK YOU (it sits between two speakers), and 60°/s when its pointing ends.
+- Earlier runs:
+  - r1: preparation failed because the LIGHTS OUT fixed duration was not listed in `speech.fixedShots`. Fixed, with a test.
+  - r2 (d58d7c7): all gates PASS, but the reused shelf turn measured 224°/s. Slowed in r3.
+  - r1 and r2 are superseded and left untouched.
+- Known: the table in AROUND THE TABLE is hidden behind the robot (the same layout as the TALK-02 meeting).
+- Review status: agent stills review only. **Owner visual and audio review requested.**
