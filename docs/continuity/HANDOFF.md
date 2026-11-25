@@ -21,6 +21,7 @@ Date: 2026-11-25
 - Every commit is gated on the suite's own fail count (`grep "^# fail 0"`). In this unit one commit (989b4ee) went in with a failing ART-03 negative because the gate only checked grep's exit code. It was fixed forward in 593757c.
 - When stills or measurements show a problem, fix it and re-render (r2→r3 readability; r4→r5→r6 mastering), and record the superseded runs.
 - Probe and measurement sanity: a "perfect" 0 cm slip came from a probe bug; a ~3 dB loudness mismatch came from dual-mono stereo delivery. Check the instrument first.
+- CI's Python test job has no numpy/scipy: mirror it locally with the system interpreter (`PYTHONPATH=scripts py -3.11 -m unittest discover -s tests -p 'test_*.py'`, which should report OK with skips) and guard new Python tests with `unittest.skipUnless(find_spec('numpy'))`. PR CI failed once on 8d9a82b for this reason and was fixed forward.
 - Editing: working-copy files are CRLF. Use the scratchpad apply helper (exact old/new strings, CRLF-normalised) or the editor tool. No sed or `node -e` with backticks, `\n` or `\r\n` escapes.
 
 ## Scope completed in items 5–10

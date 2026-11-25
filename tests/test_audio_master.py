@@ -1,8 +1,12 @@
 """POLISH-02 item 8: opt-in mastering profile mix-v2 (scripts/audio_master.py)."""
+import importlib.util
 import math
 import unittest
-import numpy as np
-import audio_master as am
+
+HAVE = bool(importlib.util.find_spec('numpy') and importlib.util.find_spec('scipy'))
+if HAVE:
+    import numpy as np
+    import audio_master as am
 
 R = 48000
 
@@ -12,6 +16,7 @@ def sine(freq, amp, seconds):
     return amp * np.sin(2 * np.pi * freq * t)
 
 
+@unittest.skipUnless(HAVE, 'audio_master needs numpy/scipy (release venv); bare CI test job has none')
 class AudioMasterTest(unittest.TestCase):
     def test_bs1770_reference_tone(self):
         # ITU-R BS.1770: a 1 kHz sine at 0 dBFS in one channel reads -3.01 LUFS; amplitude 0.1 is 20 dB lower.
