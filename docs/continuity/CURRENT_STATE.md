@@ -1,5 +1,5 @@
 # Current state — AetherMotion Studio
-Updated 2026-11-25 (main fae67c1 has GEN-04..12; GEN-15 step 1 on feature/gen-15, PR pending). Authoritative rolling checkpoint for new coding sessions; update at verified transitions. This file references the historical ledger rather than replacing source or evidence. Baseline product merge: `04e3491bb21b4ebc3d54755a2a211b1a7affb3fa` (PR #13 merged into main). The handoff documentation commit may be newer; inspect git HEAD. No release publication implied.
+Updated 2026-11-25 (main 22ffec4 has GEN-04..12 and GEN-15 step 1 with the Three tune; render cleanup step 1 done). Authoritative rolling checkpoint for new coding sessions; update at verified transitions. This file references the historical ledger rather than replacing source or evidence. Baseline product merge: `04e3491bb21b4ebc3d54755a2a211b1a7affb3fa` (PR #13 merged into main). The handoff documentation commit may be newer; inspect git HEAD. No release publication implied.
 
 ## Current status and authority
 - v1.0 core pipeline and Asset Foundry AF01–AF09 implementation merged; do not reimplement.
@@ -19,6 +19,16 @@ Updated 2026-11-25 (main fae67c1 has GEN-04..12; GEN-15 step 1 on feature/gen-15
 6. Source and approved decisions authoritative. This summary cannot discard binding facts; consult the source-specific contract when the task touches it. Keep state and handoff synchronized. No new native render runs on GitHub or release without authorization.
 
 ## Active unit
+**Checkpoint after GEN-15 step 1 (main 22ffec4).** No unit is active.
+- PR #33 (crafted look) MERGED a4d9396, and PR #34 (Three tune) MERGED 22ffec4. Each was merged after its PR CI passed on the head commit (34: run 45704738684).
+- **Render cleanup step 1 done** (owner: "then clean up"; NEXT_UNITS plan):
+  - 159 entries in out/ (2.8 GB) and 113 files in public/audio (438 MB) were deleted;
+  - kept: the "before" reference set (gen03-interview-r3, gen03-network-r1, talk05-first-words-r10), bench, speech-cache, polish02/03-fixtures, and gen15-forest-r1/r2;
+  - out/ is now 1.8 GB, public/audio 87 MB;
+  - the recorded hashes and findings stay in the docs. Future sessions must not expect the deleted runs on disk.
+- Cleanup step 2 (delete the reference set) waits until the owner accepts the GEN-15 look.
+- Next: GEN-15 step 2 (richer sets, part materials such as metal trims and glass screens; no owner decision needed) on a new branch from main. GEN-13 and GEN-14 are skipped for now. GEN-16 needs an owner decision.
+
 GEN-15 Three tune on `feature/gen-15-three-tune` (from main a4d9396; PR #33 MERGED a4d9396). Owner: "merge pr 32 [#32 was already merged; #33 merged as the evident intent]. then tune three js and merge the pr you will create for the tune to main. then clean up."
 - 35ffc7c: `CRAFTED.three` (lighter palette touch, ambient × 0.78, exposure × 0.93, roughness 0.56, metalness 0.12). The CPU palette is pinned in a test.
 - Render `gen15-forest-r2`: CPU 0a996a7262fe460c… (byte-identical to r1), Three c1be7010ecad39c0…. All gates PASS, glitch clean, −16.0 LUFS. Three is no longer washed out (agent review).
