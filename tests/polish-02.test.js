@@ -207,3 +207,42 @@ test('Workshop Extended HIGH SHELF: solved pickup and place, book lands on the t
  const e=bk(1),tb=at(1).assets.find(a=>a.id==='table').pose;assert.ok(Math.abs(e[1]-surfaceTop('table',tb,e[0],e[2]))<1e-9,'book on the table top');
  assert.ok(stanceSlip(s,'robot').cm<.01);
 });
+
+// ---- Items 5+10: compact director prompt director-ir-v1.2 (chains, staging) ----
+import {direct,buildPrompt,estimateTokens,PROMPT_VERSIONS} from '../src/director/index.js';
+import {baseline,offlineIR} from '../src/director/offline.js';
+import {request as directorRequest} from '../src/director/schema.js';
+import {mockProvider} from '../src/director/providers.js';
+const loadReq=n=>JSON.parse(readFileSync(new URL('../examples/'+n+'.request.json',import.meta.url),'utf8'));
+const REQS=['director-cpu-polished','director-three-polished','release','continuity-cpu-polished','continuity-three-polished','speech-cpu-polished','speech-three-polished'];
+test('prompt v1.2: v1.1 stays the default and is byte-identical when selected explicitly',()=>{
+ assert.deepEqual(PROMPT_VERSIONS,['director-ir-v1.1','director-ir-v1.2']);
+ for(const n of REQS){const a=directorRequest(loadReq(n)),b=directorRequest({...loadReq(n),promptVersion:'director-ir-v1.1'});assert.equal(buildPrompt(b,baseline(b)),buildPrompt(a,baseline(a)),n);}
+});
+test('prompt v1.2: ≤2000 estimated tokens for every request example and a 60 s / 6-shot film; objects listed once',()=>{
+ for(const n of REQS){const q=directorRequest({...loadReq(n),promptVersion:'director-ir-v1.2'}),plan=baseline(q),p=buildPrompt(q,plan),old=buildPrompt(directorRequest(loadReq(n)),plan);
+  assert.ok(estimateTokens(p)<=2000,n+' '+estimateTokens(p));assert.ok(estimateTokens(p)<estimateTokens(old)/3,n+' at least 3x smaller');
+  for(const id of new Set(plan.selection.flat().map(a=>a.id)))assert.equal(p.split('|'+id+'|').length-1,1,n+' '+id+' listed once');}
+ const q=directorRequest({...loadReq('director-cpu-polished'),seconds:60,promptVersion:'director-ir-v1.2'});assert.equal(baseline(q).beats.length,6);
+});
+test('prompt v1.2: documents hold chains/handoff events with identities and staging when requested',()=>{
+ const c=directorRequest({...loadReq('continuity-cpu-polished'),promptVersion:'director-ir-v1.2',staging:'art-v2'}),p=buildPrompt(c,baseline(c));
+ assert.match(p,/handoff chain \[2–4 sequential windows\]/);assert.match(p,/\{type:"handoff",prop,from,fromAnchor,to,toAnchor,at\}/);assert.match(p,/Staging art-v2 runs after you/);
+ const d=directorRequest({...loadReq('director-cpu-polished'),promptVersion:'director-ir-v1.2'}),pd=buildPrompt(d,baseline(d));assert.doesNotMatch(pd,/Identity extension|Staging/);
+});
+// A mock provider that only reads the v1.2 prompt (slots → object indices → ids) and answers with a valid IR.
+function promptReader(prompt){
+ const line=k=>prompt.split('\n').find(l=>l.startsWith(k)),ids=new Map(line('Objects').replace(/^[^:]*: /,'').split('; ').map(s=>s.split('|')).map(([n,id])=>[n,id]));
+ const slots=line('Slots').replace(/^[^:]*\): /,'').split('; ').map(s=>s.slice(s.lastIndexOf(': ')+2).split(','));
+ const req=JSON.parse(line('Request: ').slice(9));
+ return {version:1,title:'Mock film',treatment:'A mock treatment.',shots:slots.map((ns,i)=>({heading:'SHOT '+(i+1),subheading:'Mock',narration:[req.topic+' part '+(i+1)+'.'],camera:'medium',environment:'laboratory',assets:[{asset:ids.get(ns[0]),action:'idle'}]}))};
+}
+test('prompt v1.2: mock-provider round trip from the prompt alone compiles a valid project; v1.2 offline = v1.1 offline project',async()=>{
+ const q={...loadReq('director-cpu-polished'),promptVersion:'director-ir-v1.2'};let seen=null;
+ const x=await direct(q,{adapter:mockProvider(async prompt=>{seen=prompt;return {text:JSON.stringify(promptReader(prompt)),usage:{input:estimateTokens(prompt),output:300}};})});
+ validateProject(x.project);assert.equal(x.manifest.promptVersion,'director-ir-v1.2');assert.ok(x.manifest.tokens.input<=2000);assert.equal(x.project.shots.length,6);assert.ok(seen.startsWith('Creative director.'));
+ for(const n of REQS){const a=await direct(loadReq(n)),b=await direct({...loadReq(n),promptVersion:'director-ir-v1.2'});assert.deepEqual(b.project,a.project,n);assert.equal(a.manifest.promptVersion,'director-ir-v1.1');}
+});
+test('prompt v1.2: negatives',()=>{
+ for(const v of ['director-ir-v9','v1.2',12,null])assert.throws(()=>directorRequest({...loadReq('release'),promptVersion:v}),/promptVersion/);
+});
