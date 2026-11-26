@@ -139,6 +139,20 @@ Owner: "An independent adversarial code audit identified the following defects. 
 - dual04-bakery-r3 and dual03-euclid-r3 (886e702) passed all gates but showed the late-appearance defect in stills; superseded by r4.
 - **Agent stills (bakery-r4):** week-1 chart on screen before the cue; mid-transition frame shows only the two real states crossfading (no in-between heights or labels); final week-2 state with "no data" on Wednesday. Euclid-r4: (48, 18) shown before the first step.
 
+## Second repair pass (second independent audit, 2026-11-26, on PR #55)
+Owner: "The independent second audit confirms that the original counterexamples have been repaired and CI passes … Before merging PR #55, perform one additional targeted repair pass … Do not expand the scope or redesign the architecture."
+
+| # | Defect (reproduced before fixing) | Fix |
+|---|---|---|
+| 1 | `2^12=4096` accepted, although TeX renders an unbraced superscript as one token (2¹2); also `\sqrt{x^{9}}` was never converted (nested braces) | ambiguous superscripts (`2^12`, `2^-1`, `2^(3)`, unbraced commands) are unverifiable; nested constructs convert innermost first |
+| 2 | `\sqrt{(40-digit)^{9}}` threw RangeError (float start of isqrt overflowed to Infinity) | pure-BigInt Newton integer square root |
+| 3 | explicit axis [0, 1e-9] produced ticks up to 2e-9 (absolute 1e-9 tolerance) in charts.js and diagrams.js | ticks inside the range; tolerance = 1e-6 of the tick step |
+| 4 | small values displayed as "0.000"; layout and rendering used different formatters | one adaptive formatter (`chartNumber`, `tickLabel`) for measurement and drawing; scientific notation outside 0.001…1e9 |
+| 5 | six pie slices shared a four-colour palette | six distinct colours per theme, each ≥ 3:1 against the plate |
+
+- **Tests:** tests/repair2.test.js (5 tests: rendered labels on intermediate and final frames, tick containment, large exact arithmetic, pie colours). Totals 475 JS (474 pass, 0 fail, 1 Windows skip), Python 61 OK, legacy digests unchanged, font metrics current.
+- **Validation films** from 5a786a3 (vulkan; agent checks only, **no owner review**): dual04-bakery-r5 PASS both backends, **byte-identical to r4 on CPU and Three.js** (befdef54a58c6981… / f01f06ea87941d88…): unaffected behaviour preserved. dual03-euclid-r5 PASS both backends; CPU byte-identical to r4 (c83a1e2346f62a26…); Three 86cddfe31cf594ac… differs from r4 by GPU rasterization noise only (scene.json identical apart from its id; PSNR average 64.4 dB, minimum 56.7 dB): the vulkan route is not bit-reproducible across runs (earlier r1/r2 happened to match).
+
 ## Decisions the owner must make (ask when the milestone reaches them, not before)
 - DUAL-02: fonts: **decided** (bundle the four open families).
 - DUAL-03: maths typesetter: **decided** (MathJax 4.1.3, Node-only).
@@ -167,3 +181,4 @@ Owner: "An independent adversarial code audit identified the following defects. 
 - 2026-11-26: DUAL-03 MERGED (PR #53 → main 1b1543b) on the owner's word ("merge and yes"); npm ci in the CI test job approved ("yes") and verified on `feature/ci-npm-ci` (PR #54, CI 45879799972: 454/454, 0 skipped), not merged.
 - 2026-11-26: Owner: "continue" (not a merge word for #54, which stays open). DUAL-04 tested and rendered on `feature/dual-04-charts` (215c2e1): bakery-r2 and bread-r2 all gates PASS on both backends; PR open, not merged. DUAL-05 next.
 - 2026-11-26: Owner: "Merge PR #54 … Do not merge PR #55 yet … dedicated repair pass". PR #54 MERGED (main 5145f50). Main merged into feature/dual-04-charts (b8f17a1). Repair pass 886e702, appearance fix 78df15d/ab693a3; 470 tests (469 pass, 1 skip); validation films bakery-r4, euclid-r4, bread-r3, pythagoras-r3 all PASS on both backends. Merge approval for #55 requested. DUAL-05 rules recorded (raster only).
+- 2026-11-26: Owner (second audit): one more targeted repair pass before merging #55. Done in 5a786a3: TeX superscript semantics, BigInt isqrt, tick containment, adaptive formatter, six pie colours; 475 tests (474 pass, 1 skip); bakery-r5 byte-identical to r4, euclid-r5 PASS. Merge approval requested again.

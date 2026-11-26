@@ -1,4 +1,4 @@
-# Forward-only handoff: Campaign A, DUAL-04 repaired after an independent audit (2026-11-26)
+# Forward-only handoff: Campaign A, DUAL-04 repaired after two independent audits (2026-11-26)
 
 Unit: **Campaign A — Universal Dual-Backend Finalization**, owner-authorized.
 - DUAL-00…03 and the CI `npm ci` step are **MERGED**; main is at 5145f50. PR #54 was merged on "Merge PR #54".
@@ -10,9 +10,9 @@ Date: 2026-11-26. The owner types only **"fod continue"**. Binding facts: CURREN
 ## Repair pass in one table
 | Item | Result |
 |---|---|
-| Defects | 9 audit items + 1 found in validation stills, each reproduced before fixing; see CAMPAIGN_A.md table |
-| Tests | 470 JS (469 pass, 1 Windows skip) with installed dependencies; Python 61 OK; tests/repair.test.js (10 tests; drawing tests check intermediate frames and fail on the pre-repair code) |
-| Films | dual04-bakery-r4, dual03-euclid-r4 (ab693a3); dual04-bread-r3, dual03-pythagoras-r3 (886e702): all PASS both backends, −16.0 LUFS; agent stills only, **no owner review** |
+| Defects | first audit: 9 items + 1 found in validation stills; second audit: 5 items (TeX superscripts, BigInt isqrt, tick containment, formatter, pie colours); each reproduced before fixing; see CAMPAIGN_A.md |
+| Tests | 475 JS (474 pass, 1 Windows skip) with installed dependencies; Python 61 OK; tests/repair.test.js (10) and tests/repair2.test.js (5), drawing tests on intermediate and final frames |
+| Films | dual04-bakery-r5 (byte-identical to r4) and dual03-euclid-r5 (5a786a3); dual04-bread-r3, dual03-pythagoras-r3 (886e702): all PASS both backends, −16.0 LUFS; agent checks only, **no owner review** |
 
 ## Next action for "fod continue"
 1. Bootstrap. If PR #55 is open: report its CI result and ask the owner for merge approval (owner said not yet; never merge without the word).
@@ -32,7 +32,7 @@ Date: 2026-11-26. The owner types only **"fod continue"**. Binding facts: CURREN
 2. Read CLAUDE.md, AGENTS.md, CURRENT_STATE.md, this file and CAMPAIGN_A.md (plus the directive section of the active milestone).
 3. Baseline:
    - `node scripts/fod-digests.mjs . --exclude talk04,talk05,gen01,gen09,gen12,fixa,dual` must print graph 3d33fbaee198acad, geometry 14dec244d171dc56, detail2 e3f80439a292f21a, director 7 requests 2cbf9916e65da935;
-   - `npm test` must give fail 0 (470 tests with the DUAL-04 repair pass, 1 Windows skip);
+   - `npm test` must give fail 0 (475 tests with both DUAL-04 repair passes, 1 Windows skip);
    - `PYTHONPATH=scripts .venv/Scripts/python.exe -m unittest discover -s tests -p "test_*.py"` must give 59 OK.
 
 ## Owner working agreement and taste (binding; see also auto-memory)
