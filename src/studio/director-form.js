@@ -1,6 +1,7 @@
 // STUDIO-01 "script to film": the Studio Director form as pure data. `directorRequest` maps the form fields to a
 // Director request (the server validates it again with src/director/schema.js `request`); `scriptHelp` gives the live
 // word count and the owner script rules (docs/SCRIPT_FORMAT.md). Browser-safe: no Node or director imports.
+import {defaultSpeech} from './production.js';
 const bad=m=>{throw Error(m)};
 // Casts offered by the form. `interview` is the same cast and voices as examples/gen01-interview.request.json (and the
 // owner's forest script example); `trio` is the TALK-04 three-person cast the form offered before (round-robin turns);
@@ -12,14 +13,15 @@ export const STUDIO_CASTS=Object.freeze({
   dialogue:{speakers:[{id:'eng',name:'Engineer',voice:'af_heart',language:'en-us',character:'engineer'},{id:'robo',name:'Robot',voice:'am_michael',language:'en-us',character:'service-robot'},{id:'sci',name:'Scientist',voice:'bf_emma',language:'en-gb',character:'scientist'}]}}),
  narrator:Object.freeze({label:'Narrator only (no characters)',fields:{},dialogue:null})
 });
-export const STUDIO_DEFAULTS=Object.freeze({cast:'interview',backend:'three',profile:'polished',seconds:60,reels:false});
+export const STUDIO_DEFAULTS=Object.freeze({cast:'interview',backend:'three',profile:'polished',seconds:60,reels:false,speakerNames:true});
 // About 2.2 spoken words per second (docs/SCRIPT_FORMAT.md): 60 s → 120–140 words, 30 s → 60–70.
 export const WORDS_PER_SECOND=Object.freeze({min:2,max:7/3});
 export function wordRange(seconds){
  if(!Number.isSafeInteger(seconds)||seconds<6||seconds>300)bad('Seconds must be a whole number from 6 to 300');
  return {min:Math.round(seconds*WORDS_PER_SECOND.min),max:Math.round(seconds*WORDS_PER_SECOND.max)};
 }
-// form: {topic, script, seconds, cast, backend, profile, voice (narrator only), staging (narrator only), reels, id}.
+// form: {topic, script, seconds, cast, backend, profile, voice (narrator only), staging (narrator only), reels, id,
+// speakerNames (owner's checkbox "Speaker names in captions"; false → speech.captions.speakerNames false)}.
 export function directorRequest(form){
  if(!form||typeof form!=='object')bad('Form data required');
  const topic=typeof form.topic==='string'?form.topic.trim():'',script=typeof form.script==='string'?form.script.trim():'';
@@ -35,6 +37,9 @@ export function directorRequest(form){
  else{if(typeof form.voice!=='string'||!form.voice)bad('Choose a narrator voice');q.voice=form.voice;if(form.staging)q.staging='art-v1';}
  if(script)q.script=script;
  if(form.reels===true)q.delivery='reels-v1';else if(form.reels!==false&&form.reels!==undefined)bad('Reels must be on or off');
+ if(![true,false,undefined].includes(form.speakerNames))bad('Speaker names must be on or off');
+ // names only ever show with two or more speakers, so the narrator request is left unchanged
+ if(form.speakerNames===false&&cast.dialogue){q.speech=defaultSpeech(seconds);q.speech.captions.speakerNames=false;}
  return q;
 }
 // Live help under the Script box. Counts what will be spoken (the cleaned script), flags lines the Director would

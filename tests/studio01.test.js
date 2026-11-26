@@ -21,7 +21,8 @@ test('interview cast: the form gives the same request as the forest script examp
  assert.deepEqual(q.dialogue,interview.dialogue);
  assert.equal(q.staging,undefined);assert.equal(q.delivery,undefined);
  // Defaults the form starts with: interview cast, Three, polished, 60 s, Reels off.
- assert.deepEqual(STUDIO_DEFAULTS,{cast:'interview',backend:'three',profile:'polished',seconds:60,reels:false});
+ // speakerNames: the owner's checkbox "Speaker names in captions" (on by default)
+ assert.deepEqual(STUDIO_DEFAULTS,{cast:'interview',backend:'three',profile:'polished',seconds:60,reels:false,speakerNames:true});
  assert.equal(directorRequest(form({backend:'three'})).backend,'three');
 });
 test('Reels checkbox, trio cast and narrator keep their contracts',()=>{
@@ -155,4 +156,23 @@ test('owner\'s first Studio film: pasted extras are flagged, never spoken; lengt
  assert.match(scriptHelp('Hello there. How are you today?',60,'narrator').summary,/long silences/);
  assert.equal(scriptHelp(Array(800).fill('word').join(' ')+'.',60).suggestedSeconds,300,'never above 300 s');
  assert.equal(scriptHelp(pasted,60).suggestedSeconds,null);
+});
+test('owner\'s checkbox "Speaker names in captions": on by default; off removes names from video captions and subtitle files',async()=>{
+ const {directorRequest,STUDIO_DEFAULTS}=await import('../src/studio/director-form.js');
+ const {validateSpeechConfig}=await import('../src/core/speech.js');
+ assert.equal(STUDIO_DEFAULTS.speakerNames,true);
+ const on=directorRequest(form({speakerNames:true}));assert.equal(on.speech,undefined,'default: unchanged request');
+ const off=directorRequest(form({speakerNames:false}));assert.equal(off.speech.captions.speakerNames,false);request(off);
+ assert.equal(directorRequest(form({cast:'narrator',speakerNames:false})).speech,undefined,'narrator: one speaker, nothing to hide');
+ assert.throws(()=>directorRequest(form({speakerNames:'no'})),/Speaker names must be on or off/);
+ const sp=(await import('../src/studio/production.js')).defaultSpeech(60);
+ for(const bad of [true,'false',0])assert.throws(()=>validateSpeechConfig({...sp,captions:{...sp.captions,speakerNames:bad}}),/speakerNames/,String(bad));
+ // the Director keeps the setting in the dialogue speech it builds
+ const {project}=await direct(off);assert.equal(project.speech.captions.speakerNames,false);assert.equal(Object.keys(project.speech.speakers).length,2);
+ // the page: checkbox ticked by default, wired into the form, and the render keeps the request's speech
+ const html=readFileSync(new URL('../studio/index.html',import.meta.url),'utf8'),js=readFileSync(new URL('../studio/app.js',import.meta.url),'utf8');
+ assert.match(html,/<input id="directNames" type="checkbox" checked> Speaker names in captions/);
+ assert.match(js,/speakerNames:\$\('directNames'\)\.checked/);assert.match(js,/if\(produce\)q\.speech\?\?=defaultSpeech\(q\.seconds\)/);
+ // the burned-in caption: no name when off
+ const draw=readFileSync(new URL('../src/core/draw-film.js',import.meta.url),'utf8');assert.match(draw,/speech\.captions\?\.speakerNames!==false&&/);
 });
