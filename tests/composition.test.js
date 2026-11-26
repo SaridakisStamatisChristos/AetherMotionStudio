@@ -141,3 +141,19 @@ test('aids-v1 check reports a plate on a head, on an object and on the caption b
  const cue={cue:{lines:['a','b','c','d','e','f','g','h','i','j']}};assert.ok(captionBox(p,cue).y<REGIONS.full.y+REGIONS.full.h,'a 10-line caption would meet the full region');
  assert.deepEqual(compositionPlates(layoutComposition(big),.5).map(x=>x.id),['c']);
 });
+
+test('content-mode productions fit their length to the speech; other requests keep their target',async()=>{
+ const {parseProduction}=await import('../scripts/production-options.mjs');
+ const parse=q=>parseProduction(['--request','x.json','--backend','both'],{read:()=>JSON.stringify(q)}).request;
+ assert.equal(parse({...base,content:'explainer-v1'}).speech.fit,'speech-v1');
+ assert.equal(parse({...base,content:'mixed-v1'}).speech.fit,'speech-v1');
+ assert.equal(parse(base).speech.fit,undefined);
+ assert.equal(parse({...base,content:'explainer-v1',speech:{...parse(base).speech}}).speech.fit,undefined,'a request with its own speech keeps it');
+});
+
+test('explainer objects change between shots when the shot text names another object',async()=>{
+ const q=JSON.parse(readFileSync(new URL('../examples/dual01-forest-explainer.request.json',import.meta.url),'utf8'));
+ const objects=(await direct(q)).project.shots.map(s=>s.assets[0].asset);
+ for(let i=1;i<objects.length;i++)assert.notEqual(objects[i],objects[i-1],objects.join(' | '));
+ assert.ok(objects.every(a=>!isCatalogCharacter(a)));
+});

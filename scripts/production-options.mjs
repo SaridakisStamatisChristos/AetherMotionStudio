@@ -28,7 +28,10 @@ export function parseProduction(args,{read=p=>readFileSync(resolve(p),'utf8'),ne
  // Owner 2026-11-26 (roles in captions "Off by default"): a dialogue request without its own speech gets speech that
  // hides the speaker names, the same default the Director uses; a request's own speech is kept as it is.
  const quiet=s=>({...s,captions:{...s.captions,speakerNames:false}});
- raw.id=id;const q=request({...raw,speech:raw.speech??(raw.dialogue?quiet(defaultSpeech(raw.seconds)):defaultSpeech(raw.seconds))});
+ // DUAL-01: a content-mode request (explainer-v1, mixed-v1) without its own speech is fitted to its speech (Fix A
+ // speech-v1, as dialogue films are), so a short script does not leave long pauses. Other requests are unchanged.
+ const fitted=s=>raw.content?{...s,fit:'speech-v1'}:s;
+ raw.id=id;const q=request({...raw,speech:raw.speech??fitted(raw.dialogue?quiet(defaultSpeech(raw.seconds)):defaultSpeech(raw.seconds))});
  // Strictly reject conflicting supplied speech target, never silently retime authored data.
  const ids=directorBackends.map(b=>productionId(id,b,q.profile));
  return {mode:'director',request:q,id,backends:directorBackends,ids,repair:o.repair===true,imported:o.import?read(o.import):null,targetFrames:q.seconds*30,sources:null,project:null};

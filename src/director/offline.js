@@ -74,13 +74,20 @@ export function baseline(q){
  const objectsOnly=list=>list.filter(o=>!isCatalogCharacter(o.id));
  const filmBest=explainer?objectsOnly(directorCatalog().objects).map(o=>[o,relevance(filmQuery,o)]).filter(([,r])=>r>0).sort((a,b)=>b[1]-a[1]||(a[0].id<b[0].id?-1:1))[0]?.[0]??null:null;
  const fallback=explainer?directorCatalog().objects.find(o=>o.id===EXPLAINER_FALLBACK):null;
- const selection=beats.map(b=>{const query=q.topic+' '+b.heading+' '+b.narration.join(' ');
+ const hits=[],selection=beats.map(b=>{const query=q.topic+' '+b.heading+' '+b.narration.join(' ');
   if(!explainer)return retrieveAssets(query,8,[...b.assets,...cast,'retro-robot']);
   const list=objectsOnly(retrieveAssets(query,20,b.assets)),hit=list.filter(o=>b.assets.includes(o.id)||relevance(query,o)>0).sort((x,y)=>(b.assets.includes(y.id)?1e4:0)+relevance(query,y)-(b.assets.includes(x.id)?1e4:0)-relevance(query,x));
+  hits.push(hit.map(o=>o.id));
   return [...hit,...(filmBest?[filmBest]:[]),fallback,...list].filter((o,j,a)=>a.findIndex(x=>x.id===o.id)===j).slice(0,8);});
  if(cast.length>=2)return {kind,beats,selection,cast};
- return {kind,beats,selection};
+ return explainer?{kind,beats,selection,hits}:{kind,beats,selection};
 }
+// DUAL-01 explainer object for beat i: the first word match that differs from the previous shot's object (a change of
+// scene), else the first candidate (word match, film match or the fallback). Deterministic; no score-0 ties.
+function explainerObject(plan,i){const memo=plan.picks??=[];if(memo[i])return memo[i];
+ const b=plan.beats[i],ok=new Set(plan.selection[i].map(o=>o.id)),cands=[...b.assets.filter(id=>ok.has(id)),...plan.selection[i].map(o=>o.id)].filter((v,j,a)=>a.indexOf(v)===j);
+ const prev=i>0?explainerObject(plan,i-1):null,hit=(plan.hits?.[i]??[]).filter(id=>ok.has(id));
+ return memo[i]=hit.find(id=>id!==prev)??cands[0];}
 const cameras=['establishing','dolly-in','lateral-tracking','orbit','crane','reveal'];
 export function offlineIR(q,plan){
  const n=plan.beats.length;
@@ -93,7 +100,7 @@ export function offlineIR(q,plan){
   }
   const selected=plan.selection[i],preferred=b.assets.filter((v,j,a)=>a.indexOf(v)===j);
   // DUAL-01 explainer-v1: one or two objects centred, no guide character; the visual aids carry the explanation.
-  if(q.content==='explainer-v1'){const ok=new Set(selected.map(o=>o.id)),objects=[...preferred.filter(id=>ok.has(id)),...selected.map(o=>o.id)].filter((v,j,a)=>a.indexOf(v)===j).slice(0,1);
+  if(q.content==='explainer-v1'){const objects=[explainerObject(plan,i)];
    return {heading:b.heading,subheading:b.subheading,narration:b.narration,camera:cameras[(i+q.seed%cameras.length)%cameras.length],environment:q.style.toLowerCase().includes('warm')?'amber':i%2?'midnight':'laboratory',assets:objects.map(asset=>({asset,action:'presentation-turn',scale:1.1,x:0})),effect:i%2?'cyan-aura':'gold-sparks'};}
   const objects=(preferred.length?preferred:selected.filter(o=>o.id!=='retro-robot').slice(0,1).map(o=>o.id)).slice(0,2);
   const assets=objects.map((asset,j)=>({asset,action:j===0?'presentation-turn':'idle',scale:objects.length===1?1.15:.86,x:objects.length===1?.5:j===0?-.1:1.35}));
