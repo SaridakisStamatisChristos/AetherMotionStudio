@@ -1,5 +1,5 @@
 # Current state — AetherMotion Studio
-Updated 2026-11-26 (main 36f6fd6 = PR #35 merged; STUDIO-01 implemented on feature/studio-01, PR #36 open, CI passed, not merged). Authoritative rolling checkpoint for new coding sessions; update at verified transitions. This file references the historical ledger rather than replacing source or evidence. Baseline product merge: `04e3491bb21b4ebc3d54755a2a211b1a7affb3fa` (PR #13 merged into main). The handoff documentation commit may be newer; inspect git HEAD. No release publication implied.
+Updated 2026-11-26 (main 135dbcc; Fix A IMPLEMENTED + TESTED + RENDERED on feature/fix-a, PR pending; GEN-15 look ACCEPTED; GEN-15 step 2 next after the Fix A merge). Authoritative rolling checkpoint for new coding sessions; update at verified transitions. This file references the historical ledger rather than replacing source or evidence. Baseline product merge: `04e3491bb21b4ebc3d54755a2a211b1a7affb3fa` (PR #13 merged into main). The handoff documentation commit may be newer; inspect git HEAD. No release publication implied.
 
 ## Current status and authority
 - v1.0 core pipeline and Asset Foundry AF01–AF09 implementation merged; do not reimplement.
@@ -19,7 +19,24 @@ Updated 2026-11-26 (main 36f6fd6 = PR #35 merged; STUDIO-01 implemented on featu
 6. Source and approved decisions authoritative. This summary cannot discard binding facts; consult the source-specific contract when the task touches it. Keep state and handoff synchronized. No new native render runs on GitHub or release without authorization.
 
 ## Active unit
-**STUDIO-01 "script to film" — IMPLEMENTED and TESTED on `feature/studio-01` (from main 22ffec4), PR #36, test CI passed (run 45773673190), not merged** (authorized by the owner: "yeah thats what we need. exactly"). Details: HANDOFF.md.
+**Fix A "film length follows the speech": IMPLEMENTED + TESTED + RENDERED on `feature/fix-a` (from main 135dbcc), not merged.** Owner (2026-11-26): "do these: Fix A … Accept the GEN-15 look … ui refinement will be the last … put it in a later step at the end".
+- Binding:
+  - opt-in `speech.fit`: 'speech-v1', 'none', or absent (absent = exact target);
+  - Director dialogue films, including the Studio cast films, default to 'speech-v1';
+  - narrator films and authored projects are unchanged (digests unchanged);
+  - silence-v1 (src/quality/silence.js) runs on every production. It is a gate before rendering for fitted films only. Talk share is reported, never warned.
+  - Details: docs/SPEECH.md "Fix A".
+- Evidence: 372 JS tests (0 fail, 1 skip), 56 Python OK. No human review.
+  - fixa-script-r1 is byte-identical to forest-script-r1 (the script fills 60 s).
+  - fixa-forest-r2: 60 s → 23.9 s, longest pause 2.0 s, all gates PASS.
+  - fixa-forest-r1 was stopped by the first silence-v1 rule (talk share); that rule became report-only (563f228).
+- **The owner accepted the GEN-15 look** (2026-11-26).
+  - Cleanup step 2 is done; the owner confirmed the exact list.
+  - Deleted: the reference set gen03-interview-r3, gen03-network-r1 and talk05-first-words-r10 (out/ folders, logs and 9 public/audio wavs). out/ is now 1.7 GB.
+  - Their hashes and findings stay in the docs. Future sessions must not expect them on disk.
+- Next: GEN-15 step 2 (richer sets; part materials such as metal trims and glass screens), on a new branch from main after the Fix A merge. Studio UI refinement is the last step of the current plan.
+
+**STUDIO-01 "script to film" — MERGED** (PR #36 → main 135dbcc on the owner's word "for now merge 36"; PR CI 45774855761 and main CI 45775300788 passed). Owner: the UI is "practical"; "ui refinement can be done later" (authorized by the owner: "yeah thats what we need. exactly"). Details: HANDOFF.md.
 - Owner decision (2026-11-25, PR #35, MERGED 36f6fd6 on the owner's word): the owner writes scripts in Claude chat and pastes them into the Studio; GEN-14 not needed for now.
 - Binding: the Director form maps to a request only through src/studio/director-form.js `directorRequest` (cast presets `interview` = gen01 cast and fields, `trio` = TALK-04 cast unchanged, `narrator` = earlier form); defaults interview, Three, polished, 60 s, Reels off. Studio jobs remain one backend per job (job contract unchanged; "both" stays in produce.mjs). Launcher `Start-AetherMotion-Studio.cmd` sets the render env (vulkan) for its window only; the repo default GL stays swangle.
 - Evidence: 368 JS tests (0 fail, 1 skip; prompt guidance added), 51 Python OK, digests unchanged. Real Studio job studio-e3bb2326a60691aab621 (Three/vulkan, forest script, via HTTP API calls, not browser clicks): film b6f4a0fadef46d1f…, all PASS, quality errors 0 warnings 0, glitch clean, −16.0 LUFS. No human review. The forest example (ad893f7) was folded in as a56732e.
@@ -48,7 +65,7 @@ GEN-15 step 1, the crafted look — IMPLEMENTED + TESTED + RENDERED (agent-revie
   - PR #32 was merged (fae67c1, after its CI passed on the PR head; main CI 45702405758 success). GEN-15 was then restarted from main, not stacked.
   - GEN-13 and GEN-14 are skipped for now (owner).
 - 75c451a: shot field `look:'crafted-v1'` and request field `look` (default for dialogue films). Chamfered boxes with an absolute bevel on both renderers, softened palette, softer CPU light, matte Three. Doc: docs/LOOK.md.
-- Defaults unchanged with `--exclude talk04,talk05,gen01,gen09,gen12`. npm 359 run, 358 pass, 0 fail, 1 Windows skip.
+- Defaults unchanged with `--exclude talk04,talk05,gen01,gen09,gen12,fixa`. npm 359 run, 358 pass, 0 fail, 1 Windows skip.
 - Render `gen15-forest-r1`: CPU 0a996a7262fe460c…, Three 7f81ed48893f2bec…. All gates PASS.
   - CPU is clearly improved.
   - Three is slightly washed out (tuning possible after the owner's review).

@@ -65,3 +65,6 @@ A more precise "is it hidden?" check (src/quality/visibility.js). Every producti
 - **Fewer false alarms:** the ART-03/POLISH-02 line-up back row drops from 0.63–0.70 (v1) to 0.39–0.51.
 - **New true finding (older accepted film, left unchanged):** in cinematography / homes, the guide robot stands half inside the cottage (the robot's box reaches 0.4 m into it, and the cottage's front wall is nearer the camera). It is covered at 0.72; v1 measured 0. Recorded in tests/gen08.test.js.
 - Tests: tests/gen08.test.js (example sweep, line-up improvement, hidden set piece, depth test in front/behind, attachment links, non-graph shots).
+
+## Fix A silence-v1 (2026-11-26)
+Long silences in speech films: gaps over 3 s between lines, over 2 s before the first line, over 3 s after the last. Authored fixed shots are exempt; talk share is reported only. A gate for speech-fitted films (`speech.fit`), a report for others. Details and evidence: docs/SPEECH.md "Fix A".

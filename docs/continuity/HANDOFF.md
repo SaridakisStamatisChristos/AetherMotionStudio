@@ -1,39 +1,49 @@
-# Forward-only handoff — STUDIO-01 implemented (owner types only "fod continue")
+# Forward-only handoff: Fix A done, GEN-15 step 2 next (owner types only "fod continue")
 
 Date: 2026-11-26. Keep reports short and plain.
-Checkpoint: branch `feature/studio-01` from **main 22ffec4** (not stacked). Earlier handoff (before STUDIO-01): PR #35 branch `chore/record-gen-15` and git history of this file. Binding facts are in CURRENT_STATE.md.
+Checkpoint: branch `feature/fix-a` from **main 135dbcc** (not stacked). It also carries the STUDIO-01 merge record (cherry-picked from PR #37, docs only; close #37 when this merges). Earlier handoffs: git history of this file. Binding facts are in CURRENT_STATE.md.
 
-## Where things stand
-| Item | State |
-|---|---|
-| STUDIO-01 "script to film" | **Implemented and tested** on `feature/studio-01`. One real Studio render passed (below). Owner has not tried it yet. PR #36 (pushed with the owner's permission: "i allow pushes"). **Merge only on the owner's word, after PR CI.** |
-| PR #35 `chore/record-gen-15` | Docs only. **MERGED 36f6fd6** on the owner's word ("lets do it after the push is sucessfull"). It had no CI run because core.yml only runs on pushes to main and feature/**. STUDIO-01 was rebased onto it; SCRIPT_FORMAT "How the owner will feed it in" and NEXT_UNITS are updated. |
-| `feature/forest-script` (ad893f7) | **Folded into STUDIO-01** (cherry-picked as a56732e; examples/gen12-forest-script.request.json). The local branch is now redundant; delete only with the owner's OK. |
-| GEN-15 look, cleanup step 2, fix A, GEN-16 | Unchanged: waiting for owner decisions (see "Pending owner decisions"). |
+## Plan being executed (owner, 2026-11-26)
+"do these: Fix A … Accept the GEN-15 look … ui refinement will be the last not in this step put it in a later step at the end of handoff we are executing"
+| # | Step | State |
+|---|---|---|
+| 1 | Fix A: film length follows the speech; silence-v1 | IMPLEMENTED + TESTED + RENDERED on `feature/fix-a`. PR pending. **Merge only on the owner's word, after PR CI.** |
+| 2 | GEN-15 look accepted; cleanup step 2 | DONE. The owner confirmed the exact deletion list. |
+| 3 | GEN-15 step 2: richer sets; part materials (metal trims, glass screens) | AUTHORIZED. Next, on a new branch from main **after Fix A is merged** (no stacking). Plan: docs/LOOK.md "Next steps". Known input: in fixa-sky-r1 the topic-set props do not fit the topic (a DNA helix for the sky). Code: src/visual/crafted.js, src/director/sets.js (GEN-12), catalog part colours. Rules: opt-in or default-proven-unchanged (fod-digests); both backends; tests with negatives; a matched render from a clean commit; stills review. |
+| 4 | **Last: Studio UI refinement** | Later; not in this step. |
 
-## STUDIO-01 what changed
+## Fix A: what changed
 | File | Change |
 |---|---|
-| `Start-AetherMotion-Studio.cmd` (+ `.gitattributes` `*.cmd eol=crlf`) | Double-click launcher: sets PYTHON, AETHER_FFMPEG, AETHER_FFPROBE, AETHER_GL=vulkan, AETHER_CONCURRENCY=8 for its window only, checks the tools exist, runs `npm run studio:local`, opens http://127.0.0.1:4173; if the Studio already runs it only opens the page. First version had spaces in its name and nested quotes; the owner saw "Windows cannot find aethermotionstudio" → renamed without spaces and the browser line rewritten. |
-| src/studio/director-form.js | `STUDIO_CASTS` (interview = gen01 cast and request fields incl. seed 1; trio = TALK-04 cast unchanged; narrator = earlier form), `STUDIO_DEFAULTS` (interview, three, polished, 60 s, Reels off), `directorRequest`, `scriptHelp`, `wordRange` (2.0–2.33 words/s). Browser-safe. |
-| studio/index.html, app.js, style.css | Cast select replaces the "Dialogue" checkbox; Reels checkbox; rules text + live word count under Script; Three default; seconds 60; voice/staging only for the narrator cast. |
-| Prompt guidance (owner: "i would need prompt guidance in the studio for the script … we need to modify the ui a bit") | Form reordered: Topic, Cast, Seconds/Backend, then an open "Need a script? Get one from Claude chat" box (prompt filled from topic/cast/seconds, Copy prompt), Script, "Clean up pasted script", count and rules. `scriptPrompt`, `lineRange`, `cleanScript` in director-form.js. Headless-browser check (Remotion's Chrome): the page loads, "Local engine ready", the prompt fills in; agent looked at a screenshot. Owner has not tried it. |
-| tests/studio01.test.js (new, 8 tests), tests/talk04.test.js | Form → request equals the forest example request; trio cast pinned; negatives (empty topic+script, missing topic, unknown cast/backend/profile, bad seconds/reels/id/voice; links rejected by the schema); script help; offline Director turns alternate host/guest over 14 lines; Studio API round trip; launcher contents. TALK-04 wiring test now checks `directCast` and `directorRequest(directorForm())` (the trio cast itself is pinned in studio01). |
-| docs/STUDIO.md, docs/continuity/LOCAL_DEVELOPMENT.md | "Script to film (STUDIO-01)" section; launcher line. |
-- **Backends:** Studio jobs stay one backend per job (one active job, one snapshot, one output). "Both" does not fit that model without a new job contract, so it is not offered; `produce.mjs --backend both` stays the matched-pair path. Job contracts unchanged.
+| scripts/speech_plan.py | `fit_target`: FIT_GAP 0.18 s, FIT_TAIL 0.5 s, FIT_END 1 s; at least 180 frames; fixed shots kept; capped at the target |
+| scripts/speech_pipeline.py | The target comes from `fit_target` at each ladder step and in the readable-captions rerun. The report gets `fit {mode, requestedFrames, actualFrames}`. |
+| src/core/speech.js | `speech.fit` contract, `SPEECH_FIT`, `fitsTarget`. The timeline check allows 180 frames up to the target only with fit. |
+| scripts/verify.py, scripts/matched_inventory.py, scripts/produce.mjs | Films without fit keep the exact length. Fitted films may run from 180 frames up to the target. produce records `requestedFrames` and uses the measured length. |
+| src/director/dialogue.js | Dialogue films default to `fit: 'speech-v1'` unless the request's speech says `'none'`. |
+| src/quality/silence.js (new), produce.mjs | silence-v1 on every production (CHECKS line); a gate before rendering for fitted films |
+| tests/fix-a.test.js, tests/test_speech_fit.py | Contract, defaults, opt-out, silence cases, produce wiring, fit_target |
+| docs/SPEECH.md, docs/QUALITY.md | Fix A sections and evidence |
 
 ## Evidence (this checkpoint)
-- Baseline on main 22ffec4: digests graph 3d33fbaee198acad, geometry 14dec244d171dc56, detail2 e3f80439a292f21a, director 7 requests 2cbf9916e65da935 (unchanged after the change). `npm test` 360 → **366 tests, 365 pass, 0 fail, 1 skip**. Python 51 OK.
-- Launcher: run through cmd.exe by full path (not a mouse double-click by the agent); the Studio answered HTTP 200 and the page module loaded. The owner reported the first version failing; the fixed version has not yet been tried by the owner.
-- Real Studio run, **through the HTTP API with the same calls the page makes** (no browser clicks by the agent): forest script pasted one sentence per line, interview cast, Three, polished, 60 s, quality on. Job `studio-e3bb2326a60691aab621` from commit 5abe119 (same code as rebased 22857f8) → **succeeded**. film.mp4 sha256 b6f4a0fadef46d1f…, 1800 frames, `gl: vulkan`, concurrency 8, render 57.3 s; nvidia-smi showed 15–45 % GPU and ~1.3–1.4 GB VRAM during the render. PASS speech allocation/captions/audio; PASS native 1800-frame MP4; QUALITY pass-with-findings, errors 0, warnings 0 (review-level LOW_PROJECTED_MOTION on singles); draft checks motion/visibility/crowding 0; frame_glitch clean; −16.0 LUFS; pace requested 0.92 (not kept), maxCps 18. Download link `?download=1` served the identical file (attachment). Agent looked at 4 stills: correct cast, captions and set. **No human review.**
-- Note: `scripts/frame_glitch.py` needs ffmpeg on PATH (the launcher sets only AETHER_FFMPEG); Studio itself does not need it.
+- Digests unchanged: graph 3d33fbaee198acad, geometry 14dec244d171dc56, detail2 e3f80439a292f21a, director 7 requests 2cbf9916e65da935.
+- Tests: 372 JS (0 fail, 1 skip); 56 Python OK.
+- `fixa-script-r1`, from clean e6dc717 (the owner's forest script):
+  - CPU 93324d88432897bb…, Three 9d6034c9e7c6084f…; **byte-identical to forest-script-r1** (the script fills 60 s);
+  - silence-v1 0 warnings, talk 79 %;
+  - all gates PASS, glitch clean, −16.0 LUFS.
+- `fixa-forest-r1` (gen12-forest placeholder lines): fitted to 716 frames, but stopped before rendering by the first silence-v1 rule (talk share 58 % < 60 %). Its partial outputs are kept. The rule became report-only in 563f228.
+- `fixa-forest-r2`, from clean 563f228:
+  - **716 frames, 23.9 s instead of 60 s**;
+  - silence-v1 0 warnings, longest pause 2.0 s;
+  - CPU 5f485de3f3477351…, Three c48f204a136a4e1a…;
+  - all PASS, QUALITY pass, matched hashes exact, glitch clean, −16.0 LUFS, vulkan.
+- `fixa-sky-r1` (owner: "add a script and re render … for 60 with script"; Claude-drafted script, examples/fixa-sky-script.request.json, 14 lines, 139 words), from clean ea34277: 1800 frames (the script fills 60 s), silence-v1 0, longest pause 1.15 s, talk 77 %, 4 lines slowed for readable captions. CPU 5d2236d14f330b38…, Three 8b40c327165b1928…. All PASS, matched hashes exact, glitch clean, −16.0 LUFS. Agent stills: the topic-set props do not fit the sky topic (a DNA helix, a dotted bar); recorded for GEN-15 step 2 (richer, topic-fitting sets). No human review.
+- Before Fix A, silence-v1 on gen15-forest-r2: 6 warnings, longest pause 12.9 s, talk 23 %.
+- The agent looked at stills of fixa-forest-r2: it ends calmly on the last line. **No human review.**
 
 ## Pending owner decisions
-1. Try the launcher (double-click `Start-AetherMotion-Studio.cmd`) and a film from the form. Optional desktop shortcut: right-click → Show more options → Send to → Desktop.
-2. Merge PR #36 (STUDIO-01) after its CI on the rebased head.
-3. Fix A "film length follows speech" (proposed, not authorized).
-4. Accept the GEN-15 look (unlocks cleanup step 2 and GEN-15 step 2). Films: gen15-forest-r2, forest-script-r1, and now the Studio film above.
-5. GEN-16 policy; Instagram test upload deferred to the very end.
+1. Merge the Fix A PR (after its CI), then close PR #37 (its commit is included).
+2. GEN-16 policy. The Instagram test upload is deferred to the very end.
 
 ## Owner working agreement and taste (binding; see also auto-memory)
 - **Delegation:** the owner delegates whole units and wants plain-language reports with short tables. Stop only for direction-changing or risky actions: backend defaults, dependencies, deletions, system settings, anything outside the repo, or changing accepted films.
@@ -71,5 +81,12 @@ Checkpoint: branch `feature/studio-01` from **main 22ffec4** (not stacked). Earl
 
 
 ## Next action
-- "fod continue": bootstrap (expect `feature/studio-01` PR open, or merged if the owner said so), baseline digests and tests.
-- If PR #36 is open: report its CI and ask the owner to merge. Then wait for the owner's choice among the pending decisions. Never merge without the owner's word and a passing PR CI. Never stack branches.
+- "fod continue": bootstrap and baseline:
+  - `git status --short --branch`, `git rev-parse HEAD`, `git fetch`, `gh pr list --state all --limit 5`;
+  - `node scripts/fod-digests.mjs . --exclude talk04,talk05,gen01,gen09,gen12,fixa` must print graph 3d33fbaee198acad, geometry 14dec244d171dc56, detail2 e3f80439a292f21a, director 7 requests 2cbf9916e65da935 (dialogue examples are excluded because their output follows the dialogue defaults);
+  - `npm test` fail 0 (372 tests, 1 Windows skip);
+  - `PYTHONPATH=scripts .venv/Scripts/python.exe -m unittest discover -s tests -p "test_*.py"` 56 OK.
+- If the Fix A PR is open: report its CI and ask the owner to merge.
+- After the merge: start GEN-15 step 2 on `feature/gen-15-step2` from main.
+- Studio UI refinement stays last.
+- Never merge without the owner's word and a passing PR CI. Never stack branches.

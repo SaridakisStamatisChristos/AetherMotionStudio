@@ -147,8 +147,13 @@ Status 2026-11-25 (owner: "lets do it seriallized. Gen10 and onwards"):
 - GEN-10/11 MERGED (5668031), CPU robot mouth fix MERGED (3ac0f01). GEN-12 (topic sets) IMPLEMENTED + TESTED + RENDERED on `feature/gen-12`.
 - The Instagram test upload was moved by the owner to the end of the roadmap.
 - GEN-12 MERGED (fae67c1). GEN-13 and GEN-14 SKIPPED for now (owner). GEN-15 step 1 and the Three tune MERGED (22ffec4).
-- **STUDIO-01 "script to film": IMPLEMENTED and TESTED (PR #36; merge on the owner's word).** It covers a double-click launcher with the RTX env, a Studio Director cast choice (Student + Explorer by default), a Reels checkbox, script-format help with a word count, and an end-to-end test. Owner scripts come from Claude chat (docs/SCRIPT_FORMAT.md).
-- Proposed, not authorized: fix A, film length follows speech, plus a check for long silences. GEN-15 step 1 (crafted look) IMPLEMENTED + TESTED + RENDERED on `feature/gen-15`.
+- **STUDIO-01 "script to film": MERGED (PR #36, main 135dbcc).** Later, not scheduled: Studio UI refinement (owner: "ui refinement can be done later"). It covers a double-click launcher with the RTX env, a Studio Director cast choice (Student + Explorer by default), a Reels checkbox, script-format help with a word count, and an end-to-end test. Owner scripts come from Claude chat (docs/SCRIPT_FORMAT.md).
+- **Plan in execution (owner, 2026-11-26: "do these: Fix A … Accept the GEN-15 look … ui refinement will be the last"), in this order:**
+  1. Fix A (film length follows speech, plus silence-v1): IMPLEMENTED + TESTED + RENDERED on `feature/fix-a`, PR pending.
+  2. GEN-15 look ACCEPTED; render cleanup step 2 DONE.
+  3. GEN-15 step 2 (richer sets; part materials such as metal trims and glass screens): AUTHORIZED. Next, on a new branch from main after the Fix A merge.
+  4. **Last: Studio UI refinement** (owner: "ui refinement can be done later"; "will be the last").
+- GEN-15 step 1 (crafted look) MERGED (22ffec4).
 - GEN-13 needs music sources and licences, and GEN-14 needs a local model; both are owner decisions.
 - PR #29 revised: Reels captions low at normal size; GEN-05b readable captions.
 Status 2026-11-25 (owner: "execute gen-04 to gen9"):

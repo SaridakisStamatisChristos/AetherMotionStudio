@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "id": "fixa-sky-script",
+  "topic": "Why is the sky blue?",
+  "seconds": 60,
+  "audience": "curious beginners",
+  "tone": "friendly",
+  "style": "interview",
+  "language": "en-us",
+  "voice": "af_bella",
+  "backend": "cpu",
+  "profile": "polished",
+  "seed": 1,
+  "dialogue": {
+    "style": "interview",
+    "speakers": [
+      {
+        "id": "host",
+        "name": "Student",
+        "voice": "af_bella",
+        "language": "en-us",
+        "character": "student"
+      },
+      {
+        "id": "guest",
+        "name": "Explorer",
+        "voice": "bm_george",
+        "language": "en-gb",
+        "character": "explorer-robot"
+      }
+    ]
+  },
+  "script": "Why is the sky blue during the day? Sunlight looks white, but it is really a mix of all the colours. So where does the blue come from? Sunlight bumps into tiny gas molecules in the air, mostly nitrogen and oxygen. Do all the colours bump the same way? No, short blue waves scatter much more strongly than long red waves. So blue light bounces all over the sky? Exactly, scattered blue light reaches our eyes from every direction we look. Then why is the sky not violet? Sunlight has less violet, and our eyes are more sensitive to blue. Why are sunsets orange and red? At sunset, light travels through much more air, so most blue is scattered away. And the reds and oranges are left over? Yes, those longer waves pass through, so the evening sky glows."
+}

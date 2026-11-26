@@ -33,6 +33,24 @@ def allocate_mixed(lengths,texts,budgets,target):
         remaining-=sum(chunks)
     return frames
 
+# Fix A (opt-in speech.fit 'speech-v1'; owner: "there is so much pause in the forest video"): the film is as long as
+# the measured speech plus calm pauses, never longer than the requested target. Calm pauses per automatic shot: the
+# usual PAD and punctuation pauses (required), up to FIT_GAP more between lines, FIT_TAIL after the last line, and
+# FIT_END once at the end of the film. Fixed shots keep their authored length. Speech that needs more than the
+# target follows the usual ladder (faster speech), exactly as without fit.
+FIT_GAP=.18;FIT_TAIL=.5;FIT_END=1.;FIT_MODES=('speech-v1','none')
+def fit_target(lengths,texts,budgets,target,mode):
+    if mode not in FIT_MODES: raise ValueError('unknown speech fit')
+    if mode=='none': return target
+    if not lengths or len(lengths)!=len(texts) or len(lengths)!=len(budgets): raise ValueError('invalid fit input')
+    total=0
+    for a,b,f in zip(lengths,texts,budgets):
+        if f is not None: total+=f;continue
+        calm=required(a,b)+int(RATE*(FIT_GAP*(len(a)-1)+FIT_TAIL))
+        total+=max(60,math.ceil(calm/SPF))
+    total+=math.ceil(FIT_END*30)
+    return min(target,max(180,total))
+
 def slots(lengths,texts,frames,placement='center'):
     slack=frames*SPF-required(lengths,texts)
     if slack<0: raise ValueError('speech cannot fit')

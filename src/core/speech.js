@@ -10,13 +10,16 @@ function arr(x,max,p){if(!Array.isArray(x)||x.length>max)fail(p,'invalid array')
 const bool=(x,p)=>{if(typeof x!=='boolean')fail(p,'boolean required');};
 const map=(x,p,max)=>{if(!x||typeof x!=='object'||Array.isArray(x)||Object.keys(x).length>max)fail(p,'invalid mapping');};
 export function validateSpeechConfig(c,shots=null){
- fields(c,['version','targetFrames','fixedShots','speakers','shotSpeakers','pronunciations','captions','mix','cues','syncActions','placement','pace','mouths'],'speech',['version','targetFrames','fixedShots','speakers','shotSpeakers','pronunciations','captions','mix','cues','syncActions']);
+ fields(c,['version','targetFrames','fixedShots','speakers','shotSpeakers','pronunciations','captions','mix','cues','syncActions','placement','pace','mouths','fit'],'speech',['version','targetFrames','fixedShots','speakers','shotSpeakers','pronunciations','captions','mix','cues','syncActions']);
  // POLISH-03 opt-ins: placement of narration inside shots, and mastering profile mix-v2 inside speech.mix.
  if(c.placement!==undefined&&!['center','lead'].includes(c.placement))fail('speech.placement','center or lead required');
  // GEN-05 opt-in: starting Kokoro speed below 1 (slightly slower, easier-to-read speech). Absent = 1 (unchanged).
  if(c.pace!==undefined)finite(c.pace,SPEECH_PACE.min,1,'speech.pace');
  // GEN-10 opt-in estimated mouth shapes for bound speakers (src/core/talk.js VISEMES, scripts/visemes.py)
  if(c.mouths!==undefined&&c.mouths!=='visemes-v1')fail('speech.mouths','visemes-v1 or absent required');
+ // Fix A opt-in: 'speech-v1' = the film is as long as the measured speech plus calm pauses, at most targetFrames
+ // (scripts/speech_plan.py fit_target); 'none' or absent = exactly targetFrames (unchanged).
+ if(c.fit!==undefined&&!SPEECH_FIT.includes(c.fit))fail('speech.fit','speech-v1, none or absent required');
  if(c.version!==1)fail('speech.version','unsupported');int(c.targetFrames,180,9000,'speech.targetFrames');
  const ids=shots?new Map(shots.map(s=>[s.id,s])):null;
  const shotId=(id,p)=>{if(!/^[a-z0-9][a-z0-9-]{0,47}$/.test(id)||['constructor','prototype'].includes(id)||ids&&!ids.has(id))fail(p,'unknown or unsafe shot');};
@@ -44,11 +47,14 @@ export function validateSpeechConfig(c,shots=null){
  arr(c.cues,120,'cues');for(const x of c.cues){fields(x,['shot','anchor','phrase','type','gain'],'cue',['shot','anchor','type','gain']);shotId(x.shot,'cue.shot');choice(x.anchor,['shot-start','speech-start','speech-end'],'cue.anchor');choice(x.type,['chime','whoosh','tick'],'cue.type');finite(x.gain,0,1,'cue.gain');if(x.anchor==='shot-start'){if(x.phrase!==undefined)fail('cue','phrase not allowed');}else int(x.phrase,0,ids?ids.get(x.shot).narration.length-1:7,'cue.phrase');}
  bool(c.syncActions,'syncActions');return c;
 }
+export const SPEECH_FIT=Object.freeze(['speech-v1','none']);
+// Exact target without fit; with fit 'speech-v1' any whole length from 180 frames (6 s) up to the target.
+export function fitsTarget(c,frames){return c.fit==='speech-v1'?Number.isSafeInteger(frames)&&frames>=180&&frames<=c.targetFrames:frames===c.targetFrames;}
 export function speakerFor(c,shot,i,voice){const id=c.shotSpeakers[shot]?.[i];return id?{id,...c.speakers[id]}:{id:'default',name:'Narrator',voice,language:voice.startsWith('b')?'en-gb':'en-us'};}
 export function validateSpeechTimeline(scene,t){
  if(!scene.speech){if(t.captions!==undefined||t.alignment!==undefined||t.shots.some(s=>s.segments.some(x=>x.speaker!==undefined||x.voice!==undefined||x.language!==undefined)))fail('timeline','speech config required');return;}
  const c=scene.speech;
- if(t.durationFrames!==c.targetFrames||t.alignment!=='estimated-word/measured-phrase')fail('timeline','speech target or alignment mismatch');
+ if(!fitsTarget(c,t.durationFrames)||t.alignment!=='estimated-word/measured-phrase')fail('timeline','speech target or alignment mismatch');
  if(!Array.isArray(t.captions)||t.captions.length>12000)fail('captions','invalid cue array');
  const segments=t.shots.flatMap(s=>s.segments),groups=segments.map(()=>[]);let previous=0;
  for(const s of t.shots)for(const [i,a] of s.segments.entries()){
