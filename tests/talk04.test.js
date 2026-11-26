@@ -172,7 +172,8 @@ test('studio speaker editor: negatives are rejected and leave the project unchan
 });
 test('studio UI: speaker panel and dialogue option are wired to the model functions',()=>{
  const html=readFileSync(new URL('../studio/index.html',import.meta.url),'utf8'),js=readFileSync(new URL('../studio/app.js',import.meta.url),'utf8');
- for(const id of ['directDialogue','speakers','addSpeaker','applySpeakers','lineSpeakers'])assert.match(html,new RegExp('id="'+id+'"'));
+ // STUDIO-01: the dialogue checkbox became the cast select (the TALK-04 cast is STUDIO_CASTS.trio, see tests/studio01.test.js).
+ for(const id of ['directCast','speakers','addSpeaker','applySpeakers','lineSpeakers'])assert.match(html,new RegExp('id="'+id+'"'));
  for(const f of ['setSpeakers','setLineSpeaker','bindSpeaker'])assert.match(js,new RegExp(f+'\\('));
- assert.match(js,/dialogue:\{speakers:DIALOGUE_CAST\}/);
+ assert.match(js,/directorRequest\(directorForm\(\)\)/);
 });
