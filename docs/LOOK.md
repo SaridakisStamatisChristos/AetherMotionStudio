@@ -33,3 +33,15 @@ Owner: "lets skip 13 and 14 for now and go to the better looking shapes and mate
 Richer sets and set dressing; material accents per part (metal trims, glass screens); GEN-16 needs an owner decision (a Three-only cinematic profile).
 
 Tests: tests/gen15.test.js (chamfer geometry: counts, orientation, inside the box, area, absolute and thin bevels; palette; legacy CPU faces identical without the look; contract, Director default, none, legacy, prompt unchanged, negatives).
+
+## Step 2: part materials, dressed sets (2026-11-26)
+Owner: "Accept the GEN-15 look" and "start gen-15 step 2". The look was accepted, and cleanup step 2 was done.
+- **Look `crafted-v2`** (shot field `look`; the Director default for dialogue films; `crafted-v1` stays selectable and unchanged).
+  - It is crafted-v1 plus part materials. Recipes have no part names, so `partRole` (src/visual/crafted.js) derives a role from the recipe family, the colour slot and the shape:
+    - **glass:** a thin dark slab (slot 4; thinnest side at most 6 cm; the other two at least 8 cm) on a machine family (screens, visors, windows). It is drawn darker and bluer. CPU adds a view-dependent sheen; Three uses roughness 0.12 and metalness 0.18.
+    - **metal:** a thin secondary-colour part (slot 1; thinnest side at most 8 cm) on a machine family (trims, bezels, rails, rods). It is drawn cooler and lighter. CPU adds a sharp highlight and brighter bevels; Three uses roughness 0.3 and metalness 0.55.
+  - People, animals, plants and glowing parts never get a role.
+  - The role is an extra argument on the shared box stream. Renderers without crafted-v2 ignore it, so legacy and crafted-v1 drawing are identical (tested, digests unchanged).
+- **Dressed sets:** see docs/SETS.md "topic-v2".
+- Render `gen15b-sky-r1` (the sky script, 60 s), from clean 6dea830: CPU 6769a5630b61c789…, Three 07af439d90e3aa2f…. All PASS; CHECKS 0 (silence-v1 0, talk 77 %); QUALITY pass-with-findings, errors 0, warnings 0; matched hashes exact; glitch clean; −16.0 LUFS; vulkan. Render time: CPU 131.6 s (fixa-sky-r1 113.3 s, +16 % from the dressing), Three 55.0 s (56.0 s). Agent stills: the lab-set dressing shows behind the speakers, the pieces match the words, and both backends agree. **No human review.**
+- Tests: tests/gen15b.test.js.

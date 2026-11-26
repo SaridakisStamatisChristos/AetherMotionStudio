@@ -1,49 +1,42 @@
-# Forward-only handoff: Fix A done, GEN-15 step 2 next (owner types only "fod continue")
+# Forward-only handoff: GEN-15 step 2 done, Studio UI refinement last (owner types only "fod continue")
 
 Date: 2026-11-26. Keep reports short and plain.
-Checkpoint: branch `feature/fix-a` from **main 135dbcc** (not stacked). It also carries the STUDIO-01 merge record (cherry-picked from PR #37, docs only; close #37 when this merges). Earlier handoffs: git history of this file. Binding facts are in CURRENT_STATE.md.
+Checkpoint: branch `feature/gen-15-step2` from **main 8e65805** (Fix A merged as PR #38; #37 closed, included). Earlier handoffs: git history of this file. Binding facts are in CURRENT_STATE.md.
 
 ## Plan being executed (owner, 2026-11-26)
-"do these: Fix A … Accept the GEN-15 look … ui refinement will be the last not in this step put it in a later step at the end of handoff we are executing"
 | # | Step | State |
 |---|---|---|
-| 1 | Fix A: film length follows the speech; silence-v1 | IMPLEMENTED + TESTED + RENDERED on `feature/fix-a`. PR pending. **Merge only on the owner's word, after PR CI.** |
-| 2 | GEN-15 look accepted; cleanup step 2 | DONE. The owner confirmed the exact deletion list. |
-| 3 | GEN-15 step 2: richer sets; part materials (metal trims, glass screens) | AUTHORIZED. Next, on a new branch from main **after Fix A is merged** (no stacking). Plan: docs/LOOK.md "Next steps". Known input: in fixa-sky-r1 the topic-set props do not fit the topic (a DNA helix for the sky). Code: src/visual/crafted.js, src/director/sets.js (GEN-12), catalog part colours. Rules: opt-in or default-proven-unchanged (fod-digests); both backends; tests with negatives; a matched render from a clean commit; stills review. |
-| 4 | **Last: Studio UI refinement** | Later; not in this step. |
+| 1 | Fix A: film length follows the speech; silence-v1 | MERGED (PR #38). The owner watched fixa-sky-r1 ("great i seen the video"). |
+| 2 | GEN-15 look accepted; cleanup step 2 | DONE |
+| 3 | GEN-15 step 2: dressed sets, word-matched pieces, glass and metal parts | IMPLEMENTED + TESTED + RENDERED on `feature/gen-15-step2`. PR pending. **Merge only on the owner's word, after PR CI.** |
+| 4 | **Last: Studio UI refinement** | Next after step 3 is merged, on a new branch from main. The owner said it is practical now; ask what they want refined (layout, wording, prompt box) before starting. |
 
-## Fix A: what changed
+## GEN-15 step 2: what changed
 | File | Change |
 |---|---|
-| scripts/speech_plan.py | `fit_target`: FIT_GAP 0.18 s, FIT_TAIL 0.5 s, FIT_END 1 s; at least 180 frames; fixed shots kept; capped at the target |
-| scripts/speech_pipeline.py | The target comes from `fit_target` at each ladder step and in the readable-captions rerun. The report gets `fit {mode, requestedFrames, actualFrames}`. |
-| src/core/speech.js | `speech.fit` contract, `SPEECH_FIT`, `fitsTarget`. The timeline check allows 180 frames up to the target only with fit. |
-| scripts/verify.py, scripts/matched_inventory.py, scripts/produce.mjs | Films without fit keep the exact length. Fitted films may run from 180 frames up to the target. produce records `requestedFrames` and uses the measured length. |
-| src/director/dialogue.js | Dialogue films default to `fit: 'speech-v1'` unless the request's speech says `'none'`. |
-| src/quality/silence.js (new), produce.mjs | silence-v1 on every production (CHECKS line); a gate before rendering for fitted films |
-| tests/fix-a.test.js, tests/test_speech_fit.py | Contract, defaults, opt-out, silence cases, produce wiring, fit_target |
-| docs/SPEECH.md, docs/QUALITY.md | Fix A sections and evidence |
+| src/visual/crafted.js | `LOOKS` + 'crafted-v2', `isCrafted`, `MATERIALS`, `partRole`, `mixColor` |
+| src/visual/catalog.js | Every recipe part passes its role as an extra `box` argument (`primitive(..., family)`) |
+| src/visual/mesh.js, src/visual/three-backend.js | crafted-v2 glass sheen and metal highlight (CPU); glass and metal materials (Three); crafted lighting for both crafted looks |
+| src/core/cinematography.js | `DRESSED_SETS` (lab, tech, forest, office, street, home) added to `LAYERED_ENVIRONMENTS`; `emitEnvironment` draws catalog dressing behind the speakers |
+| src/director/sets.js | `SETS_V2`, `PIECE_WORDS`, `topicSetFor`, `fitPiecesFor` (topic-v1 functions unchanged) |
+| src/director/index.js, schema.js | Dialogue defaults topic-v2 and crafted-v2; v1 and none selectable; negatives |
+| tests/gen15b.test.js (new, 6); tests/gen12.test.js, tests/gen15.test.js | v1 behaviour is now pinned by name (the default moved to v2) |
+| docs/LOOK.md, docs/SETS.md | Step 2 sections, topic table, evidence |
 
 ## Evidence (this checkpoint)
-- Digests unchanged: graph 3d33fbaee198acad, geometry 14dec244d171dc56, detail2 e3f80439a292f21a, director 7 requests 2cbf9916e65da935.
-- Tests: 372 JS (0 fail, 1 skip); 56 Python OK.
-- `fixa-script-r1`, from clean e6dc717 (the owner's forest script):
-  - CPU 93324d88432897bb…, Three 9d6034c9e7c6084f…; **byte-identical to forest-script-r1** (the script fills 60 s);
-  - silence-v1 0 warnings, talk 79 %;
-  - all gates PASS, glitch clean, −16.0 LUFS.
-- `fixa-forest-r1` (gen12-forest placeholder lines): fitted to 716 frames, but stopped before rendering by the first silence-v1 rule (talk share 58 % < 60 %). Its partial outputs are kept. The rule became report-only in 563f228.
-- `fixa-forest-r2`, from clean 563f228:
-  - **716 frames, 23.9 s instead of 60 s**;
-  - silence-v1 0 warnings, longest pause 2.0 s;
-  - CPU 5f485de3f3477351…, Three c48f204a136a4e1a…;
-  - all PASS, QUALITY pass, matched hashes exact, glitch clean, −16.0 LUFS, vulkan.
-- `fixa-sky-r1` (owner: "add a script and re render … for 60 with script"; Claude-drafted script, examples/fixa-sky-script.request.json, 14 lines, 139 words), from clean ea34277: 1800 frames (the script fills 60 s), silence-v1 0, longest pause 1.15 s, talk 77 %, 4 lines slowed for readable captions. CPU 5d2236d14f330b38…, Three 8b40c327165b1928…. All PASS, matched hashes exact, glitch clean, −16.0 LUFS. Agent stills: the topic-set props do not fit the sky topic (a DNA helix, a dotted bar); recorded for GEN-15 step 2 (richer, topic-fitting sets). No human review.
-- Before Fix A, silence-v1 on gen15-forest-r2: 6 warnings, longest pause 12.9 s, talk 23 %.
-- The agent looked at stills of fixa-forest-r2: it ends calmly on the last line. **No human review.**
+- Digests unchanged with `--exclude talk04,talk05,gen01,gen09,gen12,fixa`: graph 3d33fbaee198acad, geometry 14dec244d171dc56, detail2 e3f80439a292f21a, director 7 requests 2cbf9916e65da935.
+- Tests: 378 JS (0 fail, 1 skip); 56 Python OK.
+- Render `gen15b-sky-r1` (the sky script, 60 s), from clean 6dea830: CPU 6769a5630b61c789…, Three 07af439d90e3aa2f…. All PASS; CHECKS 0 (silence-v1 0, talk 77 %); QUALITY pass-with-findings, errors 0, warnings 0; matched hashes exact; glitch clean; −16.0 LUFS; vulkan. Render time: CPU 131.6 s (fixa-sky-r1 113.3 s, +16 % from the dressing), Three 55.0 s (56.0 s). Agent stills: the lab-set dressing shows behind the speakers, the pieces match the words, and both backends agree. **No human review.**
+- Preview stills (agent, Studio page drawing at 360×640, not native): the tech set (server racks, control panels, dark glassy screens) and the forest set (trees, fern, rocks) on both backends.
+- Known:
+  - glass and metal are subtle at feed size;
+  - the far skyline blocks remain behind the dressing;
+  - "How do bridges carry trucks?" still shows no set piece (GEN-06 singles; recorded in GEN-12).
 
 ## Pending owner decisions
-1. Merge the Fix A PR (after its CI), then close PR #37 (its commit is included).
-2. GEN-16 policy. The Instagram test upload is deferred to the very end.
+1. Watch gen15b-sky-r1 (out/gen15b-sky-r1-three-polished/film.mp4) and compare it with fixa-sky-r1; then merge the GEN-15 step 2 PR (after its CI).
+2. Studio UI refinement (last): what to refine.
+3. GEN-16 policy. The Instagram test upload is deferred to the very end.
 
 ## Owner working agreement and taste (binding; see also auto-memory)
 - **Delegation:** the owner delegates whole units and wants plain-language reports with short tables. Stop only for direction-changing or risky actions: backend defaults, dependencies, deletions, system settings, anything outside the repo, or changing accepted films.
@@ -83,10 +76,9 @@ Checkpoint: branch `feature/fix-a` from **main 135dbcc** (not stacked). It also 
 ## Next action
 - "fod continue": bootstrap and baseline:
   - `git status --short --branch`, `git rev-parse HEAD`, `git fetch`, `gh pr list --state all --limit 5`;
-  - `node scripts/fod-digests.mjs . --exclude talk04,talk05,gen01,gen09,gen12,fixa` must print graph 3d33fbaee198acad, geometry 14dec244d171dc56, detail2 e3f80439a292f21a, director 7 requests 2cbf9916e65da935 (dialogue examples are excluded because their output follows the dialogue defaults);
-  - `npm test` fail 0 (372 tests, 1 Windows skip);
+  - `node scripts/fod-digests.mjs . --exclude talk04,talk05,gen01,gen09,gen12,fixa` must print the digests above;
+  - `npm test` fail 0 (378 tests, 1 Windows skip);
   - `PYTHONPATH=scripts .venv/Scripts/python.exe -m unittest discover -s tests -p "test_*.py"` 56 OK.
-- If the Fix A PR is open: report its CI and ask the owner to merge.
-- After the merge: start GEN-15 step 2 on `feature/gen-15-step2` from main.
-- Studio UI refinement stays last.
+- If the GEN-15 step 2 PR is open: report its CI and ask the owner to merge.
+- After the merge: Studio UI refinement (the last step); ask what to refine first.
 - Never merge without the owner's word and a passing PR CI. Never stack branches.
