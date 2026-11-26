@@ -12,6 +12,7 @@ Date: 2026-11-26. The owner types only **"fod continue"**. Binding facts: CURREN
 | 2 | `feature/studio-remember` (9768aa5) | The Make-a-film choices and the view come back next time (this browser); **Reset choices** |
 | 3 | `feature/studio-reels` (3035992) | **Make Reels cover** under the finished film: cover picture, Download cover (JPG), the Reels check in plain words (OPEN-5 closed) |
 | 5 | `feature/far-backdrop` (bee6ca7) | Dialogue films get a backdrop that fits the place (sets topic-v3 default): tree line on hills, lit street, lab, tech, office and home walls (OPEN-2, part 1) |
+| 6 | `feature/clean-top` (67f296d) | Owner chose after seeing far-forest-r1: **no speaker roles in captions** and **no big titles** for new films (checkboxes "Speaker names in captions" and "Titles on top", both unticked by default). Matched clean-top-r2: all gates pass, 0 names in subtitles |
 | 4 | — | GEN-16 Three cinematic profile: **held for the owner's Three.js instructions** |
 
 ## Evidence (all observed in this session)
@@ -37,6 +38,7 @@ Date: 2026-11-26. The owner types only **"fod continue"**. Binding facts: CURREN
 
 ## Open issues and risks
 - **Merge order and conflicts:** merge 1 first, then rebase 2 and 3 on the new main and resolve. The conflicts are mechanical (single-line sections in studio/app.js and studio/index.html, appended sections in docs/STUDIO.md and STUDIO_GUIDE.md); a trial merge showed exactly these. 5 is independent.
+- Unit 6 (`feature/clean-top`) also touches studio/app.js, studio/index.html, director-form.js and docs; rebase it after 1–3. On rebase, add `titles` to src/studio/settings.js (unit 2) so the new checkbox is remembered too.
 - Branches 2 and 3 do not contain the global `[hidden]` fix until rebased on 1; their own new hidden elements carry local rules.
 - OPEN-2 part 2 (glass and metal subtle at phone size) remains.
 - In close singles the forest tree line fills the background: agent judged it readable (darker than the characters); owner review pending.

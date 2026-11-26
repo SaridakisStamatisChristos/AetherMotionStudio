@@ -38,6 +38,14 @@ Updated 2026-11-26, later session (main 8a74721; units 1, 2, 3 and 5 of the owne
   - Sets `topic-v3` = topic-v2 + these layers; it is the **Director dialogue default**. topic-v1, topic-v2 and the `-set` layers are unchanged (tested); digests unchanged.
   - Matched production far-forest-r1 (source f59a19b, vulkan): PASS both, CHECKS 0, QUALITY 0/0, glitch clean, −16.0 LUFS, GPU peak 64 %. Agent stills only; **the owner has not watched it**.
   - 389 JS tests (gen15b names topic-v2 where it checks v2).
+- **6. Clean top, no roles (owner choice after seeing far-forest-r1: roles "Off by default", titles "No titles at all")** (`feature/clean-top` 67f296d; docs/STUDIO.md "Clean top and no roles by default"):
+  - Shot field `titles:'none'` hides the pill, the heading and the subheading (also the Reels heading); absent draws as before.
+  - `request.titles` defaults to none for dialogue films. Dialogue requests without their own speech (Director and `produce.mjs`) hide speaker names.
+  - In the Studio, "Speaker names in captions" and the new "Titles on top" start unticked.
+  - Matched clean-top-r2 (source 67f296d): PASS both, CHECKS 0, QUALITY 0/0, glitch clean, −16.0 LUFS, 0 names in srt/vtt, clean top in the stills.
+  - The first try, clean-top-r1 (31ce19b), still had names, because produce.mjs always supplies speech; fixed.
+  - 391 JS, 59 Python; digests unchanged.
+  - Conflicts with 1, 2 and 3 in studio files (mechanical). 2 (remembered choices) needs `titles` added to its settings list when rebased.
 - **4. GEN-16 (Three cinematic profile)** is held for the owner's coming Three.js instructions.
 
 **Previous: no active unit** (session end 2026-11-26).
