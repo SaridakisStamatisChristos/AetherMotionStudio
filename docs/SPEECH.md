@@ -218,3 +218,32 @@ Owner: "the captions must be generalized in speed not only from the sample video
 - **Per-phrase pace** (`phrase_speed`): a phrase still spoken faster than `maxCps` is spoken again slower (3 % headroom, never below the 0.85 floor), if the time budget still fits. Otherwise all phrases keep the film speed and the report says so (`readablePhrases {slowed, kept}`). Timeline speeds may then go down to 0.85 (contract: timeline.js, verify.py).
 - Metrics: `alignment.maxCps` and `readingSpeedOutliers` measure the time each cue is shown; `speechMaxCps` and `heldCues` are added when a cue holds.
 - Tests: tests/test_captions_readable.py (300 random scripts spoken within the limit: 0 fast cues; faster scripts: fewer fast cues; holds never overlap), tests/gen05b.test.js (contract and negatives).
+
+## Fix A: film length follows the speech (2026-11-26)
+Owner: "there is so much pause in the forest video"; then "do these: Fix A".
+- **Contract:** opt-in `speech.fit`:
+  - `'speech-v1'`: the film is as long as the measured speech plus calm pauses, and never longer than `speech.targetFrames` (the requested seconds);
+  - `'none'` or absent: exactly `targetFrames`, as before.
+- **Calm pauses** (scripts/speech_plan.py `fit_target`), for each automatic shot:
+  - the usual padding and punctuation pauses;
+  - up to 0.18 s more between lines;
+  - 0.5 s after the last line;
+  - plus 1 s at the end of the film.
+  - Fixed shots keep their authored length. The film is never shorter than 6 s.
+  - If the speech needs more than the target, the usual speed ladder applies, as without fit.
+- **Defaults:** Director dialogue films use `'speech-v1'` unless the request's `speech.fit` is `'none'`. This includes the Studio form, whose cast films are dialogue films. Narrator films and authored projects are unchanged (digests unchanged).
+- **Reports and checks:**
+  - speech-report.json gets `fit {mode, requestedFrames, actualFrames}`;
+  - a fitted production records `requestedFrames` and uses the measured length as its target;
+  - verify.py, matched_inventory.py and the timeline contract accept a fitted film from 180 frames up to the target, and still require the exact target without fit.
+- **silence-v1** (src/quality/silence.js) runs on every production (`CHECKS:` line):
+  - it warns when a gap between spoken lines is longer than 3 s, when the film starts more than 2 s before the first line, or when it ends more than 3 s after the last line;
+  - gaps inside authored fixed-length shots are reported as authored, never warned;
+  - talk share is reported, not warned, because short lines with calm pauses have a low share without any long silence.
+  - For fitted films it is a gate: a warning stops the production before rendering. For other films it is a report.
+- **Evidence** (from clean e6dc717 / 563f228):
+  - `fixa-script-r1` (the owner's forest script): CPU 93324d88432897bb…, Three 9d6034c9e7c6084f…, **byte-identical to forest-script-r1**. The script already fills the 60 s, so fit keeps 1800 frames. silence-v1 0 warnings, talk 79 %, longest pause 1.0 s. All gates PASS, glitch clean, −16.0 LUFS.
+  - `fixa-forest-r1` (gen12-forest placeholder lines): fitted from 60 s to 23.9 s, longest pause 2.0 s. It was stopped by an earlier silence-v1 rule (talk share 58 % under 60 %); that rule became report-only.
+  - `fixa-forest-r2` (same request, from 563f228): **716 frames, 23.9 s instead of 60 s**. silence-v1 0 warnings, longest pause 2.0 s, talk 58 %. CPU 5f485de3f3477351…, Three c48f204a136a4e1a…. All gates PASS, QUALITY pass, matched hashes exact, glitch clean, −16.0 LUFS. Agent looked at stills: it ends on the last line with a short calm hold.
+  - Before Fix A: gen15-forest-r2 has 6 silence warnings, a longest pause of 12.9 s and 23 % talk.
+- Tests: tests/fix-a.test.js (contract, defaults, opt-out, silence-v1 cases, produce wiring) and tests/test_speech_fit.py (fit_target).
