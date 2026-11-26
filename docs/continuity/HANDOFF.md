@@ -1,136 +1,60 @@
-# Forward-only handoff: session 2026-11-26 (STUDIO-01 through the finished-film panel)
+# Forward-only handoff: session 2026-11-26 (owner units 1, 2, 3 and 5)
 
-Unit: owner plan "script to film, Fix A, GEN-15 step 2, Studio UI", plus the owner-requested follow-ups
-Checkpoint: **main 8a74721** (PR #42 merged; main CI 45811548096 passed). This handoff: branch `chore/handoff-session-end` (docs only; no CI by design).
-Status: **HANDED_OFF**. Every unit of the plan is merged, and nothing is active or authorized beyond it.
-Approved by: the owner, by explicit word per PR ("merge 36", "merge it" [#38], "merge 39", "merge 40", "merge pr 41 … or pr 42").
-Date: 2026-11-26
-The owner types only **"fod continue"**. Binding facts: CURRENT_STATE.md. Earlier handoffs: the git history of this file.
+Unit: owner "implement 1-2-3 and 5 leave 4 for next cause i am planning to do a lot in three.js … lets finish this dual cpu gpu functionality we have now"
+Checkpoint: main **8a74721** (unchanged). Four local feature branches plus this docs branch `chore/record-units-1235`, which is based on `chore/handoff-session-end` (PR #43). PR #43 holds the latest canon that main lacks, so merge it first, or merge this branch, which includes it. **Nothing pushed.**
+Status: **IMPLEMENTED + TESTED + VERIFIED LOCALLY; NOT PUSHED, NOT MERGED.** `git push` was refused by this session's permission check (not by the owner); ask the owner to allow it or to push.
+Date: 2026-11-26. The owner types only **"fod continue"**. Binding facts: CURRENT_STATE.md. Earlier handoffs: the git history of this file (previous: ef20c93 on `chore/handoff-session-end`, PR #43 still open).
 
-## Scope actually completed (all MERGED to main)
-| PR | Unit | What the owner gets |
+## Scope completed (local branches, each from main 8a74721)
+| Unit | Branch (head) | What the owner gets |
 |---|---|---|
-| #35 | Record GEN-15 merges, docs/SCRIPT_FORMAT.md | The owner's script format and Claude-chat prompt |
-| #36 | STUDIO-01 "script to film" | Double-click launcher `Start-AetherMotion-Studio.cmd` (RTX env); Director form with cast choice (Student + Explorer default), Reels checkbox, Claude prompt box, Clean up, word count; examples/gen12-forest-script.request.json |
-| #37 | (closed, included in #38) | — |
-| #38 | Fix A | `speech.fit 'speech-v1'`: dialogue films are as long as their speech plus calm pauses, at most the requested seconds; silence-v1 check (a gate for fitted films); examples/fixa-sky-script.request.json |
-| #39 | GEN-15 step 2 | Look `crafted-v2` (glass and metal parts); sets `topic-v2` (dressed sets from catalog objects; pieces matched to the words); `bodyLanguage.alternateArms`; CPU eye fix (`CRAFTED.litBias` 0.18) |
-| #40 | Studio UI refinement | Simple "Make a film" view (Advanced toggle); auto-clean of pasted scripts on Generate; length choices (calm/tight/long/short with Use N s / Keep / Shorten); "Speaker names in captions" checkbox (`speech.captions.speakerNames:false`) |
-| #41 | Record of #40 | Docs |
-| #42 | Owner guide and finished-film panel | **STUDIO_GUIDE.md** (repo root); "Your film is ready" panel with Download film (MP4), Captions (.srt), a plain summary line; downloads named after the film |
+| 1 | `feature/studio-progress` (2126be1) | Progress bar under Production: step, %, frame N of M, about how long is left, time so far; orange with the step on failure. Fix: no empty "Your film is ready" panel while rendering |
+| 2 | `feature/studio-remember` (9768aa5) | The Make-a-film choices and the view come back next time (this browser); **Reset choices** |
+| 3 | `feature/studio-reels` (3035992) | **Make Reels cover** under the finished film: cover picture, Download cover (JPG), the Reels check in plain words (OPEN-5 closed) |
+| 5 | `feature/far-backdrop` (bee6ca7) | Dialogue films get a backdrop that fits the place (sets topic-v3 default): tree line on hills, lit street, lab, tech, office and home walls (OPEN-2, part 1) |
+| 4 | — | GEN-16 Three cinematic profile: **held for the owner's Three.js instructions** |
 
-Also done (outside git):
-- Render cleanup step 2: the GEN-15 reference set was deleted with the owner's confirmation of the exact list.
-- The owner accepted the GEN-15 look.
-- The owner made the first film through the Studio ("great for the first production through pipeline looks great").
+## Evidence (all observed in this session)
+- Bootstrap baseline at 8a74721: digests 3d33fbaee198acad / 14dec244d171dc56 / e3f80439a292f21a / 2cbf9916e65da935; `npm test` 385 tests, 0 fail, 1 skip; Python 59 OK.
+- Per branch, `npm test` 0 fail (1 Windows skip): progress 392, remember 391, reels 389, far-backdrop 389. Digests unchanged on far-backdrop.
+- Agent click tests (headless Chrome, fresh Studio from the branch, vulkan, forest script):
+  - progress: studio-fd9f43a10cb0e33f5109, studio-d4cf9677b63034074a3e;
+  - reels: studio-5e27ef2535fc0429316e (cover frame 189, first single, 1080×1920; the NOT_REELS_LAYOUT note shown);
+  - remember: browser storage check (set, reload, restored, reset, defaults).
+- Matched production **far-forest-r1** (examples/gen12-forest-script.request.json, Director defaults, source f59a19b, sourceDirty false, vulkan, concurrency 8; 254 s with speech prepared once):
+  - PASS on CPU and Three, and the matched comparison (shared hashes exact);
+  - CHECKS 0 on both (talk 0.79); QUALITY errors 0, warnings 0;
+  - frame_glitch clean on both; −16.0 LUFS on both;
+  - layers forest-set-2, look crafted-v2; nvidia-smi peak 64 % (167 samples).
+- Human review: **none this session.** The owner has not seen the new panel features or far-forest-r1. The agent reviewed stills and draft frames only.
+- Not run: CI (nothing pushed), the full native matrix, a GPU benchmark.
 
-## Evidence and acceptance
-Every item below was actually run in this session, unless marked otherwise.
-- **Baseline at handoff (main 8a74721):**
-  - `node scripts/fod-digests.mjs . --exclude talk04,talk05,gen01,gen09,gen12,fixa` → graph 3d33fbaee198acad, geometry 14dec244d171dc56, detail2 e3f80439a292f21a, director 7 requests 2cbf9916e65da935;
-  - `npm test` 385 tests, 0 fail, 1 Windows skip;
-  - Python 59 OK.
-- **PR CI:** test job green on every merged PR head. Main CI after each merge: 45775300788 (#36), 45799267039 (#39), 45809562848 (#40), 45811548096 (#42); main after #38 is merge 8e65805. Routine CI is test-only; render/compare jobs are skipped by policy.
-- **Matched renders** (local, vulkan, from clean commits; all PASS, matched hashes exact, glitch clean, −16.0 LUFS):
+## Contract deltas (all additive)
+- Studio API: `POST /api/jobs/<id>/reels`; job files `reels-cover.jpg` and `reels-report.json` (served from `<job>/reels/`); `createStudio({reelsExport})` for tests. The job contract is otherwise unchanged.
+- scripts/reels-export.mjs: `exportReels(dir,{explicit,reuse,ffmpeg,extract})`, `ffmpegFrame`. CLI behaviour unchanged (refuses an existing export).
+- Layers `lab-set-2`, `tech-set-2`, `forest-set-2`, `office-set-2`, `street-set-2`, `home-set-2` (LAYERED_ENVIRONMENTS); `request.sets` adds `'topic-v3'`, the dialogue default.
+- Browser-only: localStorage `aethermotion.studio.settings.v1`.
 
-  | Render | Content | Key result |
-  |---|---|---|
-  | fixa-script-r1 | Forest script | Byte-identical to forest-script-r1 |
-  | fixa-forest-r2 | gen12-forest placeholder lines | 60 s → 23.9 s, longest pause 2.0 s |
-  | fixa-sky-r1 | The sky script | The owner watched it ("great i seen the video") |
-  | gen15b-sky-r1…r4 | GEN-15 step 2 | r2 adds alternating arms; r4 adds the CPU eye fix: CPU 096dbab2fcefe1e8…, Three 5849347e0ae35f46… |
+## Open issues and risks
+- **Merge order and conflicts:** merge 1 first, then rebase 2 and 3 on the new main and resolve. The conflicts are mechanical (single-line sections in studio/app.js and studio/index.html, appended sections in docs/STUDIO.md and STUDIO_GUIDE.md); a trial merge showed exactly these. 5 is independent.
+- Branches 2 and 3 do not contain the global `[hidden]` fix until rebased on 1; their own new hidden elements carry local rules.
+- OPEN-2 part 2 (glass and metal subtle at phone size) remains.
+- In close singles the forest tree line fills the background: agent judged it readable (darker than the characters); owner review pending.
+- OPEN-1, OPEN-3, OPEN-4, OPEN-6 as before. OPEN-7: out/ grew by the agent test jobs (studio-fd9f43a1…, studio-d4cf9677…, studio-5e27ef25…, studio-d99e3445…) and far-forest-r1*; ask before deleting anything.
+- PR #43 (previous handoff, docs only) is still open.
 
-- **Studio jobs** (through the HTTP API or by headless-browser clicks):
-
-  | Job | How | Result |
-  |---|---|---|
-  | studio-e3bb2326… | HTTP API | STUDIO-01 |
-  | studio-ddb5f4a6… | Clicks | Simple view |
-  | studio-cae85f1e… | Clicks | Topic line auto-cleaned; roles correct |
-  | studio-35d588b0… | Clicks | Speaker names off: 0 names in the srt/vtt |
-  | studio-0e63bc8f…, studio-7529a4a8… | Clicks | Finished panel; downloads named film-mwxgyee6.mp4/.srt |
-
-  The owner's own job studio-69cffc59… (bees, 65 s): all checks 0. The agent found the Topic-line role swap there, now fixed.
-- **Human review:**
-  - the owner watched fixa-sky-r1 and the bees Studio film and approved the pipeline;
-  - the owner reported two issues (one-hand gestures, a one-eyed CPU robot), both fixed and re-rendered;
-  - the owner has **not** watched gen15b-sky-r4 or the finished-panel films. The agent reviewed stills only.
-- **Unrun or unverified:**
-  - no GPU benchmark;
-  - no full native matrix;
-  - the launcher was started by the agent with Start-Process, which is the same as a double-click; the owner has since used it successfully;
-  - the Reels cover export is not wired into the Studio (CLI only).
-
-## Material persistent deltas (contracts; all opt-in or Director/Studio defaults; legacy digests unchanged)
-- **`speech.fit`** (`'speech-v1'` | `'none'` | absent = exact length):
-  - the dialogue default (src/director/dialogue.js);
-  - fit_target in scripts/speech_plan.py;
-  - the timeline accepts 180..target frames only with fit;
-  - produce records `requestedFrames`. Docs: SPEECH.md "Fix A".
-- **silence-v1** (src/quality/silence.js): gaps over 3 s between lines, over 2 s before the first, over 3 s after the last; fixed shots are exempt; talk share is reported only. It runs on every production and is a pre-render gate for fitted films.
-- **Look `crafted-v2`:**
-  - `partRole` from family, colour slot and shape (glass and metal) in crafted.js;
-  - the role is an extra box-stream argument, ignored by legacy drawing and crafted-v1;
-  - `CRAFTED.litBias` 0.18 applies to both crafted looks (CPU painter only).
-- **Sets `topic-v2`:** `DRESSED_SETS` (lab, tech, forest, office, street, home) added to `LAYERED_ENVIRONMENTS`; `PIECE_WORDS`; `fitPiecesFor` (a piece from another category must be named in full). Docs: SETS.md and LOOK.md.
-- **`bodyLanguage.alternateArms`:** beats alternate right and left per character across the film (`leftArmPitch`).
-- **`speech.captions.speakerNames:false`:** no names in burned-in captions or the sidecars. Shared `caption_labels` in speech_plan.py, used by speech_pipeline, verify and quality_media.
-- **Director dialogue defaults:** topic-v2, crafted-v2, fit speech-v1, alternateArms. The v1 values stay selectable by name.
-- **Studio** (src/studio/director-form.js):
-  - `directorRequest`, `STUDIO_CASTS`, `STUDIO_DEFAULTS`;
-  - `scriptHelp` (zones from `CALM_WORDS_PER_SECOND` 2.15, measured), `scriptPrompt`, `cleanScript`;
-  - src/studio/finished.js `finishedSummary`;
-  - studio-server.mjs `downloadName`.
-  - Studio jobs stay one backend per job; the job contract is unchanged.
-
-## Architecture changes
-- No new dependencies, renderer rewrites or CI policy changes. Both backends are kept first-class.
-- New files:
-  - Start-AetherMotion-Studio.cmd, .gitattributes (`*.cmd eol=crlf`), STUDIO_GUIDE.md;
-  - src/studio/director-form.js, src/studio/finished.js, src/quality/silence.js;
-  - tests/studio01.test.js, fix-a.test.js, gen15b.test.js, test_speech_fit.py, test_caption_labels.py;
-  - examples/gen12-forest-script.request.json, examples/fixa-sky-script.request.json.
-- The baseline digest command now also excludes the `fixa` prefix, because dialogue examples follow the dialogue defaults.
-
-## Open issues, threads and debts (none blocking)
-- OPEN-1 **Calm word rate** (2.15 spoken words/s) rests on 3–4 measured films; refine it as more films are made.
-- OPEN-2 **The far skyline blocks** remain behind the dressed sets. Glass and metal are subtle at phone size.
-- OPEN-3 **Historical CPU painter** (non-crafted look): the one-eye flaw remains in old films, by the owner's choice ("old videos … remain as they are").
-- OPEN-4 **"How do bridges carry trucks?"** shows no set piece (GEN-06 singles; recorded since GEN-12).
-- OPEN-5 **Reels cover/export** is not in the Studio; it is CLI only (`node scripts/reels-export.mjs out/<id>-cpu-polished`).
-- OPEN-6 **Old draft PRs #2–#12** (v0.3–v1.0, 2026-11-24) are still open as historical drafts. Not touched; ask before closing.
-- OPEN-7 **Disk:** out/ is 2.9 GB. It holds bench, speech-cache, fixtures, forest-script-r1, gen15-forest-r1/r2, fixa-*, gen15b-sky-r1..r4 and 8 studio-* jobs; studio-data/projects has 8 projects. No cleanup is planned; ask before deleting anything.
-
-## Known tensions or uncertainty
-- CURRENT_STATE.md still described #42 as pending until this handoff; it is now corrected.
-- Three/vulkan renders are not bit-exact run to run (gate them by PSNR and frame_glitch), although r2→r4 Three happened to be byte-identical.
-
-## State files updated (this checkpoint)
-- docs/continuity/HANDOFF.md: this file, rewritten.
-- docs/continuity/CURRENT_STATE.md: header and active unit (plan complete, #42 merged, no unit active).
-- docs/continuity/NEXT_UNITS.md: the follow-up marked merged; later options listed.
-
-## Next authorized unit
-- **None.** The plan is complete, and nothing else is authorized.
-- Starting instruction for "fod continue":
-  1. Bootstrap and baseline (below).
-  2. Report in one short table.
-  3. Ask the owner what to do next, offering the options below. **Do not start anything unasked.**
-- Options to offer (proposals, none authorized):
-  - render progress bar in the Studio;
-  - the Studio remembering the last settings;
-  - Reels cover/export button in the finished panel (OPEN-5);
-  - GEN-16, a Three cinematic profile (needs a policy decision: Three may look clearly better than CPU under an opt-in);
-  - refine the far backdrop (OPEN-2);
-  - the Instagram test upload (the owner deferred it to the very end).
-- Historical lookups allowed if needed: the source files and docs named above, for the specific contract touched. No broad rereads.
+## Next action for "fod continue"
+1. Bootstrap (below) on main and on each branch you touch.
+2. Ask the owner to allow `git push` (or to push the branches). Then push the four branches and this chore branch, and open one PR per unit. Report PR CI.
+3. **Merge only on the owner's explicit word, after PR CI passes.** After each merge, rebase the next unit branch on main, re-run `npm test`, push and wait for CI.
+4. Ask the owner to watch far-forest-r1 (out/far-forest-r1-three-polished/film.mp4) and to try the Studio features. Do not start GEN-16 until the owner gives the Three.js instructions.
 
 ## Bootstrap for "fod continue"
-1. `git status --short --branch`, `git rev-parse HEAD`, `git fetch`, `gh pr list --state all --limit 5`. Expect main 8a74721 or later.
-2. Read AGENTS.md, CURRENT_STATE.md, this file and NEXT_UNITS.md. Read STUDIO_GUIDE.md only if the task touches the Studio workflow.
+1. `git status --short --branch`, `git rev-parse HEAD`, `git fetch`, `gh pr list --state all --limit 6`. Expect main 8a74721 unless the owner merged something.
+2. Read AGENTS.md, CURRENT_STATE.md, this file and NEXT_UNITS.md.
 3. Baseline:
    - `node scripts/fod-digests.mjs . --exclude talk04,talk05,gen01,gen09,gen12,fixa` must print the digests above;
-   - `npm test` must give fail 0 (385 tests, 1 Windows skip);
+   - `npm test` must give fail 0;
    - `PYTHONPATH=scripts .venv/Scripts/python.exe -m unittest discover -s tests -p "test_*.py"` must give 59 OK.
 
 ## Owner working agreement and taste (binding; see also auto-memory)

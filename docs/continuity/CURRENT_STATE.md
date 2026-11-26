@@ -1,5 +1,5 @@
 # Current state — AetherMotion Studio
-Updated 2026-11-26, session end (main 8a74721: the owner's plan and follow-ups are merged, #36–#42; main CI 45811548096 passed; **no unit is active or authorized**; see HANDOFF.md). Authoritative rolling checkpoint for new coding sessions; update at verified transitions. This file references the historical ledger rather than replacing source or evidence. Baseline product merge: `04e3491bb21b4ebc3d54755a2a211b1a7affb3fa` (PR #13 merged into main). The handoff documentation commit may be newer; inspect git HEAD. No release publication implied.
+Updated 2026-11-26, later session (main 8a74721; units 1, 2, 3 and 5 of the owner's "implement 1-2-3 and 5" are implemented and verified on four local branches, **not pushed, not merged**; see HANDOFF.md). Authoritative rolling checkpoint for new coding sessions; update at verified transitions. This file references the historical ledger rather than replacing source or evidence. Baseline product merge: `04e3491bb21b4ebc3d54755a2a211b1a7affb3fa` (PR #13 merged into main). The handoff documentation commit may be newer; inspect git HEAD. No release publication implied.
 
 ## Current status and authority
 - v1.0 core pipeline and Asset Foundry AF01–AF09 implementation merged; do not reimplement.
@@ -19,7 +19,28 @@ Updated 2026-11-26, session end (main 8a74721: the owner's plan and follow-ups a
 6. Source and approved decisions authoritative. This summary cannot discard binding facts; consult the source-specific contract when the task touches it. Keep state and handoff synchronized. No new native render runs on GitHub or release without authorization.
 
 ## Active unit
-**No active unit** (session end 2026-11-26; the next step is the owner's choice, see HANDOFF.md "Next authorized unit").
+**Owner: "implement 1-2-3 and 5 leave 4 for next cause i am planning to do a lot in three.js … lets finish this dual cpu gpu functionality we have now."** All four are IMPLEMENTED + TESTED + verified locally, one branch each from main 8a74721. **Not pushed** (the session's permission check refused `git push`), so there are no PRs and no CI. Not merged.
+- **1. Render progress bar** (`feature/studio-progress` 2126be1; docs/STUDIO.md "Render progress bar"):
+  - `src/studio/progress.js` `jobProgress` reads the job log: speech shown as working; plan check; renderer setup; Remotion "Rendered N/M" with its time-remaining estimate; "Encoded N/M"; checking the film. 100 % only when finished; a failure says the step.
+  - No server or job contract change.
+  - Also fixes a bug on main since #42: `.finished{display:grid}` overrode `hidden`, so an empty "Your film is ready" panel showed while rendering. Global `[hidden]{display:none!important}`.
+  - Click tests: jobs studio-fd9f43a1…, studio-d4cf9677…. 392 JS tests.
+- **2. Remembered choices** (`feature/studio-remember` 9768aa5; docs/STUDIO.md "Remembered choices"):
+  - `src/studio/settings.js`: cast, seconds, backend, profile, narrator voice, staging, Reels, speaker names and the view, kept in browser localStorage (never topic or script).
+  - Every value is checked on read, field by field; **Reset choices** button.
+  - Browser check: set → reload → restored → reset → defaults. 391 JS tests.
+- **3. Make Reels cover** (`feature/studio-reels` 3035992; docs/STUDIO.md "Reels cover button"; closes OPEN-5):
+  - `exportReels` is shared by the CLI and `POST /api/jobs/<id>/reels`. It only accepts a succeeded render of this session, takes no fields, runs one export per film at a time, returns an earlier export and never overwrites; the film is untouched.
+  - The panel shows the cover, Download cover (JPG) and the check in plain words (`reelsSummary`).
+  - Click test: job studio-5e27ef25… "Ready for Reels · 60.0 s · cover from the first close-up (frame 189)"; the CLI on another job gives the same frame. 389 JS tests.
+- **5. Far backdrops** (`feature/far-backdrop` bee6ca7; docs/SETS.md "Far backdrops"):
+  - `<set>-2` layers replace the five skyline blocks with a backdrop of the place and keep the same pieces: tree line on hills, lit street, lab, tech, office and home walls.
+  - Sets `topic-v3` = topic-v2 + these layers; it is the **Director dialogue default**. topic-v1, topic-v2 and the `-set` layers are unchanged (tested); digests unchanged.
+  - Matched production far-forest-r1 (source f59a19b, vulkan): PASS both, CHECKS 0, QUALITY 0/0, glitch clean, −16.0 LUFS, GPU peak 64 %. Agent stills only; **the owner has not watched it**.
+  - 389 JS tests (gen15b names topic-v2 where it checks v2).
+- **4. GEN-16 (Three cinematic profile)** is held for the owner's coming Three.js instructions.
+
+**Previous: no active unit** (session end 2026-11-26).
 
 **Owner guide and finished-film panel: MERGED** (PR #42 → 8a74721; PR CI 45811297991, main CI 45811548096 passed). Owner: "first of all write an md file with instructions on how to start the studio etc. then add the finished film with download button. then merge pr 41... or pr 42 whatever order you use". PR #41 (docs record) was MERGED (ee4fbbc); PR #42 was merged on that authorization after CI.
 - **Finished-film panel and the owner guide** (owner: "write an md file with instructions on how to start the studio etc. then add the finished film with download button"):
