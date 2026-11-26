@@ -45,11 +45,20 @@ After step 4 the plan is complete. Nothing else is authorized.
   - Studio: the checkbox is ticked by default; unticked, `directorRequest` adds the speech setting for dialogue casts (narrator requests are unchanged).
   - Click test with the box unticked (job studio-35d588b054e8486b020f, bees script): job succeeded (verify passed); 0 speaker names in captions.srt and captions.vtt; burned-in captions show words only (agent frames 100, 400 and 900).
   - Tests: tests/studio01.test.js and tests/test_caption_labels.py (3).
+- **Length choices instead of a tighter range** (owner: "instead of tighten the word range why not give a list of advice … so whoever uses it could be able to choose"):
+  - `scriptHelp` sorts a script into zones using the calm rate `CALM_WORDS_PER_SECOND` 2.15, which separates the measurements (138 words / 65 s kept the 0.92 pace; 136–139 words / 60 s did not):
+    - calm: "Good length, calm pace";
+    - tight: within 120–140 per 60 s but faster than calm;
+    - long: over the range;
+    - short.
+  - Tight and long offer **Use N s** (N = words ÷ 2.15, rounded up; for dialogue films the length still follows the speech) and **Keep**. Long also hints **Shorten** (about K words; for dialogue films, remove a question and its answer together).
+  - Short dialogue scripts say "the film will be about N s". Short narrator scripts offer Use N s or Keep.
+  - The page renders the choices under the word count: "Use" sets Seconds; "Keep" closes the choice for this script and length. The 120–140 range is unchanged.
+  - Browser check (agent): the bees script at 60 s showed "Use 65 s / Keep 60 s". Clicking Use set 65 s and showed "Good length, calm pace".
 - The Studio started by the launcher earlier in this session (port 4173) runs older server code. The owner should restart it (close its window, double-click the launcher) to get Fix A and GEN-15 step 2 in Studio films.
 
 ## Pending owner decisions
 1. Try the simple view (restart the Studio first), then merge the Studio UI PR (after its CI).
-2. Whether to tighten the words-per-60-s range (pace 0.92 was not kept at 138 words).
 3. Later options (not scheduled): a render progress bar, a finished-film panel, remembered settings; GEN-16 policy; the Instagram test upload (deferred to the very end).
 
 ## Owner working agreement and taste (binding; see also auto-memory)

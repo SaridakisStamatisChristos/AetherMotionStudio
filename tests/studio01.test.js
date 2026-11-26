@@ -56,7 +56,9 @@ test('script help: word range, verdicts and rule checks',()=>{
  assert.deepEqual(wordRange(60),{min:120,max:140});assert.deepEqual(wordRange(30),{min:60,max:70});
  const h=scriptHelp(pasted,60);
  assert.equal(h.words,forest.script.split(' ').length);assert.equal(h.sentences,14);assert.equal(h.lines,14);
- assert.equal(h.verdict,'ok');assert.deepEqual(h.notes,[]);assert.match(h.summary,/aim for 120–140 for 60 s/);assert.match(h.turns,/Student, Explorer/);
+ // 136 words in 60 s fits, but forest-script-r1/fixa-script-r1 did not keep the calm pace there: 'tight', with choices
+ assert.equal(h.verdict,'tight');assert.deepEqual(h.notes,[]);assert.match(h.summary,/aim for 120–140 for 60 s/);
+ assert.equal(scriptHelp(pasted,65).verdict,'ok');assert.match(h.turns,/Student, Explorer/);
  assert.equal(scriptHelp(pasted,30).verdict,'long');assert.equal(scriptHelp('Hello there.',60).verdict,'short');
  assert.equal(scriptHelp('',60).verdict,'empty');assert.match(scriptHelp('',60).summary,/draft lines/);
  assert.match(scriptHelp('x '.repeat(80)+'end',60).notes.join(),/140 characters/);
@@ -148,14 +150,23 @@ test('owner\'s first Studio film: pasted extras are flagged, never spoken; lengt
  const c=cleanScript(pastedChat);const q=directorRequest(form({topic:'',script:c.script,...(c.topic?{topic:c.topic}:{})}));assert.doesNotMatch(q.script,/Topic:/);assert.equal(q.topic,'How do bees make honey?');
  // Length advice: dialogue films follow the speech (Fix A); narrator films keep the exact length.
  const long=Array.from({length:16},(_,i)=>'Line number '+i+' has a few more words here.').join('\n');
- const d=scriptHelp(long,60,'interview');assert.equal(d.verdict,'long');assert.equal(d.suggestedSeconds,65);assert.match(d.summary,/set Seconds to 65 to keep the calm pace/);
- assert.match(scriptHelp(long,60,'trio').summary,/set Seconds to 65/);
- assert.match(scriptHelp(long,60,'narrator').summary,/sped up\. Set Seconds to 65 or shorten/);
- assert.equal(scriptHelp(long,65).verdict,'ok','65 s fits 144 words');
- assert.match(scriptHelp('Hello there. How are you today?',60).summary,/the film will be about 6 s/);
- assert.match(scriptHelp('Hello there. How are you today?',60,'narrator').summary,/long silences/);
+ // Owner: "give a list of advice … so whoever uses it could be able to choose". 144 words: over 140 → long.
+ const d=scriptHelp(long,60,'interview');assert.equal(d.verdict,'long');assert.equal(d.suggestedSeconds,67);assert.match(d.summary,/Too long for 60 s at the calm pace\. Choose below/);
+ assert.deepEqual(d.choices.map(c=>[c.id,c.label]),[['seconds','Use 67 s'],['keep','Keep 60 s'],['shorten','Shorten']]);
+ assert.equal(d.choices[0].seconds,67);assert.match(d.choices[0].detail,/runs only as long as the speech needs/);assert.match(d.choices[2].detail,/question and its answer together/);assert.equal(d.choices[2].hint,true);
+ assert.match(scriptHelp(long,60,'trio').choices[0].label,/Use 67 s/);
+ const n=scriptHelp(long,60,'narrator');assert.deepEqual(n.choices.map(c=>c.id),['seconds','keep','shorten']);assert.doesNotMatch(n.choices[2].detail,/question/);
+ // tight: fits the range, a little fast → two choices; calm: no choices
+ const tight=scriptHelp(long,65);assert.equal(tight.verdict,'tight');assert.deepEqual(tight.choices.map(c=>c.label),['Use 67 s','Keep 65 s']);assert.match(tight.choices[1].detail,/a little faster/);
+ const calm=scriptHelp(long,67);assert.equal(calm.verdict,'ok');assert.deepEqual(calm.choices,[]);assert.match(calm.summary,/Good length, calm pace/);
+ // short: dialogue films follow the speech (no choice needed); narrator films get choices
+ const sd=scriptHelp('Hello there. How are you today?',60);assert.match(sd.summary,/the film will be about 6 s/);assert.deepEqual(sd.choices,[]);
+ const sn=scriptHelp('Hello there. How are you today?',60,'narrator');assert.match(sn.summary,/long silences/);assert.deepEqual(sn.choices.map(c=>c.label),['Use 6 s','Keep 60 s']);
  assert.equal(scriptHelp(Array(800).fill('word').join(' ')+'.',60).suggestedSeconds,300,'never above 300 s');
- assert.equal(scriptHelp(pasted,60).suggestedSeconds,null);
+ assert.equal(scriptHelp(pasted,65).suggestedSeconds,null);assert.deepEqual(scriptHelp('',60).choices,[]);
+ // the page renders the choices and applies "Use N s" to Seconds
+ const page=readFileSync(new URL('../studio/index.html',import.meta.url),'utf8');assert.match(page,/<div id="lengthChoices"/);
+ assert.match(js,/function lengthChoices\(h\)/);assert.match(js,/if\(c\.id==='seconds'\)\{\$\('seconds'\)\.value=String\(c\.seconds\)/);
 });
 test('owner\'s checkbox "Speaker names in captions": on by default; off removes names from video captions and subtitle files',async()=>{
  const {directorRequest,STUDIO_DEFAULTS}=await import('../src/studio/director-form.js');

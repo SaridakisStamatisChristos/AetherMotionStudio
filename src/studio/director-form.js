@@ -16,6 +16,9 @@ export const STUDIO_CASTS=Object.freeze({
 export const STUDIO_DEFAULTS=Object.freeze({cast:'interview',backend:'three',profile:'polished',seconds:60,reels:false,speakerNames:true});
 // About 2.2 spoken words per second (docs/SCRIPT_FORMAT.md): 60 s → 120–140 words, 30 s → 60–70.
 export const WORDS_PER_SECOND=Object.freeze({min:2,max:7/3});
+// Spoken words per second at which the calm dialogue pace (0.92) was kept in measured films (see scriptHelp).
+// 2.15 separates the measurements: 138 words / 65 s (2.12, kept) and 136–139 words / 60 s (2.27–2.32, not kept).
+export const CALM_WORDS_PER_SECOND=2.15;
 export function wordRange(seconds){
  if(!Number.isSafeInteger(seconds)||seconds<6||seconds>300)bad('Seconds must be a whole number from 6 to 300');
  return {min:Math.round(seconds*WORDS_PER_SECOND.min),max:Math.round(seconds*WORDS_PER_SECOND.max)};
@@ -60,16 +63,28 @@ export function scriptHelp(script,seconds,cast='interview'){
  if(text.split(/\s+/).some(w=>w.replace(/[^A-Za-z]/g,'').length>32))notes.push('a word is longer than 32 letters');
  if(/https?:\/\/|```|<\/?script/i.test(raw))notes.push('links or code are not allowed');
  if(lines.some(l=>!/[.!?]["')\]]?$/.test(l)))notes.push('every line should end with . ? or !');
+ // Owner: "instead of tighten the word range why not give a list of advice … so whoever uses it could be able to
+ // choose". Zones (measured: the calm pace 0.92 held at 138 words / 65 s, about 2.12 words per second, and was not kept
+ // at 136–139 words / 60 s, about 2.3): calm (≤ CALM words/s), tight (calm … range max: fits, slightly faster speech),
+ // long (over the range max), short. Each zone offers choices; the page applies a "seconds" choice to the form.
  let verdict='empty';
- if(words&&range)verdict=words<range.min?'short':words>range.max?'long':'ok';
+ if(words&&range)verdict=words<range.min?'short':words>range.max?'long':words>Math.floor(Number(seconds)*CALM_WORDS_PER_SECOND)?'tight':'ok';
  const fits=cast!=='narrator',sec=Number(seconds);
- // seconds that keep the calm pace for this many words, rounded up to 5 s (at most 300)
- const suggestedSeconds=verdict==='long'?Math.min(300,Math.ceil(words/WORDS_PER_SECOND.max/5)*5):null;
- const estimate=Math.max(6,Math.round(words/2.2));
- const advice={empty:'No script: the Director writes draft lines from the topic.',ok:'Good length.',
-  long:fits?'A bit long for '+sec+' s: set Seconds to '+suggestedSeconds+' to keep the calm pace (the film only runs as long as the speech needs).':'Too many words: the speech will be sped up. Set Seconds to '+suggestedSeconds+' or shorten the script.',
-  short:fits?'Short script: the film will be about '+estimate+' s (it follows the speech, without long silences).':'Too few words: expect long silences.'}[verdict];
- return {words,sentences,lines:lines.length,range,verdict,notes,suggestedSeconds,
+ const calmSeconds=Math.min(300,Math.max(6,Math.ceil(words/CALM_WORDS_PER_SECOND)));
+ const suggestedSeconds=['long','tight'].includes(verdict)?calmSeconds:null;
+ const estimate=Math.max(6,Math.round(words/2.2)),trim=Math.max(0,words-Math.floor(sec*CALM_WORDS_PER_SECOND));
+ const choices=[];
+ if(verdict==='tight'||verdict==='long'){
+  choices.push({id:'seconds',seconds:calmSeconds,label:'Use '+calmSeconds+' s',detail:fits?'calm pace; the film runs only as long as the speech needs':'calm pace'});
+  choices.push({id:'keep',label:'Keep '+sec+' s',detail:verdict==='tight'?'the speech will be a little faster':'the speech will be faster'});
+  if(verdict==='long')choices.push({id:'shorten',label:'Shorten',detail:'remove about '+trim+' words'+(cast==='narrator'?'':' (remove a question and its answer together, so the turns stay in order)'),hint:true});
+ }
+ if(verdict==='short'&&!fits){choices.push({id:'seconds',seconds:estimate,label:'Use '+estimate+' s',detail:'no long silences'});choices.push({id:'keep',label:'Keep '+sec+' s',detail:'expect long silences'});}
+ const advice={empty:'No script: the Director writes draft lines from the topic.',ok:'Good length, calm pace.',
+  tight:'Fits '+sec+' s, but the speech will be a little faster than the calm pace. Choose below.',
+  long:'Too long for '+sec+' s at the calm pace. Choose below.',
+  short:fits?'Short script: the film will be about '+estimate+' s (it follows the speech, without long silences).':'Too few words for '+sec+' s: expect long silences. Choose below.'}[verdict];
+ return {words,sentences,lines:lines.length,range,verdict,notes,suggestedSeconds,choices,
   summary:words+' words, '+sentences+' sentences'+(range?' (aim for '+range.min+'–'+range.max+' for '+sec+' s)':'')+'. '+advice+(notes.length?' Check: '+notes.join('; ')+'.':''),
   turns:cast==='trio'?'Turns rotate Engineer → Robot → Scientist, one sentence each.':cast==='narrator'?'One narrator reads every sentence.':'Turns alternate Student, Explorer, Student… one sentence each, starting with the Student.'};
 }

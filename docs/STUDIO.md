@@ -72,4 +72,14 @@ Owner picked "Simple 'Make a film' view" (the last step of the plan; the other o
   - Studio: the checkbox is ticked by default; unticked, `directorRequest` adds the speech setting for dialogue casts (narrator requests are unchanged).
   - Click test with the box unticked (job studio-35d588b054e8486b020f, bees script): job succeeded (verify passed); 0 speaker names in captions.srt and captions.vtt; burned-in captions show words only (agent frames 100, 400 and 900).
   - Tests: tests/studio01.test.js and tests/test_caption_labels.py (3).
+- **Length choices instead of a tighter range** (owner: "instead of tighten the word range why not give a list of advice … so whoever uses it could be able to choose"):
+  - `scriptHelp` sorts a script into zones using the calm rate `CALM_WORDS_PER_SECOND` 2.15, which separates the measurements (138 words / 65 s kept the 0.92 pace; 136–139 words / 60 s did not):
+    - calm: "Good length, calm pace";
+    - tight: within 120–140 per 60 s but faster than calm;
+    - long: over the range;
+    - short.
+  - Tight and long offer **Use N s** (N = words ÷ 2.15, rounded up; for dialogue films the length still follows the speech) and **Keep**. Long also hints **Shorten** (about K words; for dialogue films, remove a question and its answer together).
+  - Short dialogue scripts say "the film will be about N s". Short narrator scripts offer Use N s or Keep.
+  - The page renders the choices under the word count: "Use" sets Seconds; "Keep" closes the choice for this script and length. The 120–140 range is unchanged.
+  - Browser check (agent): the bees script at 60 s showed "Use 65 s / Keep 60 s". Clicking Use set 65 s and showed "Good length, calm pace".
 - Tests: tests/studio01.test.js "Studio UI refinement" (simple by default; every film-path field stays outside advanced wrappers; the editor parts are advanced; the first submit renders; narrator-only fields).
