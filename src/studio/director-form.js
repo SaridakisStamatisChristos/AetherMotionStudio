@@ -56,3 +56,36 @@ export function scriptHelp(script,seconds,cast='interview'){
   summary:words+' words, '+sentences+' sentences'+(range?' (aim for '+range.min+'–'+range.max+' for '+Number(seconds)+' s)':'')+'. '+advice+(notes.length?' Check: '+notes.join('; ')+'.':''),
   turns:cast==='trio'?'Turns rotate Engineer → Robot → Scientist, one sentence each.':cast==='narrator'?'One narrator reads every sentence.':'Turns alternate Student, Explorer, Student… one sentence each, starting with the Student.'};
 }
+// STUDIO-01 prompt guidance: the Claude-chat prompt from docs/SCRIPT_FORMAT.md, filled in for the chosen topic,
+// seconds and cast (the owner copies it into Claude chat and pastes the answer into Script).
+const CAST_PROMPT=Object.freeze({
+ interview:{who:'a dialogue between a curious Student and an expert Explorer robot',order:'Lines alternate strictly: line 1 Student, line 2 Explorer, line 3 Student, and so on. Start with the Student, end with either.',voices:'Student lines short (questions or reactions); Explorer lines 10–20 words.'},
+ trio:{who:'a conversation between an Engineer, a Robot and a Scientist',order:'Lines rotate strictly: line 1 Engineer, line 2 Robot, line 3 Scientist, then again from the Engineer.',voices:'Lines 6–18 words; each speaker adds something new.'},
+ narrator:{who:'a single narrator explaining the topic',order:'One narrator speaks every line.',voices:'Lines 8–18 words.'}
+});
+export function lineRange(seconds){const w=wordRange(seconds);return {min:Math.max(3,Math.round(w.min/8.6)),max:Math.max(3,Math.round(w.max/8.75))};}
+export function scriptPrompt({topic='',seconds=60,cast='interview'}={}){
+ if(!Object.hasOwn(CAST_PROMPT,cast))bad('Unknown cast: '+String(cast));
+ const s=Number(seconds),w=wordRange(s),l=lineRange(s),c=CAST_PROMPT[cast],t=typeof topic==='string'&&topic.trim()?topic.trim():'<YOUR TOPIC>';
+ return ['Write a script for a '+s+'-second vertical educational video: '+c.who+'.','Topic: '+t,'','Rules:',
+  '- Plain text only, one sentence per line, no speaker names, no headings, no numbering.','- '+c.order,
+  '- Every line is exactly one sentence ending in . ? or !','- Each line under 140 characters. '+c.voices,
+  '- '+l.min+'–'+l.max+' lines, '+w.min+'–'+w.max+' words in total.',
+  '- Spell out numbers and abbreviations (say "carbon dioxide", not "CO2"). No word longer than 32 letters.',
+  '- Facts must be accurate and simple for curious beginners; friendly tone.',
+  'Also give me a one-line topic question (under 60 characters), on its own first line starting with "Topic:".'].join('\n');
+}
+// Tidy a script pasted from a chat: drop speaker names of any offered cast ("Student:", "**Explorer:**"), numbering,
+// bullets, markdown emphasis, wrapping quotes and blank lines. A "Topic: …" line is returned separately.
+const NAMES=['Student','Explorer','Engineer','Robot','Scientist','Narrator','Host','Guest'];
+export function cleanScript(text){
+ if(typeof text!=='string')bad('Script text required');
+ let topic=null;const lines=[];
+ for(let raw of text.split(/\r?\n/)){
+  let x=raw.replace(/\*\*|__/g,'').trim();if(!x||/^```/.test(x)||/^#+\s/.test(x)||/^[-*_]{3,}$/.test(x))continue;
+  const tm=/^topic(?: question)?\s*[:\-–]\s*(.+)$/i.exec(x);if(tm){topic=tm[1].trim().replace(/^["“](.*)["”]$/,'$1');continue;}
+  x=x.replace(/^(?:\d+[.)]|[-*•])\s+/,'').replace(new RegExp(String.raw`^(?:${NAMES.join('|')})\s*(?:\([^)]*\))?\s*:\s*`,'i'),'').replace(/^["“](.*)["”]$/,'$1').trim();
+  if(x)lines.push(x);
+ }
+ return {script:lines.join('\n'),topic,lines:lines.length};
+}

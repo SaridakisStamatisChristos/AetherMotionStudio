@@ -86,9 +86,32 @@ test('Studio API accepts the form request and the page uses the shared module; l
   const bad=await post({...directorRequest(form()),dialogue:{speakers:[]}});assert.equal(bad.status,400);
  }finally{await s.close();await rm(dir,{recursive:true,force:true});}
  const html=readFileSync(new URL('../studio/index.html',import.meta.url),'utf8');
- for(const id of ['directCast','directReels','scriptCount','scriptRules','scriptTurns'])assert.match(html,new RegExp('id="'+id+'"'));
+ for(const id of ['directCast','directReels','scriptCount','scriptRules','scriptTurns','promptHelp','scriptPrompt','copyPrompt','cleanScript'])assert.match(html,new RegExp('id="'+id+'"'));
  assert.match(html,/<select id="directBackend"><option value="three">/);
  const cmd=readFileSync(new URL('../Start-AetherMotion-Studio.cmd',import.meta.url),'utf8');
  for(const re of [/AETHER_GL=vulkan/,/AETHER_CONCURRENCY=8/,/AETHER_FFMPEG=/,/AETHER_FFPROBE=/,/PYTHON=/,/npm run studio:local/,/127\.0\.0\.1:4173/])assert.match(cmd,re);
  assert.doesNotMatch(cmd,/setx|reg add|npm (i|install)/i);
+});
+test('prompt guidance: the Claude-chat prompt follows the topic, seconds and cast',async()=>{
+ const {scriptPrompt,lineRange}=await import('../src/studio/director-form.js');
+ const p=scriptPrompt({topic:'How do forests clean the air?',seconds:60,cast:'interview'});
+ for(const re of [/60-second vertical/,/curious Student and an expert Explorer robot/,/Topic: How do forests clean the air\?/,/line 1 Student, line 2 Explorer/,/14–16 lines, 120–140 words/,/no speaker names/,/starting with "Topic:"/])assert.match(p,re);
+ assert.deepEqual(lineRange(60),{min:14,max:16});assert.deepEqual(lineRange(30),{min:7,max:8});
+ assert.match(scriptPrompt({seconds:30}),/Topic: <YOUR TOPIC>[\s\S]*60–70 words/);
+ assert.match(scriptPrompt({topic:'x',seconds:60,cast:'trio'}),/Engineer, line 2 Robot, line 3 Scientist/);
+ assert.match(scriptPrompt({topic:'x',seconds:60,cast:'narrator'}),/single narrator/);
+ assert.throws(()=>scriptPrompt({cast:'pirates'}),/Unknown cast/);assert.throws(()=>scriptPrompt({seconds:2}),/6 to 300/);
+});
+test('clean up a pasted chat answer: names, numbering, markdown and topic line',async()=>{
+ const {cleanScript}=await import('../src/studio/director-form.js');
+ const pastedChat=['**Topic:** "How do forests clean the air?"','','## Script','1. **Student:** How do forests clean the air?','2. Explorer (robot): Trees take in carbon dioxide through tiny pores.','- Student: And then?','“Sunlight turns that carbon into sugar and wood.”','---','```'].join('\n');
+ const r=cleanScript(pastedChat);
+ assert.equal(r.topic,'How do forests clean the air?');assert.equal(r.lines,4);
+ assert.equal(r.script,['How do forests clean the air?','Trees take in carbon dioxide through tiny pores.','And then?','Sunlight turns that carbon into sugar and wood.'].join('\n'));
+ // An already clean script is unchanged; ordinary sentences with colons or numbers keep their text.
+ assert.equal(cleanScript(pasted).script,pasted);
+ assert.equal(cleanScript('Ratio: two to one is common.\n2 trees are better than one.').script,'Ratio: two to one is common.\n2 trees are better than one.');
+ assert.deepEqual(cleanScript(''),{script:'',topic:null,lines:0});assert.throws(()=>cleanScript(null),/Script text required/);
+ // The cleaned answer passes the Director schema as a script.
+ request(directorRequest(form({script:r.script})));
 });

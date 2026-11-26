@@ -38,7 +38,9 @@ For 30 s, ask for "8 lines, 60–70 words" instead.
 
 ## How the owner will feed it in (STUDIO-01)
 1. Double-click `Start-AetherMotion-Studio.cmd` in the repository folder. The Studio opens at http://127.0.0.1:4173 (keep its window open).
-2. In **Creative Director**, type the topic question and paste the script into **Script**. The live count under the box shows the words and the range for the chosen seconds.
+2. In **Creative Director**, type the topic and choose the cast and seconds. Under **Need a script? Get one from Claude chat**, press **Copy prompt** (the prompt above, filled in for that topic, cast and seconds) and paste it into Claude chat.
+   - Paste Claude's answer into **Script** and press **Clean up pasted script**. It removes speaker names, numbering, headings and blank lines, and a "Topic:" line fills an empty Topic box.
+   - The live count under the box shows the words and the range for the chosen seconds.
 3. Leave **Cast** on *Student + Explorer (interview)*, **Backend** on *Three.js*, and Seconds on 60 (or 30). Tick **Instagram Reels layout** for Reels.
 4. Click **Generate & render film**. When the job says succeeded, the film plays below and **film.mp4** is in the download links (the output folder is `out/studio-…`).
 Details: docs/STUDIO.md "Script to film (STUDIO-01)".
