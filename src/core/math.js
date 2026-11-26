@@ -3,7 +3,7 @@
 // stored in the scene as `compiled` and drawn by the shared 2D path on both backends. This module validates TeX,
 // validates compiled data structurally (bounded path syntax and size; key bound to the TeX and compiler version), and
 // checks simple arithmetic claims with the bounded expression parser (src/core/expr.js).
-import {parseExpr} from './expr.js';
+import {exactEquality} from './exact.js';
 export const MATH_VERSION='mathjax-4.1.3/newcm/compose-v2.1';
 export const TEX_LIMITS=Object.freeze({chars:200,depth:8,paths:600,pathChars:120000});
 const GREEK='alpha beta gamma delta epsilon varepsilon zeta eta theta vartheta iota kappa lambda mu nu xi pi varpi rho sigma tau upsilon phi varphi chi psi omega Gamma Delta Theta Lambda Xi Pi Sigma Upsilon Phi Psi Omega';
@@ -45,13 +45,17 @@ export function validateCompiled(c,tex,p){
 // anything else is reported as unverifiable, never as verified.
 export function checkArithmetic(tex){
  let s=tex.replace(/\\left|\\right|\\,|\\;|\\!|\\quad|\\qquad/g,' ');
- for(let n=0;n<8&&/\\(?:frac|dfrac|tfrac)\{/.test(s);n++)s=s.replace(/\\(?:frac|dfrac|tfrac)\{([^{}]*)\}\{([^{}]*)\}/g,'(($1)/($2))');
- for(let n=0;n<8&&/\\sqrt\{/.test(s);n++)s=s.replace(/\\sqrt\{([^{}]*)\}/g,'sqrt($1)');
- s=s.replace(/\\cdot|\\times/g,'*').replace(/\\div/g,'/').replace(/\\gcd/g,'gcd').replace(/\^\{([^{}]*)\}/g,'^($1)').replace(/[{}]/g,m=>m==='{'?'(':')');
- if(/\\|[A-Za-fh-z]/.test(s.replace(/gcd|sqrt/g,'')))return {status:'unverifiable',reason:'not plain arithmetic'};
+ // Second repair pass (audit 2026-11-26): follow TeX semantics. An unbraced superscript takes exactly one token, so
+ // "2^12" renders as 2¹2, not 2¹²; such ambiguous forms (and an unbraced superscript that is a sign, a bracket or a
+ // command) are unverifiable instead of being read as 2^(12). Write 2^{12}.
+ if(/\^\s*(?:[0-9]\s*[0-9.]|[-+(]|\\)/.test(s))return {status:'unverifiable',reason:'ambiguous superscript: an unbraced superscript is one token in TeX; write the exponent in braces, e.g. 2^{12}'};
+ s=s.replace(/\^\s*([0-9A-Za-z])/g,'^{$1}');
+ // innermost first, so nested constructs (\sqrt{x^{9}}, \frac{a^{2}}{b}) convert at any depth
+ for(let n=0;n<24&&/\\(?:frac|dfrac|tfrac|sqrt)\{|\^\{/.test(s);n++)s=s.replace(/\^\{([^{}]*)\}/g,'^($1)').replace(/\\(?:frac|dfrac|tfrac)\{([^{}]*)\}\{([^{}]*)\}/g,'(($1)/($2))').replace(/\\sqrt\{([^{}]*)\}/g,'sqrt($1)');
+ s=s.replace(/\\cdot|\\times/g,'*').replace(/\\div/g,'/').replace(/\\gcd/g,'gcd').replace(/[{}]/g,m=>m==='{'?'(':')');
+ if(/\\/.test(s))return {status:'unverifiable',reason:'not plain arithmetic'};
  const sides=s.split('=');if(sides.length<2)return {status:'unverifiable',reason:'no equals sign'};
- let values;try{values=sides.map((x,i)=>parseExpr(x,'side '+(i+1)).eval(0));}catch(e){return {status:'unverifiable',reason:e.message};}
- if(values.some(v=>!Number.isFinite(v)))return {status:'false',values};
- const ok=values.every(v=>Math.abs(v-values[0])<=1e-9*Math.max(1,Math.abs(values[0])));
- return {status:ok?'true':'false',values};
+ // Repair pass (audit 2026-11-26): exact rational arithmetic (src/core/exact.js). Floating-point agreement within a
+ // tolerance accepted 1000000000 = 1000000001, 1/10000000000 = 0 and 9007199254740992 = 9007199254740993.
+ return exactEquality(sides);
 }

@@ -1,0 +1,84 @@
+{
+  "version": 1,
+  "id": "dual04-bread",
+  "topic": "How a bakery makes bread",
+  "seconds": 60,
+  "audience": "curious beginners",
+  "tone": "friendly",
+  "style": "cinematic explainer",
+  "language": "en-us",
+  "voice": "am_michael",
+  "backend": "cpu",
+  "profile": "polished",
+  "seed": 7,
+  "content": "typography-v1",
+  "font": "merriweather",
+  "theme": "paper-v1",
+  "script": "How does a loaf of bread get made? First the baker mixes flour, water, salt and yeast. Then the dough rises, gets shaped, and bakes in a hot oven. A typical morning starts at five with mixing. The first loaves go into the oven at seven, and the shop opens at eight. Sourdough and yeasted bread differ in a few ways. Sourdough uses a wild starter and rises slowly, while yeasted bread uses packaged yeast and rises fast. The ingredients come from the mill, the dairy and the farm, and all of them flow into the bakery.",
+  "visuals": [
+    {
+      "at": "First the baker mixes flour, water, salt and yeast.",
+      "composition": {
+        "version": "compose-v2", "region": "full", "font": "merriweather", "theme": "paper-v1",
+        "items": [
+          {
+            "id": "steps", "type": "flow", "box": [0.1, 0.02, 0.8, 0.94],
+            "nodes": ["Mix flour, water, salt and yeast", "Let the dough rise", "Shape the loaves", "Bake in a hot oven"],
+            "cues": ["First the baker mixes", "Then the dough rises", "gets shaped", "bakes in a hot oven"]
+          }
+        ]
+      }
+    },
+    {
+      "at": "A typical morning starts at five with mixing.",
+      "composition": {
+        "version": "compose-v2", "region": "full", "font": "merriweather", "theme": "paper-v1",
+        "items": [
+          {
+            "id": "morning", "type": "timeline", "box": [0, 0.15, 1, 0.5],
+            "events": [{"when": "5:00", "label": "Mixing"}, {"when": "7:00", "label": "First loaves in"}, {"when": "8:00", "label": "Shop opens"}],
+            "cues": ["A typical morning starts at five", "The first loaves go into the oven at seven", "the shop opens at eight"]
+          }
+        ]
+      }
+    },
+    {
+      "at": "Sourdough and yeasted bread differ in a few ways.",
+      "composition": {
+        "version": "compose-v2", "region": "full", "font": "merriweather", "theme": "paper-v1",
+        "items": [
+          {
+            "id": "versus", "type": "compare", "box": [0, 0.08, 1, 0.6],
+            "cards": [
+              {"title": "Sourdough", "points": ["Wild starter", "Rises slowly"]},
+              {"title": "Yeasted", "points": ["Packaged yeast", "Rises fast"]}
+            ],
+            "cues": ["Sourdough uses a wild starter", "while yeasted bread uses packaged yeast"]
+          }
+        ]
+      }
+    },
+    {
+      "at": "The ingredients come from the mill, the dairy and the farm, and all of them flow into the bakery.",
+      "composition": {
+        "version": "compose-v2", "region": "full", "font": "merriweather", "theme": "paper-v1",
+        "items": [
+          {
+            "id": "supply", "type": "graph", "box": [0, 0.04, 1, 0.8], "directed": true,
+            "nodes": [
+              {"id": "mill", "label": "Mill", "at": [0.1, 0.1]},
+              {"id": "dairy", "label": "Dairy", "at": [0.5, 0.0]},
+              {"id": "farm", "label": "Farm", "at": [0.9, 0.1]},
+              {"id": "bakery", "label": "Bakery", "at": [0.5, 0.9]}
+            ],
+            "edges": [["mill", "bakery"], ["dairy", "bakery"], ["farm", "bakery"]],
+            "steps": [
+              {"visit": ["mill", "dairy", "farm"]},
+              {"visit": ["bakery"], "edges": [["mill", "bakery"], ["dairy", "bakery"], ["farm", "bakery"]]}
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

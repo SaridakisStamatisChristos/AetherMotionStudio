@@ -2,11 +2,13 @@
 // Called from drawGraph after the world pass on both backends, in the 720×1280 logical space, so CPU and Three.js
 // films show the same aids. No randomness, no wall clock: every value comes from the layout, the shot progress and
 // the shot's phrase windows.
-import {layoutComposition,TEXT,LINE,GAP,FONT,WEIGHT,REVEAL_SECONDS,COUNT_SECONDS,cssFont,formatNumber,itemStart} from '../core/composition.js';
+import {layoutComposition,TEXT,LINE,GAP,FONT,WEIGHT,REVEAL_SECONDS,COUNT_SECONDS,cssFont,formatNumber,itemStart,appearAt} from '../core/composition.js';
 import {clamp,smooth} from '../core/motion.js';
 import {roundedBox} from './primitives.js';
 import {drawDiagram} from './draw-diagrams.js';
 const DIAGRAM_TYPES=new Set(['equation','plot','graph','array']);
+import {drawChartItem} from './draw-charts.js';
+const CHART_TYPES=new Set(['chart','timeline','flow','compare']);
 const cache=new WeakMap();
 const layoutOf=c=>{let l=cache.get(c);if(!l){l=layoutComposition(c);cache.set(c,l);}return l;};
 const v1Font=size=>WEIGHT+' '+size+'px '+FONT;
@@ -38,7 +40,7 @@ export function drawComposition(ctx,composition,p,frames=360,phrases=null){
  if(!composition)return;
  const L=layoutOf(composition),F=Math.max(1,frames),rv=Math.max(1e-6,REVEAL_SECONDS*30/F),out=Math.max(1e-6,.3*30/F),v2=L.version==='compose-v2';
  for(const x of L.items){
-  const start=x.phrases?itemStart(x,phrases,0):itemStart(x,phrases);
+  const start=appearAt(x,phrases);
   if(p<start||p>x.end)continue;
   const a=x.reveal==='none'?1:smooth(clamp((p-start)/rv))*(x.end<1?smooth(clamp((x.end-p)/out)):1);if(a<=0)continue;
   const t=x.tone,b=x.box,font=v2?size=>cssFont(x.font,x.weight,size):null,ranges=f=>(x.emphasis??[]).filter(r=>r.field===f);
@@ -50,6 +52,7 @@ export function drawComposition(ctx,composition,p,frames=360,phrases=null){
   else if(x.type==='shape'){ctx.fillStyle=t.mark;ctx.strokeStyle=t.mark;ctx.lineWidth=5;
    if(x.shape==='rect')roundedBox(ctx,b.x,b.y,b.w,b.h,12,t.mark+'cc',t.mark);
    else{ctx.beginPath();ctx.ellipse(b.x+b.w/2,b.y+b.h/2,b.w/2-3,b.h/2-3,0,0,Math.PI*2);if(x.shape==='circle'){ctx.globalAlpha*=.85;ctx.fill();}else ctx.stroke();}}
+  else if(CHART_TYPES.has(x.type))drawChartItem(ctx,x,t,p,start,rv,phrases,x.font);
   else if(DIAGRAM_TYPES.has(x.type))drawDiagram(ctx,x,t,p,start,rv,phrases,x.font);
   else if(x.type==='arrow'){const [s,e]=x.line,k=x.reveal==='none'?1:a;head(ctx,s,[s[0]+(e[0]-s[0])*k,s[1]+(e[1]-s[1])*k],t.mark,5);}
   else{

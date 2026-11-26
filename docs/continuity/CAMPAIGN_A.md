@@ -14,9 +14,9 @@ Status words: PLANNED · ACTIVE · IMPLEMENTED · TESTED · RENDERED · OWNER-RE
 | DUAL-00 | Baseline and capability audit | **MERGED** (PR #50 → 8e42d99, owner: "merge it") | `chore/dual-00-audit` | [CAMPAIGN_A_AUDIT.md](../CAMPAIGN_A_AUDIT.md), [protocol v1](CAMPAIGN_A_PROTOCOL.md), "DUAL-00 baseline" below |
 | DUAL-01 | Character-free content and shared composition | **MERGED** (PR #51 → 14a1da6, owner: "merge pr51") | `feature/dual-01-composition` | [docs/COMPOSITION.md](../COMPOSITION.md), "DUAL-01 evidence" below |
 | DUAL-02 | Typography and motion graphics | **MERGED** (PR #52 → 17ebecd, owner: "Yes, merge #52") | `feature/dual-02-typography` | docs/COMPOSITION.md "Typography", "DUAL-02 evidence" below |
-| DUAL-03 | Mathematics, geometry and algorithm visualization | **MERGED** (PR #53 → 1b1543b, owner: "merge and yes") | `feature/dual-03-maths` | [docs/MATHS.md](../MATHS.md), "DUAL-03 evidence" below |
-| DUAL-04 | Charts, diagrams and data storytelling | **NEXT** | — | — |
-| DUAL-05 | Local media and illustration integration | PLANNED | — | — |
+| DUAL-03 | Mathematics, geometry and algorithm visualization | **TESTED + RENDERED** (PR open, not merged) | `feature/dual-03-maths` | [docs/MATHS.md](../MATHS.md), "DUAL-03 evidence" below |
+| DUAL-04 | Charts, diagrams and data storytelling | **TESTED + RENDERED + REPAIRED** (PR #55 open; owner: "Do not merge PR #55 yet") | `feature/dual-04-charts` | [docs/CHARTS.md](../CHARTS.md), "DUAL-04 evidence" below |
+| DUAL-05 | Local media and illustration integration | **NEXT** | — | — |
 | DUAL-06 | Formats, themes and audio controls | PLANNED | — | — |
 | DUAL-07 | Universal Director and Studio integration | PLANNED | — | — |
 | DUAL-08 | Optional bounded batch production | PLANNED (**owner decides** whether before the freeze) | — | — |
@@ -99,10 +99,64 @@ Status words: PLANNED · ACTIVE · IMPLEMENTED · TESTED · RENDERED · OWNER-RE
 - **Not done (recorded):** accented letters inside TeX `\text` (rejected; use a label); arrows from a diagram to a 3D object; proofs are explained, not formally verified (only arithmetic, BFS and Euclid claims are machine-checked).
 - **Investigation (owner asked, 2026-11-26):** why DUAL-02 typography films were blocked: the v0.8 preflight (d17e90c) treats "no visible 3D geometry" as a broken shot (EMPTY_GEOMETRY), correct while every shot had to hold 1–8 objects. DUAL-02 made object-free shots legal; the agent dry-ran the other checks but not preflight. Fix (DUAL-02): only compose-v2 shots with zero assets are exempt (TYPOGRAPHY_SHOT review note); every other empty shot still blocks; both cases tested.
 
+## DUAL-04 evidence (2026-11-26)
+- **What:** compose-v2 `chart` (bar, line, area, scatter, pie; inline JSON or strict bounded CSV; finite values or explicit missing; bar/area include zero; explicit ranges never clip; axes fixed across steps; honest transitions; legends, units, highlights, annotations, value labels; pie percentages sum to 100), `timeline`, `flow`, `compare`; directed diagrams reuse `graph`. Visuals now claim narration phrases (planner shots split or merged). Planner suggests authored visuals for data/maths and never invents data (src/core/charts.js, src/visual/draw-charts.js, src/director/visuals.js, aids.js).
+- **Tests:** 461 JS (460 pass, 0 fail, 1 Windows skip), Python 61 OK; 7 new tests in tests/charts.test.js (CSV injection/format/limits, NaN/Infinity/strings, missing data, truncated baselines, clipping, step consistency, pie rules, overflow, interpolation vs fade). Legacy digests unchanged.
+- **Films** (vulkan; agent stills only, **no owner review**), from 215c2e1 clean, all PASS on both backends, shared hashes exact, CHECKS 0 incl. aids-v1, QUALITY 0/0, glitch clean, −16.0 LUFS:
+  | ID | Content | Frames | CPU / Three |
+  |---|---|---|---|
+  | dual04-bakery-r2 | example data: bar + Friday highlight, week-2 transition with missing Wednesday ("no data"), pie 50/30/20 %, temperature scatter | 1800 → 1486 | 9cfced20e66fa45b… / 62e3d90f7fcfe077… |
+  | dual04-bread-r2 | flowchart, timeline, comparison cards, directed supply diagram | 1800 → 1274 | 0a82848b5be0e752… / 458b8153b302d6c8… |
+- r1 (7b42aa4) passed the same gates; card, timeline, "no data" and node text were small → larger sizes (215c2e1). Node radius change also affects graph items rendered by DUAL-03 code (its evidence stays tied to 74e8b9c).
+- **Agent stills:** values and labels identical on CPU and Three.js; Wednesday shows "no data" (not zero) after the week-2 transition; pie labels "Bread 1,500 euros 50%"; flow/timeline/cards/supply diagram readable.
+- **Not done (recorded):** loading CSV from a file path (CSV is inline text by design; no file system access from scene data); stacked bars; log scales.
+
+## Repair pass after the independent audit (2026-11-26, on PR #55)
+Owner: "An independent adversarial code audit identified the following defects. Perform a dedicated repair pass … Rebase or reconcile PR #55 after PR #54, run the complete test suite with installed dependencies, and produce matched CPU and GPU validation films before requesting merge approval." PR #54 was merged first (owner: "Merge PR #54"; main 5145f50), then main was merged into `feature/dual-04-charts` (b8f17a1; docs-only conflicts).
+
+| # | Defect (reproduced before fixing) | Fix | Regression test |
+|---|---|---|---|
+| 1 | arithmetic check accepted 1000000000 = 1000000001, 1/10000000000 = 0, 9007199254740992 = 9007199254740993 (float tolerance) | exact BigInt rational arithmetic (src/core/exact.js); anything non-exact is unverifiable, never true | repair.test.js 1 |
+| 2 | line-chart opening scaled values by a growth factor (points outside nonzero axis ranges) | wipe reveal of the plotting area; coordinates never scaled | 2 (intermediate frames) |
+| 3 | subnormal values gave NaN ranges and no ticks; narrow / closely spaced large ranges not refused | drawable-range rule (span ≥ 1e-9 and ≥ 1e-9 of magnitude; non-zero values ≥ 1e-9); finite scales and increasing ticks validated (charts and plots) | 3 |
+| 4 | CSV categories skipped the duplicate/count rule | one `categoriesOf` rule for CSV and JSON | 4 |
+| 5 | scatter annotation crashed with a TypeError | explicit validation error (scatter and pie take no annotations) | 5 |
+| 6 | compiled outlines trusted when the key matched | production boundary (math-loader) regenerates every equation from TeX | 6 |
+| 7 | value labels and pie percentages showed the next state while geometry was interpolated | only exact states drawn; element-wise crossfade; labels fade with their own geometry | 7 (mid and final) |
+| 8 | missing ↔ value transitions popped at half way and interpolated invented values | "no data" mark and real bar crossfade; no in-between values | 8 (mid and final) |
+| 9 | absolute 1e-9 tolerances accepted points 5× outside tiny ranges; unary/power chains escaped the depth limit; steps/annotations mapped before size checks | span-relative tolerances; depth checked on every recursion; sizes checked first | 9 |
+| — | found in the validation stills: charts/arrays appeared only at their first cued step (initial state barely visible) | charts and arrays appear at their own start; cues time only the steps | "found in validation stills" |
+
+- Tests 2, 7 and 8 were run against the pre-repair drawing code and **fail** there; they pass on the repaired code.
+- **Tests:** 470 JS (469 pass, 0 fail, 1 Windows symlink skip), Python 61 OK, all with installed dependencies (MathJax tests run). Legacy digests unchanged.
+- **Validation films** (vulkan; agent stills only, **no owner review**), all PASS on both backends, shared hashes exact, CHECKS 0 incl. aids-v1, QUALITY 0 errors 0 warnings, glitch clean, −16.0 LUFS:
+  | ID | Source | CPU / Three |
+  |---|---|---|
+  | dual04-bakery-r4 | ab693a3 | befdef54a58c6981… / f01f06ea87941d88… |
+  | dual03-euclid-r4 | ab693a3 | c83a1e2346f62a26… / 2bc1a3e65bebb3ba… |
+  | dual04-bread-r3 | 886e702 | 0a82848b5be0e752… / 458b8153b302d6c8… (byte-identical to r2; no chart or array, unaffected by later commits) |
+  | dual03-pythagoras-r3 | 886e702 | 13e4127f387fb056… / 0ab02f9e855bde5f… (no chart or array) |
+- dual04-bakery-r3 and dual03-euclid-r3 (886e702) passed all gates but showed the late-appearance defect in stills; superseded by r4.
+- **Agent stills (bakery-r4):** week-1 chart on screen before the cue; mid-transition frame shows only the two real states crossfading (no in-between heights or labels); final week-2 state with "no data" on Wednesday. Euclid-r4: (48, 18) shown before the first step.
+
+## Second repair pass (second independent audit, 2026-11-26, on PR #55)
+Owner: "The independent second audit confirms that the original counterexamples have been repaired and CI passes … Before merging PR #55, perform one additional targeted repair pass … Do not expand the scope or redesign the architecture."
+
+| # | Defect (reproduced before fixing) | Fix |
+|---|---|---|
+| 1 | `2^12=4096` accepted, although TeX renders an unbraced superscript as one token (2¹2); also `\sqrt{x^{9}}` was never converted (nested braces) | ambiguous superscripts (`2^12`, `2^-1`, `2^(3)`, unbraced commands) are unverifiable; nested constructs convert innermost first |
+| 2 | `\sqrt{(40-digit)^{9}}` threw RangeError (float start of isqrt overflowed to Infinity) | pure-BigInt Newton integer square root |
+| 3 | explicit axis [0, 1e-9] produced ticks up to 2e-9 (absolute 1e-9 tolerance) in charts.js and diagrams.js | ticks inside the range; tolerance = 1e-6 of the tick step |
+| 4 | small values displayed as "0.000"; layout and rendering used different formatters | one adaptive formatter (`chartNumber`, `tickLabel`) for measurement and drawing; scientific notation outside 0.001…1e9 |
+| 5 | six pie slices shared a four-colour palette | six distinct colours per theme, each ≥ 3:1 against the plate |
+
+- **Tests:** tests/repair2.test.js (5 tests: rendered labels on intermediate and final frames, tick containment, large exact arithmetic, pie colours). Totals 475 JS (474 pass, 0 fail, 1 Windows skip), Python 61 OK, legacy digests unchanged, font metrics current.
+- **Validation films** from 5a786a3 (vulkan; agent checks only, **no owner review**): dual04-bakery-r5 PASS both backends, **byte-identical to r4 on CPU and Three.js** (befdef54a58c6981… / f01f06ea87941d88…): unaffected behaviour preserved. dual03-euclid-r5 PASS both backends; CPU byte-identical to r4 (c83a1e2346f62a26…); Three 86cddfe31cf594ac… differs from r4 by GPU rasterization noise only (scene.json identical apart from its id; PSNR average 64.4 dB, minimum 56.7 dB): the vulkan route is not bit-reproducible across runs (earlier r1/r2 happened to match).
+
 ## Decisions the owner must make (ask when the milestone reaches them, not before)
 - DUAL-02: fonts: **decided** (bundle the four open families).
 - DUAL-03: maths typesetter: **decided** (MathJax 4.1.3, Node-only).
-- DUAL-05: SVG support only with an approved sanitizer or offline rasterizer; otherwise raster formats only.
+- DUAL-05: **decided** (owner 2026-11-26): raster-only local imports, PNG, JPEG and static WebP. No external SVG, remote fetching, animated formats or new dependencies without approval. Require file signature verification, bounded dimensions and decoded memory, safe paths, content hashing, provenance, correct orientation and deterministic fit/crop.
 - DUAL-06: new sizes (1920×1080, 1080×1080) are opt-in presets; the default stays 1080×1920/30 fps.
 - DUAL-08: do it before the freeze or defer it.
 - DUAL-09: tag names, final acceptance, release notes. **No tag, merge or release without the owner's word.**
@@ -124,5 +178,7 @@ Status words: PLANNED · ACTIVE · IMPLEMENTED · TESTED · RENDERED · OWNER-RE
 - 2026-11-26: DUAL-02 MERGED (PR #52 → main 17ebecd, PR CI 45865359538 passed) on the owner's word.
 - 2026-11-26: DUAL-03 tested and rendered on `feature/dual-03-maths` (74e8b9c): pythagoras-r2, euclid-r2, bfs-r2 all gates PASS on both backends; PR open, not merged. DUAL-04 next.
 - 2026-11-26: PR #53 CI run 45876257187 FAILED (34 tests): the CI test job runs npm test without npm install and the Director imported MathJax at load time. Fixed in 86d1af4: src/director/math-loader.js loads MathJax only when installed and needed; films without equations never need it; uncompiled equations without it fail with "run npm install". CI run 45876723838 PASSED: 454 tests, 449 pass, 5 skipped (the MathJax tests, reason stated), 0 fail. Locally all 454 run (453 pass, 1 Windows symlink skip). Adding npm ci to the CI test job is a workflow change for the owner to decide.
-- 2026-11-26: DUAL-03 MERGED (PR #53 → main 1b1543b, CI 45876981549 passed) on the owner's word ("merge and yes").
-- 2026-11-26: Owner approved npm ci in the CI test job ("yes"). Branch `feature/ci-npm-ci`: CI run 45879511370 PASSED with 454 tests, 454 pass, 0 skipped, 0 fail (npm ci 8 s, 267 packages). PR open; merge on the owner's word.
+- 2026-11-26: DUAL-03 MERGED (PR #53 → main 1b1543b) on the owner's word ("merge and yes"); npm ci in the CI test job approved ("yes") and verified on `feature/ci-npm-ci` (PR #54, CI 45879799972: 454/454, 0 skipped), not merged.
+- 2026-11-26: Owner: "continue" (not a merge word for #54, which stays open). DUAL-04 tested and rendered on `feature/dual-04-charts` (215c2e1): bakery-r2 and bread-r2 all gates PASS on both backends; PR open, not merged. DUAL-05 next.
+- 2026-11-26: Owner: "Merge PR #54 … Do not merge PR #55 yet … dedicated repair pass". PR #54 MERGED (main 5145f50). Main merged into feature/dual-04-charts (b8f17a1). Repair pass 886e702, appearance fix 78df15d/ab693a3; 470 tests (469 pass, 1 skip); validation films bakery-r4, euclid-r4, bread-r3, pythagoras-r3 all PASS on both backends. Merge approval for #55 requested. DUAL-05 rules recorded (raster only).
+- 2026-11-26: Owner (second audit): one more targeted repair pass before merging #55. Done in 5a786a3: TeX superscript semantics, BigInt isqrt, tick containment, adaptive formatter, six pie colours; 475 tests (474 pass, 1 skip); bakery-r5 byte-identical to r4, euclid-r5 PASS. Merge approval requested again.

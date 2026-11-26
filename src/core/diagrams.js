@@ -14,7 +14,7 @@ export const SHAPES_2D=Object.freeze(['point','segment','vector','circle','polyg
 const fail=(p,m)=>{throw Error(p+': '+m)};
 const num=(v,p,lim=1e6)=>{if(typeof v!=='number'||!Number.isFinite(v)||Math.abs(v)>lim)fail(p,'finite number within ±'+lim+' required');return v;};
 const pair=(v,p)=>{if(!Array.isArray(v)||v.length!==2)fail(p,'[x,y] required');return [num(v[0],p+'[0]'),num(v[1],p+'[1]')];};
-const text=(v,p,max)=>{if(typeof v!=='string'||!v.trim()||v.length>max||/[\u0000-\u001f\u007f-\u009f\u2028\u2029\u200b-\u200f\u202a-\u202e\u2066-\u2069\ufeff]/.test(v))fail(p,'printable text of at most '+max+' characters required');return v.trim();};
+const text=(v,p,max)=>{if(typeof v!=='string'||v.length>max||!v.trim()||/[\u0000-\u001f\u007f-\u009f\u2028\u2029\u200b-\u200f\u202a-\u202e\u2066-\u2069\ufeff]/.test(v))fail(p,'printable text of at most '+max+' characters required');return v.trim();};
 const only=(x,keys,p)=>{for(const k of Object.keys(x))if(!keys.includes(k))fail(p+'.'+k,'unknown field');};
 const fitSize=(sizes,ok)=>sizes.find(ok)??null;
 // Step timing shared by plot, graph and array: `phrases` (one narration phrase per step, never backwards) or an even
@@ -23,17 +23,21 @@ function stepPhrases(x,count,p,phraseOk){if(x.phrases===undefined)return null;if
 export function layoutEquation(x,b,p,{measure}){
  validateTex(x.tex,p+'.tex');validateCompiled(x.compiled,x.tex,p+'.compiled');
  if(x.check!==undefined&&x.check!=='arithmetic')fail(p+'.check','arithmetic or absent');
- let check=null;if(x.check==='arithmetic'){check=checkArithmetic(x.tex);if(check.status==='false')fail(p+'.tex','the equation is false: its sides evaluate to '+check.values.map(v=>Number(v.toPrecision(10))).join(' vs '));if(check.status!=='true')fail(p+'.tex','cannot be checked arithmetically ('+check.reason+'); remove check or write plain arithmetic');}
+ let check=null;if(x.check==='arithmetic'){check=checkArithmetic(x.tex);if(check.status==='false')fail(p+'.tex','the equation is false: its sides evaluate to '+check.values.join(' vs '));if(check.status!=='true')fail(p+'.tex','cannot be checked arithmetically ('+check.reason+'); remove check or write plain arithmetic');}
  const pad=18,[,,w,h]=x.compiled.box,size=fitSize([72,64,56,48,44,40,36,32,28,24],s=>w*s/1000<=b.w-2*pad&&h*s/1000<=b.h-2*pad);
  if(!size)fail(p,'equation overflow: at 24 px per em it needs '+Math.round(w*24/1000)+'×'+Math.round(h*24/1000)+' px but the box offers '+Math.round(b.w-2*pad)+'×'+Math.round(b.h-2*pad)+'; enlarge the box or shorten the formula');
  return {equation:{size,scale:size/1000,width:w*size/1000,height:h*size/1000,check:check?.status??'not-requested'}};
 }
+// Repair pass (audit 2026-11-26): a plot range must be drawable: a span of at least 1e-9 and at least 1e-9 of the
+// largest magnitude (no collapsed axes for subnormal or closely spaced large values); derived scales must be finite.
+function plotSpan([a,b],p){const span=b-a,mag=Math.max(Math.abs(a),Math.abs(b));if(!(span>=1e-9))fail(p,'the range spans less than 1e-9; rescale the unit');if(span<mag*1e-9)fail(p,'the range is narrower than one part in a billion of its values; plot differences instead');}
 // Nice tick step (1, 2 or 5 × 10^k) giving about 4–7 ticks.
 export function tickStep(span){const raw=span/5,k=10**Math.floor(Math.log10(raw)),f=raw/k;return (f<1.5?1:f<3.5?2:f<7.5?5:10)*k;}
-function ticks(a,b){const s=tickStep(b-a),out=[];for(let v=Math.ceil(a/s-1e-9)*s;v<=b+1e-9&&out.length<12;v+=s)out.push(Math.round(v/s)*s);return {step:s,values:out};}
+// Ticks lie inside [a, b] up to a millionth of the step (second repair pass).
+function ticks(a,b){const s=tickStep(b-a),tol=s*1e-6,out=[];for(let k=Math.ceil(a/s-1e-6);out.length<12;k++){const v=Math.round(k)*s;if(v>b+tol)break;if(v>=a-tol)out.push(v);}return {step:s,values:out};}
 export function layoutPlot(x,b,p,{measure,phraseOk}){
  only(x,['id','type','box','start','end','reveal','phrase','phrases','x','y','equal','grid','axes','xLabel','yLabel','shapes','tone','font','weight','align','emphasis','clip'],p);
- const X=pair(x.x,p+'.x'),Y=pair(x.y,p+'.y');if(X[0]>=X[1]||Y[0]>=Y[1])fail(p,'ranges must increase');
+ const X=pair(x.x,p+'.x'),Y=pair(x.y,p+'.y');if(X[0]>=X[1]||Y[0]>=Y[1])fail(p,'ranges must increase');plotSpan(X,p+'.x');plotSpan(Y,p+'.y');
  for(const k of ['equal','grid','axes','clip'])if(x[k]!==undefined&&typeof x[k]!=='boolean')fail(p+'.'+k,'true or false required');
  const lx=x.xLabel!==undefined?text(x.xLabel,p+'.xLabel',12):null,ly=x.yLabel!==undefined?text(x.yLabel,p+'.yLabel',12):null;
  if(!Array.isArray(x.shapes)||x.shapes.length<1||x.shapes.length>24)fail(p+'.shapes','1–24 shapes required');
@@ -41,7 +45,8 @@ export function layoutPlot(x,b,p,{measure,phraseOk}){
  if(inner.w<80||inner.h<80)fail(p+'.box','too small for a plot (needs at least 140×140 px)');
  let sx=inner.w/(X[1]-X[0]),sy=inner.h/(Y[1]-Y[0]),ox=inner.x,oy=inner.y;
  if(x.equal){const s=Math.min(sx,sy);ox+=(inner.w-s*(X[1]-X[0]))/2;oy+=(inner.h-s*(Y[1]-Y[0]))/2;sx=sy=s;}
- const map=([u,v])=>[ox+(u-X[0])*sx,oy+(Y[1]-v)*sy],inside=([u,v],q)=>{if(u<X[0]-1e-9||u>X[1]+1e-9||v<Y[0]-1e-9||v>Y[1]+1e-9)fail(q,'('+u+', '+v+') lies outside the plot range; widen x/y rather than clip');};
+ if(![sx,sy,ox,oy].every(Number.isFinite)||sx<=0||sy<=0)fail(p,'the ranges give no finite scale');
+ const map=([u,v])=>[ox+(u-X[0])*sx,oy+(Y[1]-v)*sy],tolX=(X[1]-X[0])*1e-9,tolY=(Y[1]-Y[0])*1e-9,inside=([u,v],q)=>{if(u<X[0]-tolX||u>X[1]+tolX||v<Y[0]-tolY||v>Y[1]+tolY)fail(q,'('+u+', '+v+') lies outside the plot range; widen x/y rather than clip');};
  let maxStep=0;
  const shapes=x.shapes.map((s,i)=>{const q=p+'.shapes['+i+']';if(!s||typeof s!=='object'||!SHAPES_2D.includes(s.kind))fail(q+'.kind','one of '+SHAPES_2D.join(', ')+' required');
   const keys={point:['at','label'],segment:['from','to','label'],vector:['from','to','label'],circle:['center','r','label'],polygon:['points','label'],function:['expr','domain','label'],label:['at','text']}[s.kind];
@@ -57,7 +62,7 @@ export function layoutPlot(x,b,p,{measure,phraseOk}){
   if(s.kind==='polygon'){if(!Array.isArray(s.points)||s.points.length<3||s.points.length>12)fail(q+'.points','3–12 points required');out.points=s.points.map((v,j)=>{const a=pair(v,q+'.points['+j+']');inside(a,q+'.points['+j+']');return map(a);});out.label=lab;}
   if(s.kind==='function'){const f=parseExpr(s.expr,q+'.expr');if(!f.usesX)fail(q+'.expr','a function of x required');const D=s.domain!==undefined?pair(s.domain,q+'.domain'):X;if(D[0]>=D[1]||D[0]<X[0]||D[1]>X[1])fail(q+'.domain','an increasing range inside x required');
    const n=200,runs=[];let cur=null,finite=0,outside=0;
-   for(let k=0;k<=n;k++){const u=D[0]+(D[1]-D[0])*k/n,v=f.eval(u);if(!Number.isFinite(v)){cur=null;continue;}finite++;if(v<Y[0]-1e-9||v>Y[1]+1e-9){outside++;if(x.clip){cur=null;continue;}}if(!cur){cur=[];runs.push(cur);}cur.push(map([u,Math.min(Y[1],Math.max(Y[0],v))]));}
+   for(let k=0;k<=n;k++){const u=D[0]+(D[1]-D[0])*k/n,v=f.eval(u);if(!Number.isFinite(v)){cur=null;continue;}finite++;if(v<Y[0]-tolY||v>Y[1]+tolY){outside++;if(x.clip){cur=null;continue;}}if(!cur){cur=[];runs.push(cur);}cur.push(map([u,Math.min(Y[1],Math.max(Y[0],v))]));}
    if(finite<n*.5)fail(q+'.expr','fewer than half of the samples are finite numbers');
    if(outside&&!x.clip)fail(q+'.expr',outside+' of '+(n+1)+' samples fall outside y; widen y or set clip:true (the clipped parts are then left out, not flattened)');
    out.runs=runs;out.label=lab;}
@@ -73,7 +78,7 @@ export function layoutGraph(x,b,p,{measure,phraseOk}){
  only(x,['id','type','box','start','end','reveal','phrase','phrases','nodes','edges','directed','steps','algorithm','tone','font','weight','align','emphasis'],p);
  if(!Array.isArray(x.nodes)||x.nodes.length<2||x.nodes.length>12)fail(p+'.nodes','2–12 nodes required');
  const notes=Array.isArray(x.steps)&&x.steps.some(s=>s?.note!==undefined),pad=20,area={x:b.x+pad,y:b.y+pad,w:b.w-2*pad,h:b.h-2*pad-(notes?44:0)};
- const r=Math.max(18,Math.min(34,Math.min(area.w,area.h)*.07)),ids=new Map();
+ const r=Math.max(18,Math.min(44,Math.min(area.w,area.h)*.075)),ids=new Map();
  const nodes=x.nodes.map((n,i)=>{const q=p+'.nodes['+i+']';if(!n||typeof n!=='object')fail(q,'object required');only(n,['id','label','at'],q);if(typeof n.id!=='string'||!/^[a-z0-9][a-z0-9-]{0,11}$/i.test(n.id)||ids.has(n.id))fail(q+'.id','unique short ID required');
   const at=pair(n.at,q+'.at');if(at.some(v=>v<0||v>1))fail(q+'.at','0–1 inside the item box required');const label=text(n.label??n.id,q+'.label',10);
   const size=fitSize([26,24,22,20,18,16],s=>measure(label,s)<=2*r-6);if(!size)fail(q+'.label','"'+label+'" does not fit its node circle');

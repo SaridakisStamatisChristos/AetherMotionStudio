@@ -125,7 +125,7 @@ test('content modes are validated and conflicts refused',async()=>{
 
 test('aids diagnostics: content that is not supported yet and the explainer fallback object are reported',async()=>{
  const r=await direct({...base,id:'dual-test-c',content:'explainer-v1',topic:'Why charts of rainfall data matter',script:'Rainfall data shows a pattern over many years. We can read it with care.'});
- assert.ok(r.stages.aids.diagnostics.some(d=>d.code==='VISUAL_AID_NOT_YET_SUPPORTED'&&/DUAL-04/.test(d.wanted)));
+ assert.ok(r.stages.aids.diagnostics.some(d=>d.code==='AUTHORED_VISUAL_SUGGESTED'&&/DUAL-04/.test(d.wanted)&&/request.visuals/.test(d.advice)));
  const z=await direct({...base,id:'dual-test-z',content:'explainer-v1',topic:'Qwzx vrbl',script:'Qwzx vrbl plimp. Florp zandor quib.'});
  const fallbackShots=z.project.shots.filter(s=>s.assets[0].asset===EXPLAINER_FALLBACK).map(s=>s.id);
  assert.ok(fallbackShots.length>0);

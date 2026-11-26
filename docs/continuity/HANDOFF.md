@@ -1,40 +1,38 @@
-# Forward-only handoff: Campaign A, DUAL-03 rendered (2026-11-26)
+# Forward-only handoff: Campaign A, DUAL-04 repaired after two independent audits (2026-11-26)
 
 Unit: **Campaign A — Universal Dual-Backend Finalization**, owner-authorized.
-- DUAL-00, DUAL-01 and DUAL-02 are **MERGED**: PRs #50, #51 and #52, main now at 17ebecd. DUAL-02 was merged on "Yes, merge #52".
-- DUAL-03 (maths, geometry, algorithms): **MERGED** (PR #53 → main 1b1543b, owner: "merge and yes").
-- CI test job `npm ci` step (owner: "yes"): on `feature/ci-npm-ci`, CI 45879511370 passed 454/454 with 0 skipped; PR open, **merge on the owner's word**.
-- **Next milestone: DUAL-04** (charts, diagrams and data storytelling).
+- DUAL-00…03 and the CI `npm ci` step are **MERGED**; main is at 5145f50. PR #54 was merged on "Merge PR #54".
+- DUAL-04 (charts, timelines, flowcharts, comparison cards) + **repair pass** after an independent adversarial audit: on `feature/dual-04-charts` (head after this checkpoint; product code ab693a3). **PR #55 open — owner: "Do not merge PR #55 yet."** Merge approval requested with the evidence below.
+- **Next milestone: DUAL-05** (local raster media), only after #55 is merged (never stacked).
 
-Date: 2026-11-26. The owner types only **"fod continue"**. Binding facts: CURRENT_STATE.md. Campaign status and evidence: CAMPAIGN_A.md ("DUAL-03 evidence", including the investigation of the DUAL-02 preflight block). Contracts: docs/COMPOSITION.md (compose-v1/v2, fonts), docs/MATHS.md (equations, plots, graphs, arrays, visuals). Scope map: docs/CAMPAIGN_A_AUDIT.md. Evidence rules: CAMPAIGN_A_PROTOCOL.md. Earlier handoffs: the git history of this file.
+Date: 2026-11-26. The owner types only **"fod continue"**. Binding facts: CURRENT_STATE.md. Evidence: CAMPAIGN_A.md ("DUAL-04 evidence" and "Repair pass after the independent audit"). Contracts: docs/COMPOSITION.md, docs/MATHS.md, docs/CHARTS.md. Scope map: docs/CAMPAIGN_A_AUDIT.md. Evidence rules: CAMPAIGN_A_PROTOCOL.md.
 
-## DUAL-03 in one table
+## Repair pass in one table
 | Item | Result |
 |---|---|
-| Owner decision | MathJax 4.1.3 (`@mathjax/src`, pinned, Apache-2.0), Node-only |
-| New, opt-in | equations (allowlisted TeX → outlines; optional verified arithmetic), plots and geometry (out-of-range refused), graphs (BFS verified), arrays (Euclid verified), Director `request.visuals` (authored compositions attached to script sentences; visuals define their shots; cue/cues), maths report |
-| Tests | 453 JS (452 pass, 0 fail, 1 skip); Python 61 OK |
-| Films | dual03-pythagoras-r2, dual03-euclid-r2, dual03-bfs-r2 (74e8b9c): all PASS both backends, shared hashes exact, −16.0 LUFS; euclid-r2 byte-identical to r1. Agent stills only, **no owner review** |
+| Defects | first audit: 9 items + 1 found in validation stills; second audit: 5 items (TeX superscripts, BigInt isqrt, tick containment, formatter, pie colours); each reproduced before fixing; see CAMPAIGN_A.md |
+| Tests | 475 JS (474 pass, 1 Windows skip) with installed dependencies; Python 61 OK; tests/repair.test.js (10) and tests/repair2.test.js (5), drawing tests on intermediate and final frames |
+| Films | dual04-bakery-r5 (byte-identical to r4) and dual03-euclid-r5 (5a786a3); dual04-bread-r3, dual03-pythagoras-r3 (886e702): all PASS both backends, −16.0 LUFS; agent checks only, **no owner review** |
 
 ## Next action for "fod continue"
-1. Bootstrap. If the CI `npm ci` PR is still open, ask the owner to merge it. Pull main and run `npm install` (MathJax is a dependency since DUAL-03). Branch `feature/dual-04-…` from main.
-2. DUAL-04: read its directive section and the DUAL-04 rows of docs/CAMPAIGN_A_AUDIT.md. Extend compose-v2 (reuse `plot` axes/ticks and the visuals mechanism; do not build a second chart engine): bar, line, scatter, area/pie where appropriate; legends, units, annotations, highlights, data transitions with defined rules; flowcharts and directed diagrams (reuse `graph`), timelines, comparison cards. Validated local JSON data and optional bounded CSV import; reject NaN/Infinity, malformed series and invalid ranges; preserve units, signs and categorical order; document axis scaling and missing values; no automatic factual sourcing.
-3. Exit: a fresh data explainer on both backends using known fixture data, identical values and labels, no misleading clipping or scaling, adversarial numeric/layout tests.
+1. Bootstrap. If PR #55 is open: report its CI result and ask the owner for merge approval (owner said not yet; never merge without the word).
+2. After #55 is merged: branch `feature/dual-05-media` from main, `npm install`, then DUAL-05 under the owner's rules: raster-only local images (PNG, JPEG, static WebP); no SVG, remote fetching, animated formats (reject APNG acTL, animated WebP ANIM/ANMF, multi-frame) or new dependencies; file signature verification; bounded dimensions and decoded memory; safe project-relative paths (no traversal, no symlink escapes); content hashing; provenance/licence/attribution metadata; correct EXIF orientation applied deterministically; deterministic fit/crop/pan/zoom; missing/corrupt/hostile files fail clearly. Reuse the import quarantine (src/foundry/import-bundle.js, scripts/import-png.mjs) and the font loader pattern (load before frame 0, fail the render on error). Create our own licensed test images.
+3. Exit: a narrated illustration film with the same image identity, crop and timing on both backends; corrupt, missing and hostile imports fail clearly.
 
 ## Known issue from this session
-- A headless-browser process (chrome-headless-shell, PID 343888) from a stopped DUAL-01 render may still be running; the agent was not permitted to stop it. It is harmless; Task Manager or a reboot ends it.
+- A headless-browser process (chrome-headless-shell, PID 343888) from a stopped DUAL-01 render may still be running; the agent was not permitted to stop it. Harmless; Task Manager or a reboot ends it.
 
 ## Open issues carried into Campaign A
 - OPEN-1 calm word rate (2.15 words/s; refine with more films). OPEN-2 part 2: glass and metal subtle at phone size. OPEN-3: historical CPU one-eye, by the owner's choice. OPEN-4: "bridges" shows no set piece. OPEN-6: old draft PRs #2–#12; ask before closing. PR #43 (old handoff) is superseded by #49; ask before closing it.
-- OPEN-7 disk: out/ holds the agent test jobs, far-forest-r1*, clean-top-r1*/r2*, dual00-baseline-r1*, dual01-*, dual02-* and dual03-*; ask before deleting anything.
+- OPEN-7 disk: out/ holds the agent test jobs, far-forest-r1*, clean-top-r1*/r2*, dual00-baseline-r1*, dual01-*, dual02-*, dual03-* and dual04-*; ask before deleting anything.
 - Not yet run: a GPU benchmark, the full native matrix, a clean-install test.
 
 ## Bootstrap for "fod continue"
-1. `git status --short --branch`, `git rev-parse HEAD`, `git fetch`, `gh pr list --state open`, `git tag --list`. Expect main 1b1543b, or later if the CI npm ci PR was merged.
+1. `git status --short --branch`, `git rev-parse HEAD`, `git fetch`, `gh pr list --state open`, `git tag --list`. Expect main 5145f50, or later if PR #55 was merged.
 2. Read CLAUDE.md, AGENTS.md, CURRENT_STATE.md, this file and CAMPAIGN_A.md (plus the directive section of the active milestone).
 3. Baseline:
    - `node scripts/fod-digests.mjs . --exclude talk04,talk05,gen01,gen09,gen12,fixa,dual` must print graph 3d33fbaee198acad, geometry 14dec244d171dc56, detail2 e3f80439a292f21a, director 7 requests 2cbf9916e65da935;
-   - `npm test` must give fail 0 (453 tests with DUAL-03, 1 Windows skip);
+   - `npm test` must give fail 0 (475 tests with both DUAL-04 repair passes, 1 Windows skip);
    - `PYTHONPATH=scripts .venv/Scripts/python.exe -m unittest discover -s tests -p "test_*.py"` must give 59 OK.
 
 ## Owner working agreement and taste (binding; see also auto-memory)
