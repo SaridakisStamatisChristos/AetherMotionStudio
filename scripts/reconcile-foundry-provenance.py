@@ -8,7 +8,7 @@ FROZEN='202ee715012c0e857461ec56c4df733a438c1608'
 ORCHESTRATION='1615e8d31195b5122cddf479b171826ac02a506f'
 ORIGINAL_RUN=45423588804
 RECOVERY_RUN='45433500593'
-def load(p):return json.loads(p.read_text())
+def load(p):return json.loads(p.read_text(encoding='utf-8'))
 def sha(p):
     h=hashlib.sha256()
     with p.open('rb') as f:

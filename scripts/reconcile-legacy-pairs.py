@@ -2,7 +2,7 @@
 import hashlib,json,sys,subprocess,shutil,os
 from pathlib import Path
 import imageio_ffmpeg
-def load(p):return json.loads(p.read_text())
+def load(p):return json.loads(p.read_text(encoding='utf-8'))
 def sha(p):
     h=hashlib.sha256()
     with p.open('rb') as f:

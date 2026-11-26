@@ -5,8 +5,8 @@ out=Path(sys.argv[1]); film=out/'film.mp4'
 ffmpeg=os.environ.get('AETHER_FFMPEG','ffmpeg')
 ffprobe=os.environ.get('AETHER_FFPROBE','ffprobe')
 def run(args): return subprocess.run(args,check=True,capture_output=True,text=True)
-scene=json.loads((out/'scene.json').read_text())
-timeline=json.loads((out/'timeline.json').read_text()) if scene['version']==2 else None
+scene=json.loads((out/'scene.json').read_text(encoding='utf-8'))
+timeline=json.loads((out/'timeline.json').read_text(encoding='utf-8')) if scene['version']==2 else None
 frames=timeline['durationFrames'] if timeline else 360
 seconds=frames/30
 d=json.loads(run([ffprobe,'-v','error','-show_streams','-show_format','-of','json',str(film)]).stdout)
@@ -17,7 +17,7 @@ assert v[0]['codec_name']=='h264' and a[0]['codec_name']=='aac'
 assert v[0]['r_frame_rate']=='30/1' and int(v[0]['nb_frames'])==frames
 assert abs(float(d['format']['duration'])-seconds)<.08
 run([ffmpeg,'-v','error','-xerror','-i',str(film),'-f','null','-'])
-report=json.loads((out/'voice-report.json').read_text())
+report=json.loads((out/'voice-report.json').read_text(encoding='utf-8'))
 assert report['backend']=='kokoro-onnx' and report['voice']==scene['voice']
 expected=[p for s in scene['shots'] for p in s['narration']] if timeline else [p['text'] for p in scene['narration']]
 assert len(report['segments'])==len(expected)
@@ -52,10 +52,10 @@ else:
   assert np.sqrt(np.mean(segment**2))>.005
 if scene.get('speech') is not None:
  from speech_plan import subtitles,caption_metrics
- cfg=scene['speech'];sr=json.loads((out/'speech-report.json').read_text());assert timeline['durationFrames']==sr['actualFrames'] and (180<=sr['actualFrames']<=cfg['targetFrames'] if cfg.get('fit')=='speech-v1' else sr['actualFrames']==cfg['targetFrames']);assert sr['alignment']['phraseBoundaryErrorSamples']==0 and sr['alignment']['coverage']==1
+ cfg=scene['speech'];sr=json.loads((out/'speech-report.json').read_text(encoding='utf-8'));assert timeline['durationFrames']==sr['actualFrames'] and (180<=sr['actualFrames']<=cfg['targetFrames'] if cfg.get('fit')=='speech-v1' else sr['actualFrames']==cfg['targetFrames']);assert sr['alignment']['phraseBoundaryErrorSamples']==0 and sr['alignment']['coverage']==1
  assert caption_metrics(timeline['captions'],report['segments'],cfg['captions']['maxCps'])==sr['alignment']
  from speech_plan import caption_labels
- srt,vtt=subtitles(timeline['captions'],caption_labels(cfg,report['segments']));assert (out/'captions.srt').read_text()==srt and (out/'captions.vtt').read_text()==vtt
+ srt,vtt=subtitles(timeline['captions'],caption_labels(cfg,report['segments']));assert (out/'captions.srt').read_text(encoding='utf-8')==srt and (out/'captions.vtt').read_text(encoding='utf-8')==vtt
  for x in sr['allocation']:
   if x['mode']=='fixed':assert x['frames']==cfg['fixedShots'][x['shot']]
  with wave.open(str(out/'mix.wav'),'rb') as f:

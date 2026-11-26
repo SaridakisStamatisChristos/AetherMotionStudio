@@ -5,9 +5,9 @@ import numpy as np
 import imageio_ffmpeg
 root=Path(sys.argv[1])
 a=root/'aethermotion-cinematic-cpu';b=root/'aethermotion-cinematic-three'
-sa=json.loads((a/'scene.json').read_text());sb=json.loads((b/'scene.json').read_text())
+sa=json.loads((a/'scene.json').read_text(encoding='utf-8'));sb=json.loads((b/'scene.json').read_text(encoding='utf-8'))
 sa['id']=sb['id'];sa['shots'][0]['backend']=sb['shots'][0]['backend'];assert sa==sb
-ta=json.loads((a/'render-timing.json').read_text());tb=json.loads((b/'render-timing.json').read_text())
+ta=json.loads((a/'render-timing.json').read_text(encoding='utf-8'));tb=json.loads((b/'render-timing.json').read_text(encoding='utf-8'))
 assert ta['backend']=='cpu' and tb['backend']=='three'
 assert ta['renderSeconds']>0 and tb['renderSeconds']>0
 def frame(p,t):
