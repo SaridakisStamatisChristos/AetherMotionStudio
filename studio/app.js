@@ -5,6 +5,7 @@ import {calmTurns} from '/src/core/calm.js';
 import {editProject,applyShotEdit,reorderShot,setBackend,setProfile,setStaging,addAsset,removeAsset,previewState,addFoundryAsset,setSpeakers,setLineSpeaker,bindSpeaker} from '/src/studio/model.js';
 // STUDIO-01: the Director form maps to a request in src/studio/director-form.js (casts, Reels, script help; tested).
 import {STUDIO_CASTS,STUDIO_DEFAULTS,directorRequest,scriptHelp,scriptPrompt,cleanScript} from '/src/studio/director-form.js';
+import {finishedSummary} from '/src/studio/finished.js';
 const languageOf=voice=>voice.startsWith('b')?'en-gb':'en-us';
 const $=id=>document.getElementById(id),state={project:null,revision:null,savedId:null,dirty:true,shot:0,frame:0,playing:false,preview:null,prepared:null,three:null,job:null,catalog:null,lastFrame:0,timer:null,drawEpoch:0};
 function status(text,error=false){$('status').textContent=text;$('status').className=error?'error':'';}
@@ -79,7 +80,19 @@ function downloadJSON(){const p=requireProject(),url=URL.createObjectURL(new Blo
 async function start(mode){await save();const j=await api('/api/jobs','POST',{id:state.project.id,revision:state.revision,mode,quality:$('quality').checked,repair:$('repair').checked});state.job=j.id;await poll();status('Started local '+mode+' job '+j.id);}
 async function showJob(id){state.job=id;const j=await api('/api/jobs/'+id);$('jobState').textContent=j.status+' / '+j.phase;$('logs').textContent=j.log+(j.error?'\nERROR: '+j.error:'');$('logs').scrollTop=$('logs').scrollHeight;$('downloads').replaceChildren();const base='/api/jobs/'+id+'/files/';
  for(const file of j.files){const a=document.createElement('a');a.href=base+file+'?download=1';a.textContent=file;$('downloads').append(a);}
- const v=$('film');if(j.status==='succeeded'&&j.files.includes('film.mp4')){if(v.getAttribute('src')!==base+'film.mp4')v.src=base+'film.mp4';v.hidden=false;}else{v.hidden=true;v.removeAttribute('src');}
+ // Owner: "add the finished film with download button": a finished job shows the film large, a Download button, the
+ // captions and one plain line (length, size, checks); the log and the file list fold away below it.
+ const v=$('film');
+ if(j.status==='succeeded'&&j.files.includes('film.mp4')){
+  if(v.getAttribute('src')!==base+'film.mp4')v.src=base+'film.mp4';
+  $('downloadFilm').href=base+'film.mp4?download=1';$('downloadFilm').setAttribute('download',j.projectId+'.mp4');
+  $('downloadCaptions').hidden=!j.files.includes('captions.srt');if(j.files.includes('captions.srt')){$('downloadCaptions').href=base+'captions.srt?download=1';$('downloadCaptions').setAttribute('download',j.projectId+'.srt');}
+  if(state.finishedFacts!==id){state.finishedFacts=id;$('finishedFacts').textContent='';
+   const [q,p]=await Promise.all(['quality-report.json','probe.json'].map(n=>j.files.includes(n)?api(base+n).catch(()=>null):null));
+   if(state.job===id)$('finishedFacts').textContent=finishedSummary(q,p).text;}
+  document.body.classList.add('has-film');
+  if($('finished').hidden){$('finished').hidden=false;if(state.scrolledTo!==id){state.scrolledTo=id;$('finished').scrollIntoView({behavior:'smooth',block:'start'});}}
+ }else{$('finished').hidden=true;v.removeAttribute('src');document.body.classList.remove('has-film');}
  if(j.status==='succeeded'&&!state.dirty&&j.projectId===state.project?.id&&j.revision===state.revision&&j.files.includes('props.json')&&!state.prepared){
   const props=await api(base+'props.json');validateProject(props.scene);if(state.dirty||state.job!==id||j.projectId!==state.project?.id||j.revision!==state.revision)return;state.prepared=props;
   if(j.files.includes('preview-audio.wav'))$('audio').src=base+'preview-audio.wav';

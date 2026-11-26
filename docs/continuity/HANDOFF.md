@@ -1,7 +1,7 @@
-# Forward-only handoff: the owner's plan is complete (owner types only "fod continue")
+# Forward-only handoff: plan complete; owner guide and finished-film panel (owner types only "fod continue")
 
 Date: 2026-11-26. Keep reports short and plain.
-Checkpoint: **main 4487805** (PR #40 merged; main CI 45809562848 passed). This record is on `chore/record-studio-ui` (docs only; it gets no CI, by design). Earlier handoffs: git history of this file. Binding facts are in CURRENT_STATE.md.
+Checkpoint: branch `feature/studio-finished` from **main ee4fbbc** (PR #41 merged). The owner authorized merging this PR after its CI ("then merge pr 41... or pr 42 whatever order you use").
 
 ## Plan being executed (owner, 2026-11-26)
 | # | Step | State |
@@ -11,6 +11,18 @@ Checkpoint: **main 4487805** (PR #40 merged; main CI 45809562848 passed). This r
 | 3 | GEN-15 step 2 (sets, pieces, glass and metal, alternating arms, CPU eye fix) | MERGED (PR #39) |
 | 4 | Studio UI refinement: simple view, auto-clean, length choices, speaker-names checkbox | MERGED (PR #40 → 4487805, "merge 40") |
 **The plan is complete. Nothing else is authorized.**
+
+## Follow-up: owner guide and finished-film panel
+- **Finished-film panel and the owner guide** (owner: "write an md file with instructions on how to start the studio etc. then add the finished film with download button"):
+  - STUDIO_GUIDE.md (repository root, for the owner): start, make a film, get the finished film, stop, troubleshooting.
+  - A finished job shows **Your film is ready**: the film, **Download film (MP4)**, **Captions (.srt)** and one plain line (src/studio/finished.js `finishedSummary`: length, size, checks). The render log and all files fold away below; the page scrolls to the panel once.
+  - In the simple view the draft preview hides once the film is ready (`body.has-film`).
+  - Downloads are named after the film (studio-server.mjs `downloadName`): `<project id>.mp4/.srt/.vtt`, other files `<project id>-<file>`.
+  - Click tests (agent, headless Chrome, fresh Studios from the branch, vulkan):
+    - job studio-0e63bc8fcae50c78d99c: the panel appeared at 74 s with "65.0 s · 1080×1920 (vertical) · checks passed (13 review notes)", and the download returned the 49.6 MB MP4. That download was still named film.mp4, which led to `downloadName`.
+    - job studio-7529a4a8064bd4d9e7f8: Content-Disposition film-mwxgyee6.mp4 and film-mwxgyee6.srt; the draft preview hidden; the screenshot shows the panel only.
+  - The prompt box's step 3 now says extras are removed automatically.
+- Tests: 385 JS (0 fail, 1 skip).
 
 ## Studio UI refinement: what changed
 | File | Change |
@@ -58,7 +70,7 @@ Checkpoint: **main 4487805** (PR #40 merged; main CI 45809562848 passed). This r
 - The Studio started by the launcher earlier in this session (port 4173) runs older server code. The owner should restart it (close its window, double-click the launcher) to get Fix A and GEN-15 step 2 in Studio films.
 
 ## Pending owner decisions
-1. Merge this docs record (chore/record-studio-ui).
+1. None open: the guide and finished-panel PR is merged on the owner's prior word once its CI passes.
 3. Later options (not scheduled): a render progress bar, a finished-film panel, remembered settings; GEN-16 policy; the Instagram test upload (deferred to the very end).
 
 ## Owner working agreement and taste (binding; see also auto-memory)
@@ -100,7 +112,7 @@ Checkpoint: **main 4487805** (PR #40 merged; main CI 45809562848 passed). This r
 - "fod continue": bootstrap and baseline:
   - `git status --short --branch`, `git rev-parse HEAD`, `git fetch`, `gh pr list --state all --limit 5`;
   - `node scripts/fod-digests.mjs . --exclude talk04,talk05,gen01,gen09,gen12,fixa` must print the digests above;
-  - `npm test` fail 0 (383 tests, 1 Windows skip);
+  - `npm test` fail 0 (385 tests, 1 Windows skip);
   - `PYTHONPATH=scripts .venv/Scripts/python.exe -m unittest discover -s tests -p "test_*.py"` 59 OK.
 - After that the owner's plan is complete. Ask what comes next; offer the later options above. Do not start anything unasked.
 - Never merge without the owner's word and a passing PR CI. Never stack branches.

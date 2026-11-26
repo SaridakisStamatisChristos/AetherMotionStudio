@@ -39,10 +39,14 @@ async function body(req){
 function send(res,code,data){res.writeHead(code,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'});res.end(JSON.stringify(data));}
 async function atomic(path,value){const tmp=path+'.'+randomBytes(6).toString('hex')+'.tmp';try{await writeFile(tmp,value,{flag:'wx',mode:0o600});await rename(tmp,path);}finally{await unlink(tmp).catch(()=>{});}}
 async function inside(base,p){const a=await realpath(base),b=await realpath(p);if(b!==a&&!b.startsWith(a+sep))throw status(404,'File not found');return b;}
+// Owner: "add the finished film with download button": downloads are named after the film (its safe project ID), so
+// every film does not arrive as film.mp4. The ID passed safeId (lowercase letters, digits, hyphens).
+export function downloadName(projectId,file){const ext={'film.mp4':'.mp4','captions.srt':'.srt','captions.vtt':'.vtt'}[file];return projectId+(ext??'-'+file);}
 async function serveFile(req,res,base,p,{download=false}={}){
  let file,info;try{file=await inside(base,p);info=await stat(file);if(!info.isFile())throw Error('not file');}catch{throw status(404,'File not found');}
  const headers={'Content-Type':mime[extname(file)]??'application/octet-stream','Accept-Ranges':'bytes','Cache-Control':'no-store'};
- if(download)headers['Content-Disposition']='attachment; filename="'+file.split(sep).at(-1)+'"';
+ // download: true (the file's own name) or a safe name chosen by the caller (job files: see downloadName)
+ if(download)headers['Content-Disposition']='attachment; filename="'+(typeof download==='string'?download:file.split(sep).at(-1))+'"';
  let start=0,end=info.size-1,code=200;
  if(req.headers.range){
   const m=/^bytes=(\d*)-(\d*)$/.exec(req.headers.range);
@@ -172,7 +176,7 @@ export async function createStudio({root=ROOT,dataDir=join(root,'studio-data'),r
    match=/^\/api\/jobs\/(studio-[a-f0-9]{20})$/.exec(path);
    if(method==='GET'&&match){const j=jobs.get(match[1]);if(!j)throw status(404,'Unknown session job');return send(res,200,publicJob(j));}
    match=/^\/api\/jobs\/(studio-[a-f0-9]{20})\/files\/([a-z0-9.-]+)$/.exec(path);
-   if(['GET','HEAD'].includes(method)&&match){const j=jobs.get(match[1]);if(!j||!j.files.includes(match[2])||!FILES.has(match[2]))throw status(404,'Artifact not available');return await serveFile(req,res,outputDir,join(outputDir,j.id,match[2]),{download:u.searchParams.get('download')==='1'});}
+   if(['GET','HEAD'].includes(method)&&match){const j=jobs.get(match[1]);if(!j||!j.files.includes(match[2])||!FILES.has(match[2]))throw status(404,'Artifact not available');return await serveFile(req,res,outputDir,join(outputDir,j.id,match[2]),{download:u.searchParams.get('download')==='1'&&downloadName(j.projectId,match[2])});}
    if(!['GET','HEAD'].includes(method))throw status(404,'Unknown API route');
    if(path==='/'||['/app.js','/style.css'].includes(path))return await serveFile(req,res,join(root,'studio'),join(root,'studio',path==='/'?'index.html':path.slice(1)));
    if(/^\/src\/(?:core|visual|templates|studio|foundry)\/[a-z0-9-]+\.js$/.test(path))return await serveFile(req,res,join(root,'src'),join(root,path.slice(1)));

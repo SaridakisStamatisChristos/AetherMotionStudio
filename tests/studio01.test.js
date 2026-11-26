@@ -187,3 +187,31 @@ test('owner\'s checkbox "Speaker names in captions": on by default; off removes 
  // the burned-in caption: no name when off
  const draw=readFileSync(new URL('../src/core/draw-film.js',import.meta.url),'utf8');assert.match(draw,/speech\.captions\?\.speakerNames!==false&&/);
 });
+test('finished film panel (owner: "add the finished film with download button"): plain summary and page wiring',async()=>{
+ const {finishedSummary}=await import('../src/studio/finished.js');
+ const probe={streams:[{codec_type:'video',width:1080,height:1920}],format:{duration:'60.0'}};
+ const q=(status,errors,warnings,issues)=>({status,errors,warnings,issues,video:{frames:1800}});
+ assert.deepEqual(finishedSummary(q('pass-with-findings',0,0,12),probe),{seconds:60,ok:true,text:'60.0 s · 1080×1920 (vertical) · checks passed (12 review notes)'});
+ assert.equal(finishedSummary(q('pass',0,0,[]),probe).text,'60.0 s · 1080×1920 (vertical) · checks passed');
+ assert.equal(finishedSummary(q('pass-with-findings',0,1,1),probe).text,'60.0 s · 1080×1920 (vertical) · checks passed with 1 warning (1 review note)');
+ const bad=finishedSummary(q('fail',2,3,0),probe);assert.equal(bad.ok,false);assert.match(bad.text,/checks failed: 2 errors, 3 warnings/);
+ assert.equal(finishedSummary(null,probe).text,'60.0 s · 1080×1920 (vertical) · no quality audit','no audit: length from probe');
+ assert.deepEqual(finishedSummary(null,null),{seconds:null,ok:null,text:'no quality audit'});
+ const html=readFileSync(new URL('../studio/index.html',import.meta.url),'utf8'),js=readFileSync(new URL('../studio/app.js',import.meta.url),'utf8');
+ assert.match(html,/<div id="finished" class="finished" hidden><h2>Your film is ready<\/h2><video id="film" controls playsinline><\/video>/);
+ assert.match(html,/<a id="downloadFilm" class="button primary" download>Download film \(MP4\)<\/a>/);
+ assert.match(html,/<details id="logBox" class="fold"><summary>Render log<\/summary><pre id="logs"/);assert.match(html,/<details id="filesBox" class="fold"><summary>All files<\/summary><div id="downloads"/);
+ assert.match(js,/\$\('downloadFilm'\)\.href=base\+'film\.mp4\?download=1'/);assert.match(js,/finishedSummary\(q,p\)\.text/);assert.match(js,/\$\('finished'\)\.hidden=true/);
+});
+test('finished film downloads are named after the film; the draft preview hides once the film is ready',async()=>{
+ const {downloadName}=await import('../scripts/studio-server.mjs');
+ assert.equal(downloadName('film-mwxguti4','film.mp4'),'film-mwxguti4.mp4');
+ assert.equal(downloadName('film-mwxguti4','captions.srt'),'film-mwxguti4.srt');
+ assert.equal(downloadName('film-mwxguti4','captions.vtt'),'film-mwxguti4.vtt');
+ assert.equal(downloadName('film-mwxguti4','quality-report.json'),'film-mwxguti4-quality-report.json');
+ const server=readFileSync(new URL('../scripts/studio-server.mjs',import.meta.url),'utf8');
+ assert.match(server,/download:u\.searchParams\.get\('download'\)==='1'&&downloadName\(j\.projectId,match\[2\]\)/);
+ const css=readFileSync(new URL('../studio/style.css',import.meta.url),'utf8'),js=readFileSync(new URL('../studio/app.js',import.meta.url),'utf8');
+ assert.ok(css.includes('body.simple.has-film .screen,body.simple.has-film .transport,body.simple.has-film #previewLabel{display:none}'));
+ assert.match(js,/document\.body\.classList\.add\('has-film'\)/);assert.match(js,/document\.body\.classList\.remove\('has-film'\)/);
+});
