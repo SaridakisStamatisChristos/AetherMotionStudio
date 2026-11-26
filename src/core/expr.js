@@ -26,7 +26,7 @@ export function parseExpr(src,p='expression'){
  const gcd=(a,b)=>{if(!Number.isInteger(a)||!Number.isInteger(b))return NaN;a=Math.abs(a);b=Math.abs(b);let n=0;while(b){[a,b]=[b,a%b];if(++n>10000)return NaN;}return a;};
  function expr(d){if(d>EXPR_LIMITS.depth)fail(p,'nesting deeper than '+EXPR_LIMITS.depth);let a=term(d);while(peek()==='+'||peek()==='-'){const op=t[i++].t,b=term(d),l=a;a=op==='+'?x=>l(x)+b(x):x=>l(x)-b(x);}return a;}
  function term(d){let a=unary(d);while(peek()==='*'||peek()==='/'){const op=t[i++].t,b=unary(d),l=a;a=op==='*'?x=>l(x)*b(x):x=>l(x)/b(x);}return a;}
- function unary(d){if(peek()==='-'){i++;const a=unary(d+1);return x=>-a(x);}if(peek()==='+'){i++;return unary(d+1);}return power(d);}
+ function unary(d){if(d>EXPR_LIMITS.depth)fail(p,'nesting deeper than '+EXPR_LIMITS.depth);if(peek()==='-'){i++;const a=unary(d+1);return x=>-a(x);}if(peek()==='+'){i++;return unary(d+1);}return power(d);}
  function power(d){const a=atom(d);if(peek()==='^'){i++;const b=unary(d+1);return x=>a(x)**b(x);}return a;}
  function atom(d){const k=t[i];if(!k)fail(p,'unexpected end of expression');
   if(k.t==='num'){i++;return ()=>k.v;}

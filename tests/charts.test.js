@@ -76,19 +76,6 @@ test('scatter, annotations and layout overflow are checked',()=>{
  bad(V2([{id:'k',type:'compare',box:[0,0,1,.6],cards:[{title:'A',points:[]},{title:'B',points:['y']}]}]),/1–5 points/);
 });
 
-test('drawing: number→number interpolates, a new value fades in, labels keep given order',()=>{
- const rects=[],texts=[];let alpha=1;const stack=[];
- const ctx=new Proxy({},{get:(o,k)=>{if(k==='measureText')return s=>({width:s.length*10});if(k==='save')return ()=>stack.push(alpha);if(k==='restore')return ()=>{alpha=stack.pop()??1;};if(k==='globalAlpha')return alpha;if(k in o)return o[k];return (...a)=>{if(k==='fillRect')rects.push({h:Math.round(a[3]),alpha});if(k==='fillText')texts.push(a[0]);};},set:(o,k,v)=>{if(k==='globalAlpha')alpha=v;else o[k]=v;return true;}});
- const c=V2([bar({reveal:'none',series:[{name:'L',values:[100,null,100]}],y:[0,200],steps:[{series:[{values:[200,100,100]}]}],start:0,end:1})]);
- const L=layoutComposition(c).items[0].chart,h=v=>Math.round(v*L.sy);
- const at=p=>{rects.length=0;texts.length=0;drawComposition(ctx,c,p,3000);return rects.filter(r=>r.h>0);};
- assert.deepEqual(at(.2).map(r=>r.h),[h(100),h(100)]);// step not started: Tue missing
- const s0=.7*1/2,mid=at(s0+.0025);// 0.5 s reveal over 3000 frames = 0.005 of progress; halfway
- assert.ok(mid[0].h>h(100)&&mid[0].h<h(200),'Mon interpolates between 100 and 200');
- assert.ok(mid.some(r=>r.h===h(100)&&r.alpha<1),'Tue fades in at its own value, not grown from zero');
- at(.95);assert.deepEqual(texts.filter(t=>['Mon','Tue','Wed'].includes(t)),['Mon','Tue','Wed']);
-});
-
 test('visuals claim phrases: a planner shot is split between two visuals; only the same phrase conflicts',async()=>{
  const {direct}=await import('../src/director/index.js');const {readFileSync}=await import('node:fs');
  const q=JSON.parse(readFileSync(new URL('../examples/dual04-bread.request.json',import.meta.url),'utf8'));

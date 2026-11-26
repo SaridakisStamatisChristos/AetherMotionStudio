@@ -92,7 +92,7 @@ const ARIAL=measurer('arial',700);
 // Characters of s that no font in the chain covers, as "x (U+0078)".
 export function missingGlyphs(s,m){const out=[];for(const c of new Set(s))if(!m.covers(c))out.push(c+' (U+'+c.codePointAt(0).toString(16).toUpperCase().padStart(4,'0')+')');return out;}
 const fail=(p,m)=>{throw Error(p+': '+m)};
-const bad=(x,p)=>{if(typeof x!=='string'||!x.trim()||/[\u0000-\u001f\u007f-\u009f\u2028\u2029\u200b-\u200f\u202a-\u202e\u2066-\u2069\ufeff]/.test(x))fail(p,'printable text required');};
+const bad=(x,p)=>{if(typeof x!=='string'||x.length>4000||!x.trim()||/[\u0000-\u001f\u007f-\u009f\u2028\u2029\u200b-\u200f\u202a-\u202e\u2066-\u2069\ufeff]/.test(x))fail(p,'printable text required');};
 const norm=s=>s.trim().split(/\s+/).join(' ');
 // Greedy word wrap at one size. Returns null when a single word is wider than the line.
 export function wrapText(s,size,width,m=ARIAL){

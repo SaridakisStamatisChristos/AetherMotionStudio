@@ -11,13 +11,17 @@ Opt-in `compose-v2` items, authored per film through the Director request field 
 - `{type:'equation', tex, check?}`. TeX is limited to 200 characters, brace depth 8, and an **allowlist** of commands and environments (src/core/math.js `TEX_COMMANDS`, `TEX_ENVIRONMENTS`): fractions, roots, powers and indices, Greek letters, relations, arrows, sets, logic, sums and products, integrals and limits, common functions, `gcd`/`mod`, brackets, accents and vectors, angles, `matrix`/`pmatrix`/`bmatrix`/`vmatrix`/`Bmatrix`/`cases`/`aligned`.
 - **Not allowed:** `\href`, `\def`, `\require`, HTML, `$`, unknown commands.
 - **Compilation:** MathJax (TeX input with packages base and ams, SVG output, New Computer Modern font, `fontCache:'none'`) runs in Node. Only path data and transforms are kept: `compiled:{key, box, paths:[{d,m}]}`. The `key` binds the outlines to the TeX and the compiler version. The browser-side validator checks the path syntax and size limits.
+- **Trusted boundary:** the Director and authored `--project` loading (src/director/math-loader.js) **regenerate every equation's outlines from its TeX**. Supplied `compiled` data is ignored there, even when its key matches (repair pass, audit 2026-11-26). The browser-side check stays structural (key, path syntax, sizes); renders read only scenes this boundary produced.
 - **Errors:** MathJax errors are rejected with their message. Characters outside the maths font's base ranges (for example accented letters inside `\text`) are rejected; put such words in a text label.
 - **Size:** the largest of 72…24 px per em that fits the box; otherwise an overflow error.
-- **`check:'arithmetic'`:** every side of `=` must evaluate to the same number, using the bounded parser on numbers, `+ - \cdot \times \div / ^`, `\frac`, `\sqrt`, `\gcd` and parentheses. A false equation is rejected ("its sides evaluate to 4 vs 5"). An equation that isn't plain arithmetic is rejected while the check is requested. Without a check, an equation is reported as *not checked*, never as verified.
+- **`check:'arithmetic'`:** every side of `=` must reduce to the **same exact rational number** (src/core/exact.js: BigInt numerator and denominator; repair pass, audit 2026-11-26 — floating point with a tolerance had accepted 1000000000 = 1000000001, 1/10000000000 = 0 and 9007199254740992 = 9007199254740993). The exact subset covers numbers (≤ 40 digits, decimals exact), `+ - \cdot \times \div / ^`, integer exponents up to 64, `\frac`, `\sqrt` (only when the result is rational), `\gcd` (integers), parentheses and unary signs. Limits: 200 characters, 120 tokens, nesting depth 24 at every level, 2000 digits in any intermediate value.
+  - A false equation is rejected, with the exact sides shown ("evaluate to 1000000000 vs 1000000001").
+  - Anything else is *unverifiable* (irrational root, non-integer or large exponent, division by zero, letters) and rejected while the check is requested; it is never certified by numerical closeness.
+  - Without a check, an equation is reported as *not checked*, never as verified.
 
 ## Bounded expression parser (src/core/expr.js)
 - **Grammar:** numbers, `x`, `pi`, `e`, `+ - * / ^`, parentheses, `sin cos tan asin acos atan sqrt abs exp ln log floor ceil`, `gcd(a,b)`.
-- **Limits:** 160 characters, 120 tokens, nesting depth 24.
+- **Limits:** 160 characters, 120 tokens, nesting depth 24, enforced on every recursion path (unary signs and power chains included; repair pass).
 - **No `eval`, no `Function`, no property access.** Non-finite results are returned as NaN; each caller treats them explicitly (a gap in a plot, or a false claim).
 
 ## Plots and geometry

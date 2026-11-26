@@ -16,7 +16,7 @@ export const SERIES_COLOURS=Object.freeze({'aether-v1':Object.freeze(['#6de6e3',
 export const CSV_LIMITS=Object.freeze({chars:8000,rows:60,cols:5});
 const fail=(p,m)=>{throw Error(p+': '+m)};
 const only=(x,keys,p)=>{for(const k of Object.keys(x))if(!keys.includes(k))fail(p+'.'+k,'unknown field');};
-const text=(v,p,max)=>{if(typeof v!=='string'||!v.trim()||v.length>max||/[\u0000-\u001f\u007f-\u009f\u2028\u2029\u200b-\u200f\u202a-\u202e\u2066-\u2069\ufeff]/.test(v))fail(p,'printable text of at most '+max+' characters required');return v.trim();};
+const text=(v,p,max)=>{if(typeof v!=='string'||v.length>max||!v.trim()||/[\u0000-\u001f\u007f-\u009f\u2028\u2029\u200b-\u200f\u202a-\u202e\u2066-\u2069\ufeff]/.test(v))fail(p,'printable text of at most '+max+' characters required');return v.trim();};
 const value=(v,p,nullable=true)=>{if(v===null&&nullable)return null;if(typeof v!=='number'||!Number.isFinite(v)||Math.abs(v)>1e12)fail(p,'finite number within ±1e12'+(nullable?' or null (missing)':'')+' required');return v;};
 const fitSize=(sizes,ok)=>sizes.find(ok)??null;
 const decimals=v=>{for(let d=0;d<3;d++)if(Math.abs(v*10**d-Math.round(v*10**d))<1e-9)return d;return 3;};
@@ -37,7 +37,19 @@ export function parseCsv(src,p='csv'){
  return {header,rows:rows.slice(1).map((r,n)=>[r[0],...r.slice(1).map((c,j)=>num(c,p+' line '+(n+2)+' column '+(j+2)))])};
 }
 // "Nice" range covering vmin..vmax (and zero when asked), extended to whole tick steps.
-export function niceRange(vmin,vmax,withZero){let a=withZero?Math.min(0,vmin):vmin,b=withZero?Math.max(0,vmax):vmax;if(a===b){a-=1;b+=1;}const s=tickStep(b-a);return [Math.floor(a/s+1e-9)*s,Math.ceil(b/s-1e-9)*s];}
+// Categories (JSON or CSV): 2–12 for bar, line, area and pie; at most 14 characters; unique; kept in the given order.
+function categoriesOf(list,p,where=i=>p+'['+i+']'){if(!Array.isArray(list)||list.length<2||list.length>12)fail(p,'2–12 categories required');const c=list.map((v,i)=>text(v,where(i),14));const d=c.find((v,i)=>c.indexOf(v)!==i);if(d!==undefined)fail(p,'duplicate category "'+d+'"');return c;}
+// "Nice" range covering vmin..vmax (and zero when asked), extended to whole tick steps. Repair pass (audit 2026-11-26):
+// refuses ranges that cannot be drawn reliably (non-finite, subnormal-size steps, or a span below one part in 1e9 of
+// the values' size, e.g. 1e12 and 1e12 + 0.001) instead of returning NaN or collapsed ticks.
+export function niceRange(vmin,vmax,withZero,p='range'){let a=withZero?Math.min(0,vmin):vmin,b=withZero?Math.max(0,vmax):vmax;if(!Number.isFinite(a)||!Number.isFinite(b))fail(p,'finite data required');
+ if(a===b){const pad=Math.max(Math.abs(a)*.1,1);a-=pad;b+=pad;}checkSpan(a,b,p);const s=tickStep(b-a);const r=[Math.floor(a/s+1e-9)*s,Math.ceil(b/s-1e-9)*s];checkSpan(r[0],r[1],p);return r;}
+// A drawable range: finite, increasing, a span of at least 1e-9 and at least 1e-9 of the largest magnitude.
+export function checkSpan(a,b,p){const span=b-a,mag=Math.max(Math.abs(a),Math.abs(b));if(!Number.isFinite(span)||span<=0)fail(p,'an increasing finite range required');
+ if(span<1e-9)fail(p,'the values span less than 1e-9; rescale the unit (e.g. thousandths) before charting');
+ if(span<mag*1e-9)fail(p,'the values differ by less than one part in a billion of their size; chart the differences instead');}
+// Values that are not zero must be at least 1e-9 in size (smaller ones cannot be scaled reliably).
+function tinyCheck(vs,p){const v=vs.find(n=>n!==null&&n!==0&&Math.abs(n)<1e-9);if(v!==undefined)fail(p,'value '+v+' is too small to chart reliably (below 1e-9); rescale the unit');}
 function series(x,p,kind,cats){
  if(!Array.isArray(x)||x.length<1||x.length>4)fail(p,'1–4 series required');if(kind==='pie'&&x.length!==1)fail(p,'a pie chart has exactly one series');
  const names=new Set();return x.map((s,i)=>{const q=p+'['+i+']';if(!s||typeof s!=='object')fail(q,'object required');only(s,kind==='scatter'?['name','points']:['name','values'],q);
@@ -55,14 +67,15 @@ export function layoutChart(x,b,p,{measure,format,phraseOk,theme}){
  let cats=null,data;
  if(x.csv!==undefined){if(x.series!==undefined||x.categories!==undefined)fail(p+'.csv','use csv or categories/series, not both');const t=parseCsv(x.csv,p+'.csv');
   if(kind==='scatter'){data=t.header.slice(1).map((n,j)=>({name:n,points:t.rows.map((r,i)=>{const a=Number(r[0]);if(!/^-?\d+(\.\d+)?$/.test(r[0]))fail(p+'.csv line '+(i+2),'x "'+r[0]+'" is not a plain number');if(r[j+1]===null)fail(p+'.csv line '+(i+2),'scatter points need both values');return [a,r[j+1]];})}));}
-  else{cats=t.rows.map((r,i)=>text(r[0],p+'.csv line '+(i+2)+' category',14));data=t.header.slice(1).map((n,j)=>({name:n,values:t.rows.map(r=>r[j+1])}));}
+  else{cats=categoriesOf(t.rows.map(r=>r[0]),p+'.csv',i=>p+'.csv line '+(i+2)+' category');data=t.header.slice(1).map((n,j)=>({name:n,values:t.rows.map(r=>r[j+1])}));}
   data=series(data,p+'.csv',kind,cats??[]);}
- else{if(kind!=='scatter'){if(!Array.isArray(x.categories)||x.categories.length<2||x.categories.length>12)fail(p+'.categories','2–12 categories required');cats=x.categories.map((c,i)=>text(c,p+'.categories['+i+']',14));if(new Set(cats).size!==cats.length)fail(p+'.categories','duplicate category');}
+ else{if(kind!=='scatter'){cats=categoriesOf(x.categories,p+'.categories');}
   data=series(x.series,p+'.series',kind,cats??[]);}
  if(kind==='pie'&&cats.length>6)fail(p+'.categories','a pie chart shows at most 6 slices');
  const unit=x.unit!==undefined?text(x.unit,p+'.unit',12):null,xUnit=x.xUnit!==undefined?text(x.xUnit,p+'.xUnit',12):null;
  // steps: value states (same series, same categories); highlight and note per step
  const states=[data.map(s=>s.values??null)];
+ if(x.steps!==undefined&&(!Array.isArray(x.steps)||x.steps.length>12))fail(p+'.steps','at most 12 steps');
  const steps=(x.steps??[]).map((s,i)=>{const q=p+'.steps['+i+']';if(!s||typeof s!=='object')fail(q,'object required');only(s,['series','highlight','note'],q);if(kind==='scatter'&&s.series)fail(q+'.series','scatter charts do not change values between steps');
   let vals=states.at(-1);if(s.series!==undefined){if(!Array.isArray(s.series)||s.series.length!==data.length)fail(q+'.series',data.length+' series required (the same series as the chart)');vals=s.series.map((v,j)=>{if(!v||!Array.isArray(v.values)||v.values.length!==cats.length)fail(q+'.series['+j+'].values',cats.length+' values required');if(v.name!==undefined&&v.name!==data[j].name)fail(q+'.series['+j+'].name','series order must stay "'+data[j].name+'"');return v.values.map((n,k)=>value(n,q+'.series['+j+'].values['+k+']',kind!=='pie'));});
    if(kind==='pie'&&vals.flat().some(v=>v<=0))fail(q,'pie slices must stay positive');}
@@ -76,14 +89,15 @@ export function layoutChart(x,b,p,{measure,format,phraseOk,theme}){
   const ys=kind==='scatter'?data.flatMap(s=>s.points.map(q=>q[1])):states.flat(2).filter(v=>v!==null),zero=kind==='bar'||kind==='area';
   if(x.y!==undefined){if(!Array.isArray(x.y)||x.y.length!==2)fail(p+'.y','[min,max] required');Y=[value(x.y[0],p+'.y[0]',false),value(x.y[1],p+'.y[1]',false)];if(Y[0]>=Y[1])fail(p+'.y','min must be below max');
    if(zero&&(Y[0]>0||Y[1]<0))fail(p+'.y',kind+' charts must include zero (a truncated baseline misleads)');
-   const out=ys.find(v=>v<Y[0]-1e-9||v>Y[1]+1e-9);if(out!==undefined)fail(p+'.y','value '+out+' lies outside '+Y[0]+'…'+Y[1]+'; widen y (data is never clipped)');}
-  else Y=niceRange(Math.min(...ys),Math.max(...ys),zero);
-  if(kind==='scatter'){const xs=data.flatMap(s=>s.points.map(q=>q[0]));if(x.x!==undefined){if(!Array.isArray(x.x)||x.x.length!==2)fail(p+'.x','[min,max] required');X=[value(x.x[0],p+'.x[0]',false),value(x.x[1],p+'.x[1]',false)];if(X[0]>=X[1])fail(p+'.x','min must be below max');const out=xs.find(v=>v<X[0]-1e-9||v>X[1]+1e-9);if(out!==undefined)fail(p+'.x','value '+out+' lies outside the x range; widen x');}else X=niceRange(Math.min(...xs),Math.max(...xs),false);}
+   checkSpan(Y[0],Y[1],p+'.y');const tol=(Y[1]-Y[0])*1e-9,out=ys.find(v=>v<Y[0]-tol||v>Y[1]+tol);if(out!==undefined)fail(p+'.y','value '+out+' lies outside '+Y[0]+'…'+Y[1]+'; widen y (data is never clipped)');}
+  else{tinyCheck(ys,p);Y=niceRange(Math.min(...ys),Math.max(...ys),zero,p+'.y');}
+  if(kind==='scatter'){const xs=data.flatMap(s=>s.points.map(q=>q[0]));if(x.x!==undefined){if(!Array.isArray(x.x)||x.x.length!==2)fail(p+'.x','[min,max] required');X=[value(x.x[0],p+'.x[0]',false),value(x.x[1],p+'.x[1]',false)];if(X[0]>=X[1])fail(p+'.x','min must be below max');checkSpan(X[0],X[1],p+'.x');const tx=(X[1]-X[0])*1e-9,out=xs.find(v=>v<X[0]-tx||v>X[1]+tx);if(out!==undefined)fail(p+'.x','value '+out+' lies outside the x range; widen x');}else{tinyCheck(xs,p);X=niceRange(Math.min(...xs),Math.max(...xs),false,p+'.x');}}
   else if(x.x!==undefined)fail(p+'.x','only scatter charts take an x range');
  }else if(x.y!==undefined||x.x!==undefined)fail(p,'pie charts take no axis ranges');
  const yLabel=x.yLabel!==undefined?text(x.yLabel,p+'.yLabel',16):null,xLabel=x.xLabel!==undefined?text(x.xLabel,p+'.xLabel',16):null;
+ if(x.annotations!==undefined&&(!Array.isArray(x.annotations)||x.annotations.length>4))fail(p+'.annotations','at most 4');
  const annotations=(x.annotations??[]).map((a,i)=>{const q=p+'.annotations['+i+']';if(!a||typeof a!=='object')fail(q,'object required');only(a,['category','series','at','text'],q);const t=text(a.text,q+'.text',32);
-  if(kind==='scatter'||kind==='pie'){if(a.at!==undefined||kind==='pie')fail(q,'annotations point at a category (bar, line, area)');}
+  if(kind==='scatter'||kind==='pie')fail(q,kind+' charts take no annotations (annotations point at a category of a bar, line or area chart)');if(a.at!==undefined)fail(q+'.at','annotations point at a category, not at coordinates');
   const c=cats.indexOf(a.category);if(c<0)fail(q+'.category','unknown category');const s=a.series!==undefined?data.findIndex(d=>d.name===a.series):0;if(s<0)fail(q+'.series','unknown series');
   if(states[0][s][c]===null)fail(q,'points at a missing value');return {category:c,series:s,text:t};});
  if(annotations.length>4)fail(p+'.annotations','at most 4');
@@ -103,13 +117,14 @@ export function layoutChart(x,b,p,{measure,format,phraseOk,theme}){
  const area={x:b.x+pad+yw+(yLabel?20:0),y:b.y+pad+legendH+title,w:0,h:0};area.w=b.x+b.w-pad-area.x;
  const bottom=kind==='scatter'?34+(xLabel?26:0):40;area.h=b.y+b.h-pad-noteH-bottom-area.y;
  if(area.w<120||area.h<100)fail(p+'.box','too small for a chart (the plotting area would be '+Math.round(area.w)+'×'+Math.round(area.h)+' px)');
- L.area=area;L.Y=Y;L.yTicks=ys;L.sy=area.h/(Y[1]-Y[0]);L.yOf=null;
- if(kind==='scatter'){L.X=X;L.xTicks=ticks(X);L.sx=area.w/(X[1]-X[0]);}
+ L.area=area;L.Y=Y;L.yTicks=ys;L.sy=area.h/(Y[1]-Y[0]);L.yOf=null;finiteScale(L.sy,ys,p+'.y');
+ if(kind==='scatter'){L.X=X;L.xTicks=ticks(X);L.sx=area.w/(X[1]-X[0]);finiteScale(L.sx,L.xTicks,p+'.x');}
  else{const slot=area.w/cats.length;L.slot=slot;L.catSize=fitSize([22,20,18,16,14],s=>cats.every(c=>measure(c,s)<=slot-6));if(!L.catSize)fail(p+'.categories','category names do not fit under the chart; shorten them or use fewer categories');
   if(L.valueLabels){const all=states.flat(2).filter(v=>v!==null).map(v=>format(v));const bw=kind==='bar'?slot*.8/data.length:slot;L.valueSize=fitSize([20,18,16,14],s=>all.every(t=>measure(t,s)<=bw+8));if(!L.valueSize)fail(p+'.valueLabels','value labels do not fit their bars; turn them off or use fewer series');}}
  for(const a of annotations)if(measure(a.text,20)>area.w)fail(p+'.annotations','annotation wider than the chart');
  return {chart:L,phrases:stepPhrases(x,steps.length,p,phraseOk)};
 }
+function finiteScale(scale,tk,p){if(!Number.isFinite(scale)||scale<=0)fail(p,'the range gives no finite scale');if(tk.length<2||tk.some((v,i)=>!Number.isFinite(v)||(i&&v<=tk[i-1])))fail(p,'the range gives no usable ticks; widen it');}
 function ticks(R){const s=tickStep(R[1]-R[0]),out=[];for(let v=Math.ceil(R[0]/s-1e-9)*s;v<=R[1]+1e-9&&out.length<12;v+=s)out.push(Math.round(v/s)*s);return out;}
 // Whole-number percentages that add up to exactly 100 (largest-remainder rounding).
 export function percents(values){const t=values.reduce((a,v)=>a+v,0),raw=values.map(v=>v*100/t),base=raw.map(Math.floor);let left=100-base.reduce((a,v)=>a+v,0);

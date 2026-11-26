@@ -5,7 +5,7 @@ Opt-in `compose-v2` items, usually authored as Director `visuals` attached to sc
 ## chart
 `{type:'chart', kind, categories, series, | csv, y?, x?, unit?, xUnit?, yLabel?, xLabel?, valueLabels?, highlight?, annotations?, steps?, phrases?/cues?}`
 - **Kinds:** `bar` (grouped when there is more than one series), `line`, `area`, `scatter` (series of `[x,y]` points, up to 60), `pie` (one series, at most 6 slices).
-- **Data:** 2–12 categories (≤ 14 characters, unique, kept in the given order), 1–4 series (unique names ≤ 16). Values are finite numbers within ±1e12, or `null` for **missing**. Units and signs are kept as given.
+- **Data:** 2–12 categories (≤ 14 characters, unique, kept in the given order: one rule for JSON and CSV), 1–4 series (unique names ≤ 16). Scatter and pie charts take no annotations (a validation error, not a crash). Values are finite numbers within ±1e12, or `null` for **missing**. Units and signs are kept as given.
 - **Missing values** are never treated as zero: a gap in a line or area, nothing for scatter, a "no data" mark for a bar. A series with all values missing is refused. Pies refuse missing, zero and negative values.
 - **CSV** (instead of categories and series) is inline text of at most 8,000 characters: a header row, then 2–60 rows and 2–6 columns. Quoted fields are allowed (`""` escapes a quote). Numbers must be plain decimals (`-12`, `3.5`); an empty cell is missing. Anything else is refused with its line and column: `1,000` makes a ragged row, and `1e3`, `=SUM(...)`, `NaN` and `Infinity` are not plain numbers.
 - **Scales (no misleading charts):**
@@ -14,7 +14,9 @@ Opt-in `compose-v2` items, usually authored as Director `visuals` attached to sc
   - without one, a "nice" range (steps of 1, 2 or 5 × 10^k) covers **every** value of every step;
   - line and scatter charts may start above zero.
 - **Steps** (≤ 12, timed by `cues`/`phrases`, otherwise spread over the item): each may give new `series` values (same series, same order, same categories), a `highlight` (`series` and/or `category`; others dim) and a `note`. The first state shows first.
-- **Axes never change between steps.** Numbers interpolate from old to new over 0.5 s. A value that appears or disappears (missing ↔ number) fades in or out at its own value; it never grows from or shrinks to zero.
+- **Axes never change between steps.** **Only exact data states are drawn** (repair pass, audit 2026-11-26). A step crossfades the old and the new state over 0.5 s, element by element (each bar, line series or pie), where values differ; unchanged elements stay solid. Each value label fades with its own element, so a label never disagrees with its geometry; pie percentages belong to their own state. A value that appears or disappears (missing ↔ number) crossfades the "no data" mark and the real bar at its true height. No in-between value is ever drawn.
+- **Opening reveal:** a left-to-right wipe of the plotting area (pies fade in). Data coordinates are never scaled, so no point is ever drawn outside its axis range or at a false value.
+- **Drawable ranges:** non-zero values below 1e-9 in size are refused ("rescale the unit"), as are ranges spanning less than 1e-9 or less than one part in a billion of their values (e.g. 1e11 and 1e11 + 0.0001: "chart the differences instead"). Every derived scale must be finite and positive, with at least two increasing finite ticks. Range tolerances are relative to the span (1e-9 of it), never an absolute 1e-9.
 - **Labels:**
   - legend (more than one series): must fit, or it is refused;
   - category labels: 22 px down to 14 px, else refused;

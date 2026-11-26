@@ -44,9 +44,13 @@ export function compileTex(tex,p='tex'){
 }
 // Compiles every equation item of every compose-v2 composition in a project (in place on a copy). Items keep their
 // TeX; `compiled` is replaced when missing or stale. Returns the new project.
-export function compileProjectMath(project){
+// {force:true} (used at the production boundary, src/director/math-loader.js) regenerates every equation from its TeX
+// and ignores supplied outlines, so geometry is never trusted just because its key matches (repair pass, audit
+// 2026-11-26). Without force, equations whose key matches are kept (cheap re-validation of our own output).
+export function compileProjectMath(project,{force=false}={}){
  if(project?.version!==2)return project;let changed=false;
- const shots=project.shots.map((s,i)=>{const c=s.composition;if(c?.version!=='compose-v2'||!c.items.some(x=>x.type==='equation'&&x.compiled?.key!==mathKey(x.tex)))return s;
-  changed=true;return {...s,composition:{...c,items:c.items.map((x,j)=>x.type!=='equation'||x.compiled?.key===mathKey(x.tex)?x:{...x,compiled:compileTex(x.tex,'shots['+i+'].composition.items['+j+'].tex')})}};});
+ const stale=x=>x.type==='equation'&&(force||x.compiled?.key!==mathKey(x.tex));
+ const shots=project.shots.map((s,i)=>{const c=s.composition;if(c?.version!=='compose-v2'||!c.items.some(stale))return s;
+  changed=true;return {...s,composition:{...c,items:c.items.map((x,j)=>!stale(x)?x:{...x,compiled:compileTex(x.tex,'shots['+i+'].composition.items['+j+'].tex')})}};});
  return changed?{...project,shots}:project;
 }
