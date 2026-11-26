@@ -13,8 +13,10 @@ export const CRAFTED=Object.freeze({version:'crafted-v1',bevel:Object.freeze({ma
  // Owner: "in some frames in cpu rendering the robot has one eye". The CPU painter sorts polygons by average depth, so
  // when a head turns, the far eye sits deeper than the centre of the face panel it is mounted on and is painted over.
  // Glowing parts (eyes, lights, mouths) are surface details: in the crafted looks they sort this much nearer (CPU only;
- // Three has a depth buffer). Back-facing polygons are still culled, so nothing shows through from behind.
- litBias:.08,
+ // Three has a depth buffer). Back-facing polygons are still culled, so nothing shows through from behind. 0.08 still
+ // lost the far eye's front face to the head block and face panel on turned heads (gen15b-sky-r3 frame 1620); 0.16 is
+ // the smallest value that keeps every eye front visible for head turns up to ±0.9 rad and side cameras; 0.18 adds margin.
+ litBias:.18,
  // Owner-requested tune (2026-11-25, "tune three js"): Three already has ambient light and tone mapping, so the CPU
  // palette lift and fully matte materials washed it out. Three uses a lighter palette touch, a little less ambient
  // light and exposure, and slightly less matte materials. CPU is unchanged.
