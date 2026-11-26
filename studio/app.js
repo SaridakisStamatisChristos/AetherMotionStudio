@@ -127,7 +127,7 @@ $('save').onclick=action(save);$('export').onclick=action(downloadJSON);$('play'
 $('projects').onchange=action(async()=>{if(!$('projects').value)return;const x=await api('/api/projects/'+$('projects').value);install(x.project,x.revision,x.project.id);status('Loaded '+x.project.id);});
 $('examples').onchange=action(async()=>{if(!$('examples').value)return;const x=await api('/api/examples/'+$('examples').value);install(x.project);status('Example imported; choose a project ID and save.');});
 $('import').onchange=action(async()=>{const f=$('import').files[0];if(!f)return;if(f.size>1024*1024)throw Error('Project JSON too large');install(JSON.parse(await f.text()));status('Imported project; save to persist.');});
-function directorForm(){return {id:'film-'+Date.now().toString(36),topic:$('topic').value,script:$('script').value,seconds:Number($('seconds').value),cast:$('directCast').value,backend:$('directBackend').value,profile:$('directProfile').value,voice:$('directVoice').value,staging:$('directStaging').checked,reels:$('directReels').checked,speakerNames:$('directNames').checked};}
+function directorForm(){return {id:'film-'+Date.now().toString(36),topic:$('topic').value,script:$('script').value,seconds:Number($('seconds').value),cast:$('directCast').value,backend:$('directBackend').value,profile:$('directProfile').value,voice:$('directVoice').value,staging:$('directStaging').checked,reels:$('directReels').checked,speakerNames:$('directNames').checked,titles:$('directTitles').checked};}
 // Owner: "give a list of advice … so whoever uses it could be able to choose": length choices under the count. "Use N s"
 // sets Seconds; "Keep" closes the choice for this script and length; "Shorten" is a hint (the script is the owner's).
 let keptLength=null;

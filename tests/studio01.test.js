@@ -17,12 +17,15 @@ const form=x=>({id:'film-test',topic:forest.topic,script:pasted,seconds:60,cast:
 
 test('interview cast: the form gives the same request as the forest script example (and the gen01 cast)',()=>{
  const q=directorRequest(form());
- assert.deepEqual(request(q),request({...forest,id:'film-test'}));
+ // Owner 2026-11-26 "No titles at all": the form always says titles (unticked "Titles on top" = none).
+ assert.deepEqual(request(q),request({...forest,id:'film-test',titles:'none'}));
  assert.deepEqual(q.dialogue,interview.dialogue);
  assert.equal(q.staging,undefined);assert.equal(q.delivery,undefined);
  // Defaults the form starts with: interview cast, Three, polished, 60 s, Reels off.
- // speakerNames: the owner's checkbox "Speaker names in captions" (on by default)
- assert.deepEqual(STUDIO_DEFAULTS,{cast:'interview',backend:'three',profile:'polished',seconds:60,reels:false,speakerNames:true});
+ // speakerNames: the owner's checkbox "Speaker names in captions"; titles: "Titles on top". Both off by default since the
+ // owner's 2026-11-26 choice (roles "Off by default", titles "No titles at all").
+ assert.deepEqual(STUDIO_DEFAULTS,{cast:'interview',backend:'three',profile:'polished',seconds:60,reels:false,speakerNames:false,titles:false});
+ assert.equal(directorRequest(form({titles:true})).titles,'shots');assert.throws(()=>directorRequest(form({titles:'yes'})),/Titles must be on or off/);
  assert.equal(directorRequest(form({backend:'three'})).backend,'three');
 });
 test('Reels checkbox, trio cast and narrator keep their contracts',()=>{
@@ -32,7 +35,7 @@ test('Reels checkbox, trio cast and narrator keep their contracts',()=>{
  assert.deepEqual(trio.dialogue,{speakers:[{id:'eng',name:'Engineer',voice:'af_heart',language:'en-us',character:'engineer'},{id:'robo',name:'Robot',voice:'am_michael',language:'en-us',character:'service-robot'},{id:'sci',name:'Scientist',voice:'bf_emma',language:'en-gb',character:'scientist'}]});
  request(trio);
  const n=directorRequest(form({cast:'narrator',script:''}));
- assert.deepEqual(n,{version:1,id:'film-test',topic:forest.topic,seconds:60,backend:'cpu',profile:'polished',voice:'af_heart',staging:'art-v1'});request(n);
+ assert.deepEqual(n,{version:1,id:'film-test',topic:forest.topic,seconds:60,backend:'cpu',profile:'polished',voice:'af_heart',staging:'art-v1',titles:'none'});request(n);
  assert.equal(directorRequest(form({cast:'narrator',staging:false})).staging,undefined);
  // Presets are not shared by reference: editing one request never changes the next.
  directorRequest(form()).dialogue.speakers[0].name='Changed';assert.equal(STUDIO_CASTS.interview.dialogue.speakers[0].name,'Student');
@@ -168,10 +171,10 @@ test('owner\'s first Studio film: pasted extras are flagged, never spoken; lengt
  const page=readFileSync(new URL('../studio/index.html',import.meta.url),'utf8');assert.match(page,/<div id="lengthChoices"/);
  assert.match(js,/function lengthChoices\(h\)/);assert.match(js,/if\(c\.id==='seconds'\)\{\$\('seconds'\)\.value=String\(c\.seconds\)/);
 });
-test('owner\'s checkbox "Speaker names in captions": on by default; off removes names from video captions and subtitle files',async()=>{
+test('owner\'s checkbox "Speaker names in captions": off by default (owner 2026-11-26); off removes names from video captions and subtitle files',async()=>{
  const {directorRequest,STUDIO_DEFAULTS}=await import('../src/studio/director-form.js');
  const {validateSpeechConfig}=await import('../src/core/speech.js');
- assert.equal(STUDIO_DEFAULTS.speakerNames,true);
+ assert.equal(STUDIO_DEFAULTS.speakerNames,false);
  const on=directorRequest(form({speakerNames:true}));assert.equal(on.speech,undefined,'default: unchanged request');
  const off=directorRequest(form({speakerNames:false}));assert.equal(off.speech.captions.speakerNames,false);request(off);
  assert.equal(directorRequest(form({cast:'narrator',speakerNames:false})).speech,undefined,'narrator: one speaker, nothing to hide');
@@ -182,7 +185,7 @@ test('owner\'s checkbox "Speaker names in captions": on by default; off removes 
  const {project}=await direct(off);assert.equal(project.speech.captions.speakerNames,false);assert.equal(Object.keys(project.speech.speakers).length,2);
  // the page: checkbox ticked by default, wired into the form, and the render keeps the request's speech
  const html=readFileSync(new URL('../studio/index.html',import.meta.url),'utf8'),js=readFileSync(new URL('../studio/app.js',import.meta.url),'utf8');
- assert.match(html,/<input id="directNames" type="checkbox" checked> Speaker names in captions/);
+ assert.match(html,/<input id="directNames" type="checkbox"> Speaker names in captions/);assert.match(html,/<input id="directTitles" type="checkbox"> Titles on top/);
  assert.match(js,/speakerNames:\$\('directNames'\)\.checked/);assert.match(js,/if\(produce\)q\.speech\?\?=defaultSpeech\(q\.seconds\)/);
  // the burned-in caption: no name when off
  const draw=readFileSync(new URL('../src/core/draw-film.js',import.meta.url),'utf8');assert.match(draw,/speech\.captions\?\.speakerNames!==false&&/);

@@ -137,3 +137,13 @@ Owner: "implement 1-2-3 and 5" (3 = Reels cover/export in the finished panel; th
 - ffmpeg runs without a shell and with fixed arguments (`ffmpegFrame`); tests inject a stand-in (`extract`, `createStudio({reelsExport})`).
 - Click test (agent, headless Chrome, fresh Studio from the branch, vulkan): job studio-5e27ef2535fc0429316e (forest script, Three) succeeded. A click on Make Reels cover gave "Ready for Reels · 60.0 s · cover from the first close-up (frame 189)" with the NOT_REELS_LAYOUT note, a 1080×1920 cover and the download link. The CLI on another forest job gave the same frame 189 (first single) and then refused to overwrite.
 - Tests: tests/studio-reels.test.js (4, with negatives); gen09 unchanged and passing.
+
+## Clean top and no roles by default (2026-11-26)
+Owner, after seeing far-forest-r1 ("i see you rendered the video with roles in subtitles and also big on top tittles"), chose roles in captions "Off by default" and titles "No titles at all".
+- **Shot field `titles: 'none'`** (src/core/graph.js, timeline.js): draw-graph.js skips all top text (the AETHER pill, the heading, the subheading; also the Reels heading). The thin progress line stays. Absent = every earlier layout, unchanged (digests unchanged). Only `'none'` or absent is valid.
+- **`request.titles`** (`'none'` | `'shots'`): absent = `'none'` for dialogue films, `'shots'` (unchanged) otherwise. The Director sets `titles:'none'` on every graph shot, singles included.
+- **Speaker names:** speech that the Director builds for a dialogue film now sets `captions.speakerNames:false`. A request that brings its own speech keeps what it says. The Studio always sends its own speech, so its checkbox decides.
+- **Studio:** "Speaker names in captions" and the new "Titles on top" both start **unticked** (`STUDIO_DEFAULTS` speakerNames false, titles false). The form always sends `titles`.
+- Preflight: REPEATED_HEADING is not reported for hidden titles.
+- Old films and authored projects are unchanged.
+- Tests: tests/clean-top.test.js (5, with negatives); studio01 updated to the new defaults (the contract checks are kept).

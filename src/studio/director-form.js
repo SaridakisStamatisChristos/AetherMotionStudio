@@ -13,7 +13,8 @@ export const STUDIO_CASTS=Object.freeze({
   dialogue:{speakers:[{id:'eng',name:'Engineer',voice:'af_heart',language:'en-us',character:'engineer'},{id:'robo',name:'Robot',voice:'am_michael',language:'en-us',character:'service-robot'},{id:'sci',name:'Scientist',voice:'bf_emma',language:'en-gb',character:'scientist'}]}}),
  narrator:Object.freeze({label:'Narrator only (no characters)',fields:{},dialogue:null})
 });
-export const STUDIO_DEFAULTS=Object.freeze({cast:'interview',backend:'three',profile:'polished',seconds:60,reels:false,speakerNames:true});
+// Owner 2026-11-26: roles in captions "Off by default" and "No titles at all" for new films (both are checkboxes).
+export const STUDIO_DEFAULTS=Object.freeze({cast:'interview',backend:'three',profile:'polished',seconds:60,reels:false,speakerNames:false,titles:false});
 // About 2.2 spoken words per second (docs/SCRIPT_FORMAT.md): 60 s → 120–140 words, 30 s → 60–70.
 export const WORDS_PER_SECOND=Object.freeze({min:2,max:7/3});
 // Spoken words per second at which the calm dialogue pace (0.92) was kept in measured films (see scriptHelp).
@@ -41,6 +42,9 @@ export function directorRequest(form){
  if(script)q.script=script;
  if(form.reels===true)q.delivery='reels-v1';else if(form.reels!==false&&form.reels!==undefined)bad('Reels must be on or off');
  if(![true,false,undefined].includes(form.speakerNames))bad('Speaker names must be on or off');
+ if(![true,false,undefined].includes(form.titles))bad('Titles must be on or off');
+ // owner's checkbox "Titles on top": unticked (the default) = a clean top
+ q.titles=form.titles===true?'shots':'none';
  // names only ever show with two or more speakers, so the narrator request is left unchanged
  if(form.speakerNames===false&&cast.dialogue){q.speech=defaultSpeech(seconds);q.speech.captions.speakerNames=false;}
  return q;

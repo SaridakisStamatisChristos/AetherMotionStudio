@@ -40,6 +40,7 @@ The page opens on **Make a film** (the simple view).
 8. **Options:**
    - **Instagram Reels layout:** a layout made for Reels.
    - **Speaker names in captions:** shows "Student" or "Explorer" above each caption. Untick it for captions with words only.
+8b. New films have a clean top (no big titles) and captions without the speakers' roles. Tick **Titles on top** or **Speaker names in captions** if you want them for a film.
 9. Press **Generate & render film**.
 
 The Studio remembers your choices (cast, seconds, backend, Reels, speaker names, Simple or Advanced view) in this browser, so the next film starts with them. The topic and the script are not kept. **Reset choices** (next to Clean up) goes back to the defaults.

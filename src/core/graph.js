@@ -41,6 +41,7 @@ export function validateGraph(s,p='shot'){
  // ART-02 opt-in lighting profile; absent = historical look on both backends.
  if(Object.hasOwn(s,'lighting')&&!LIGHTING_PROFILES.includes(s.lighting))fail(p+'.lighting','unknown lighting profile');
  // GEN-15 opt-in look (src/visual/crafted.js); absent = historical drawing on both backends. Foundry geometry keeps its own.
+ if(Object.hasOwn(s,'titles')&&s.titles!=='none')fail(p+'.titles','none or absent');
  if(Object.hasOwn(s,'look')){if(!LOOKS.includes(s.look))fail(p+'.look','unknown look');if(s.geometryProfile)fail(p+'.look','not with a geometryProfile');}
  if(Object.hasOwn(s,'cameraInterpolation'))interpolationMap(s.cameraInterpolation,s.camera,p+'.cameraInterpolation');
  if(!Array.isArray(s.assets)||s.assets.length<1||s.assets.length>8)fail(p+'.assets','1–8 assets required');

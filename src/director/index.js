@@ -60,6 +60,9 @@ export function compile(q,ir,selection){
  if(q.delivery)out=reelsProject(out).project;
  // GEN-06: dialogue cuts long lines to singles of the speaker (request.dialogue.singles false keeps group shots only).
  if(q.dialogue&&q.dialogue.singles!==false)out=singleShots(out).project;
+ // Owner 2026-11-26 ("No titles at all"): dialogue films default to a clean top (titles 'none' on every graph shot);
+ // request.titles 'shots' keeps the per-shot titles. Narrator films are unchanged unless they ask for 'none'.
+ if((q.titles??(q.dialogue?'none':'shots'))==='none')out={...out,shots:out.shots.map(s=>s.template==='cinematic-graph'?{...s,titles:'none'}:s)};
  if(out!==project)validateProject(out);
  return out;
 }
