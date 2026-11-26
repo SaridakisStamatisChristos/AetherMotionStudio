@@ -15,8 +15,8 @@ Status words: PLANNED · ACTIVE · IMPLEMENTED · TESTED · RENDERED · OWNER-RE
 | DUAL-01 | Character-free content and shared composition | **MERGED** (PR #51 → 14a1da6, owner: "merge pr51") | `feature/dual-01-composition` | [docs/COMPOSITION.md](../COMPOSITION.md), "DUAL-01 evidence" below |
 | DUAL-02 | Typography and motion graphics | **MERGED** (PR #52 → 17ebecd, owner: "Yes, merge #52") | `feature/dual-02-typography` | docs/COMPOSITION.md "Typography", "DUAL-02 evidence" below |
 | DUAL-03 | Mathematics, geometry and algorithm visualization | **TESTED + RENDERED** (PR open, not merged) | `feature/dual-03-maths` | [docs/MATHS.md](../MATHS.md), "DUAL-03 evidence" below |
-| DUAL-04 | Charts, diagrams and data storytelling | **NEXT** | — | — |
-| DUAL-05 | Local media and illustration integration | PLANNED | — | — |
+| DUAL-04 | Charts, diagrams and data storytelling | **TESTED + RENDERED** (PR open, not merged) | `feature/dual-04-charts` | [docs/CHARTS.md](../CHARTS.md), "DUAL-04 evidence" below |
+| DUAL-05 | Local media and illustration integration | **NEXT** | — | — |
 | DUAL-06 | Formats, themes and audio controls | PLANNED | — | — |
 | DUAL-07 | Universal Director and Studio integration | PLANNED | — | — |
 | DUAL-08 | Optional bounded batch production | PLANNED (**owner decides** whether before the freeze) | — | — |
@@ -99,6 +99,18 @@ Status words: PLANNED · ACTIVE · IMPLEMENTED · TESTED · RENDERED · OWNER-RE
 - **Not done (recorded):** accented letters inside TeX `\text` (rejected; use a label); arrows from a diagram to a 3D object; proofs are explained, not formally verified (only arithmetic, BFS and Euclid claims are machine-checked).
 - **Investigation (owner asked, 2026-11-26):** why DUAL-02 typography films were blocked: the v0.8 preflight (d17e90c) treats "no visible 3D geometry" as a broken shot (EMPTY_GEOMETRY), correct while every shot had to hold 1–8 objects. DUAL-02 made object-free shots legal; the agent dry-ran the other checks but not preflight. Fix (DUAL-02): only compose-v2 shots with zero assets are exempt (TYPOGRAPHY_SHOT review note); every other empty shot still blocks; both cases tested.
 
+## DUAL-04 evidence (2026-11-26)
+- **What:** compose-v2 `chart` (bar, line, area, scatter, pie; inline JSON or strict bounded CSV; finite values or explicit missing; bar/area include zero; explicit ranges never clip; axes fixed across steps; honest transitions; legends, units, highlights, annotations, value labels; pie percentages sum to 100), `timeline`, `flow`, `compare`; directed diagrams reuse `graph`. Visuals now claim narration phrases (planner shots split or merged). Planner suggests authored visuals for data/maths and never invents data (src/core/charts.js, src/visual/draw-charts.js, src/director/visuals.js, aids.js).
+- **Tests:** 461 JS (460 pass, 0 fail, 1 Windows skip), Python 61 OK; 7 new tests in tests/charts.test.js (CSV injection/format/limits, NaN/Infinity/strings, missing data, truncated baselines, clipping, step consistency, pie rules, overflow, interpolation vs fade). Legacy digests unchanged.
+- **Films** (vulkan; agent stills only, **no owner review**), from 215c2e1 clean, all PASS on both backends, shared hashes exact, CHECKS 0 incl. aids-v1, QUALITY 0/0, glitch clean, −16.0 LUFS:
+  | ID | Content | Frames | CPU / Three |
+  |---|---|---|---|
+  | dual04-bakery-r2 | example data: bar + Friday highlight, week-2 transition with missing Wednesday ("no data"), pie 50/30/20 %, temperature scatter | 1800 → 1486 | 9cfced20e66fa45b… / 62e3d90f7fcfe077… |
+  | dual04-bread-r2 | flowchart, timeline, comparison cards, directed supply diagram | 1800 → 1274 | 0a82848b5be0e752… / 458b8153b302d6c8… |
+- r1 (7b42aa4) passed the same gates; card, timeline, "no data" and node text were small → larger sizes (215c2e1). Node radius change also affects graph items rendered by DUAL-03 code (its evidence stays tied to 74e8b9c).
+- **Agent stills:** values and labels identical on CPU and Three.js; Wednesday shows "no data" (not zero) after the week-2 transition; pie labels "Bread 1,500 euros 50%"; flow/timeline/cards/supply diagram readable.
+- **Not done (recorded):** loading CSV from a file path (CSV is inline text by design; no file system access from scene data); stacked bars; log scales.
+
 ## Decisions the owner must make (ask when the milestone reaches them, not before)
 - DUAL-02: fonts: **decided** (bundle the four open families).
 - DUAL-03: maths typesetter: **decided** (MathJax 4.1.3, Node-only).
@@ -124,3 +136,5 @@ Status words: PLANNED · ACTIVE · IMPLEMENTED · TESTED · RENDERED · OWNER-RE
 - 2026-11-26: DUAL-02 MERGED (PR #52 → main 17ebecd, PR CI 45865359538 passed) on the owner's word.
 - 2026-11-26: DUAL-03 tested and rendered on `feature/dual-03-maths` (74e8b9c): pythagoras-r2, euclid-r2, bfs-r2 all gates PASS on both backends; PR open, not merged. DUAL-04 next.
 - 2026-11-26: PR #53 CI run 45876257187 FAILED (34 tests): the CI test job runs npm test without npm install and the Director imported MathJax at load time. Fixed in 86d1af4: src/director/math-loader.js loads MathJax only when installed and needed; films without equations never need it; uncompiled equations without it fail with "run npm install". CI run 45876723838 PASSED: 454 tests, 449 pass, 5 skipped (the MathJax tests, reason stated), 0 fail. Locally all 454 run (453 pass, 1 Windows symlink skip). Adding npm ci to the CI test job is a workflow change for the owner to decide.
+- 2026-11-26: DUAL-03 MERGED (PR #53 → main 1b1543b) on the owner's word ("merge and yes"); npm ci in the CI test job approved ("yes") and verified on `feature/ci-npm-ci` (PR #54, CI 45879799972: 454/454, 0 skipped), not merged.
+- 2026-11-26: Owner: "continue" (not a merge word for #54, which stays open). DUAL-04 tested and rendered on `feature/dual-04-charts` (215c2e1): bakery-r2 and bread-r2 all gates PASS on both backends; PR open, not merged. DUAL-05 next.
