@@ -12,6 +12,7 @@
 // Coordinates: the 720×1280 logical canvas every renderer uses. Regions stay inside the Reels-safe area
 // (src/core/reels-layout.js: x 40–640, y 147–1000) and above the caption boxes (normal and Reels, two lines).
 import {FONT_METRICS} from './font-metrics.js';
+import {layoutEquation,layoutPlot,layoutGraph,layoutArray} from './diagrams.js';
 export const COMPOSE_VERSION='compose-v1',COMPOSE_V2='compose-v2',COMPOSE_VERSIONS=Object.freeze([COMPOSE_VERSION,COMPOSE_V2]);
 export const REGIONS=Object.freeze({
  // the clean top of a 9:16 frame: above characters' heads at the medium framings the Director uses
@@ -20,7 +21,10 @@ export const REGIONS=Object.freeze({
  full:Object.freeze({x:48,y:150,w:584,h:700})
 });
 export const TYPES=Object.freeze(['background','title','card','label','callout','arrow','shape']);
-export const TYPES_V2=Object.freeze([...TYPES,'quote','bullets','counter','kinetic']);
+export const TYPES_V2=Object.freeze([...TYPES,'quote','bullets','counter','kinetic','equation','plot','graph','array']);
+export const DIAGRAMS=Object.freeze(['equation','plot','graph','array']);
+// decimals needed to show v exactly (at most 3)
+const decimalsOf=v=>{for(let d=0;d<3;d++)if(Math.abs(v*10**d-Math.round(v*10**d))<1e-9)return d;return 3;};
 export const REVEALS=Object.freeze(['fade','slide','wipe','pop','none']);
 export const SHAPES=Object.freeze(['circle','ring','rect']);
 export const ALIGNS=Object.freeze(['left','center','right']);
@@ -115,7 +119,9 @@ export function formatNumber(v,{decimals=0,group=true,prefix='',suffix=''}={}){
 function counterTemplate(x,m,size){const digits=[...'0123456789'],wide=digits.reduce((a,d)=>m.width(d,size)>m.width(a,size)?d:a,'0');
  return [x.from,x.to].map(v=>formatNumber(v,x).replace(/[0-9]/g,wide)).reduce((a,b)=>m.width(b,size)>m.width(a,size)?b:a);}
 // Text layout of one text item inside its pixel box (null for items without text). Throws on overflow.
-function layoutItem(x,b,q,m){
+function layoutItem(x,b,q,m,opts={}){
+ // DUAL-03 maths and diagram items (src/core/diagrams.js)
+ if(DIAGRAMS.includes(x.type)){const ctx={measure:(s,size)=>m.width(s,size),format:v=>formatNumber(v,{decimals:decimalsOf(v)}),phraseOk:opts.phraseOk};return {equation:layoutEquation,plot:layoutPlot,graph:layoutGraph,array:layoutArray}[x.type](x,b,q,ctx);}
  const fit=(s,spec,w,h,what)=>{const r=fitText(s,spec,w,h,m);if(!r)fail(q,'text overflow: '+what+' "'+s.slice(0,40)+(s.length>40?'…':'')+'" does not fit a '+Math.round(w)+'×'+Math.round(h)+' px box at '+spec.sizes.at(-1)+' px; shorten it or enlarge the box');return r;};
  const over=what=>fail(q,'text overflow: '+what+' does not fit a '+Math.round(b.w)+'×'+Math.round(b.h)+' px box at the smallest sizes; shorten it or enlarge the box');
  if(x.type==='title'){const s=TEXT.title;return {text:fit(x.text,s,b.w-2*s.pad,b.h-2*s.pad,'title')};}
@@ -170,7 +176,7 @@ export function layoutComposition(c,p='composition',opts={}){
   const q=p+'.items['+i+']';
   if(!x||typeof x!=='object'||Array.isArray(x))fail(q,'object required');
   const allowed={background:['tone'],title:['text','tone'],card:['text','body','tone'],label:['text','tone'],callout:['text','to','tone'],arrow:['from','to','tone'],shape:['shape','tone'],
-   ...(v2?{quote:['text','cite','tone'],bullets:['lines','phrases','tone'],counter:['from','to','decimals','group','prefix','suffix','text','tone'],kinetic:['text','tone']}:{})}[x.type];
+   ...(v2?{quote:['text','cite','tone'],bullets:['lines','phrases','tone'],counter:['from','to','decimals','group','prefix','suffix','text','tone'],kinetic:['text','tone'],equation:['tex','compiled','check','tone'],plot:['x','y','equal','grid','axes','xLabel','yLabel','shapes','clip','phrases','tone'],graph:['nodes','edges','directed','steps','algorithm','phrases','tone'],array:['values','steps','algorithm','phrases','tone']}:{})}[x.type];
   if(!allowed)fail(q+'.type','one of '+(v2?TYPES_V2:TYPES).join(', ')+' required');
   const textual=!['background','arrow','shape'].includes(x.type);
   const extra=v2?['phrase',...(textual?['font','weight','align','emphasis']:[])]:[];
@@ -195,6 +201,7 @@ export function layoutComposition(c,p='composition',opts={}){
   if(x.type==='card'&&x.text===undefined&&x.body===undefined)fail(q,'a card needs text, body or both');
   const maxOf={title:TEXT.title.max,card:TEXT.heading.max,label:TEXT.label.max,callout:TEXT.callout.max,quote:TEXT.pull.max,counter:TEXT.numberLabel.max,kinetic:TEXT.kinetic.max};
   for(const k of ['text','body','cite'])if(x[k]!==undefined||(k==='text'&&['title','label','callout','quote','kinetic'].includes(x.type))){bad(x[k],q+'.'+k);const max=k==='body'?TEXT.body.max:k==='cite'?TEXT.cite.max:maxOf[x.type];if(x[k].length>max)fail(q+'.'+k,'at most '+max+' characters');}
+  if(x.phrases!==undefined&&(x.phrase!==undefined||x.start!==undefined))fail(q+'.phrases','use phrases alone');
   if(x.type==='bullets'){if(!Array.isArray(x.lines)||x.lines.length<2||x.lines.length>6)fail(q+'.lines','2–6 lines required');x.lines.forEach((s,k)=>{bad(s,q+'.lines['+k+']');if(s.length>TEXT.bullet.max)fail(q+'.lines['+k+']','at most '+TEXT.bullet.max+' characters');});
    if(x.phrases!==undefined){if(!Array.isArray(x.phrases)||x.phrases.length!==x.lines.length)fail(q+'.phrases','one phrase index per line required');x.phrases.forEach((k,j)=>{phraseOk(k,q+'.phrases['+j+']');if(j&&k<x.phrases[j-1])fail(q+'.phrases','must not go backwards');});if(x.phrase!==undefined||x.start!==undefined)fail(q+'.phrases','use phrases alone');}}
   if(x.type==='counter'){for(const k of ['from','to']){if(typeof x[k]!=='number'||!Number.isFinite(x[k])||Math.abs(x[k])>1e12)fail(q+'.'+k,'finite number within ±1e12 required');}
@@ -209,11 +216,13 @@ export function layoutComposition(c,p='composition',opts={}){
   if(x.type==='counter'){fields.fromValue=formatNumber(x.from,x);fields.toValue=formatNumber(x.to,x);}
   if(v2)for(const [k,s] of Object.entries(fields)){const miss=missingGlyphs(s,m);if(miss.length)fail(q+'.'+k,'missing glyphs in '+fontChain(font).join(' → ')+': '+miss.slice(0,8).join(', ')+(font==='arial'?' (Arial accepts ASCII only in compose-v2; choose a bundled font)':''));}
   const quoted=x.type==='quote'?(m.covers('“')&&m.covers('”')?'“'+fields.text+'”':'"'+fields.text+'"'):null;
-  const laid=b?layoutItem(v2?{...x,...fields,lines:x.type==='bullets'?x.lines.map(norm):x.lines,quoted}:x,b,q,m):{};
+  // labels and notes inside diagrams need glyphs too
+  if(v2&&DIAGRAMS.includes(x.type)){const extra=[x.xLabel,x.yLabel,...(Array.isArray(x.shapes)?x.shapes.flatMap(s=>[s?.label,s?.text]):[]),...(Array.isArray(x.nodes)?x.nodes.map(n=>n?.label??n?.id):[]),...(Array.isArray(x.steps)?x.steps.map(s=>s?.note):[])].filter(s=>typeof s==='string');for(const s of extra){const miss=missingGlyphs(s,m);if(miss.length)fail(q,'missing glyphs in '+fontChain(font).join(' → ')+': '+miss.slice(0,8).join(', '));}}
+  const laid=b?layoutItem(v2&&!DIAGRAMS.includes(x.type)?{...x,...fields,lines:x.type==='bullets'?x.lines.map(norm):x.lines,quoted}:x,b,q,m,{phraseOk}):{};
   const emphasis=v2&&x.emphasis!==undefined?emphasisRanges(x.emphasis,Object.entries(x.type==='quote'?{text:quoted}:fields).filter(([k])=>!['fromValue','toValue'].includes(k)),q):[];
   const align=x.align??(['card','quote','bullets'].includes(x.type)?'left':'center');
   const item={id:x.id,type:x.type,start,end,reveal:x.reveal??'fade',tone:tones[x.tone??(x.type==='title'?'accent':'neutral')],box:b,...laid,
-   ...(v2?{font,weight,align,emphasis,...(x.phrase!==undefined?{phrase:x.phrase}:{}),...(x.type==='bullets'&&x.phrases?{phrases:[...x.phrases]}:{}),...(quoted?{quoted}:{}),...(x.type==='counter'?{counter:{from:x.from,to:x.to,decimals:x.decimals??0,group:x.group??true,prefix:x.prefix??'',suffix:x.suffix??''}}:{})}:{})};
+   ...(v2?{font,weight,align,emphasis,...(x.phrase!==undefined?{phrase:x.phrase}:{}),...(x.phrases?{phrases:[...x.phrases]}:{}),...(quoted?{quoted}:{}),...(x.type==='equation'?{tex:x.tex,compiled:x.compiled}:{}),...(x.type==='counter'?{counter:{from:x.from,to:x.to,decimals:x.decimals??0,group:x.group??true,prefix:x.prefix??'',suffix:x.suffix??''}}:{})}:{})};
   if(x.type==='callout'){point(x.to,q+'.to');item.to=[region.x+x.to[0]*region.w,region.y+x.to[1]*region.h];if(item.to[0]>=b.x&&item.to[0]<=b.x+b.w&&item.to[1]>=b.y&&item.to[1]<=b.y+b.h)fail(q+'.to','must point outside its own box');}
   if(x.type==='arrow'){
    const endOf=(v,k)=>{if(typeof v==='string'){const t=ids.get(v);if(!t||!t.box||t.type==='background')fail(q+'.'+k,'an earlier boxed item ID or [x,y] required');if(!windowsMeet(t,{start,end}))fail(q+'.'+k,'target is not on screen during the arrow');return {ref:v};}point(v,q+'.'+k);return {at:[region.x+v[0]*region.w,region.y+v[1]*region.h]};};

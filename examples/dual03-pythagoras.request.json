@@ -1,0 +1,306 @@
+{
+  "version": 1,
+  "id": "dual03-pythagoras",
+  "topic": "Pythagoras' theorem with a 3, 4, 5 triangle",
+  "seconds": 60,
+  "audience": "curious beginners",
+  "tone": "friendly",
+  "style": "cinematic explainer",
+  "language": "en-us",
+  "voice": "af_bella",
+  "backend": "cpu",
+  "profile": "polished",
+  "seed": 3,
+  "content": "typography-v1",
+  "font": "inter",
+  "script": "A right triangle has one angle of exactly ninety degrees. Its two shorter sides are called the legs, and the longest side is the hypotenuse. Pythagoras' theorem links them. The square on the hypotenuse equals the sum of the squares on the legs. Take a triangle with legs 3 and 4. Then 3 squared plus 4 squared is 9 plus 16, which is 25. So the hypotenuse is the square root of 25, which is 5. Builders still use this 3, 4, 5 triangle to check that corners are square.",
+  "visuals": [
+    {
+      "at": "Its two shorter sides are called the legs, and the longest side is the hypotenuse.",
+      "composition": {
+        "version": "compose-v2",
+        "region": "full",
+        "font": "inter",
+        "items": [
+          {
+            "id": "triangle",
+            "type": "plot",
+            "box": [
+              0,
+              0.02,
+              1,
+              0.8
+            ],
+            "x": [
+              -1,
+              5
+            ],
+            "y": [
+              -1,
+              4
+            ],
+            "equal": true,
+            "axes": false,
+            "shapes": [
+              {
+                "kind": "polygon",
+                "points": [
+                  [
+                    0,
+                    0
+                  ],
+                  [
+                    4,
+                    0
+                  ],
+                  [
+                    0,
+                    3
+                  ]
+                ],
+                "step": 0
+              },
+              {
+                "kind": "polygon",
+                "points": [
+                  [
+                    0,
+                    0
+                  ],
+                  [
+                    0.4,
+                    0
+                  ],
+                  [
+                    0.4,
+                    0.4
+                  ],
+                  [
+                    0,
+                    0.4
+                  ]
+                ],
+                "step": 0,
+                "tone": "sub"
+              },
+              {
+                "kind": "label",
+                "at": [
+                  -0.55,
+                  1.5
+                ],
+                "text": "a",
+                "step": 1
+              },
+              {
+                "kind": "label",
+                "at": [
+                  2,
+                  -0.5
+                ],
+                "text": "b",
+                "step": 1
+              },
+              {
+                "kind": "segment",
+                "from": [
+                  4,
+                  0
+                ],
+                "to": [
+                  0,
+                  3
+                ],
+                "step": 2
+              },
+              {
+                "kind": "label",
+                "at": [
+                  2.45,
+                  1.95
+                ],
+                "text": "c",
+                "step": 2
+              }
+            ],
+            "cues": [
+              "Its two shorter sides are called the legs",
+              "Its two shorter sides are called the legs",
+              "the longest side is the hypotenuse"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "at": "The square on the hypotenuse equals the sum of the squares on the legs.",
+      "composition": {
+        "version": "compose-v2",
+        "region": "full",
+        "font": "inter",
+        "items": [
+          {
+            "id": "law",
+            "type": "equation",
+            "box": [
+              0,
+              0.12,
+              1,
+              0.34
+            ],
+            "tex": "a^2 + b^2 = c^2"
+          },
+          {
+            "id": "words",
+            "type": "kinetic",
+            "box": [
+              0,
+              0.52,
+              1,
+              0.4
+            ],
+            "text": "The square on the hypotenuse equals the sum of the squares on the legs.",
+            "emphasis": [
+              "hypotenuse"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "at": "Take a triangle with legs 3 and 4.",
+      "composition": {
+        "version": "compose-v2",
+        "region": "full",
+        "font": "inter",
+        "items": [
+          {
+            "id": "sides",
+            "type": "plot",
+            "box": [
+              0,
+              0.02,
+              1,
+              0.8
+            ],
+            "x": [
+              -1,
+              5
+            ],
+            "y": [
+              -1,
+              4
+            ],
+            "equal": true,
+            "axes": false,
+            "shapes": [
+              {
+                "kind": "polygon",
+                "points": [
+                  [
+                    0,
+                    0
+                  ],
+                  [
+                    4,
+                    0
+                  ],
+                  [
+                    0,
+                    3
+                  ]
+                ],
+                "step": 0
+              },
+              {
+                "kind": "polygon",
+                "points": [
+                  [
+                    0,
+                    0
+                  ],
+                  [
+                    0.4,
+                    0
+                  ],
+                  [
+                    0.4,
+                    0.4
+                  ],
+                  [
+                    0,
+                    0.4
+                  ]
+                ],
+                "step": 0,
+                "tone": "sub"
+              },
+              {
+                "kind": "label",
+                "at": [
+                  -0.55,
+                  1.5
+                ],
+                "text": "3",
+                "step": 0
+              },
+              {
+                "kind": "label",
+                "at": [
+                  2,
+                  -0.5
+                ],
+                "text": "4",
+                "step": 0
+              },
+              {
+                "kind": "label",
+                "at": [
+                  2.45,
+                  1.95
+                ],
+                "text": "?",
+                "step": 0
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "at": "Then 3 squared plus 4 squared is 9 plus 16, which is 25.",
+      "composition": {
+        "version": "compose-v2",
+        "region": "full",
+        "font": "inter",
+        "items": [
+          {
+            "id": "sum",
+            "type": "equation",
+            "box": [
+              0,
+              0.08,
+              1,
+              0.3
+            ],
+            "tex": "3^2 + 4^2 = 9 + 16 = 25",
+            "check": "arithmetic",
+            "cue": "Then 3 squared plus 4 squared"
+          },
+          {
+            "id": "root",
+            "type": "equation",
+            "box": [
+              0,
+              0.46,
+              1,
+              0.3
+            ],
+            "tex": "c = \\sqrt{25} = 5",
+            "cue": "So the hypotenuse is the square root of 25"
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -5,6 +5,8 @@
 import {layoutComposition,TEXT,LINE,GAP,FONT,WEIGHT,REVEAL_SECONDS,COUNT_SECONDS,cssFont,formatNumber,itemStart} from '../core/composition.js';
 import {clamp,smooth} from '../core/motion.js';
 import {roundedBox} from './primitives.js';
+import {drawDiagram} from './draw-diagrams.js';
+const DIAGRAM_TYPES=new Set(['equation','plot','graph','array']);
 const cache=new WeakMap();
 const layoutOf=c=>{let l=cache.get(c);if(!l){l=layoutComposition(c);cache.set(c,l);}return l;};
 const v1Font=size=>WEIGHT+' '+size+'px '+FONT;
@@ -48,6 +50,7 @@ export function drawComposition(ctx,composition,p,frames=360,phrases=null){
   else if(x.type==='shape'){ctx.fillStyle=t.mark;ctx.strokeStyle=t.mark;ctx.lineWidth=5;
    if(x.shape==='rect')roundedBox(ctx,b.x,b.y,b.w,b.h,12,t.mark+'cc',t.mark);
    else{ctx.beginPath();ctx.ellipse(b.x+b.w/2,b.y+b.h/2,b.w/2-3,b.h/2-3,0,0,Math.PI*2);if(x.shape==='circle'){ctx.globalAlpha*=.85;ctx.fill();}else ctx.stroke();}}
+  else if(DIAGRAM_TYPES.has(x.type))drawDiagram(ctx,x,t,p,start,rv,phrases,x.font);
   else if(x.type==='arrow'){const [s,e]=x.line,k=x.reveal==='none'?1:a;head(ctx,s,[s[0]+(e[0]-s[0])*k,s[1]+(e[1]-s[1])*k],t.mark,5);}
   else{
    const pad=TEXT[{card:'heading',quote:'pull',bullets:'bullet',counter:'number',kinetic:'kinetic'}[x.type]??x.type].pad,r=x.type==='label'?Math.min(b.h/2,24):14,al=x.align??(x.type==='card'?'left':'center');

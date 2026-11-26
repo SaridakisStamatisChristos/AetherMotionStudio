@@ -13,9 +13,18 @@ import {applySet,topicSetFor,fitPiecesFor} from './sets.js';
 import {singleShots} from '../core/singles.js';
 import {reelsProject} from '../core/reels.js';
 import {planAids,holdComposition} from './aids.js';
+import {placeVisuals,mergeShotsForVisuals} from './visuals.js';
+import {compileProjectMath} from './math-compile.js';
 import {dialogueSpeech,stageDialogueAssets,dialogueShotFields,pointAtSetPiece,DIALOGUE_CAMERAS} from './dialogue.js';
 export function foundryShortlist(query,registry){return searchRegistry({...query,limit:300},registry).filter(x=>x.kind!=='legacy').slice(0,Math.min(query.limit??8,20)).map(({id,kind,revision,category,pack,quality,backends,lods,motion})=>({id,kind,revision,category,pack,quality,backends,lods,motion}));}
 export const PROMPT_VERSION='director-ir-v1.1';
+// DUAL-03: what the maths in a planned project claims and what was checked (equations with check 'arithmetic' are
+// verified or the project is rejected; others are reported as not checked; algorithm steps are verified by name).
+export function mathsReport(project){const rows=[];for(const s of project.shots)for(const x of s.composition?.items??[]){
+ if(x.type==='equation')rows.push({shot:s.id,item:x.id,kind:'equation',tex:x.tex,status:x.check==='arithmetic'?'verified-arithmetic':'not-checked'});
+ if((x.type==='graph'||x.type==='array')&&x.algorithm)rows.push({shot:s.id,item:x.id,kind:x.type,status:'verified-'+x.algorithm.name});
+ if(x.type==='plot')rows.push({shot:s.id,item:x.id,kind:'plot',status:'ranges-checked'});}
+ return {version:1,items:rows,summary:{items:rows.length,verified:rows.filter(r=>r.status.startsWith('verified')).length,notChecked:rows.filter(r=>r.status==='not-checked').length}};}
 const profile={bloom:.6,atmosphere:.5,contactShadow:.65,surfaceDetail:.65,depthOfField:.25,motionBlur:.24,grain:.12,grade:.55,particles:.65,typography:1};
 const words=s=>s.trim().split(/\s+/).length;
 export function allocateFrames(shots,total){
@@ -28,6 +37,8 @@ export function allocateFrames(shots,total){
 }
 export function compile(q,ir,selection){
  validateIR(ir,q,selection);
+ // DUAL-03: authored visuals define their shots (sentences they name are merged into one shot).
+ ir=mergeShotsForVisuals(q,ir);
  // GEN-12: the film's topic set; dialogue set pieces are re-picked from its category (after the IR check, on the IR).
  // GEN-15 step 2: dialogue films default to topic-v2 (dressed sets, word-matched pieces); topic-v1 stays selectable.
  // Unit 5 (OPEN-2): dialogue films default to topic-v3 (topic-v2 plus far backdrops that fit the place).
@@ -67,10 +78,12 @@ export function compile(q,ir,selection){
  if((q.titles??(q.dialogue||q.content?'none':'shots'))==='none')out={...out,shots:out.shots.map(s=>s.template==='cinematic-graph'?{...s,titles:'none'}:s)};
  // DUAL-01 opt-in content modes: one compose-v1 composition per planned shot from its own text (src/director/aids.js);
  // it replaces the IR lower-third overlay. Pieces of a shot split into singles keep the same aids, held steady.
- if(q.content){const {compositions}=planAids(q,ir);out={...out,shots:out.shots.map(s=>{if(s.template!=='cinematic-graph')return s;const n=Number(/^shot-(\d+)/.exec(s.id)?.[1]),c=compositions[n-1];if(!c)throw Error('aids: no composition for '+s.id);const {overlays,...rest}=s;
+ if(q.content){const planned=planAids(q,ir),authored=placeVisuals(q,ir),compositions=planned.compositions.map((c,k)=>authored.get(k)?.composition??c);out={...out,shots:out.shots.map(s=>{if(s.template!=='cinematic-graph')return s;const n=Number(/^shot-(\d+)/.exec(s.id)?.[1]),c=compositions[n-1];if(!c)throw Error('aids: no composition for '+s.id);const {overlays,...rest}=s;
   // DUAL-02 typography-v1: the composition is the picture; no 3D asset, effect or framed subject.
   if(q.content==='typography-v1'){rest.assets=[];rest.effects=[];rest.cameraRig={preset:s.cameraRig?.preset??'establishing'};}
   return {...rest,composition:s.titleHold?holdComposition(c):c};})};}
+ // DUAL-03: equations are compiled to outlines here (Node, MathJax) before the final validation.
+ out=compileProjectMath(out);
  if(out!==project)validateProject(out);
  return out;
 }
@@ -137,7 +150,7 @@ export async function direct(input,{adapter=null,imported=null,maxRepairs=1,foun
  const stages={brief:q,treatment:{version:1,title:ir.title,text:ir.treatment,mode:adapter?'model-assisted':imported!==null?'imported':plan.kind},script:{version:1,phrases:ir.shots.map(s=>s.narration),...(q.dialogue?{speakers:ir.shots.map(s=>s.speakers)}:{})},storyboard:{version:1,shots:ir.shots.map(({heading,subheading,camera,environment,assets,overlay})=>({heading,subheading,camera,environment,assets,...(overlay?{overlay}:{})}))},shotPlan:{version:1,shots:project.shots.map(s=>({id:s.id,durationFrames:s.durationFrames,assets:s.assets.map(a=>a.asset)}))}};
  const used=new Set(plan.selection.flat().map(a=>a.id)),sum=k=>attempts.every(a=>Number.isSafeInteger(a.usage[k]))?attempts.reduce((n,a)=>n+a.usage[k],0):null;
  const manifest={version:1,status:'planned',provider:adapter?.name??(imported!==null?'import':'offline'),model:adapter?.model??null,mode:stages.treatment.mode,seed:q.seed,requestDigest:digest(q),promptVersion:q.promptVersion??PROMPT_VERSION,promptDigest:digest(initialPrompt),catalogDigest:digest(cat),catalogObjects:cat.objects.length,retrievedUniqueObjects:used.size,retrievedPerShot:plan.selection.map(s=>s.length),catalogReduction:1-used.size/cat.objects.length,attempts,validationFailures:attempts.filter(a=>a.status==='invalid').length,repairs:attempts.length-1,tokens:{input:sum('input'),output:sum('output'),source:adapter?'provider-reported-or-unavailable':'not-applicable'},providerCost:null,targetFrames:q.seconds*FPS,plannedFrames:project.shots.some(s=>s.durationFrames===null)?null:project.shots.reduce((n,s)=>n+s.durationFrames,0),durationErrorFrames:null,projectDigest:digest(project),planningMs:performance.now()-started};
- if(q.content){const aids=planAids(q,ir);stages.aids={version:1,mode:q.content,kinds:aids.kinds,diagnostics:aids.diagnostics};manifest.aids={mode:q.content,shots:aids.kinds.length,kinds:aids.kinds,diagnostics:aids.diagnostics.length};}
+ if(q.content){const vir=mergeShotsForVisuals(q,ir),aids=planAids(q,vir),own=placeVisuals(q,vir),kinds=aids.kinds.map((k,i)=>own.has(i)?'authored':k);stages.aids={version:1,mode:q.content,kinds,diagnostics:aids.diagnostics.filter(d=>!own.has(Number(d.shot.slice(5))-1))};stages.maths=mathsReport(project);manifest.aids={mode:q.content,shots:kinds.length,kinds,diagnostics:stages.aids.diagnostics.length};manifest.maths=stages.maths.summary;}
  const continuity=continuityLedger(project);if(continuity){stages.continuity=continuity;manifest.identityLibraryDigest=digest(project.identityLibrary);manifest.continuityDigest=digest(continuity);}
  return {request:q,ir,stages,project,manifest,prompt:initialPrompt,catalogSelection:plan.selection};
 }
