@@ -5,7 +5,7 @@ ROOT=Path(__file__).resolve().parents[1]
 def run(args,**kw):
     subprocess.run([str(a) for a in args],cwd=ROOT,check=True,**kw)
 def verify_models():
-    lock=json.loads((ROOT/'models-lock.json').read_text())
+    lock=json.loads((ROOT/'models-lock.json').read_text(encoding='utf-8'))
     folder=Path(os.environ.get('KOKORO_MODEL_DIR',ROOT/'models'/'kokoro'))
     for name,expected in lock['files'].items():
         with (folder/name).open('rb') as f:actual=hashlib.file_digest(f,'sha256').hexdigest()

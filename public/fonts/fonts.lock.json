@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "note": "Bundled open fonts (owner-approved 2026-11-26: 'Bundle open fonts', all four families). Each file is the unmodified upstream TTF; SHA-256 checked by scripts/font-metrics.mjs. Licence: SIL Open Font License 1.1 (OFL.txt beside each family).",
+  "fonts": {
+    "inter": {
+      "family": "Inter",
+      "css": "AM Inter",
+      "licence": "OFL-1.1",
+      "source": "https://github.com/rsms/inter/releases/tag/v4.1 (Inter-4.1.zip, extras/ttf)",
+      "files": {
+        "400": {"path": "inter/Inter-Regular.ttf", "sha256": "40d692fce188e4471e2b3cba937be967878f631ad3ebbbdcd587687c7ebe0c82"},
+        "700": {"path": "inter/Inter-Bold.ttf", "sha256": "288316099b1e0a47a4716d159098005eef7c0066921f34e3200393dbdb01947f"}
+      }
+    },
+    "merriweather": {
+      "family": "Merriweather",
+      "css": "AM Merriweather",
+      "licence": "OFL-1.1",
+      "source": "https://github.com/SorkinType/Merriweather at commit 4481226b336843648b5b2ee64f75737f262ded15 (fonts/ttf)",
+      "files": {
+        "400": {"path": "merriweather/Merriweather-Regular.ttf", "sha256": "10ec10d1f7a9b5f0eb1a964e06348ce20587d478c661ea36728cce7b57f3de1c"},
+        "700": {"path": "merriweather/Merriweather-Bold.ttf", "sha256": "a2fa4f57946c62036f79d9e8b4b642515001d65af1e6a98afc0b94bf669e3f11"}
+      }
+    },
+    "jetbrains-mono": {
+      "family": "JetBrains Mono",
+      "css": "AM JetBrains Mono",
+      "licence": "OFL-1.1",
+      "source": "https://github.com/JetBrains/JetBrainsMono/releases/tag/v2.304 (JetBrainsMono-2.304.zip, fonts/ttf)",
+      "files": {
+        "400": {"path": "jetbrains-mono/JetBrainsMono-Regular.ttf", "sha256": "a0bf60ef0f83c5ed4d7a75d45838548b1f6873372dfac88f71804491898d138f"},
+        "700": {"path": "jetbrains-mono/JetBrainsMono-Bold.ttf", "sha256": "5590990c82e097397517f275f430af4546e1c45cff408bde4255dad142479dcb"}
+      }
+    },
+    "noto-sans": {
+      "family": "Noto Sans",
+      "css": "AM Noto Sans",
+      "licence": "OFL-1.1",
+      "source": "https://github.com/notofonts/latin-greek-cyrillic/releases/tag/NotoSans-v2.015 (NotoSans-v2.015.zip, NotoSans/unhinted/ttf)",
+      "files": {
+        "400": {"path": "noto-sans/NotoSans-Regular.ttf", "sha256": "f3961a9cde016d41a4879aecda1474d3a36d6bf54fa0e4643de029cc2248b0e8"},
+        "700": {"path": "noto-sans/NotoSans-Bold.ttf", "sha256": "87cb2d84472a7d66da659ee47b6cdb9552326e8c128245231f191b6ac72529d9"}
+      }
+    }
+  }
+}

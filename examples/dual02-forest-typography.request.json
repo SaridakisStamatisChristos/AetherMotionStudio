@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "id": "dual02-forest-typography",
+  "topic": "Why forests matter for clean air",
+  "seconds": 45,
+  "audience": "curious beginners",
+  "tone": "friendly",
+  "style": "cinematic explainer",
+  "language": "en-us",
+  "voice": "af_bella",
+  "backend": "cpu",
+  "profile": "polished",
+  "seed": 1,
+  "content": "typography-v1",
+  "font": "merriweather",
+  "theme": "paper-v1",
+  "script": "Forests cover about 31 percent of the land on Earth. There are roughly 3 trillion trees on the planet. Trees take in carbon dioxide through tiny pores in their leaves. Sunlight turns that carbon into sugar and wood. Much of it stays in trunks, roots and forest soil, sometimes for centuries. A single large tree can release 100 kilograms of oxygen in a year. A whole forest works like a giant living filter. So protecting forests means cleaner air for everyone."
+}

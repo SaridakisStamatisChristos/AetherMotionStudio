@@ -4,13 +4,13 @@ from pathlib import Path
 import numpy as np
 import imageio_ffmpeg
 root=Path(sys.argv[1]);protocol_path=Path('benchmarks/foundry-final-v1.json')
-protocol=json.loads(protocol_path.read_text())
+protocol=json.loads(protocol_path.read_text(encoding='utf-8'))
 def sha(p):
     h=hashlib.sha256()
     with p.open('rb') as f:
         for chunk in iter(lambda:f.read(1024*1024),b''): h.update(chunk)
     return h.hexdigest()
-def load(p,n):return json.loads((p/n).read_text())
+def load(p,n):return json.loads((p/n).read_text(encoding='utf-8'))
 def norm(s,optimized=False,asset_quality=False):
     s=json.loads(json.dumps(s));s.pop('id')
     for x in s['shots']:

@@ -4,7 +4,7 @@ from pathlib import Path
 import numpy as np
 import imageio_ffmpeg
 root=Path(sys.argv[1])
-def load(p,name):return json.loads((p/name).read_text())
+def load(p,name):return json.loads((p/name).read_text(encoding='utf-8'))
 def frame(p,t):
  r=subprocess.run([imageio_ffmpeg.get_ffmpeg_exe(),'-v','error','-ss',str(t),'-i',str(p/'film.mp4'),'-frames:v','1','-vf','scale=180:320','-pix_fmt','rgb24','-f','rawvideo','-'],check=True,capture_output=True)
  return np.frombuffer(r.stdout,dtype=np.uint8).astype(float).reshape(320,180,3)

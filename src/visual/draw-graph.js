@@ -57,7 +57,7 @@ function world(ctx,p,W,H,s,three,talk=null,body=null){
  const vignette=ctx.createRadialGradient(360,640,270,360,640,800);vignette.addColorStop(0,'transparent');vignette.addColorStop(1,'rgba(2,6,15,.57)');ctx.fillStyle=vignette;ctx.fillRect(0,0,720,1280);
  ctx.restore();
 }
-export function drawGraph(ctx,p,W,H,s,three,frames=360,talk=null,body=null){
+export function drawGraph(ctx,p,W,H,s,three,frames=360,talk=null,body=null,phrases=null){
  const state=evaluateGraph(s,p),env=state.environment,f=state.fidelity;
  if(!f)world(ctx,p,W,H,s,three,talk,body);
  else{
@@ -79,7 +79,7 @@ export function drawGraph(ctx,p,W,H,s,three,frames=360,talk=null,body=null){
  }
  drawOverlays(ctx,s.overlays,p);
  // DUAL-01 opt-in compose-v1 visual aids on the same shared 2D path (absent = nothing drawn).
- if(s.composition)drawComposition(ctx,s.composition,p,frames);
+ if(s.composition)drawComposition(ctx,s.composition,p,frames,phrases);
  if(s.delivery!==REELS.version){ctx.fillStyle=env.accent+'35';ctx.fillRect(54,1212,612,3);ctx.fillStyle=env.accent;ctx.fillRect(54,1212,612*p,3);}
  ctx.restore();
 }

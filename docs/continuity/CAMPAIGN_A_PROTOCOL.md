@@ -16,6 +16,9 @@ Version **v1**, fixed at DUAL-00 (2026-11-26). Changes need a new version (`v2`,
 5. Inspection: agent stills from named frames on both backends. Owner review is recorded separately, never assumed.
 6. GL route: Three.js films state `AETHER_GL` and the WebGL renderer string (vulkan → RTX 4060 on the owner PC; swangle → SwiftShader).
 
+## Fonts (from DUAL-02)
+`node scripts/font-metrics.mjs --check` must pass, and the `public/fonts/fonts.lock.json` hashes must match (both tested). Typography films state their font and theme.
+
 ## Final matrix (DUAL-09), avoiding a Cartesian product
 At least one matched pair for each content mode: dialogue, narrator-only, mixed, typography, maths/algorithm, charts/diagrams, image-based. Across that set: all three aspect ratios appear at least once, 30, 60 and 90 s lengths appear at least once, and one project near 300 s. Plus a selective set of accepted earlier examples. Full historical CI matrix only on the owner's word.
 

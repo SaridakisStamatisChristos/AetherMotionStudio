@@ -1,6 +1,6 @@
 """Stdlib-only matched-output parity: project, timeline, exact budget, shared files and inventory (LOCAL-02)."""
 import hashlib,json
-def load(p,n):return json.loads((p/n).read_text())
+def load(p,n):return json.loads((p/n).read_text(encoding='utf-8'))
 def sha(p):
     with p.open('rb') as f:return hashlib.file_digest(f,'sha256').hexdigest()
 def normalized(p,backend):
