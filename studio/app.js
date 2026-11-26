@@ -6,6 +6,7 @@ import {editProject,applyShotEdit,reorderShot,setBackend,setProfile,setStaging,a
 // STUDIO-01: the Director form maps to a request in src/studio/director-form.js (casts, Reels, script help; tested).
 import {STUDIO_CASTS,STUDIO_DEFAULTS,directorRequest,scriptHelp,scriptPrompt,cleanScript} from '/src/studio/director-form.js';
 import {finishedSummary} from '/src/studio/finished.js';
+import {jobProgress,formatSeconds} from '/src/studio/progress.js';
 const languageOf=voice=>voice.startsWith('b')?'en-gb':'en-us';
 const $=id=>document.getElementById(id),state={project:null,revision:null,savedId:null,dirty:true,shot:0,frame:0,playing:false,preview:null,prepared:null,three:null,job:null,catalog:null,lastFrame:0,timer:null,drawEpoch:0};
 function status(text,error=false){$('status').textContent=text;$('status').className=error?'error':'';}
@@ -82,6 +83,7 @@ async function showJob(id){state.job=id;const j=await api('/api/jobs/'+id);$('jo
  for(const file of j.files){const a=document.createElement('a');a.href=base+file+'?download=1';a.textContent=file;$('downloads').append(a);}
  // Owner: "add the finished film with download button": a finished job shows the film large, a Download button, the
  // captions and one plain line (length, size, checks); the log and the file list fold away below it.
+ showProgress(j);
  const v=$('film');
  if(j.status==='succeeded'&&j.files.includes('film.mp4')){
   if(v.getAttribute('src')!==base+'film.mp4')v.src=base+'film.mp4';
@@ -99,6 +101,16 @@ async function showJob(id){state.job=id;const j=await api('/api/jobs/'+id);$('jo
  }
  if(j.status!=='running'&&j.files.includes('quality-report.json')){const q=await api(base+'quality-report.json');$('report').textContent=JSON.stringify({status:q.status,errors:q.errors,warnings:q.warnings,issues:q.issues,repair:q.repair,cost:q.cost,humanReview:q.humanReview},null,2);}
 }
+// Owner choice "render progress bar": one bar for the whole job, read from the job log (src/studio/progress.js). It
+// shows while a job runs and when it stops on an error; a finished film shows the "Your film is ready" panel instead.
+function showProgress(j){const p=jobProgress(j),box=$('progress'),bar=$('progressBar');
+ if(!p||j.status==='succeeded'){box.hidden=true;return;}
+ box.hidden=false;box.classList.toggle('failed',p.step==='failed');$('progressLabel').textContent=p.label;
+ // speech has no frame count: an animated "working" bar there, never a made-up share
+ if(['starting','speech'].includes(p.step)&&!p.measured)bar.removeAttribute('value');else bar.value=p.percent;
+ $('progressPct').textContent=p.measured||p.percent>0?p.percent+'%':'';
+ const t=Date.parse(j.createdAt),so=p.active&&Number.isFinite(t)?formatSeconds((Date.now()-t)/1000)+' so far':'';
+ $('progressDetail').textContent=[p.detail,so].filter(Boolean).join(' · ');}
 let polling=false;
 async function poll(){if(polling)return;polling=true;try{const x=await api('/api/jobs');fill($('jobs'),[['','Session jobs'],...x.jobs.map(j=>[j.id,j.projectId+' · '+j.mode+' · '+j.status])]);if(state.job){$('jobs').value=state.job;await showJob(state.job);}for(const id of ['prepare','render'])$(id).disabled=!!x.active;}finally{polling=false;}}
 $('save').onclick=action(save);$('export').onclick=action(downloadJSON);$('play').onclick=action(play);$('scrub').oninput=()=>seek(Number($('scrub').value));$('search').oninput=renderAssets;$('category').onchange=renderAssets;
