@@ -11,8 +11,8 @@ Status words: PLANNED · ACTIVE · IMPLEMENTED · TESTED · RENDERED · OWNER-RE
 
 | ID | Milestone | Status | Branch / PR | Evidence |
 |---|---|---|---|---|
-| DUAL-00 | Baseline and capability audit | **NEXT** | — | — |
-| DUAL-01 | Character-free content and shared composition | PLANNED | — | — |
+| DUAL-00 | Baseline and capability audit | **TESTED + RENDERED** (docs only; PR open, not merged) | `chore/dual-00-audit` | [CAMPAIGN_A_AUDIT.md](../CAMPAIGN_A_AUDIT.md), [protocol v1](CAMPAIGN_A_PROTOCOL.md), "DUAL-00 baseline" below |
+| DUAL-01 | Character-free content and shared composition | **NEXT** | — | — |
 | DUAL-02 | Typography and motion graphics | PLANNED | — | — |
 | DUAL-03 | Mathematics, geometry and algorithm visualization | PLANNED | — | — |
 | DUAL-04 | Charts, diagrams and data storytelling | PLANNED | — | — |
@@ -40,6 +40,19 @@ Status words: PLANNED · ACTIVE · IMPLEMENTED · TESTED · RENDERED · OWNER-RE
 5. Fix the campaign fixture ID scheme and the qualification protocol: new IDs prefixed `dual-`; a new versioned protocol file; frozen AF09 evidence untouched.
 6. Write the audit as docs/CAMPAIGN_A_AUDIT.md (the scope map), update this table, then run FOD CHECKPOINT. DUAL-00 changes no product code.
 
+## DUAL-00 baseline (recorded 2026-11-26)
+- **Start commit:** main d3982f5 (= 6c71875 product code + PR #49 docs). Worktree clean. Open PRs: only the old drafts #2–#12 (OPEN-6). Tags: `v0.4-render-baseline` only.
+- **Environment:** Windows 11 Home 10.0.26300; Node 22.17.0, npm 10.9.2; Python 3.11.9 (.venv); ffmpeg 7.1 (imageio-ffmpeg), ffprobe n7.1 (Remotion compositor); RTX 4060 Laptop 8 GB, driver 566.07.
+- **WebGL identity** (Remotion openBrowser, UNMASKED_RENDERER): swangle → `ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero)), SwiftShader driver)` (software); vulkan → `ANGLE (NVIDIA, Vulkan 1.3.289 (NVIDIA GeForce RTX 4060 Laptop GPU))`.
+- **Tests:** `npm test` 412 tests, 411 pass, 0 fail, 1 skip ("reject symlinked import source": symlink creation not permitted for this Windows account). Python unittest 59 OK.
+- **Digests:** graph 3d33fbaee198acad, geometry 14dec244d171dc56, detail2 e3f80439a292f21a, director 7 requests 2cbf9916e65da935 (unchanged canon).
+- **Baseline film `dual00-baseline-r1`:** `node scripts/produce.mjs --request examples/gen12-forest-script.request.json --backend both --id dual00-baseline-r1` (the request names no sets, look or titles, so the Director defaults apply), source d3982f5, sourceDirty false, vulkan, concurrency 8.
+  - Planned: 13 shots, sets topic-v3 (`forest-set-2` far backdrop), look crafted-v2, titles none on every shot, speech fit speech-v1 (1800 → 1800 frames), 0 speaker names in captions.srt. This is the first render of topic-v3 + titles none together and the first from main 6c71875's product code.
+  - Gates: both backends PASS (speech allocation, sidecars, 1800-frame native MP4, full decode); matched comparison PASS, shared hashes exact; CHECKS 0 warnings on both (motion-speed-v1, visibility-v2, crowding-v1, silence-v1; talk 0.79); QUALITY pass-with-findings, errors 0, warnings 0; frame_glitch clean on both; −16.0 LUFS on both; pace 0.92 not kept, maxCps 18.
+  - Films: CPU dbf8eb94ac23ebd6… (render 136.5 s), Three c7cc7cace5c69327… (render 55.6 s, gl vulkan). Whole run 232 s; RTX peak 56 % util, 1445 MiB used.
+  - Agent stills (frames 200, 700, 1200, 1700, both backends): clean top, forest backdrop, captions without names, characters whole in frame, same content on both backends. **No owner review.**
+- **Audit result (short):** the shared 2D overlay path already exists on both backends and is the base for DUAL-01…05. Main gaps: shots need ≥ 1 asset; the narrator mode still adds a `retro-robot`; editorial text squeezes instead of wrapping; maths/charts are minimal overlays; no 2D images; output is fixed 9:16 (720×1280 logical space); no Studio audio-mix controls; no batch queue.
+
 ## Decisions the owner must make (ask when the milestone reaches them, not before)
 - DUAL-02: local font files (identity and licence) if the current Arial/system fonts are not enough.
 - DUAL-03: a local math typesetter is a **new dependency** and needs approval; otherwise use a built-in declarative equation layout.
@@ -57,3 +70,4 @@ Status words: PLANNED · ACTIVE · IMPLEMENTED · TESTED · RENDERED · OWNER-RE
 
 ## Ledger (append one line per verified transition)
 - 2026-11-26: Campaign A authorized by the owner; directive stored; DUAL-00 next. No product code changed.
+- 2026-11-26: DUAL-00 tested and rendered at d3982f5 (412/411/0/1 JS, 59 Py, digests unchanged, dual00-baseline-r1 all gates PASS); audit and protocol v1 written on `chore/dual-00-audit`. DUAL-01 next. No product code changed.
