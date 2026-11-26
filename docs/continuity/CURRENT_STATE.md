@@ -1,5 +1,5 @@
 # Current state — AetherMotion Studio
-Updated 2026-11-26 (main 0e0e0f1; Studio UI refinement, the last step of the plan, IMPLEMENTED + TESTED on feature/studio-ui, PR pending). Authoritative rolling checkpoint for new coding sessions; update at verified transitions. This file references the historical ledger rather than replacing source or evidence. Baseline product merge: `04e3491bb21b4ebc3d54755a2a211b1a7affb3fa` (PR #13 merged into main). The handoff documentation commit may be newer; inspect git HEAD. No release publication implied.
+Updated 2026-11-26 (main 4487805: the owner's plan is complete. Fix A #38, GEN-15 step 2 #39 and the Studio UI #40 are merged; main CI 45809562848 passed. No unit is active). Authoritative rolling checkpoint for new coding sessions; update at verified transitions. This file references the historical ledger rather than replacing source or evidence. Baseline product merge: `04e3491bb21b4ebc3d54755a2a211b1a7affb3fa` (PR #13 merged into main). The handoff documentation commit may be newer; inspect git HEAD. No release publication implied.
 
 ## Current status and authority
 - v1.0 core pipeline and Asset Foundry AF01–AF09 implementation merged; do not reimplement.
@@ -19,7 +19,7 @@ Updated 2026-11-26 (main 0e0e0f1; Studio UI refinement, the last step of the pla
 6. Source and approved decisions authoritative. This summary cannot discard binding facts; consult the source-specific contract when the task touches it. Keep state and handoff synchronized. No new native render runs on GitHub or release without authorization.
 
 ## Active unit
-**Studio UI refinement (the last step of the owner's plan): IMPLEMENTED + TESTED on `feature/studio-ui` (from main 0e0e0f1), not merged.** Owner's choice (of four offered): "Simple 'Make a film' view".
+**Studio UI refinement (the last step of the owner's plan): MERGED** (PR #40 → 4487805 on the owner's word "merge 40"; PR CI 45808824297, main CI 45809562848 passed). The owner made the first film through the Studio ("great for the first production through pipeline looks great"). Owner's choice (of four offered): "Simple 'Make a film' view".
 - Binding:
   - the Studio opens in the simple view: the Make-a-film form, the preview and the production result;
   - Advanced shows the full editor as before;
