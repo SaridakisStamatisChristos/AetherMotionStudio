@@ -95,7 +95,8 @@ test('compile: speech from the dialogue, staged speakers with TALK-01..03 opt-in
    assert.deepEqual(p.speech.shotSpeakers[s.id],x.ir.shots[i].speakers);assert.equal(s.durationFrames,null);
    assert.deepEqual(s.speakerAssets,{eng:'eng',robo:'robo',sci:'sci'});assert.deepEqual(s.dialogue,{listen:true,turn:.8,cheat:1,camera:'follow'}); // GEN-03: camera follows the speaker
    // GEN-11: Director dialogue adds the idle weight shift
-   assert.deepEqual(s.bodyLanguage,{beats:true,nods:true,blinks:true,sway:true,weight:true});assert.equal(s.lighting,'parity-v1');
+   // GEN-15 step 2 follow-up: dialogue gestures alternate arms (owner: "the characters move their left hand only").
+   assert.deepEqual(s.bodyLanguage,{beats:true,nods:true,blinks:true,sway:true,weight:true,alternateArms:true});assert.equal(s.lighting,'parity-v1');
    assert.deepEqual(s.assets.map(a=>a.id),['eng','robo','sci','object-1']);
    // GEN-02: shared talk-v1 line (tighter for 9:16), framed as a group with the set piece beside it.
    assert.deepEqual(s.assets.slice(0,3).map(a=>[a.tracks.x[0][1],a.tracks.z[0][1]]),DIALOGUE_STAGE.line[3]);

@@ -88,3 +88,27 @@ test('fresh topics: every quality check stays clean with dressed sets and the ne
   assert.deepEqual(motionCheck(p,t).warnings,[],topic);assert.deepEqual(crowdingCheck(p,t).warnings,[],topic);assert.deepEqual(visibility2Check(p,t).warnings,[],topic);
  }
 });
+test('alternateArms (owner: "the characters move their left hand only"): beats alternate right/left across the film',async()=>{
+ const {bodyPlan,bodyAt,applyBody,validateBodyLanguage}=await import('../src/core/body.js');
+ const p=(await direct(read('fixa-sky-script.request'))).project;
+ assert.ok(p.shots.filter(s=>s.bodyLanguage).every(s=>s.bodyLanguage.alternateArms===true),'Director dialogue default');
+ // Measured-style timeline: every line ~3 s with a clear loudness peak, so every line gets a beat.
+ const t={version:1,fps:30,sampleRate:48000,durationFrames:0,shots:[],speechEnvelope:{values:[]}};let f=0;
+ for(const s of p.shots){const segs=s.narration.map((_,j)=>{const a=(f+10+j*100)*1600;return {startSample:a,endSample:a+90*1600,speaker:p.speech.shotSpeakers[s.id]?.[j]??Object.keys(s.speakerAssets??{})[0]};});
+  const n=10+s.narration.length*100;t.shots.push({id:s.id,startFrame:f,endFrame:f+n,segments:segs});f+=n;}
+ t.durationFrames=f;t.speechEnvelope.values=Array.from({length:f},(_,k)=>k%100===50?900:100);
+ const beats=p.shots.flatMap((s,i)=>s.bodyLanguage?bodyPlan(p,t,i).beats:[]);
+ assert.ok(beats.length>=6,beats.length);
+ for(const id of new Set(beats.map(b=>b.id))){const arms=beats.filter(b=>b.id===id).map(b=>b.arm);assert.ok(arms.every((a,k)=>a===(k%2?'left':'right')),id+' '+arms);}
+ // A left beat drives leftArmPitch only; a right beat armPitch only.
+ const i=p.shots.findIndex((s,k)=>s.bodyLanguage&&bodyPlan(p,t,k).beats.some(b=>b.arm==='left')),b=bodyPlan(p,t,i).beats.find(x=>x.arm==='left');
+ const o=bodyAt(p,t,b.frame+7,i)[b.id];assert.ok(o.beatLeft<0&&o.beat===undefined,JSON.stringify(o));
+ const st=applyBody({assets:[{id:b.id,pose:{}}]},{[b.id]:o});assert.ok(st.assets[0].pose.leftArmPitch<0&&st.assets[0].pose.armPitch===undefined);
+ // Without the option: the historical right arm only (accepted films unchanged).
+ const old=structuredClone(p);for(const s of old.shots)if(s.bodyLanguage)delete s.bodyLanguage.alternateArms;
+ const t2=structuredClone(t);const ob=old.shots.flatMap((s,k)=>s.bodyLanguage?bodyPlan(old,t2,k).beats:[]);assert.ok(ob.length===beats.length&&ob.every(x=>x.arm===undefined));
+ // Contract: boolean only; it does not count as an 'enable' key.
+ const bad=structuredClone(p);bad.shots[0].bodyLanguage.alternateArms='yes';assert.throws(()=>validateBodyLanguage(bad),/boolean/);
+ const only=structuredClone(p);only.shots[0].bodyLanguage={alternateArms:true};assert.throws(()=>validateBodyLanguage(only),/enable at least one/);
+ validateProject(p);
+});

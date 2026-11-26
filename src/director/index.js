@@ -47,7 +47,8 @@ export function compile(q,ir,selection){
  let out=q.staging?stageProject(project,q.staging):project;
  // GEN-11: dialogue films add the idle weight shift to every shot with body language (staging itself is unchanged,
  // so authored TALK showcases keep their accepted output).
- if(q.dialogue)out={...out,shots:out.shots.map(s=>s.bodyLanguage?{...s,bodyLanguage:{...s.bodyLanguage,weight:true}}:s)};
+ // GEN-15 step 2 follow-up (owner: "the characters move their left hand only"): dialogue gestures alternate arms.
+ if(q.dialogue)out={...out,shots:out.shots.map(s=>s.bodyLanguage?{...s,bodyLanguage:{...s.bodyLanguage,weight:true,alternateArms:true}}:s)};
  // GEN-12: one topic-fitting location per film (request.sets; default topic-v1 for dialogue films, none otherwise).
  if(set)out=applySet(out,set).project;
  // GEN-15: the crafted look (request.look; default crafted-v1 for dialogue films, none otherwise). Drawing only.
