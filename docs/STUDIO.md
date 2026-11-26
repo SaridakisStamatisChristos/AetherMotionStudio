@@ -120,3 +120,20 @@ Owner: "implement 1-2-3 and 5" (2 = the Studio remembers the last settings).
 - No server, job or request contract change.
 - Browser check (agent, headless Chrome, fresh Studio from the branch): narrator, bm_george, 45 s, CPU, Reels on, names off, Advanced were set → reload → all restored, topic empty, status "Your last choices are back" → Reset choices → defaults → reload → defaults.
 - Tests: tests/studio-settings.test.js (6, with negatives).
+
+## Reels cover button (2026-11-26)
+Owner: "implement 1-2-3 and 5" (3 = Reels cover/export in the finished panel; this was OPEN-5, before only `node scripts/reels-export.mjs`).
+- The finished panel has **Make Reels cover**. It calls `POST /api/jobs/<id>/reels`, which runs `exportReels` (scripts/reels-export.mjs), the same code as the CLI:
+  - the default cover frame (GEN-09 `coverFrame`: the first close-up, else the first line, else the middle);
+  - `<job>/reels/cover.jpg` and `reels-report.json`, the CLI layout;
+  - the film is never changed.
+- The page shows the cover, **Download cover (JPG)** (`<project id>-reels-cover.jpg`) and the check in plain words (finished.js `reelsSummary`). Unknown warning codes are shown by code, never hidden.
+- Server rules:
+  - only a succeeded render job of this session; no request fields;
+  - one export per film at a time (409);
+  - an earlier export is returned unchanged (`created:false`) and never overwritten; a half export is an error;
+  - files are served under the flat names `reels-cover.jpg` and `reels-report.json`.
+  - The CLI still refuses an existing export.
+- ffmpeg runs without a shell and with fixed arguments (`ffmpegFrame`); tests inject a stand-in (`extract`, `createStudio({reelsExport})`).
+- Click test (agent, headless Chrome, fresh Studio from the branch, vulkan): job studio-5e27ef2535fc0429316e (forest script, Three) succeeded. A click on Make Reels cover gave "Ready for Reels · 60.0 s · cover from the first close-up (frame 189)" with the NOT_REELS_LAYOUT note, a 1080×1920 cover and the download link. The CLI on another forest job gave the same frame 189 (first single) and then refused to overwrite.
+- Tests: tests/studio-reels.test.js (4, with negatives); gen09 unchanged and passing.

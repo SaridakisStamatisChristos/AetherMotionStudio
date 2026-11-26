@@ -16,3 +16,18 @@ export function finishedSummary(quality,probe){
  }else parts.push('no quality audit');
  return {seconds:Number.isFinite(seconds)?seconds:null,ok,text:parts.join(' · ')};
 }
+// Owner choice 3 (Reels cover button): the plain-words line under the cover, from scripts/reels-export.mjs
+// reelsReport. Unknown warning codes are shown by code (never hidden). Browser-safe; pure.
+const REELS_WORDS=Object.freeze({
+ REELS_LONG:w=>'longer than '+(w.recommended??90)+' s: allowed, but longer Reels may reach fewer viewers',
+ NOT_REELS_LAYOUT:()=>'made without the Reels layout: captions and characters may sit under Instagram\'s buttons (tick "Instagram Reels layout" for the next film)',
+});
+const COVER_WORDS=Object.freeze({'first single':'the first close-up','first line':'the first spoken line',middle:'the middle of the film',explicit:'the chosen frame'});
+export function reelsSummary(report){
+ if(!report||typeof report!=='object'||!['pass','fail'].includes(report.status))return {ok:false,text:'No Reels check yet.',notes:[]};
+ const ok=report.status==='pass',errors=Array.isArray(report.errors)?report.errors:[],warnings=Array.isArray(report.warnings)?report.warnings:[];
+ const c=report.cover,cover=c&&Number.isSafeInteger(c.frame)?'cover from '+(COVER_WORDS[c.source]??'frame')+' (frame '+c.frame+')':null;
+ const head=ok?'Ready for Reels':'Not ready for Reels: '+errors.map(e=>e.code+(e.detail?' ('+e.detail+')':'')).join(', ');
+ const notes=warnings.map(w=>REELS_WORDS[w.code]?.(w)??String(w.code));
+ return {ok,text:[head,Number.isFinite(report.seconds)?report.seconds.toFixed(1)+' s':null,cover].filter(Boolean).join(' · '),notes};
+}
