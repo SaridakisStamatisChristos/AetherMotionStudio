@@ -66,4 +66,10 @@ Owner picked "Simple 'Make a film' view" (the last step of the plan; the other o
   - **Length advice follows Fix A:** a long dialogue script says "set Seconds to N to keep the calm pace" (N = words ÷ 2.33, rounded up to 5 s); a short one says "the film will be about N s". Narrator films keep the old advice.
   - Click re-test with the owner's exact answer at 60 s (job studio-cae85f1ea275cb3c4224): the Topic line was removed on click, 138 spoken words, "Good length". The Student asks and the Explorer explains. 60.0 s, glitch clean, −16.0 LUFS.
   - Pace 0.92 was not kept at 138 words / 60 s: the 120–140 range may be slightly generous (owner decision; unchanged).
+- **Checkbox "Speaker names in captions"** (owner: "it writes who is who in the captions … is that intentional?" → "i prefer a checkbox"):
+  - Names have been intentional since TALK-01/02: with more than one speaker, the name shows above each caption and as "Name: " in the .srt/.vtt.
+  - New opt-in `speech.captions.speakerNames: false` (src/core/speech.js) hides them in burned-in captions (draw-film.js) and in the sidecars. One shared `caption_labels` (scripts/speech_plan.py) feeds the writer and both checkers (verify.py, quality_media.py).
+  - Studio: the checkbox is ticked by default; unticked, `directorRequest` adds the speech setting for dialogue casts (narrator requests are unchanged).
+  - Click test with the box unticked (job studio-35d588b054e8486b020f, bees script): job succeeded (verify passed); 0 speaker names in captions.srt and captions.vtt; burned-in captions show words only (agent frames 100, 400 and 900).
+  - Tests: tests/studio01.test.js and tests/test_caption_labels.py (3).
 - Tests: tests/studio01.test.js "Studio UI refinement" (simple by default; every film-path field stays outside advanced wrappers; the editor parts are advanced; the first submit renders; narrator-only fields).

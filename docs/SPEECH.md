@@ -197,6 +197,9 @@ The Director can now produce a dialogue project from a topic (docs/DIRECTOR.md T
 - **TALK-05** now uses these general passes instead of hand staging (see docs/SHOWCASE.md).
 - **Caption reading speed:** splitting lines does not help. Speech ran at speed 1.0, and Kokoro naturally speaks short lines at about 18–20 characters per second ("We are proud of you." takes 1.1 s). The real options are slightly slower speech for dialogue, or captions lingering briefly after a line. Both change the audio or caption contracts and are left for the owner to decide.
 
+## Speaker names in captions (2026-11-26)
+Opt-in `speech.captions.speakerNames: false`: no speaker name above burned-in captions and none in captions.srt/.vtt. Absent: names whenever a film has more than one speaker (unchanged). The Studio checkbox "Speaker names in captions" sets it. See docs/STUDIO.md.
+
 ## GEN-05 slightly slower speech (2026-11-25)
 Owner choice for the caption reading-speed finding (1–2 cues per film at 18–20 characters per second): "speech a bit slower" (option a).
 - **Contract:** opt-in `speech.pace` is a number from 0.85 to 1, the Kokoro speed tried first. Absent means 1, the historical behaviour.

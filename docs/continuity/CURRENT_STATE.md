@@ -35,6 +35,7 @@ Updated 2026-11-26 (main 0e0e0f1; Studio UI refinement, the last step of the pla
 - The screenshot exposed a bug: "Narrator voice" stayed visible with the interview cast, because `label {display:grid}` overrode `hidden`. Fixed with `.narrator-only[hidden]{display:none!important}`, tested and re-checked by screenshot.
 - **The owner has not tried the new view.**
 - Auto-clean on Generate and Fix A length advice (after the owner's first Studio film spoke Claude's Topic line and swapped the roles). 382 JS tests.
+- Studio checkbox "Speaker names in captions" (owner: "i prefer a checkbox"): opt-in `speech.captions.speakerNames: false`; on by default. 383 JS, 59 Python tests.
 - Not chosen (not scheduled): clear render progress, a finished-film panel, remembering settings.
 
 **GEN-15 step 2 (part materials, dressed sets): MERGED** (PR #39 → 0e0e0f1 on the owner's word "merge 39"; PR CI 45791417306, main CI 45799267039 passed). Owner: "i agree merge it and start gen-15 step 2"; Fix A was merged as PR #38 (8e65805) and #37 was closed (included).

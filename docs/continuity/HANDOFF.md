@@ -39,6 +39,12 @@ After step 4 the plan is complete. Nothing else is authorized.
   - **Length advice follows Fix A:** a long dialogue script says "set Seconds to N to keep the calm pace" (N = words ÷ 2.33, rounded up to 5 s); a short one says "the film will be about N s". Narrator films keep the old advice.
   - Click re-test with the owner's exact answer at 60 s (job studio-cae85f1ea275cb3c4224): the Topic line was removed on click, 138 spoken words, "Good length". The Student asks and the Explorer explains. 60.0 s, glitch clean, −16.0 LUFS.
   - Pace 0.92 was not kept at 138 words / 60 s: the 120–140 range may be slightly generous (owner decision; unchanged).
+- **Checkbox "Speaker names in captions"** (owner: "it writes who is who in the captions … is that intentional?" → "i prefer a checkbox"):
+  - Names have been intentional since TALK-01/02: with more than one speaker, the name shows above each caption and as "Name: " in the .srt/.vtt.
+  - New opt-in `speech.captions.speakerNames: false` (src/core/speech.js) hides them in burned-in captions (draw-film.js) and in the sidecars. One shared `caption_labels` (scripts/speech_plan.py) feeds the writer and both checkers (verify.py, quality_media.py).
+  - Studio: the checkbox is ticked by default; unticked, `directorRequest` adds the speech setting for dialogue casts (narrator requests are unchanged).
+  - Click test with the box unticked (job studio-35d588b054e8486b020f, bees script): job succeeded (verify passed); 0 speaker names in captions.srt and captions.vtt; burned-in captions show words only (agent frames 100, 400 and 900).
+  - Tests: tests/studio01.test.js and tests/test_caption_labels.py (3).
 - The Studio started by the launcher earlier in this session (port 4173) runs older server code. The owner should restart it (close its window, double-click the launcher) to get Fix A and GEN-15 step 2 in Studio films.
 
 ## Pending owner decisions
@@ -85,8 +91,8 @@ After step 4 the plan is complete. Nothing else is authorized.
 - "fod continue": bootstrap and baseline:
   - `git status --short --branch`, `git rev-parse HEAD`, `git fetch`, `gh pr list --state all --limit 5`;
   - `node scripts/fod-digests.mjs . --exclude talk04,talk05,gen01,gen09,gen12,fixa` must print the digests above;
-  - `npm test` fail 0 (381 tests, 1 Windows skip);
-  - `PYTHONPATH=scripts .venv/Scripts/python.exe -m unittest discover -s tests -p "test_*.py"` 56 OK.
+  - `npm test` fail 0 (383 tests, 1 Windows skip);
+  - `PYTHONPATH=scripts .venv/Scripts/python.exe -m unittest discover -s tests -p "test_*.py"` 59 OK.
 - If the Studio UI PR is open: report its CI and ask the owner to merge.
 - After that the owner's plan is complete. Ask what comes next; offer the later options above. Do not start anything unasked.
 - Never merge without the owner's word and a passing PR CI. Never stack branches.
