@@ -109,3 +109,14 @@ Owner: "implement 1-2-3 and 5" (1 = render progress bar).
   - job studio-fd9f43a10cb0e33f5109: the bar went Starting → speech → plan check 13 % → renderer 18 % → "frame 73 of 1800 · about 51 s left" … 89 % → checking the film 96 %, never moving backwards. 1 sample per second.
   - job studio-d4cf9677b63034074a3e (after both fixes): the finished panel was hidden in all 60 samples while running; the bar went 87 % → encoding 95 % → checking 96 %; then the finished panel showed "60.0 s · 1080×1920 (vertical) · checks passed (13 review notes)".
 - Tests: tests/studio-progress.test.js (7, with negative logs).
+
+## Remembered choices (2026-11-26)
+Owner: "implement 1-2-3 and 5" (2 = the Studio remembers the last settings).
+- `src/studio/settings.js` keeps the Make-a-film choices in this browser's localStorage (key `aethermotion.studio.settings.v1`):
+  - cast, seconds, backend, profile, narrator voice, staging, Reels, speaker names and the Simple/Advanced view;
+  - never the topic, the script or anything on the server.
+- Every value is checked when read back (`checkedSettings`): an unknown cast, voice or backend, seconds outside 6–300, a wrong type, damaged JSON or another version falls back to the default for that field only. A restored choice can never make a request the form could not.
+- The page restores after the catalog fills the voices and writes nothing before that, so the defaults at load never overwrite what was kept. It saves on every change in the form and on the view toggle. **Reset choices** clears the stored choices and shows the defaults.
+- No server, job or request contract change.
+- Browser check (agent, headless Chrome, fresh Studio from the branch): narrator, bm_george, 45 s, CPU, Reels on, names off, Advanced were set → reload → all restored, topic empty, status "Your last choices are back" → Reset choices → defaults → reload → defaults.
+- Tests: tests/studio-settings.test.js (6, with negatives).

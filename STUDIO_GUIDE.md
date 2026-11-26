@@ -42,6 +42,8 @@ The page opens on **Make a film** (the simple view).
    - **Speaker names in captions:** shows "Student" or "Explorer" above each caption. Untick it for captions with words only.
 9. Press **Generate & render film**.
 
+The Studio remembers your choices (cast, seconds, backend, Reels, speaker names, Simple or Advanced view) in this browser, so the next film starts with them. The topic and the script are not kept. **Reset choices** (next to Clean up) goes back to the defaults.
+
 ## 3. Get the finished film
 - While it works, a progress bar under **Production** shows the step (speech, rendering frames, checking the film), the percentage, the frame being rendered, about how long is left and how long it has run. During speech the bar only shows that it is working (speech has no frame count). A 60-second film usually takes 1 to 4 minutes.
 - If a film fails, the bar turns orange and says at which step it stopped.
