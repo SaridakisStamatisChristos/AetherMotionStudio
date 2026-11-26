@@ -1,6 +1,8 @@
 import {deliveryBeats,applyIdentityStory} from './identity-story.js';
-import {retrieveAssets,directorCatalog} from './catalog.js';
+import {retrieveAssets,directorCatalog,relevance} from './catalog.js';
+import {EXPLAINER_FALLBACK} from './aids.js';
 import {offlineDialogue} from './dialogue.js';
+import {isCatalogCharacter} from '../quality/crowding.js';
 const beat=(heading,subheading,narration,assets)=>({heading,subheading,narration:[narration],assets});
 // Finite, explicitly authored knowledge patterns; no claim of universal topic comprehension.
 const patterns=[
@@ -65,7 +67,17 @@ export function baseline(q){
   beats=Array.from({length:n},(_,i)=>({heading:roles[i].toUpperCase(),subheading:trunc(q.topic,64),narration:[i===0?'Let us explore '+topic+'. '+questions[i]:questions[i]],assets:[]}));
  }
  const cast=q.staging==='art-v2'&&kind==='generic-question-outline'?literalCast(q.topic):[];
- const selection=beats.map(b=>retrieveAssets(q.topic+' '+b.heading+' '+b.narration.join(' '),8,[...b.assets,...cast,'retro-robot']));
+ // DUAL-01 explainer-v1: the shortlist holds objects only (no characters, no retro-robot guide), real word matches
+ // first. A beat without a match uses the film's best match; a film without any match uses an open book
+ // (EXPLAINER_FALLBACK, reported by the aids planner) instead of an alphabetical tie.
+ const explainer=q.content==='explainer-v1',filmQuery=q.topic+' '+beats.flatMap(b=>b.narration).join(' ');
+ const objectsOnly=list=>list.filter(o=>!isCatalogCharacter(o.id));
+ const filmBest=explainer?objectsOnly(directorCatalog().objects).map(o=>[o,relevance(filmQuery,o)]).filter(([,r])=>r>0).sort((a,b)=>b[1]-a[1]||(a[0].id<b[0].id?-1:1))[0]?.[0]??null:null;
+ const fallback=explainer?directorCatalog().objects.find(o=>o.id===EXPLAINER_FALLBACK):null;
+ const selection=beats.map(b=>{const query=q.topic+' '+b.heading+' '+b.narration.join(' ');
+  if(!explainer)return retrieveAssets(query,8,[...b.assets,...cast,'retro-robot']);
+  const list=objectsOnly(retrieveAssets(query,20,b.assets)),hit=list.filter(o=>b.assets.includes(o.id)||relevance(query,o)>0).sort((x,y)=>(b.assets.includes(y.id)?1e4:0)+relevance(query,y)-(b.assets.includes(x.id)?1e4:0)-relevance(query,x));
+  return [...hit,...(filmBest?[filmBest]:[]),fallback,...list].filter((o,j,a)=>a.findIndex(x=>x.id===o.id)===j).slice(0,8);});
  if(cast.length>=2)return {kind,beats,selection,cast};
  return {kind,beats,selection};
 }
@@ -80,6 +92,9 @@ export function offlineIR(q,plan){
    return {heading:b.heading,subheading:b.subheading,narration:b.narration,camera:['establishing','dolly-in','lateral-tracking'][(i+q.seed)%3],environment:q.style.toLowerCase().includes('warm')?'amber':i%2?'midnight':'laboratory',assets};
   }
   const selected=plan.selection[i],preferred=b.assets.filter((v,j,a)=>a.indexOf(v)===j);
+  // DUAL-01 explainer-v1: one or two objects centred, no guide character; the visual aids carry the explanation.
+  if(q.content==='explainer-v1'){const ok=new Set(selected.map(o=>o.id)),objects=[...preferred.filter(id=>ok.has(id)),...selected.map(o=>o.id)].filter((v,j,a)=>a.indexOf(v)===j).slice(0,1);
+   return {heading:b.heading,subheading:b.subheading,narration:b.narration,camera:cameras[(i+q.seed%cameras.length)%cameras.length],environment:q.style.toLowerCase().includes('warm')?'amber':i%2?'midnight':'laboratory',assets:objects.map(asset=>({asset,action:'presentation-turn',scale:1.1,x:0})),effect:i%2?'cyan-aura':'gold-sparks'};}
   const objects=(preferred.length?preferred:selected.filter(o=>o.id!=='retro-robot').slice(0,1).map(o=>o.id)).slice(0,2);
   const assets=objects.map((asset,j)=>({asset,action:j===0?'presentation-turn':'idle',scale:objects.length===1?1.15:.86,x:objects.length===1?.5:j===0?-.1:1.35}));
   assets.push({asset:'retro-robot',action:i===0?'wave':i%2?'point':'inspect',x:-1.5,scale:.72});

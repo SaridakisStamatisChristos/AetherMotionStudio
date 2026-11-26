@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "id": "dual01-forest-mixed",
+  "topic": "How do forests clean the air?",
+  "seconds": 60,
+  "audience": "curious beginners",
+  "tone": "friendly",
+  "style": "interview",
+  "language": "en-us",
+  "voice": "af_bella",
+  "backend": "cpu",
+  "profile": "polished",
+  "seed": 1,
+  "dialogue": {
+    "style": "interview",
+    "speakers": [
+      {
+        "id": "host",
+        "name": "Student",
+        "voice": "af_bella",
+        "language": "en-us",
+        "character": "student"
+      },
+      {
+        "id": "guest",
+        "name": "Explorer",
+        "voice": "bm_george",
+        "language": "en-gb",
+        "character": "explorer-robot"
+      }
+    ]
+  },
+  "script": "How do forests actually clean the air we breathe? Trees take in carbon dioxide through tiny pores in their leaves. And what do they do with it? Sunlight turns that carbon into sugar and wood, and the leaves release oxygen. So the carbon stays inside the tree? Much of it does, in trunks, roots and forest soil, sometimes for centuries. What about smoke and dust? Leaves and needles catch fine dust on their surfaces, and rain washes it down to the ground. Can they take in other pollution too? Yes, leaves also absorb gases like ozone and nitrogen dioxide. Does one tree make a big difference? One tree helps a little, but a whole forest works like a giant living filter. So protecting forests means cleaner air for everyone. Exactly, and planting new ones helps too.",
+  "content": "mixed-v1"
+}

@@ -12,6 +12,7 @@ import {stageProject,stageShot} from '../core/staging.js';
 import {applySet,topicSetFor,fitPiecesFor} from './sets.js';
 import {singleShots} from '../core/singles.js';
 import {reelsProject} from '../core/reels.js';
+import {planAids,holdComposition} from './aids.js';
 import {dialogueSpeech,stageDialogueAssets,dialogueShotFields,pointAtSetPiece,DIALOGUE_CAMERAS} from './dialogue.js';
 export function foundryShortlist(query,registry){return searchRegistry({...query,limit:300},registry).filter(x=>x.kind!=='legacy').slice(0,Math.min(query.limit??8,20)).map(({id,kind,revision,category,pack,quality,backends,lods,motion})=>({id,kind,revision,category,pack,quality,backends,lods,motion}));}
 export const PROMPT_VERSION='director-ir-v1.1';
@@ -62,7 +63,11 @@ export function compile(q,ir,selection){
  if(q.dialogue&&q.dialogue.singles!==false)out=singleShots(out).project;
  // Owner 2026-11-26 ("No titles at all"): dialogue films default to a clean top (titles 'none' on every graph shot);
  // request.titles 'shots' keeps the per-shot titles. Narrator films are unchanged unless they ask for 'none'.
- if((q.titles??(q.dialogue?'none':'shots'))==='none')out={...out,shots:out.shots.map(s=>s.template==='cinematic-graph'?{...s,titles:'none'}:s)};
+ // DUAL-01: content modes default to a clean top as well (the visual aids take that space).
+ if((q.titles??(q.dialogue||q.content?'none':'shots'))==='none')out={...out,shots:out.shots.map(s=>s.template==='cinematic-graph'?{...s,titles:'none'}:s)};
+ // DUAL-01 opt-in content modes: one compose-v1 composition per planned shot from its own text (src/director/aids.js);
+ // it replaces the IR lower-third overlay. Pieces of a shot split into singles keep the same aids, held steady.
+ if(q.content){const {compositions}=planAids(q,ir);out={...out,shots:out.shots.map(s=>{if(s.template!=='cinematic-graph')return s;const n=Number(/^shot-(\d+)/.exec(s.id)?.[1]),c=compositions[n-1];if(!c)throw Error('aids: no composition for '+s.id);const {overlays,...rest}=s;return {...rest,composition:s.titleHold?holdComposition(c):c};})};}
  if(out!==project)validateProject(out);
  return out;
 }
@@ -129,6 +134,7 @@ export async function direct(input,{adapter=null,imported=null,maxRepairs=1,foun
  const stages={brief:q,treatment:{version:1,title:ir.title,text:ir.treatment,mode:adapter?'model-assisted':imported!==null?'imported':plan.kind},script:{version:1,phrases:ir.shots.map(s=>s.narration),...(q.dialogue?{speakers:ir.shots.map(s=>s.speakers)}:{})},storyboard:{version:1,shots:ir.shots.map(({heading,subheading,camera,environment,assets,overlay})=>({heading,subheading,camera,environment,assets,...(overlay?{overlay}:{})}))},shotPlan:{version:1,shots:project.shots.map(s=>({id:s.id,durationFrames:s.durationFrames,assets:s.assets.map(a=>a.asset)}))}};
  const used=new Set(plan.selection.flat().map(a=>a.id)),sum=k=>attempts.every(a=>Number.isSafeInteger(a.usage[k]))?attempts.reduce((n,a)=>n+a.usage[k],0):null;
  const manifest={version:1,status:'planned',provider:adapter?.name??(imported!==null?'import':'offline'),model:adapter?.model??null,mode:stages.treatment.mode,seed:q.seed,requestDigest:digest(q),promptVersion:q.promptVersion??PROMPT_VERSION,promptDigest:digest(initialPrompt),catalogDigest:digest(cat),catalogObjects:cat.objects.length,retrievedUniqueObjects:used.size,retrievedPerShot:plan.selection.map(s=>s.length),catalogReduction:1-used.size/cat.objects.length,attempts,validationFailures:attempts.filter(a=>a.status==='invalid').length,repairs:attempts.length-1,tokens:{input:sum('input'),output:sum('output'),source:adapter?'provider-reported-or-unavailable':'not-applicable'},providerCost:null,targetFrames:q.seconds*FPS,plannedFrames:project.shots.some(s=>s.durationFrames===null)?null:project.shots.reduce((n,s)=>n+s.durationFrames,0),durationErrorFrames:null,projectDigest:digest(project),planningMs:performance.now()-started};
+ if(q.content){const aids=planAids(q,ir);stages.aids={version:1,mode:q.content,kinds:aids.kinds,diagnostics:aids.diagnostics};manifest.aids={mode:q.content,shots:aids.kinds.length,kinds:aids.kinds,diagnostics:aids.diagnostics.length};}
  const continuity=continuityLedger(project);if(continuity){stages.continuity=continuity;manifest.identityLibraryDigest=digest(project.identityLibrary);manifest.continuityDigest=digest(continuity);}
  return {request:q,ir,stages,project,manifest,prompt:initialPrompt,catalogSelection:plan.selection};
 }
