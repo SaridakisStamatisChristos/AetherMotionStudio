@@ -1,5 +1,5 @@
 # Current state — AetherMotion Studio
-Updated 2026-11-26 (main ee4fbbc; the owner's plan is complete; follow-up STUDIO_GUIDE.md and the finished-film panel on feature/studio-finished, PR pending, merge authorized by the owner after CI). Authoritative rolling checkpoint for new coding sessions; update at verified transitions. This file references the historical ledger rather than replacing source or evidence. Baseline product merge: `04e3491bb21b4ebc3d54755a2a211b1a7affb3fa` (PR #13 merged into main). The handoff documentation commit may be newer; inspect git HEAD. No release publication implied.
+Updated 2026-11-26, session end (main 8a74721: the owner's plan and follow-ups are merged, #36–#42; main CI 45811548096 passed; **no unit is active or authorized**; see HANDOFF.md). Authoritative rolling checkpoint for new coding sessions; update at verified transitions. This file references the historical ledger rather than replacing source or evidence. Baseline product merge: `04e3491bb21b4ebc3d54755a2a211b1a7affb3fa` (PR #13 merged into main). The handoff documentation commit may be newer; inspect git HEAD. No release publication implied.
 
 ## Current status and authority
 - v1.0 core pipeline and Asset Foundry AF01–AF09 implementation merged; do not reimplement.
@@ -19,7 +19,9 @@ Updated 2026-11-26 (main ee4fbbc; the owner's plan is complete; follow-up STUDIO
 6. Source and approved decisions authoritative. This summary cannot discard binding facts; consult the source-specific contract when the task touches it. Keep state and handoff synchronized. No new native render runs on GitHub or release without authorization.
 
 ## Active unit
-**Owner guide and finished-film panel: IMPLEMENTED + TESTED on `feature/studio-finished` (from main ee4fbbc).** Owner: "first of all write an md file with instructions on how to start the studio etc. then add the finished film with download button. then merge pr 41... or pr 42 whatever order you use". PR #41 (docs record) was MERGED (ee4fbbc); this PR's merge is authorized after CI.
+**No active unit** (session end 2026-11-26; the next step is the owner's choice, see HANDOFF.md "Next authorized unit").
+
+**Owner guide and finished-film panel: MERGED** (PR #42 → 8a74721; PR CI 45811297991, main CI 45811548096 passed). Owner: "first of all write an md file with instructions on how to start the studio etc. then add the finished film with download button. then merge pr 41... or pr 42 whatever order you use". PR #41 (docs record) was MERGED (ee4fbbc); PR #42 was merged on that authorization after CI.
 - **Finished-film panel and the owner guide** (owner: "write an md file with instructions on how to start the studio etc. then add the finished film with download button"):
   - STUDIO_GUIDE.md (repository root, for the owner): start, make a film, get the finished film, stop, troubleshooting.
   - A finished job shows **Your film is ready**: the film, **Download film (MP4)**, **Captions (.srt)** and one plain line (src/studio/finished.js `finishedSummary`: length, size, checks). The render log and all files fold away below; the page scrolls to the panel once.
