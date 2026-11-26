@@ -52,7 +52,7 @@ test('silence-v1: long gaps, lead, tail and low talk share warn; fixed shots are
  const ok=silenceCheck(p,t);assert.equal(ok.policy,SILENCE.version);assert.equal(ok.applicable,true);
  // Lines ~2.9 s apart by 0.4 s; shots 10 s long with ~2.9–5.8 s of talk: the gap after each shot's speech is long.
  assert.ok(ok.warnings.some(w=>w.code==='LONG_SILENCE'&&w.kind==='between'),'sparse film warns');
- assert.ok(ok.warnings.some(w=>w.code==='LOW_TALK_SHARE'));
+ assert.ok(ok.talkShare<.6&&!ok.warnings.some(w=>w.code==='LOW_TALK_SHARE'),'talk share is reported, not warned');
  // A dense timeline: every line follows the previous one by 0.5 s and the film ends 1 s after the last line.
  const dense=structuredClone(t);let at=24000;
  for(const s of dense.shots){for(const g of s.segments){g.startSample=at;g.endSample=at+140000;at+=164000;}}
