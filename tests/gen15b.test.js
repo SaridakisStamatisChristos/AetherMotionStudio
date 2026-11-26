@@ -57,11 +57,12 @@ test('dressed sets: catalog pieces only, all behind the line of speakers, both r
 });
 test('topic-v2 pieces follow the words: sky gets prism and telescope; no wrong-sense matches; no repeats',async()=>{
  for(const id of Object.keys(PIECE_WORDS))assert.ok(ids.has(id),id);
- const sky=(await direct(read('fixa-sky-script.request'))).project;
+ // Unit 5 made topic-v3 the dialogue default; topic-v2 is named here so its accepted behaviour stays tested as is.
+ const sky=(await direct({...read('fixa-sky-script.request'),sets:'topic-v2'})).project;
  const ps=pieces(sky);assert.ok(ps.includes('prism')&&ps.includes('telescope'),ps.join());assert.ok(!ps.includes('dna-helix')&&!ps.includes('scatter-plot'),ps.join());
  assert.equal(new Set(ps).size,ps.length,'no repeats');assert.ok(sky.shots.every(s=>s.layers==='lab-set'&&s.look==='crafted-v2'));
  const vac=pieces(await film('How do vaccines train the body?'));assert.ok(!vac.includes('passenger-train'),'"train the body" is not a train: '+vac.join());assert.ok(vac.includes('virus-model'));
- const forest=await film('How do forests clean the air?');assert.ok(forest.shots.every(s=>s.layers==='forest-set'));assert.ok(!pieces(forest).includes('binary-tree'));
+ const forest=await film('How do forests clean the air?',{sets:'topic-v2'});assert.ok(forest.shots.every(s=>s.layers==='forest-set'));assert.ok(!pieces(forest).includes('binary-tree'));
  const volcano=pieces(await film('Why do volcanoes erupt?'));assert.ok(volcano.includes('mountain'));assert.ok(volcano.every(id=>cat(id)==='nature'),volcano.join());
  const coffee=pieces(await film('How do I brew coffee at home?'));assert.deepEqual([...new Set(coffee)],['coffee-machine'],'everyday never swaps in random objects');
  // a named piece from another category is allowed when named in full
@@ -71,14 +72,15 @@ test('topic-v2 pieces follow the words: sky gets prism and telescope; no wrong-s
 });
 test('Director defaults, v1 by name, none, legacy unchanged; negatives',async()=>{
  const q=read('gen12-forest.request');
- const dflt=(await direct({...q,speech:defaultSpeech(60)})).project;assert.ok(dflt.shots.every(s=>s.look==='crafted-v2'&&s.layers==='forest-set'));
+ // Unit 5: the default is now topic-v3 (tests/far-backdrop.test.js); topic-v2 by name keeps its accepted output.
+ const dflt=(await direct({...q,speech:defaultSpeech(60),sets:'topic-v2'})).project;assert.ok(dflt.shots.every(s=>s.look==='crafted-v2'&&s.layers==='forest-set'));
  validateProject(dflt);assert.equal(evaluateGraph(dflt.shots[0],.5).look,'crafted-v2');
  const v1=(await direct({...q,speech:defaultSpeech(60),sets:'topic-v1',look:'crafted-v1'})).project;assert.ok(v1.shots.every(s=>s.look==='crafted-v1'&&s.layers==='solar-field'));
  const off=(await direct({...q,speech:defaultSpeech(60),sets:'none',look:'none'})).project;assert.ok(off.shots.every(s=>s.look===undefined&&s.layers===undefined));
  const legacy=(await direct(read('speech-cpu-polished.request'))).project;assert.ok(legacy.shots.every(s=>s.look===undefined&&s.layers===undefined),'narrator films unchanged');
  assert.equal(topicSetFor('topic-v1',{topic:'How do forests clean the air?'},{shots:[]}).layers,'solar-field');
  assert.equal(topicSetFor('topic-v2',{topic:'Why is the sky blue?'},{shots:[]}).layers,'lab-set');
- await assert.rejects(direct({...q,sets:'topic-v3'}),/request.sets/);await assert.rejects(direct({...q,look:'crafted-v3'}),/request.look/);
+ await assert.rejects(direct({...q,sets:'topic-v9'}),/request.sets/);await assert.rejects(direct({...q,look:'crafted-v3'}),/request.look/);
  const bad=structuredClone(dflt);bad.shots[0].look='crafted-v9';assert.throws(()=>validateProject(bad),/look/);
  const badLayer=structuredClone(dflt);badLayer.shots[0].layers='moon-set';assert.throws(()=>validateProject(badLayer));
 });
