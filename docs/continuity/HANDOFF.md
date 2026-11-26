@@ -1,37 +1,40 @@
-# Forward-only handoff: Campaign A, DUAL-00 done (2026-11-26)
+# Forward-only handoff: Campaign A, DUAL-01 rendered (2026-11-26)
 
-Unit: **Campaign A — Universal Dual-Backend Finalization**, owner-authorized. **DUAL-00 TESTED + RENDERED** (docs only) on `chore/dual-00-audit` (PR open, docs-only so no CI by design; merge on the owner's word). **Next milestone: DUAL-01** (character-free content and shared composition).
-Checkpoint: **main d3982f5** (PR #49 merged; product code identical to 6c71875). No product code changed in DUAL-00.
-Date: 2026-11-26. The owner types only **"fod continue"**. Binding facts: CURRENT_STATE.md. Campaign status and the DUAL-00 baseline: CAMPAIGN_A.md. Scope map: docs/CAMPAIGN_A_AUDIT.md. Fixture IDs and evidence rules: CAMPAIGN_A_PROTOCOL.md (`campaign-a-protocol-v1`). Earlier handoffs: the git history of this file.
+Unit: **Campaign A — Universal Dual-Backend Finalization**, owner-authorized.
+- DUAL-00: **MERGED** (PR #50 → main 8e42d99, owner: "merge it … merge and continue").
+- DUAL-01 (character-free content and shared composition): **TESTED + RENDERED** on `feature/dual-01-composition` (head after this checkpoint; product code at beb36af). PR open; **merge only on the owner's word after PR CI passes**.
+- **Next milestone: DUAL-02** (typography and motion graphics).
 
-## DUAL-00 in one table
+Date: 2026-11-26. The owner types only **"fod continue"**. Binding facts: CURRENT_STATE.md. Campaign status and evidence: CAMPAIGN_A.md ("DUAL-01 evidence"). Contract: docs/COMPOSITION.md. Scope map: docs/CAMPAIGN_A_AUDIT.md. Evidence rules: CAMPAIGN_A_PROTOCOL.md. Earlier handoffs: the git history of this file.
+
+## DUAL-01 in one table
 | Item | Result |
 |---|---|
-| Tests | 412 JS: 411 pass, 0 fail, 1 skip (Windows symlink permission); 59 Python OK |
-| Digests | unchanged (graph 3d33fbaee198acad, geometry 14dec244d171dc56, detail2 e3f80439a292f21a, director 2cbf9916e65da935) |
-| GL identity | swangle = SwiftShader (software); vulkan = RTX 4060 Laptop |
-| Baseline film | `dual00-baseline-r1` (forest script, Director defaults: topic-v3, crafted-v2, titles none, no names), source d3982f5 clean, vulkan: all PASS both backends, shared hashes exact, CHECKS 0, QUALITY 0/0, glitch clean, −16.0 LUFS; CPU 136.5 s, Three 55.6 s; agent stills only, **no owner review** |
-| Audit | docs/CAMPAIGN_A_AUDIT.md: one row per capability with source paths |
-| Files changed | docs/CAMPAIGN_A_AUDIT.md (new), docs/continuity/CAMPAIGN_A_PROTOCOL.md (new), CAMPAIGN_A.md, CURRENT_STATE.md, HANDOFF.md |
+| New, opt-in | `compose-v1` shot field (src/core/composition.js, src/visual/draw-composition.js on the shared 2D overlay path); Director `request.content` explainer-v1 / mixed-v1 (src/director/aids.js, offline.js, schema.js, index.js); check aids-v1 (src/quality/aids.js); content-mode productions fitted + mix-v2 (scripts/production-options.mjs) |
+| Unchanged | requests without `content`, shots without `composition`, all old examples; legacy digests with `--exclude talk04,talk05,gen01,gen09,gen12,fixa,dual` |
+| Tests | 426 JS (425 pass, 0 fail, 1 skip), 59 Python OK |
+| Films | dual01-explainer-r4 (beb36af) and dual01-mixed-r3 (dd20c5a): all PASS both backends, shared hashes exact, CHECKS 0, QUALITY 0/0, glitch clean, −16.0 LUFS. Agent stills only, **no owner review** |
+| Superseded attempts | explainer r1 (unfitted pauses, small text), mixed r1 (dirty source), r2 (stopped), explainer r3 (−18.7 LUFS); all in out/ |
 
-## Next action for "fod continue": DUAL-01
-1. Bootstrap. If the DUAL-00 PR is still open, ask the owner to merge it (docs only); branch DUAL-01 from main after it is merged, never stacked on it.
-2. Read the DUAL-01 directive section and the DUAL-01 rows of CAMPAIGN_A_AUDIT.md. Key seams: src/core/graph.js `validateGraph` (shots need 1–8 assets), src/director/offline.js `offlineIR` (narrator shots always add `retro-robot`), src/core/overlays.js + src/visual/draw-overlays.js (the shared 2D overlay path), src/core/reels-layout.js (safe area).
-3. Design (opt-in, versioned): a narrator-only mode with no character asset, a way for a shot to carry only props or a 2D composition, and richer composition primitives (panel/card, label, arrow to a target, callout, background) on the shared 2D path with safe-area and deterministic placement checks. Old scenes, the Studio "Narrator only" default and accepted films stay unchanged until the owner promotes the new mode.
-4. Tests (positive, negative, adversarial), digests unchanged, then fresh `dual01-…` matched films: one character-free explainer and one mixed film; inspect stills.
-5. One branch `feature/dual-01-…` from main; PR; merge only on the owner's word after PR CI passes. FOD CHECKPOINT.
+## Next action for "fod continue"
+1. Bootstrap. If the DUAL-01 PR is open: report its CI result and ask the owner to merge (do not merge without the word). Branch DUAL-02 from main only after DUAL-01 is merged (never stacked); if it is not merged yet, wait for the owner.
+2. DUAL-02 (typography and motion graphics): read its directive section and the DUAL-02 rows of docs/CAMPAIGN_A_AUDIT.md. Extend `compose-v1` (do not build a second text engine): quotations, emphasis, bullet reveals, number counters with formats, kinetic type, alignment and theme tokens, Unicode coverage and missing-glyph reporting, reveal timing anchored to measured phrase windows (estimated word timing stays labelled estimated), and shots with zero assets (fix compositionReport/frameCamera assumptions first). Owner decision if Arial is not enough: local font files (identity, licence).
+3. Exit: a 30–60 s typography-led film on both backends, dense/long text and Unicode review, adversarial overflow tests.
+
+## Known issue from this session
+- A headless-browser process (chrome-headless-shell, PID 343888) from the stopped r2 render may still be running; the agent was not permitted to stop it. It is harmless and ends with a reboot or can be ended in Task Manager.
 
 ## Open issues carried into Campaign A
 - OPEN-1 calm word rate (2.15 words/s; refine with more films). OPEN-2 part 2: glass and metal subtle at phone size. OPEN-3: historical CPU one-eye, by the owner's choice. OPEN-4: "bridges" shows no set piece. OPEN-6: old draft PRs #2–#12; ask before closing. PR #43 (old handoff) is superseded by #49; ask before closing it.
-- OPEN-7 disk: out/ holds the agent test jobs, far-forest-r1*, clean-top-r1*/r2* and dual00-baseline-r1*; ask before deleting anything.
+- OPEN-7 disk: out/ holds the agent test jobs, far-forest-r1*, clean-top-r1*/r2*, dual00-baseline-r1* and dual01-*; ask before deleting anything.
 - Not yet run: a GPU benchmark, the full native matrix, a clean-install test.
 
 ## Bootstrap for "fod continue"
-1. `git status --short --branch`, `git rev-parse HEAD`, `git fetch`, `gh pr list --state open`, `git tag --list`. Expect main d3982f5, or later if the DUAL-00 PR was merged.
+1. `git status --short --branch`, `git rev-parse HEAD`, `git fetch`, `gh pr list --state open`, `git tag --list`. Expect main 8e42d99, or later if the DUAL-01 PR was merged.
 2. Read CLAUDE.md, AGENTS.md, CURRENT_STATE.md, this file and CAMPAIGN_A.md (plus the directive section of the active milestone).
 3. Baseline:
-   - `node scripts/fod-digests.mjs . --exclude talk04,talk05,gen01,gen09,gen12,fixa` must print graph 3d33fbaee198acad, geometry 14dec244d171dc56, detail2 e3f80439a292f21a, director 7 requests 2cbf9916e65da935;
-   - `npm test` must give fail 0 (412 tests at d3982f5, 1 Windows skip);
+   - `node scripts/fod-digests.mjs . --exclude talk04,talk05,gen01,gen09,gen12,fixa,dual` must print graph 3d33fbaee198acad, geometry 14dec244d171dc56, detail2 e3f80439a292f21a, director 7 requests 2cbf9916e65da935;
+   - `npm test` must give fail 0 (426 tests with DUAL-01, 1 Windows skip);
    - `PYTHONPATH=scripts .venv/Scripts/python.exe -m unittest discover -s tests -p "test_*.py"` must give 59 OK.
 
 ## Owner working agreement and taste (binding; see also auto-memory)

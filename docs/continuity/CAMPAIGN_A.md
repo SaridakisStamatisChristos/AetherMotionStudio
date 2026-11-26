@@ -11,9 +11,9 @@ Status words: PLANNED · ACTIVE · IMPLEMENTED · TESTED · RENDERED · OWNER-RE
 
 | ID | Milestone | Status | Branch / PR | Evidence |
 |---|---|---|---|---|
-| DUAL-00 | Baseline and capability audit | **TESTED + RENDERED** (docs only; PR open, not merged) | `chore/dual-00-audit` | [CAMPAIGN_A_AUDIT.md](../CAMPAIGN_A_AUDIT.md), [protocol v1](CAMPAIGN_A_PROTOCOL.md), "DUAL-00 baseline" below |
-| DUAL-01 | Character-free content and shared composition | **NEXT** | — | — |
-| DUAL-02 | Typography and motion graphics | PLANNED | — | — |
+| DUAL-00 | Baseline and capability audit | **MERGED** (PR #50 → 8e42d99, owner: "merge it") | `chore/dual-00-audit` | [CAMPAIGN_A_AUDIT.md](../CAMPAIGN_A_AUDIT.md), [protocol v1](CAMPAIGN_A_PROTOCOL.md), "DUAL-00 baseline" below |
+| DUAL-01 | Character-free content and shared composition | **TESTED + RENDERED** (PR open, not merged) | `feature/dual-01-composition` | [docs/COMPOSITION.md](../COMPOSITION.md), "DUAL-01 evidence" below |
+| DUAL-02 | Typography and motion graphics | **NEXT** | — | — |
 | DUAL-03 | Mathematics, geometry and algorithm visualization | PLANNED | — | — |
 | DUAL-04 | Charts, diagrams and data storytelling | PLANNED | — | — |
 | DUAL-05 | Local media and illustration integration | PLANNED | — | — |
@@ -53,6 +53,21 @@ Status words: PLANNED · ACTIVE · IMPLEMENTED · TESTED · RENDERED · OWNER-RE
   - Agent stills (frames 200, 700, 1200, 1700, both backends): clean top, forest backdrop, captions without names, characters whole in frame, same content on both backends. **No owner review.**
 - **Audit result (short):** the shared 2D overlay path already exists on both backends and is the base for DUAL-01…05. Main gaps: shots need ≥ 1 asset; the narrator mode still adds a `retro-robot`; editorial text squeezes instead of wrapping; maths/charts are minimal overlays; no 2D images; output is fixed 9:16 (720×1280 logical space); no Studio audio-mix controls; no batch queue.
 
+## DUAL-01 evidence (2026-11-26)
+- **What:** opt-in `compose-v1` shot compositions (title, card, label, callout, arrow, shape, background; deterministic text layout; regions inside the Reels-safe area above captions; overlap, overflow, contrast and window rules), drawn by the **shared 2D overlay path (Canvas 2D, after the world pass)** on both backends. Director `request.content`: `explainer-v1` (narrator, no characters) and `mixed-v1` (cast plus aids). Aids are planned from each shot's own text (title, flow "A into B", list "A, B and C", quote card); unsupported content (charts, maths, images) and fallback objects are reported as diagnostics. Content-mode productions without their own speech are fitted (speech-v1) and mastered (mix-v2). New check `aids-v1`. Absent fields: unchanged output.
+- **Not done (recorded):** shots with zero assets (camera checks assume one; DUAL-02); arrows to 3D objects; phrase-timed aids (DUAL-02); silent/mute (DUAL-06); Studio controls (DUAL-07).
+- **Tests:** 426 JS (425 pass, 0 fail, 1 skip), 59 Python OK; 15 new tests in tests/composition.test.js (layout, 30+ negative/adversarial inputs, contrast, safe area, determinism, planner extraction, no invented text, modes, conflicts, diagnostics, aids-v1, fit/master, object variety). Legacy digests unchanged with `--exclude …,dual`.
+- **Films** (vulkan, agent stills only, **no owner review**):
+  | ID | Source | Result |
+  |---|---|---|
+  | dual01-explainer-r1 | 456b1dc clean | all PASS; silence-v1 3 pauses 3.0–4.0 s (not fitted); same tree in every shot; small text → fixed |
+  | dual01-mixed-r1 | 456b1dc **dirty** (a doc was written during the render) | all PASS; superseded |
+  | dual01-*-r2 | 686e156 | stopped by the agent before finishing (text too small); not evidence |
+  | dual01-explainer-r3 | dd20c5a clean | all PASS, −18.7 LUFS (no master) → fixed |
+  | **dual01-mixed-r3** | dd20c5a clean | all PASS both backends, shared hashes exact, CHECKS 0 incl. aids-v1 0, QUALITY 0/0, glitch clean, −16.0 LUFS, 1800 frames; CPU 0310f49069801341…, Three f4064c21ed14c6ad… |
+  | **dual01-explainer-r4** | beb36af clean | all PASS both backends, shared hashes exact, CHECKS 0 incl. aids-v1 0 and silence-v1 0, QUALITY 0/0, glitch clean, −16.0 LUFS, fitted 1200 → 1008 frames; CPU da330b38ace00195… (45 s), Three 644ebe7229cb6ce9… (37 s) |
+- **Agent stills:** explainer: no characters, title → "Carbon → Sugar and wood" → "Trunks · Roots · Forest soil" → quote card; objects change per shot; aids identical on CPU and Three.js; nothing clipped or overlapping captions. Mixed: aids in the clean top above the speakers; in the close-up the card ends just above the robot's head (aids-v1 0).
+
 ## Decisions the owner must make (ask when the milestone reaches them, not before)
 - DUAL-02: local font files (identity and licence) if the current Arial/system fonts are not enough.
 - DUAL-03: a local math typesetter is a **new dependency** and needs approval; otherwise use a built-in declarative equation layout.
@@ -71,3 +86,5 @@ Status words: PLANNED · ACTIVE · IMPLEMENTED · TESTED · RENDERED · OWNER-RE
 ## Ledger (append one line per verified transition)
 - 2026-11-26: Campaign A authorized by the owner; directive stored; DUAL-00 next. No product code changed.
 - 2026-11-26: DUAL-00 tested and rendered at d3982f5 (412/411/0/1 JS, 59 Py, digests unchanged, dual00-baseline-r1 all gates PASS); audit and protocol v1 written on `chore/dual-00-audit`. DUAL-01 next. No product code changed.
+- 2026-11-26: DUAL-00 MERGED (PR #50 → main 8e42d99) on the owner's word.
+- 2026-11-26: DUAL-01 tested and rendered on `feature/dual-01-composition` (beb36af): explainer-r4 and mixed-r3 all gates PASS on both backends; PR open, not merged. DUAL-02 next.
