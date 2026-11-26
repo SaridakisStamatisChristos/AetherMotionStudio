@@ -157,3 +157,11 @@ test('explainer objects change between shots when the shot text names another ob
  for(let i=1;i<objects.length;i++)assert.notEqual(objects[i],objects[i-1],objects.join(' | '));
  assert.ok(objects.every(a=>!isCatalogCharacter(a)));
 });
+
+test('list starts never turn a pronoun or auxiliary verb into an item; row labels share one size',async()=>{
+ assert.deepEqual(findList('Much of it does, in trunks, roots and forest soil, sometimes for centuries.'),['Trunks','Roots','Forest soil']);
+ assert.equal(findList('It does, in trunks, roots and soil.'),null);
+ const {project}=await direct({...forest,id:'dual-test-row',content:'mixed-v1'});
+ for(const s of project.shots){const L=layoutComposition(s.composition),labels=L.items.filter(x=>x.type==='label'&&x.id!=='heading');
+  if(labels.length>1)assert.equal(new Set(labels.map(x=>x.text.size)).size,1,s.id+' '+labels.map(x=>x.text.size));}
+});

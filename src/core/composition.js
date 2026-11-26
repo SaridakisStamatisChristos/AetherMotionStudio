@@ -26,10 +26,13 @@ export const TONES=Object.freeze({
 // Font sizes (logical px) tried from largest to smallest; line height = 1.22 × size; inner padding per type.
 export const TEXT=Object.freeze({
  title:Object.freeze({sizes:[44,40,36,32,28],pad:18,max:60}),
- heading:Object.freeze({sizes:[30,28,26,24,22],pad:18,max:48}),
- body:Object.freeze({sizes:[24,22,20,18],pad:18,max:160}),
- label:Object.freeze({sizes:[22,20,18],pad:12,max:40}),
- callout:Object.freeze({sizes:[22,20,18],pad:14,max:100})
+ // sizes read at phone size: captions are 30 px, so aids start at 28–34 px and step down only when needed
+ heading:Object.freeze({sizes:[34,32,30,28,26,24,22],pad:18,max:48}),
+ body:Object.freeze({sizes:[28,26,24,22,20,18],pad:18,max:160}),
+ // a card with a body only (a quoted sentence) reads as the card's main text
+ quote:Object.freeze({sizes:[34,32,30,28,26,24,22,20],pad:18,max:160}),
+ label:Object.freeze({sizes:[30,28,26,24,22,20,18],pad:12,max:40}),
+ callout:Object.freeze({sizes:[28,26,24,22,20,18],pad:14,max:100})
 });
 export const LINE=1.22,GAP=8,FONT='Arial',WEIGHT=700;
 export const MAX_ITEMS=6,REVEAL_SECONDS=.5;
@@ -66,7 +69,7 @@ function layoutItem(x,b,q){
  if(x.type==='card'){
   const H=TEXT.heading,B=TEXT.body,w=b.w-2*H.pad,inner=b.h-2*H.pad;
   if(x.body===undefined)return {text:fit(x.text,H,w,inner,'card heading')};
-  if(x.text===undefined)return {body:fit(x.body,B,w,inner,'card body')};
+  if(x.text===undefined)return {body:fit(x.body,TEXT.quote,w,inner,'card body')};
   // heading at the largest size that leaves the body room at the smallest body size
   for(const size of H.sizes){const lines=wrapText(x.text,size,w);if(!lines)continue;const hh=lines.length*size*LINE,body=fitText(x.body,B,w,inner-hh-GAP);if(body)return {text:{size,lines,height:hh},body};}
   fail(q,'text overflow: card "'+x.text.slice(0,40)+'" with its body does not fit a '+Math.round(b.w)+'×'+Math.round(b.h)+' px box at the smallest sizes; shorten it or enlarge the box');

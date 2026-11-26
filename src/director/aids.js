@@ -2,7 +2,7 @@
 // (title, heading, subheading, narration) into a compose-v1 composition. It only quotes or extracts words that are
 // already in the plan; it never invents facts, numbers or labels. Content it cannot show yet (charts, maths, images)
 // is reported as a diagnostic instead of being faked.
-import {layoutComposition,COMPOSE_VERSION,TEXT} from '../core/composition.js';
+import {layoutComposition,COMPOSE_VERSION,TEXT,textWidth} from '../core/composition.js';
 export const CONTENT_MODES=Object.freeze(['explainer-v1','mixed-v1']);
 // The explainer's object when neither a shot nor the whole film names a catalog object (reported, never silent).
 export const EXPLAINER_FALLBACK='open-book';
@@ -11,6 +11,8 @@ const sentences=s=>s.match(/[^.!?]+[.!?]*/g)?.map(x=>x.trim()).filter(Boolean)??
 const STOP=/^(?:in|on|at|the|a|an|of|to|that|this|these|those|its|their|our|your|his|her|and|or|with|from|by|for|into|through)\s+/i;
 const clean=s=>{let x=s.trim().replace(/[.,;:!?]+$/,'');for(let i=0;i<3;i++)x=x.replace(STOP,'');return x.trim();};
 const short=(s,n=3)=>{const w=s.split(/\s+/).filter(Boolean);return w.length>=1&&w.length<=n&&s.length<=TEXT.label.max&&/^[\p{L}\p{N}][\p{L}\p{N}' -]*$/u.test(s);};
+// Pronouns and auxiliary verbs never start a list item ("Much of it does, in trunks…" is not an item "It does").
+const FUNCTION_WORDS=new Set(['it','they','we','you','he','she','i','this','that','there','does','do','did','is','are','was','were','can','will','be','been','has','have','had']);
 const cap=s=>s.charAt(0).toUpperCase()+s.slice(1);
 // "X turns A into B" → [A, B] (one flow), A and B taken verbatim (determiners dropped).
 export function findFlow(text){
@@ -29,7 +31,7 @@ export function findList(text){
   for(let i=parts.length-1;i>=0;i--){const x=clean(parts[i]);
    if(i>0){if(!short(x)){complete=true;break;}items.unshift(x);continue;}
    const intro=parts[0].match(/\b(?:like|such as|including|include|includes|need|needs|has|have|are|is|of|in|on|at|from)\s+((?:\S+\s?){1,2})$/i);
-   if(intro&&short(clean(intro[1]))){items.unshift(clean(intro[1]));complete=true;}
+   if(intro&&short(clean(intro[1]))&&!clean(intro[1]).split(/\s+/).some(w=>FUNCTION_WORDS.has(w.toLowerCase()))){items.unshift(clean(intro[1]));complete=true;}
    else if(!short(x))complete=true;// the list starts after the first comma
    else if(x.split(/\s+/).length===1){items.unshift(x);complete=true;}
   }
@@ -37,6 +39,10 @@ export function findList(text){
   if(complete&&items.length>=2&&items.length<=3&&short(last))return [...items,last].map(cap);}
  return null;
 }
+// Widths (shares of the region) for a row of labels: in proportion to each label's text, so the labels can share one
+// size; each at least 18 % of the row. `total` is the share the row may use.
+function row(texts,total){const need=texts.map(t=>textWidth(t,30)+2*TEXT.label.pad),min=.18,sum=need.reduce((a,b)=>a+b,0);
+ let w=need.map(n=>Math.max(min,total*n/sum));const over=w.reduce((a,b)=>a+b,0)-total;if(over>0){const big=w.map(v=>v-min),s=big.reduce((a,b)=>a+b,0)||1;w=w.map((v,i)=>v-over*big[i]/s);}return w;}
 // The offline planner's generic outline roles (src/director/offline.js `roles`).
 const GENERIC=new Set(['introduction','context','key idea','how it works','connections','implications','summary']);
 const keySentence=(narration,max)=>narration.flatMap(sentences).find(x=>!x.endsWith('?')&&x.length<=max&&x.split(/\s+/).length>=4)??null;
@@ -52,9 +58,9 @@ export function planAids(q,ir){
   const tries=[];
   if(i===0){const t=ir.title.length<=TEXT.title.max?ir.title:s.heading;tries.push(['title',{...base,items:[{id:'title',type:'title',box:[0,.08,1,.62],text:t}]}]);}
   const flow=findFlow(text);
-  if(flow)tries.push(['flow',{...base,items:[...top,{id:'from',type:'label',box:[0,.48,.36,.36],text:flow[0],start:.06},{id:'to',type:'label',box:[.64,.48,.36,.36],text:flow[1],start:.2},{id:'step',type:'arrow',from:'from',to:'to',reveal:'wipe',start:.12}]}]);
+  if(flow){const [wa,wb]=row(flow,.78);tries.push(['flow',{...base,items:[...top,{id:'from',type:'label',box:[0,.48,wa,.36],text:flow[0],start:.06},{id:'to',type:'label',box:[1-wb,.48,wb,.36],text:flow[1],start:.2},{id:'step',type:'arrow',from:'from',to:'to',reveal:'wipe',start:.12}]}]);}
   const list=findList(text);
-  if(list){const n=list.length,g=.04,w=(1-g*(n-1))/n;tries.push(['list',{...base,items:[...top,...list.map((x,k)=>({id:'item-'+(k+1),type:'label',box:[k*(w+g),.5,w,.34],text:x,start:Math.min(.5,.06+.08*k)}))]}]);}
+  if(list){const g=.03,ws=row(list,1-g*(list.length-1));let x0=0;tries.push(['list',{...base,items:[...top,...list.map((x,k)=>{const box=[x0,.5,ws[k],.34];x0+=ws[k]+g;return {id:'item-'+(k+1),type:'label',box,text:x,start:Math.min(.5,.06+.08*k)};})]}]);}
   const key=keySentence(s.narration,TEXT.body.max);
   // A generic outline role ("Context", "Key idea") is not shown: the card quotes the narration on its own.
   if(key)tries.push(['card',{...base,items:[{id:'card',type:'card',box:[.03,.03,.94,.94],...(generic?{}:{text:s.heading}),body:key}]}]);
