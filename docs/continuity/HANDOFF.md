@@ -1,18 +1,18 @@
 # Forward-only handoff: session 2026-11-26 (owner units 1, 2, 3 and 5)
 
 Unit: owner "implement 1-2-3 and 5 leave 4 for next cause i am planning to do a lot in three.js … lets finish this dual cpu gpu functionality we have now"
-Checkpoint: main **8a74721** (unchanged). Four local feature branches plus this docs branch `chore/record-units-1235`, which is based on `chore/handoff-session-end` (PR #43). PR #43 holds the latest canon that main lacks, so merge it first, or merge this branch, which includes it. **Nothing pushed.**
-Status: **IMPLEMENTED + TESTED + VERIFIED LOCALLY; NOT PUSHED, NOT MERGED.** `git push` was refused by this session's permission check (not by the owner); ask the owner to allow it or to push.
+Checkpoint: **main 6c71875** (PRs #44–#48 merged; main CI 45837801078 passed). This record: `chore/record-units-1235` (docs only; it also carries the previous handoff commit of PR #43).
+Status: **MERGED** on the owner's word ("merge . after merging wait for my instructions"); each PR merged after its PR CI test job passed. **Waiting for the owner's new plan.**
 Date: 2026-11-26. The owner types only **"fod continue"**. Binding facts: CURRENT_STATE.md. Earlier handoffs: the git history of this file (previous: ef20c93 on `chore/handoff-session-end`, PR #43 still open).
 
-## Scope completed (local branches, each from main 8a74721)
+## Scope completed (all MERGED; branches 2, 3 and 6 rebased on main before their PRs)
 | Unit | Branch (head) | What the owner gets |
 |---|---|---|
-| 1 | `feature/studio-progress` (2126be1) | Progress bar under Production: step, %, frame N of M, about how long is left, time so far; orange with the step on failure. Fix: no empty "Your film is ready" panel while rendering |
-| 2 | `feature/studio-remember` (9768aa5) | The Make-a-film choices and the view come back next time (this browser); **Reset choices** |
-| 3 | `feature/studio-reels` (3035992) | **Make Reels cover** under the finished film: cover picture, Download cover (JPG), the Reels check in plain words (OPEN-5 closed) |
-| 5 | `feature/far-backdrop` (bee6ca7) | Dialogue films get a backdrop that fits the place (sets topic-v3 default): tree line on hills, lit street, lab, tech, office and home walls (OPEN-2, part 1) |
-| 6 | `feature/clean-top` (67f296d) | Owner chose after seeing far-forest-r1: **no speaker roles in captions** and **no big titles** for new films (checkboxes "Speaker names in captions" and "Titles on top", both unticked by default). Matched clean-top-r2: all gates pass, 0 names in subtitles |
+| 1 | PR #44 → 8c214f6 (CI 45835503444) | Progress bar under Production: step, %, frame N of M, about how long is left, time so far; orange with the step on failure. Fix: no empty "Your film is ready" panel while rendering |
+| 2 | PR #45 → e29dd99 | The Make-a-film choices and the view come back next time (this browser); **Reset choices** |
+| 3 | PR #46 → 18378bf | **Make Reels cover** under the finished film: cover picture, Download cover (JPG), the Reels check in plain words (OPEN-5 closed) |
+| 5 | PR #47 → 49f5354 | Dialogue films get a backdrop that fits the place (sets topic-v3 default): tree line on hills, lit street, lab, tech, office and home walls (OPEN-2, part 1) |
+| 6 | PR #48 → 6c71875 (main CI 45837801078 passed); the "Titles on top" choice is also remembered | Owner chose after seeing far-forest-r1: **no speaker roles in captions** and **no big titles** for new films (checkboxes "Speaker names in captions" and "Titles on top", both unticked by default). Matched clean-top-r2: all gates pass, 0 names in subtitles |
 | 4 | — | GEN-16 Three cinematic profile: **held for the owner's Three.js instructions** |
 
 ## Evidence (all observed in this session)
@@ -37,26 +37,22 @@ Date: 2026-11-26. The owner types only **"fod continue"**. Binding facts: CURREN
 - Browser-only: localStorage `aethermotion.studio.settings.v1`.
 
 ## Open issues and risks
-- **Merge order and conflicts:** merge 1 first, then rebase 2 and 3 on the new main and resolve. The conflicts are mechanical (single-line sections in studio/app.js and studio/index.html, appended sections in docs/STUDIO.md and STUDIO_GUIDE.md); a trial merge showed exactly these. 5 is independent.
-- Unit 6 (`feature/clean-top`) also touches studio/app.js, studio/index.html, director-form.js and docs; rebase it after 1–3. On rebase, add `titles` to src/studio/settings.js (unit 2) so the new checkbox is remembered too.
-- Branches 2 and 3 do not contain the global `[hidden]` fix until rebased on 1; their own new hidden elements carry local rules.
-- OPEN-2 part 2 (glass and metal subtle at phone size) remains.
-- In close singles the forest tree line fills the background: agent judged it readable (darker than the characters); owner review pending.
-- OPEN-1, OPEN-3, OPEN-4, OPEN-6 as before. OPEN-7: out/ grew by the agent test jobs (studio-fd9f43a1…, studio-d4cf9677…, studio-5e27ef25…, studio-d99e3445…) and far-forest-r1*; ask before deleting anything.
-- PR #43 (previous handoff, docs only) is still open.
+- Rebases before the PRs: the conflicts in studio/app.js, studio/index.html, studio/style.css and docs/STUDIO.md were resolved by taking main and re-applying each unit's edits. Tests after each rebase: 398, 402, 406 and 412 JS tests, 0 fail. Headless-browser smoke tests of the merged page: choices restored, titles remembered, finished panel hidden, no console errors.
+- Not re-rendered after the merges: the films were rendered from the unit branches (far-forest-r1 at f59a19b, clean-top-r2 at 67f296d). A new film from main combines the new backgrounds with the clean top; that combination has not been rendered yet.
+- Human review: none this session. The owner has not watched far-forest-r1 or clean-top-r2, or tried the new Studio features.
+- OPEN-2 part 2 (glass and metal subtle at phone size); OPEN-1, OPEN-3, OPEN-4, OPEN-6 as before. OPEN-7: out/ grew by agent test jobs (studio-d99e3445…, studio-fd9f43a1…, studio-d4cf9677…, studio-5e27ef25…), far-forest-r1* and clean-top-r1*/r2*; ask before deleting anything.
+- PR #43 (previous handoff) is still open; its commit is included in this record branch.
 
 ## Next action for "fod continue"
-1. Bootstrap (below) on main and on each branch you touch.
-2. Ask the owner to allow `git push` (or to push the branches). Then push the four branches and this chore branch, and open one PR per unit. Report PR CI.
-3. **Merge only on the owner's explicit word, after PR CI passes.** After each merge, rebase the next unit branch on main, re-run `npm test`, push and wait for CI.
-4. Ask the owner to watch far-forest-r1 (out/far-forest-r1-three-polished/film.mp4) and to try the Studio features. Do not start GEN-16 until the owner gives the Three.js instructions.
+1. Bootstrap (below). Expect main 6c71875 or later.
+2. **Wait for the owner's new plan** (owner: "after merging wait for my instructions. i have created a new plan that i will feed it to you"). Do not start anything unasked. GEN-16 (Three cinematic profile) is reserved for the owner's Three.js instructions.
 
 ## Bootstrap for "fod continue"
 1. `git status --short --branch`, `git rev-parse HEAD`, `git fetch`, `gh pr list --state all --limit 6`. Expect main 8a74721 unless the owner merged something.
 2. Read AGENTS.md, CURRENT_STATE.md, this file and NEXT_UNITS.md.
 3. Baseline:
    - `node scripts/fod-digests.mjs . --exclude talk04,talk05,gen01,gen09,gen12,fixa` must print the digests above;
-   - `npm test` must give fail 0;
+   - `npm test` must give fail 0 (412 tests, 1 Windows skip);
    - `PYTHONPATH=scripts .venv/Scripts/python.exe -m unittest discover -s tests -p "test_*.py"` must give 59 OK.
 
 ## Owner working agreement and taste (binding; see also auto-memory)

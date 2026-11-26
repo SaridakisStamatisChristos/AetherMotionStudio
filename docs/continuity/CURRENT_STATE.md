@@ -1,5 +1,5 @@
 # Current state — AetherMotion Studio
-Updated 2026-11-26, later session (main 8a74721; units 1, 2, 3 and 5 of the owner's "implement 1-2-3 and 5" are implemented and verified on four local branches, **not pushed, not merged**; see HANDOFF.md). Authoritative rolling checkpoint for new coding sessions; update at verified transitions. This file references the historical ledger rather than replacing source or evidence. Baseline product merge: `04e3491bb21b4ebc3d54755a2a211b1a7affb3fa` (PR #13 merged into main). The handoff documentation commit may be newer; inspect git HEAD. No release publication implied.
+Updated 2026-11-26, later session (main 6c71875: owner units 1, 2, 3, 5 and 6 MERGED as PRs #44–#48; main CI 45837801078 passed; **no unit is active; waiting for the owner's new plan**; see HANDOFF.md). Authoritative rolling checkpoint for new coding sessions; update at verified transitions. This file references the historical ledger rather than replacing source or evidence. Baseline product merge: `04e3491bb21b4ebc3d54755a2a211b1a7affb3fa` (PR #13 merged into main). The handoff documentation commit may be newer; inspect git HEAD. No release publication implied.
 
 ## Current status and authority
 - v1.0 core pipeline and Asset Foundry AF01–AF09 implementation merged; do not reimplement.
@@ -19,7 +19,7 @@ Updated 2026-11-26, later session (main 8a74721; units 1, 2, 3 and 5 of the owne
 6. Source and approved decisions authoritative. This summary cannot discard binding facts; consult the source-specific contract when the task touches it. Keep state and handoff synchronized. No new native render runs on GitHub or release without authorization.
 
 ## Active unit
-**Owner: "implement 1-2-3 and 5 leave 4 for next cause i am planning to do a lot in three.js … lets finish this dual cpu gpu functionality we have now."** All four are IMPLEMENTED + TESTED + verified locally, one branch each from main 8a74721. **Not pushed** (the session's permission check refused `git push`), so there are no PRs and no CI. Not merged.
+**Owner: "implement 1-2-3 and 5 leave 4 for next cause i am planning to do a lot in three.js … lets finish this dual cpu gpu functionality we have now."** **All MERGED** on the owner's word ("merge . after merging wait for my instructions"), each after its PR CI test job passed: #44 (1), #45 (2), #46 (3), #47 (5), #48 (6) → main 6c71875; main CI 45837801078 passed. Branches 2, 3 and 6 were rebased on main first (mechanical conflicts in the studio files, re-applied and re-tested). **Next: wait for the owner's new plan.** The branch heads quoted below are the pre-rebase local commits that the renders and click tests used.
 - **1. Render progress bar** (`feature/studio-progress` 2126be1; docs/STUDIO.md "Render progress bar"):
   - `src/studio/progress.js` `jobProgress` reads the job log: speech shown as working; plan check; renderer setup; Remotion "Rendered N/M" with its time-remaining estimate; "Encoded N/M"; checking the film. 100 % only when finished; a failure says the step.
   - No server or job contract change.
