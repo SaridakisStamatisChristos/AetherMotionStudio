@@ -112,3 +112,19 @@ test('alternateArms (owner: "the characters move their left hand only"): beats a
  const only=structuredClone(p);only.shots[0].bodyLanguage={alternateArms:true};assert.throws(()=>validateBodyLanguage(only),/enable at least one/);
  validateProject(p);
 });
+test('CPU painter: both robot eyes stay visible when the head turns (owner: "the robot has one eye")',async()=>{
+ const {CRAFTED}=await import('../src/visual/crafted.js');assert.equal(CRAFTED.litBias,.08);
+ const inside=(pt,poly)=>{let c=false;for(let i=0,j=poly.length-1;i<poly.length;j=i++){const [xi,yi]=poly[i],[xj,yj]=poly[j];if((yi>pt[1])!==(yj>pt[1])&&pt[0]<(xj-xi)*(pt[1]-yi)/(yj-yi)+xi)c=!c;}return c;};
+ // Eyes = small glowing boxes at head height; visible when one of their faces is not painted over by a later face.
+ const hiddenEyes=(look,asset,yaw,camY)=>{
+  const cam=[0,camY,4.5],pr=createProjection(cam,[0,1,0],1400,[540,960]),{box,faces}=createMesh(cam,pr,.3,look),eyes=[];
+  emitAsset(asset,(c,s,col,tf,lit,bias,role)=>{const n0=faces.length;box(c,s,col,tf,lit,bias,role);if(lit&&s[0]<.2&&s[1]<.2&&tf(c)[1]>1.3)eyes.push([n0,faces.length]);},{origin:[0,0,0],yaw,params:{detail:2}});
+  assert.ok(faces.every(f=>Number.isFinite(f.z)),'finite painter depths');
+  const order=faces.map((f,i)=>[f,i]).sort((a,b)=>b[0].z-a[0].z),rank=new Map(order.map(([,i],k)=>[i,k]));
+  return eyes.filter(([a,b])=>{for(let i=a;i<b;i++){const f=faces[i],c=[0,1].map(d=>f.p.reduce((s,q)=>s+q[d],0)/f.p.length);if(!order.slice(rank.get(i)+1).some(([g])=>inside(c,g.p)))return false;}return true;}).length;
+ };
+ for(const look of ['crafted-v1','crafted-v2'])for(const asset of ['explorer-robot','service-robot'])for(let yaw=-.9;yaw<=.91;yaw+=.1)for(const camY of [1.2,2.4])
+  assert.equal(hiddenEyes(look,asset,yaw,camY),0,look+' '+asset+' yaw '+yaw.toFixed(1)+' cam '+camY);
+ // The historical (non-crafted) painter is unchanged: accepted films keep their frames, including this old flaw.
+ assert.ok(hiddenEyes(null,'explorer-robot',.5,1.2)>0,'legacy unchanged');
+});
