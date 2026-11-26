@@ -13,9 +13,9 @@ Status words: PLANNED · ACTIVE · IMPLEMENTED · TESTED · RENDERED · OWNER-RE
 |---|---|---|---|---|
 | DUAL-00 | Baseline and capability audit | **MERGED** (PR #50 → 8e42d99, owner: "merge it") | `chore/dual-00-audit` | [CAMPAIGN_A_AUDIT.md](../CAMPAIGN_A_AUDIT.md), [protocol v1](CAMPAIGN_A_PROTOCOL.md), "DUAL-00 baseline" below |
 | DUAL-01 | Character-free content and shared composition | **MERGED** (PR #51 → 14a1da6, owner: "merge pr51") | `feature/dual-01-composition` | [docs/COMPOSITION.md](../COMPOSITION.md), "DUAL-01 evidence" below |
-| DUAL-02 | Typography and motion graphics | **TESTED + RENDERED** (PR open, not merged) | `feature/dual-02-typography` | docs/COMPOSITION.md "Typography", "DUAL-02 evidence" below |
-| DUAL-03 | Mathematics, geometry and algorithm visualization | **NEXT** | — | — |
-| DUAL-04 | Charts, diagrams and data storytelling | PLANNED | — | — |
+| DUAL-02 | Typography and motion graphics | **MERGED** (PR #52 → 17ebecd, owner: "Yes, merge #52") | `feature/dual-02-typography` | docs/COMPOSITION.md "Typography", "DUAL-02 evidence" below |
+| DUAL-03 | Mathematics, geometry and algorithm visualization | **TESTED + RENDERED** (PR open, not merged) | `feature/dual-03-maths` | [docs/MATHS.md](../MATHS.md), "DUAL-03 evidence" below |
+| DUAL-04 | Charts, diagrams and data storytelling | **NEXT** | — | — |
 | DUAL-05 | Local media and illustration integration | PLANNED | — | — |
 | DUAL-06 | Formats, themes and audio controls | PLANNED | — | — |
 | DUAL-07 | Universal Director and Studio integration | PLANNED | — | — |
@@ -84,9 +84,24 @@ Status words: PLANNED · ACTIVE · IMPLEMENTED · TESTED · RENDERED · OWNER-RE
 - **Agent stills:** both fonts render; Greek glyphs correct; title and sentences word by word; counters "1.8 times denser", "3 trillion trees", "100 kilograms of oxygen"; bullets "Water · Vessel · Pure gold"; flow "Carbon → Sugar and wood"; identical on CPU and Three.js; no overflow; nothing over the captions.
 - **Not done (recorded):** Studio preview fonts and controls (DUAL-07); per-word forced alignment (never claimed); paragraphs longer than 220 characters (rejected explicitly).
 
+## DUAL-03 evidence (2026-11-26)
+- **Owner decision:** maths typesetter: "Maths library now", then "MathJax 4.1.3 (Recommended)". `@mathjax/src` 4.1.3 pinned exactly (Apache-2.0; dependencies Apache-2.0/MIT/ISC; ~100 MB in node_modules). Node-only; a test proves neither browser bundle imports it.
+- **What:** bounded expression parser (src/core/expr.js); TeX allowlist + outline validation + arithmetic checks (src/core/math.js); Node MathJax compiler to flattened outlines (src/director/math-compile.js); compose-v2 items `equation`, `plot` (geometry, functions; out-of-range data refused), `graph` (BFS verified), `array` (Euclid verified) with phrase-timed steps (src/core/diagrams.js, src/visual/draw-diagrams.js); Director `request.visuals` (authored compositions attached to script sentences; visuals define their shots; cue/cues; src/director/visuals.js); maths report in stages and manifest. Equations are compiled for Director films and authored `--project` films.
+- **Tests:** 453 JS (452 pass, 0 fail, 1 skip), Python 61 OK; 10 new tests in tests/maths.test.js (parser adversarial inputs, TeX allowlist and tampered outlines, MathJax errors, true/false/unverifiable claims, plot range and pathological functions, BFS/Euclid wrong claims, visuals conflicts, browser-bundle isolation). Legacy digests unchanged.
+- **Films** (vulkan; agent stills only, **no owner review**), all from 74e8b9c clean, all PASS on both backends, shared hashes exact, CHECKS 0 incl. aids-v1, QUALITY 0/0, glitch clean, −16.0 LUFS:
+  | ID | Content | Maths report | Frames | CPU / Three |
+  |---|---|---|---|---|
+  | dual03-pythagoras-r2 | triangle construction, a²+b²=c², checked 3²+4²=9+16=25, c=√25=5 | 1 verified, 2 not checked (symbolic) | 1800 → 1207 | c45c286e812a6f7f… / 6c37214fb61cf7d2… |
+  | dual03-euclid-r2 | three checked division steps, Euclid array, checked gcd(48,18)=6 | 5 verified | 1800 → 1282 | 2072a9217fcbc0aa… / f0cda0109acdb646… (byte-identical to r1: deterministic) |
+  | dual03-bfs-r2 | six-node graph, levels 0–3 | BFS verified | 1200 → 622 | c46142a969568efa… / 82511f7119023a2d… |
+- r1 of all three (fe0fa1b) passed the same gates; plot labels were small → 30 px labels, 20 px ticks (74e8b9c).
+- **Agent stills:** crisp MathJax outlines on both backends; triangle with right-angle mark and labels; equations accumulate with the speech; array (12, 6) → (6, 0); BFS levels light up in verified order; identical aids on CPU and Three.js.
+- **Not done (recorded):** accented letters inside TeX `\text` (rejected; use a label); arrows from a diagram to a 3D object; proofs are explained, not formally verified (only arithmetic, BFS and Euclid claims are machine-checked).
+- **Investigation (owner asked, 2026-11-26):** why DUAL-02 typography films were blocked: the v0.8 preflight (d17e90c) treats "no visible 3D geometry" as a broken shot (EMPTY_GEOMETRY), correct while every shot had to hold 1–8 objects. DUAL-02 made object-free shots legal; the agent dry-ran the other checks but not preflight. Fix (DUAL-02): only compose-v2 shots with zero assets are exempt (TYPOGRAPHY_SHOT review note); every other empty shot still blocks; both cases tested.
+
 ## Decisions the owner must make (ask when the milestone reaches them, not before)
 - DUAL-02: fonts: **decided** (bundle the four open families).
-- DUAL-03: a local math typesetter is a **new dependency** and needs approval; otherwise use a built-in declarative equation layout.
+- DUAL-03: maths typesetter: **decided** (MathJax 4.1.3, Node-only).
 - DUAL-05: SVG support only with an approved sanitizer or offline rasterizer; otherwise raster formats only.
 - DUAL-06: new sizes (1920×1080, 1080×1080) are opt-in presets; the default stays 1080×1920/30 fps.
 - DUAL-08: do it before the freeze or defer it.
@@ -106,3 +121,5 @@ Status words: PLANNED · ACTIVE · IMPLEMENTED · TESTED · RENDERED · OWNER-RE
 - 2026-11-26: DUAL-01 tested and rendered on `feature/dual-01-composition` (beb36af): explainer-r4 and mixed-r3 all gates PASS on both backends; PR open, not merged. DUAL-02 next.
 - 2026-11-26: DUAL-01 MERGED (PR #51 → main 14a1da6, PR CI 45856917978 passed) on the owner's word.
 - 2026-11-26: DUAL-02 tested and rendered on `feature/dual-02-typography` (1115855): eureka-r4 and forest-r3 all gates PASS on both backends; PR open, not merged. DUAL-03 next.
+- 2026-11-26: DUAL-02 MERGED (PR #52 → main 17ebecd, PR CI 45865359538 passed) on the owner's word.
+- 2026-11-26: DUAL-03 tested and rendered on `feature/dual-03-maths` (74e8b9c): pythagoras-r2, euclid-r2, bfs-r2 all gates PASS on both backends; PR open, not merged. DUAL-04 next.
