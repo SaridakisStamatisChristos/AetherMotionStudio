@@ -21,7 +21,8 @@ test('interview cast: the form gives the same request as the forest script examp
  assert.deepEqual(q.dialogue,interview.dialogue);
  assert.equal(q.staging,undefined);assert.equal(q.delivery,undefined);
  // Defaults the form starts with: interview cast, Three, polished, 60 s, Reels off.
- assert.deepEqual(STUDIO_DEFAULTS,{cast:'interview',backend:'three',profile:'polished',seconds:60,reels:false});
+ // speakerNames: the owner's checkbox "Speaker names in captions" (on by default)
+ assert.deepEqual(STUDIO_DEFAULTS,{cast:'interview',backend:'three',profile:'polished',seconds:60,reels:false,speakerNames:true});
  assert.equal(directorRequest(form({backend:'three'})).backend,'three');
 });
 test('Reels checkbox, trio cast and narrator keep their contracts',()=>{
@@ -55,7 +56,9 @@ test('script help: word range, verdicts and rule checks',()=>{
  assert.deepEqual(wordRange(60),{min:120,max:140});assert.deepEqual(wordRange(30),{min:60,max:70});
  const h=scriptHelp(pasted,60);
  assert.equal(h.words,forest.script.split(' ').length);assert.equal(h.sentences,14);assert.equal(h.lines,14);
- assert.equal(h.verdict,'ok');assert.deepEqual(h.notes,[]);assert.match(h.summary,/aim for 120–140 for 60 s/);assert.match(h.turns,/Student, Explorer/);
+ // 136 words in 60 s fits, but forest-script-r1/fixa-script-r1 did not keep the calm pace there: 'tight', with choices
+ assert.equal(h.verdict,'tight');assert.deepEqual(h.notes,[]);assert.match(h.summary,/aim for 120–140 for 60 s/);
+ assert.equal(scriptHelp(pasted,65).verdict,'ok');assert.match(h.turns,/Student, Explorer/);
  assert.equal(scriptHelp(pasted,30).verdict,'long');assert.equal(scriptHelp('Hello there.',60).verdict,'short');
  assert.equal(scriptHelp('',60).verdict,'empty');assert.match(scriptHelp('',60).summary,/draft lines/);
  assert.match(scriptHelp('x '.repeat(80)+'end',60).notes.join(),/140 characters/);
@@ -114,4 +117,73 @@ test('clean up a pasted chat answer: names, numbering, markdown and topic line',
  assert.deepEqual(cleanScript(''),{script:'',topic:null,lines:0});assert.throws(()=>cleanScript(null),/Script text required/);
  // The cleaned answer passes the Director schema as a script.
  request(directorRequest(form({script:r.script})));
+});
+test('Studio UI refinement (owner: "Simple \'Make a film\' view"): simple by default, full editor behind Advanced',()=>{
+ const html=readFileSync(new URL('../studio/index.html',import.meta.url),'utf8'),js=readFileSync(new URL('../studio/app.js',import.meta.url),'utf8'),css=readFileSync(new URL('../studio/style.css',import.meta.url),'utf8');
+ assert.match(html,/<body class="simple">/);assert.match(html,/<button id="mode" type="button" aria-pressed="false"[^>]*>Advanced<\/button>/);
+ assert.match(css,/body\.simple \.adv\{display:none!important\}/);
+ // The film path stays visible: the form, the prompt box, the script, Reels, the preview and the production result.
+ const simpleIds=['topic','directCast','seconds','directBackend','promptHelp','copyPrompt','script','cleanScript','scriptCount','directReels','canvas','jobState','logs','downloads','film'];
+ const advanced=new Set();for(const m of html.matchAll(/<(\w+)[^>]*class="[^"]*\badv\b[^"]*"[^>]*>/g))advanced.add(m.index);
+ for(const id of simpleIds){const at=html.indexOf('id="'+id+'"');assert.ok(at>0,id);
+  // no advanced-only element encloses it: count unclosed adv wrappers before it (all adv wrappers here are divs, sections, asides or leaf elements)
+  const before=html.slice(0,at);const openAdv=[...before.matchAll(/<(div|section|aside)[^>]*class="[^"]*\badv\b[^"]*"[^>]*>/g)].filter(m=>{const rest=html.slice(m.index);let depth=0;const re=new RegExp('<(/?)'+m[1]+'\\b[^>]*>','g');let x;while((x=re.exec(rest))){depth+=x[1]?-1:1;if(depth===0)return m.index+x.index>at;}return true;});
+  assert.equal(openAdv.length,0,id+' must stay visible in the simple view');}
+ // The full editor is advanced-only.
+ for(const marker of ['<aside class="panel inspector adv">','<section class="timeline adv">','<div class="adv"><h2>Workspace</h2>','<div class="adv"><hr><h2>Asset library','<select id="jobs" class="adv"'])assert.ok(html.includes(marker),marker);
+ // The first submit button (Enter key) renders the film; "Generate project only" is advanced.
+ const submits=[...html.matchAll(/<button[^>]*type="submit"[^>]*>/g)].map(m=>m[0]);assert.match(submits[0],/data-produce="true"/);assert.match(submits[1],/class="adv"/);
+ assert.equal((html.match(/class="[^"]*narrator-only/g)??[]).length,2);
+ // label {display:grid} beats the hidden attribute, so the CSS must hide hidden narrator-only fields explicitly
+ // (the click-through screenshot showed "Narrator voice" with the interview cast).
+ assert.ok(css.includes('.narrator-only[hidden]{display:none!important}'));
+ assert.match(js,/function setMode\(advanced\)/);assert.match(js,/setMode\(false\)/);assert.match(js,/\.narrator-only'\)\)el\.hidden=!narrator/);
+});
+test('owner\'s first Studio film: pasted extras are flagged, never spoken; length advice follows Fix A',async()=>{
+ const {scriptHelp,cleanScript,directorRequest}=await import('../src/studio/director-form.js');
+ // The bees answer started with Claude's Topic line; spoken, it made the Student explain and the Explorer ask.
+ const pastedChat='Topic: How do bees make honey?\nExplorer, how do bees make honey?\nIt all starts with nectar, a sweet, watery juice made by flowers.';
+ const h=scriptHelp(pastedChat,60);assert.match(h.notes.join(),/Topic line/);assert.equal(h.words,cleanScript(pastedChat).script.split(/\s+/).length,'counts what will be spoken');
+ assert.deepEqual(scriptHelp(pasted,60).notes,[],'a clean script has no notes');
+ // the page cleans before planning, so the request never contains the Topic line
+ const js=readFileSync(new URL('../studio/app.js',import.meta.url),'utf8');assert.match(js,/onsubmit=action\(async e=>\{autoClean\(\);/);
+ const c=cleanScript(pastedChat);const q=directorRequest(form({topic:'',script:c.script,...(c.topic?{topic:c.topic}:{})}));assert.doesNotMatch(q.script,/Topic:/);assert.equal(q.topic,'How do bees make honey?');
+ // Length advice: dialogue films follow the speech (Fix A); narrator films keep the exact length.
+ const long=Array.from({length:16},(_,i)=>'Line number '+i+' has a few more words here.').join('\n');
+ // Owner: "give a list of advice … so whoever uses it could be able to choose". 144 words: over 140 → long.
+ const d=scriptHelp(long,60,'interview');assert.equal(d.verdict,'long');assert.equal(d.suggestedSeconds,67);assert.match(d.summary,/Too long for 60 s at the calm pace\. Choose below/);
+ assert.deepEqual(d.choices.map(c=>[c.id,c.label]),[['seconds','Use 67 s'],['keep','Keep 60 s'],['shorten','Shorten']]);
+ assert.equal(d.choices[0].seconds,67);assert.match(d.choices[0].detail,/runs only as long as the speech needs/);assert.match(d.choices[2].detail,/question and its answer together/);assert.equal(d.choices[2].hint,true);
+ assert.match(scriptHelp(long,60,'trio').choices[0].label,/Use 67 s/);
+ const n=scriptHelp(long,60,'narrator');assert.deepEqual(n.choices.map(c=>c.id),['seconds','keep','shorten']);assert.doesNotMatch(n.choices[2].detail,/question/);
+ // tight: fits the range, a little fast → two choices; calm: no choices
+ const tight=scriptHelp(long,65);assert.equal(tight.verdict,'tight');assert.deepEqual(tight.choices.map(c=>c.label),['Use 67 s','Keep 65 s']);assert.match(tight.choices[1].detail,/a little faster/);
+ const calm=scriptHelp(long,67);assert.equal(calm.verdict,'ok');assert.deepEqual(calm.choices,[]);assert.match(calm.summary,/Good length, calm pace/);
+ // short: dialogue films follow the speech (no choice needed); narrator films get choices
+ const sd=scriptHelp('Hello there. How are you today?',60);assert.match(sd.summary,/the film will be about 6 s/);assert.deepEqual(sd.choices,[]);
+ const sn=scriptHelp('Hello there. How are you today?',60,'narrator');assert.match(sn.summary,/long silences/);assert.deepEqual(sn.choices.map(c=>c.label),['Use 6 s','Keep 60 s']);
+ assert.equal(scriptHelp(Array(800).fill('word').join(' ')+'.',60).suggestedSeconds,300,'never above 300 s');
+ assert.equal(scriptHelp(pasted,65).suggestedSeconds,null);assert.deepEqual(scriptHelp('',60).choices,[]);
+ // the page renders the choices and applies "Use N s" to Seconds
+ const page=readFileSync(new URL('../studio/index.html',import.meta.url),'utf8');assert.match(page,/<div id="lengthChoices"/);
+ assert.match(js,/function lengthChoices\(h\)/);assert.match(js,/if\(c\.id==='seconds'\)\{\$\('seconds'\)\.value=String\(c\.seconds\)/);
+});
+test('owner\'s checkbox "Speaker names in captions": on by default; off removes names from video captions and subtitle files',async()=>{
+ const {directorRequest,STUDIO_DEFAULTS}=await import('../src/studio/director-form.js');
+ const {validateSpeechConfig}=await import('../src/core/speech.js');
+ assert.equal(STUDIO_DEFAULTS.speakerNames,true);
+ const on=directorRequest(form({speakerNames:true}));assert.equal(on.speech,undefined,'default: unchanged request');
+ const off=directorRequest(form({speakerNames:false}));assert.equal(off.speech.captions.speakerNames,false);request(off);
+ assert.equal(directorRequest(form({cast:'narrator',speakerNames:false})).speech,undefined,'narrator: one speaker, nothing to hide');
+ assert.throws(()=>directorRequest(form({speakerNames:'no'})),/Speaker names must be on or off/);
+ const sp=(await import('../src/studio/production.js')).defaultSpeech(60);
+ for(const bad of [true,'false',0])assert.throws(()=>validateSpeechConfig({...sp,captions:{...sp.captions,speakerNames:bad}}),/speakerNames/,String(bad));
+ // the Director keeps the setting in the dialogue speech it builds
+ const {project}=await direct(off);assert.equal(project.speech.captions.speakerNames,false);assert.equal(Object.keys(project.speech.speakers).length,2);
+ // the page: checkbox ticked by default, wired into the form, and the render keeps the request's speech
+ const html=readFileSync(new URL('../studio/index.html',import.meta.url),'utf8'),js=readFileSync(new URL('../studio/app.js',import.meta.url),'utf8');
+ assert.match(html,/<input id="directNames" type="checkbox" checked> Speaker names in captions/);
+ assert.match(js,/speakerNames:\$\('directNames'\)\.checked/);assert.match(js,/if\(produce\)q\.speech\?\?=defaultSpeech\(q\.seconds\)/);
+ // the burned-in caption: no name when off
+ const draw=readFileSync(new URL('../src/core/draw-film.js',import.meta.url),'utf8');assert.match(draw,/speech\.captions\?\.speakerNames!==false&&/);
 });

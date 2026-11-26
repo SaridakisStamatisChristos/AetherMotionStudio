@@ -39,3 +39,47 @@ Tests cover transactional edits, estimated budget, reference rejection, atomic p
   - Reels checkbox → `delivery: 'reels-v1'`. The cover and reels-report still come from `node scripts/reels-export.mjs out/<job id>` after the render.
   - Backend: **Three.js** by default (RTX through the launcher; plain `npm run studio:local` uses the repository default swangle), or CPU Canvas. Seconds default 60.
 - **One backend per job.** Studio jobs render one saved project with one backend (one active job, one snapshot, one output folder). "Both" would need a second job or a new job contract, so it is not offered; use `node scripts/produce.mjs --backend both` for matched pairs.
+
+## Simple "Make a film" view (Studio UI refinement, 2026-11-26)
+Owner picked "Simple 'Make a film' view" (the last step of the plan; the other offered refinements were not chosen).
+- The page opens in the **simple view**:
+  - the "Make a film" form: topic, cast, seconds, backend, the Claude-chat prompt box, script, Clean up, word count and rules, Reels;
+  - **Generate & render film**, now the first button, so Enter renders;
+  - the preview;
+  - the production status, downloads and the finished film.
+- **Advanced** (header button; it reads "Simple view" when on) shows the full editor as before: workspace, Save/Export, the asset library, Foundry packs, the preview mode, timeline, the production toolbar and session jobs, the project settings, the shot inspector, speakers, JSON and the quality report.
+  - "Generate project only" and the Profile choice are advanced too.
+- Narrator voice and art-v1 staging show only when the Narrator cast is chosen.
+- No contract, job or request change: the same handlers and `directorRequest`. Each element is tagged `adv`, and CSS hides it in the simple view.
+- Click-through (agent, headless Chrome on a fresh Studio from the branch code, vulkan):
+  - the simple view opened by default;
+  - the topic and the forest script were filled in (136 words, "Good length"), and "Generate & render film" was clicked;
+  - job studio-ddb5f4a61d08ce9e740e succeeded in about 65 s (speech cached; render 49.6 s);
+  - the finished film and the download links appeared in the page;
+  - film df90f17e13d52492…: 1800 frames, glitch clean, −16.0 LUFS; PASS lines; QUALITY errors 0, warnings 0; crafted-v2, forest-set, alternateArms.
+- The screenshot exposed a bug: "Narrator voice" stayed visible with the interview cast, because `label {display:grid}` overrode `hidden`. Fixed with `.narrator-only[hidden]{display:none!important}`, tested and re-checked by screenshot.
+- **The owner has not tried the new view.**
+- **Owner's first Studio film** ("great for the first production through pipeline looks great"):
+  - Job studio-69cffc5969ccc5a3504e, bees, 65 s: 1950 frames, pace 0.92 kept, longest pause 1.2 s, all checks 0, glitch clean, −16.0 LUFS.
+  - Agent inspection found a content bug: Claude's "Topic: …" line (which the prompt asks for) was pasted without Clean up and spoken. Every turn shifted, so the Student explained and the Explorer asked.
+  - **Fix:** the page now cleans the script automatically on Generate (`autoClean` → `cleanScript`). The word count counts only what will be spoken and flags pasted extras.
+  - **Length advice follows Fix A:** a long dialogue script says "set Seconds to N to keep the calm pace" (N = words ÷ 2.33, rounded up to 5 s); a short one says "the film will be about N s". Narrator films keep the old advice.
+  - Click re-test with the owner's exact answer at 60 s (job studio-cae85f1ea275cb3c4224): the Topic line was removed on click, 138 spoken words, "Good length". The Student asks and the Explorer explains. 60.0 s, glitch clean, −16.0 LUFS.
+  - Pace 0.92 was not kept at 138 words / 60 s: the 120–140 range may be slightly generous (owner decision; unchanged).
+- **Checkbox "Speaker names in captions"** (owner: "it writes who is who in the captions … is that intentional?" → "i prefer a checkbox"):
+  - Names have been intentional since TALK-01/02: with more than one speaker, the name shows above each caption and as "Name: " in the .srt/.vtt.
+  - New opt-in `speech.captions.speakerNames: false` (src/core/speech.js) hides them in burned-in captions (draw-film.js) and in the sidecars. One shared `caption_labels` (scripts/speech_plan.py) feeds the writer and both checkers (verify.py, quality_media.py).
+  - Studio: the checkbox is ticked by default; unticked, `directorRequest` adds the speech setting for dialogue casts (narrator requests are unchanged).
+  - Click test with the box unticked (job studio-35d588b054e8486b020f, bees script): job succeeded (verify passed); 0 speaker names in captions.srt and captions.vtt; burned-in captions show words only (agent frames 100, 400 and 900).
+  - Tests: tests/studio01.test.js and tests/test_caption_labels.py (3).
+- **Length choices instead of a tighter range** (owner: "instead of tighten the word range why not give a list of advice … so whoever uses it could be able to choose"):
+  - `scriptHelp` sorts a script into zones using the calm rate `CALM_WORDS_PER_SECOND` 2.15, which separates the measurements (138 words / 65 s kept the 0.92 pace; 136–139 words / 60 s did not):
+    - calm: "Good length, calm pace";
+    - tight: within 120–140 per 60 s but faster than calm;
+    - long: over the range;
+    - short.
+  - Tight and long offer **Use N s** (N = words ÷ 2.15, rounded up; for dialogue films the length still follows the speech) and **Keep**. Long also hints **Shorten** (about K words; for dialogue films, remove a question and its answer together).
+  - Short dialogue scripts say "the film will be about N s". Short narrator scripts offer Use N s or Keep.
+  - The page renders the choices under the word count: "Use" sets Seconds; "Keep" closes the choice for this script and length. The 120–140 range is unchanged.
+  - Browser check (agent): the bees script at 60 s showed "Use 65 s / Keep 60 s". Clicking Use set 65 s and showed "Good length, calm pace".
+- Tests: tests/studio01.test.js "Studio UI refinement" (simple by default; every film-path field stays outside advanced wrappers; the editor parts are advanced; the first submit renders; narrator-only fields).

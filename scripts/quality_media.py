@@ -81,9 +81,8 @@ def emit(out):
     audio={'decodedSamples':len(pcm),'expectedSamples':expected,'rms':rms(pcm),'peak':float(np.max(np.abs(pcm))) if len(pcm) else 0,'intervals':intervals,'method':'decoded AAC mono PCM; not LUFS, true peak or intelligibility'}
     captions=None
     if scene.get('speech'):
-        cfg=scene['speech'];labels={k:v['name'] for k,v in cfg['speakers'].items()}
-        if any(s['speaker']=='default' for s in segments):labels['default']='Narrator'
-        expected_cues=expected_subtitles(timeline['captions'],labels)
+        from speech_plan import caption_labels
+        cfg=scene['speech'];expected_cues=expected_subtitles(timeline['captions'],caption_labels(cfg,segments))
         for kind in ('srt','vtt'):
             try:
                 if parse_subtitles((out/f'captions.{kind}').read_text(encoding='utf-8'),kind)!=expected_cues:raise ValueError('subtitle payload or times differ')

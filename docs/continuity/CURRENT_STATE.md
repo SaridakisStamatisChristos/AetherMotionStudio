@@ -1,5 +1,5 @@
 # Current state — AetherMotion Studio
-Updated 2026-11-26 (main 8e65805 = Fix A merged; GEN-15 step 2 IMPLEMENTED + TESTED + RENDERED on feature/gen-15-step2, PR pending; Studio UI refinement last). Authoritative rolling checkpoint for new coding sessions; update at verified transitions. This file references the historical ledger rather than replacing source or evidence. Baseline product merge: `04e3491bb21b4ebc3d54755a2a211b1a7affb3fa` (PR #13 merged into main). The handoff documentation commit may be newer; inspect git HEAD. No release publication implied.
+Updated 2026-11-26 (main 0e0e0f1; Studio UI refinement, the last step of the plan, IMPLEMENTED + TESTED on feature/studio-ui, PR pending). Authoritative rolling checkpoint for new coding sessions; update at verified transitions. This file references the historical ledger rather than replacing source or evidence. Baseline product merge: `04e3491bb21b4ebc3d54755a2a211b1a7affb3fa` (PR #13 merged into main). The handoff documentation commit may be newer; inspect git HEAD. No release publication implied.
 
 ## Current status and authority
 - v1.0 core pipeline and Asset Foundry AF01–AF09 implementation merged; do not reimplement.
@@ -19,7 +19,27 @@ Updated 2026-11-26 (main 8e65805 = Fix A merged; GEN-15 step 2 IMPLEMENTED + TES
 6. Source and approved decisions authoritative. This summary cannot discard binding facts; consult the source-specific contract when the task touches it. Keep state and handoff synchronized. No new native render runs on GitHub or release without authorization.
 
 ## Active unit
-**GEN-15 step 2 (part materials, dressed sets): IMPLEMENTED + TESTED + RENDERED on `feature/gen-15-step2` (from main 8e65805), not merged.** Owner: "i agree merge it and start gen-15 step 2"; Fix A was merged as PR #38 (8e65805) and #37 was closed (included).
+**Studio UI refinement (the last step of the owner's plan): IMPLEMENTED + TESTED on `feature/studio-ui` (from main 0e0e0f1), not merged.** Owner's choice (of four offered): "Simple 'Make a film' view".
+- Binding:
+  - the Studio opens in the simple view: the Make-a-film form, the preview and the production result;
+  - Advanced shows the full editor as before;
+  - no contract, job or request change; elements are tagged `adv`, and narrator-only fields show only for the Narrator cast.
+  - Details: docs/STUDIO.md "Simple 'Make a film' view".
+- Evidence: 381 JS tests (0 fail, 1 skip); digests unchanged.
+- Click-through (agent, headless Chrome on a fresh Studio from the branch code, vulkan):
+  - the simple view opened by default;
+  - the topic and the forest script were filled in (136 words, "Good length"), and "Generate & render film" was clicked;
+  - job studio-ddb5f4a61d08ce9e740e succeeded in about 65 s (speech cached; render 49.6 s);
+  - the finished film and the download links appeared in the page;
+  - film df90f17e13d52492…: 1800 frames, glitch clean, −16.0 LUFS; PASS lines; QUALITY errors 0, warnings 0; crafted-v2, forest-set, alternateArms.
+- The screenshot exposed a bug: "Narrator voice" stayed visible with the interview cast, because `label {display:grid}` overrode `hidden`. Fixed with `.narrator-only[hidden]{display:none!important}`, tested and re-checked by screenshot.
+- **The owner has not tried the new view.**
+- Auto-clean on Generate and Fix A length advice (after the owner's first Studio film spoke Claude's Topic line and swapped the roles). 382 JS tests.
+- Studio checkbox "Speaker names in captions" (owner: "i prefer a checkbox"): opt-in `speech.captions.speakerNames: false`; on by default. 383 JS, 59 Python tests.
+- Length choices (owner: "give a list of advice … so whoever uses it could be able to choose"): calm/tight/long/short zones at 2.15 calm words per second, with Use N s, Keep and Shorten; the range is unchanged.
+- Not chosen (not scheduled): clear render progress, a finished-film panel, remembering settings.
+
+**GEN-15 step 2 (part materials, dressed sets): MERGED** (PR #39 → 0e0e0f1 on the owner's word "merge 39"; PR CI 45791417306, main CI 45799267039 passed). Owner: "i agree merge it and start gen-15 step 2"; Fix A was merged as PR #38 (8e65805) and #37 was closed (included).
 - Binding:
   - look `crafted-v2` = crafted-v1 plus glass and metal part roles (crafted.js `partRole`); a role is an extra box-stream argument that legacy and crafted-v1 ignore;
   - sets `topic-v2` = a dressed set per category (cinematography.js `DRESSED_SETS`; new layered environments) and set pieces matched to the words (sets.js `PIECE_WORDS`, `fitPiecesFor`; a piece from another category must be named in full);

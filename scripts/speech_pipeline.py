@@ -7,7 +7,7 @@ import numpy as np
 from scipy.io import wavfile
 from scipy.signal import resample_poly, butter, sosfilt
 from timeline_plan import RATE,SPF
-from speech_plan import allocate_mixed, fit_target, slots, pronunciation, caption_cues, subtitles, caption_metrics, speed_ladder, phrase_speed
+from speech_plan import allocate_mixed, fit_target, caption_labels, slots, pronunciation, caption_cues, subtitles, caption_metrics, speed_ladder, phrase_speed
 import audio_master
 import speech_envelope
 import visemes
@@ -89,9 +89,7 @@ def compile_speech(scene,out,root,model_dir,kokoro):
         timeline['shots'].append(entry);offset+=n
     assert offset==target
     timeline['captions']=caption_cues(segments,c['captions'],[e['endFrame']*SPF for e in timeline['shots'] for _ in e['segments']])
-    labels={k:v['name'] for k,v in c['speakers'].items()}
-    if any(s['speaker']=='default' for s in segments):labels['default']='Narrator'
-    srt,vtt=subtitles(timeline['captions'],labels)
+    srt,vtt=subtitles(timeline['captions'],caption_labels(c,segments))
     (out/'captions.srt').write_text(srt,encoding='utf-8');(out/'captions.vtt').write_text(vtt,encoding='utf-8')
     # Explicit track gains and deterministic synthesis; no downloaded music.
     cfg=c['mix'];t=np.arange(N,dtype=np.float32)/R

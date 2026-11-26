@@ -150,6 +150,14 @@ def millis(sample):return (sample*1000+RATE//2)//RATE
 def stamp(ms,separator):
     h,ms=divmod(ms,3600000);m,ms=divmod(ms,60000);s,ms=divmod(ms,1000)
     return f'{h:02d}:{m:02d}:{s:02d}{separator}{ms:03d}'
+# Speaker labels for subtitle sidecars (shared by speech_pipeline, verify and quality_media): names of the speakers,
+# plus 'Narrator' for default lines; none when captions.speakerNames is false (owner's Studio checkbox).
+def caption_labels(cfg,segments):
+    if cfg['captions'].get('speakerNames') is False: return {}
+    labels={k:v['name'] for k,v in cfg['speakers'].items()}
+    if any(s['speaker']=='default' for s in segments):labels['default']='Narrator'
+    return labels
+
 def subtitles(cues,speakers):
     srt=[];vtt=['WEBVTT',''];last=0
     for i,c in enumerate(cues,1):

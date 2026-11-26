@@ -1,6 +1,7 @@
 // STUDIO-01 "script to film": the Studio Director form as pure data. `directorRequest` maps the form fields to a
 // Director request (the server validates it again with src/director/schema.js `request`); `scriptHelp` gives the live
 // word count and the owner script rules (docs/SCRIPT_FORMAT.md). Browser-safe: no Node or director imports.
+import {defaultSpeech} from './production.js';
 const bad=m=>{throw Error(m)};
 // Casts offered by the form. `interview` is the same cast and voices as examples/gen01-interview.request.json (and the
 // owner's forest script example); `trio` is the TALK-04 three-person cast the form offered before (round-robin turns);
@@ -12,14 +13,18 @@ export const STUDIO_CASTS=Object.freeze({
   dialogue:{speakers:[{id:'eng',name:'Engineer',voice:'af_heart',language:'en-us',character:'engineer'},{id:'robo',name:'Robot',voice:'am_michael',language:'en-us',character:'service-robot'},{id:'sci',name:'Scientist',voice:'bf_emma',language:'en-gb',character:'scientist'}]}}),
  narrator:Object.freeze({label:'Narrator only (no characters)',fields:{},dialogue:null})
 });
-export const STUDIO_DEFAULTS=Object.freeze({cast:'interview',backend:'three',profile:'polished',seconds:60,reels:false});
+export const STUDIO_DEFAULTS=Object.freeze({cast:'interview',backend:'three',profile:'polished',seconds:60,reels:false,speakerNames:true});
 // About 2.2 spoken words per second (docs/SCRIPT_FORMAT.md): 60 s → 120–140 words, 30 s → 60–70.
 export const WORDS_PER_SECOND=Object.freeze({min:2,max:7/3});
+// Spoken words per second at which the calm dialogue pace (0.92) was kept in measured films (see scriptHelp).
+// 2.15 separates the measurements: 138 words / 65 s (2.12, kept) and 136–139 words / 60 s (2.27–2.32, not kept).
+export const CALM_WORDS_PER_SECOND=2.15;
 export function wordRange(seconds){
  if(!Number.isSafeInteger(seconds)||seconds<6||seconds>300)bad('Seconds must be a whole number from 6 to 300');
  return {min:Math.round(seconds*WORDS_PER_SECOND.min),max:Math.round(seconds*WORDS_PER_SECOND.max)};
 }
-// form: {topic, script, seconds, cast, backend, profile, voice (narrator only), staging (narrator only), reels, id}.
+// form: {topic, script, seconds, cast, backend, profile, voice (narrator only), staging (narrator only), reels, id,
+// speakerNames (owner's checkbox "Speaker names in captions"; false → speech.captions.speakerNames false)}.
 export function directorRequest(form){
  if(!form||typeof form!=='object')bad('Form data required');
  const topic=typeof form.topic==='string'?form.topic.trim():'',script=typeof form.script==='string'?form.script.trim():'';
@@ -35,25 +40,52 @@ export function directorRequest(form){
  else{if(typeof form.voice!=='string'||!form.voice)bad('Choose a narrator voice');q.voice=form.voice;if(form.staging)q.staging='art-v1';}
  if(script)q.script=script;
  if(form.reels===true)q.delivery='reels-v1';else if(form.reels!==false&&form.reels!==undefined)bad('Reels must be on or off');
+ if(![true,false,undefined].includes(form.speakerNames))bad('Speaker names must be on or off');
+ // names only ever show with two or more speakers, so the narrator request is left unchanged
+ if(form.speakerNames===false&&cast.dialogue){q.speech=defaultSpeech(seconds);q.speech.captions.speakerNames=false;}
  return q;
 }
-// Live help under the Script box. Counts words and sentences, and flags lines the Director would split or reject.
+// Live help under the Script box. Counts what will be spoken (the cleaned script), flags lines the Director would
+// split or reject, and gives length advice. Since Fix A, dialogue films (interview, trio) are as long as their speech
+// plus calm pauses, at most the chosen seconds: a long script needs more seconds (never extra silence), and a short
+// script makes a shorter film. Narrator films keep the exact length, so they keep the old advice.
+// Owner's first Studio film: Claude's "Topic: …" line was spoken and shifted every turn (the Student explained, the
+// Explorer asked), so pasted extras are flagged here and removed automatically on Generate (studio/app.js).
 export function scriptHelp(script,seconds,cast='interview'){
- const text=typeof script==='string'?script.trim():'';
+ const raw=typeof script==='string'?script.trim():'',cleaned=raw?cleanScript(raw):{script:'',topic:null,lines:0},text=cleaned.script;
  let range=null;try{range=wordRange(Number(seconds));}catch{}
  const words=text?text.split(/\s+/).length:0;
  const lines=text?text.split(/\n+/).map(x=>x.trim()).filter(Boolean):[];
  const sentences=text?text.split(/(?<=[.!?])\s+/).filter(Boolean).length:0;
- const notes=[];
+ const notes=[],rawLines=raw?raw.split(/\r?\n/).map(x=>x.trim()).filter(Boolean):[];
+ if(raw&&(cleaned.topic!==null||rawLines.join('\n')!==text))notes.push('a Topic line, speaker names, numbering or headings were pasted: they are removed on Generate (or press Clean up now)');
  if(lines.some(l=>l.length>=140))notes.push('a line is 140 characters or longer (it will be split)');
  if(text.split(/\s+/).some(w=>w.replace(/[^A-Za-z]/g,'').length>32))notes.push('a word is longer than 32 letters');
- if(/https?:\/\/|```|<\/?script/i.test(text))notes.push('links or code are not allowed');
+ if(/https?:\/\/|```|<\/?script/i.test(raw))notes.push('links or code are not allowed');
  if(lines.some(l=>!/[.!?]["')\]]?$/.test(l)))notes.push('every line should end with . ? or !');
+ // Owner: "instead of tighten the word range why not give a list of advice … so whoever uses it could be able to
+ // choose". Zones (measured: the calm pace 0.92 held at 138 words / 65 s, about 2.12 words per second, and was not kept
+ // at 136–139 words / 60 s, about 2.3): calm (≤ CALM words/s), tight (calm … range max: fits, slightly faster speech),
+ // long (over the range max), short. Each zone offers choices; the page applies a "seconds" choice to the form.
  let verdict='empty';
- if(words&&range)verdict=words<range.min?'short':words>range.max?'long':'ok';
- const advice={empty:'No script: the Director writes draft lines from the topic.',short:'Too few words: expect long silences.',long:'Too many words: the speech will be sped up.',ok:'Good length.'}[verdict];
- return {words,sentences,lines:lines.length,range,verdict,notes,
-  summary:words+' words, '+sentences+' sentences'+(range?' (aim for '+range.min+'–'+range.max+' for '+Number(seconds)+' s)':'')+'. '+advice+(notes.length?' Check: '+notes.join('; ')+'.':''),
+ if(words&&range)verdict=words<range.min?'short':words>range.max?'long':words>Math.floor(Number(seconds)*CALM_WORDS_PER_SECOND)?'tight':'ok';
+ const fits=cast!=='narrator',sec=Number(seconds);
+ const calmSeconds=Math.min(300,Math.max(6,Math.ceil(words/CALM_WORDS_PER_SECOND)));
+ const suggestedSeconds=['long','tight'].includes(verdict)?calmSeconds:null;
+ const estimate=Math.max(6,Math.round(words/2.2)),trim=Math.max(0,words-Math.floor(sec*CALM_WORDS_PER_SECOND));
+ const choices=[];
+ if(verdict==='tight'||verdict==='long'){
+  choices.push({id:'seconds',seconds:calmSeconds,label:'Use '+calmSeconds+' s',detail:fits?'calm pace; the film runs only as long as the speech needs':'calm pace'});
+  choices.push({id:'keep',label:'Keep '+sec+' s',detail:verdict==='tight'?'the speech will be a little faster':'the speech will be faster'});
+  if(verdict==='long')choices.push({id:'shorten',label:'Shorten',detail:'remove about '+trim+' words'+(cast==='narrator'?'':' (remove a question and its answer together, so the turns stay in order)'),hint:true});
+ }
+ if(verdict==='short'&&!fits){choices.push({id:'seconds',seconds:estimate,label:'Use '+estimate+' s',detail:'no long silences'});choices.push({id:'keep',label:'Keep '+sec+' s',detail:'expect long silences'});}
+ const advice={empty:'No script: the Director writes draft lines from the topic.',ok:'Good length, calm pace.',
+  tight:'Fits '+sec+' s, but the speech will be a little faster than the calm pace. Choose below.',
+  long:'Too long for '+sec+' s at the calm pace. Choose below.',
+  short:fits?'Short script: the film will be about '+estimate+' s (it follows the speech, without long silences).':'Too few words for '+sec+' s: expect long silences. Choose below.'}[verdict];
+ return {words,sentences,lines:lines.length,range,verdict,notes,suggestedSeconds,choices,
+  summary:words+' words, '+sentences+' sentences'+(range?' (aim for '+range.min+'–'+range.max+' for '+sec+' s)':'')+'. '+advice+(notes.length?' Check: '+notes.join('; ')+'.':''),
   turns:cast==='trio'?'Turns rotate Engineer → Robot → Scientist, one sentence each.':cast==='narrator'?'One narrator reads every sentence.':'Turns alternate Student, Explorer, Student… one sentence each, starting with the Student.'};
 }
 // STUDIO-01 prompt guidance: the Claude-chat prompt from docs/SCRIPT_FORMAT.md, filled in for the chosen topic,

@@ -36,9 +36,12 @@ export function validateSpeechConfig(c,shots=null){
  map(c.shotSpeakers,'shotSpeakers',60);
  for(const [id,v] of Object.entries(c.shotSpeakers)){shotId(id,'shotSpeakers');arr(v,8,'shotSpeakers');if(!v.length||ids&&v.length!==ids.get(id).narration.length||v.some(k=>!Object.hasOwn(c.speakers,k)))fail('shotSpeakers','unknown speaker or phrase count mismatch');}
  map(c.pronunciations,'pronunciations',64);for(const [k,v] of Object.entries(c.pronunciations)){if(!/^[A-Za-z0-9][A-Za-z0-9'-]{0,31}$/.test(k)||['constructor','prototype'].includes(k))fail('pronunciations','invalid token');if(typeof v!=='string'||!/^[A-Za-z0-9][A-Za-z0-9 ',-]{0,79}$/.test(v))fail('pronunciations','invalid replacement');}
- fields(c.captions,['mode','highlight','maxChars','maxLines','maxCps','readable'],'captions',['mode','highlight','maxChars','maxLines','maxCps']);
+ fields(c.captions,['mode','highlight','maxChars','maxLines','maxCps','readable','speakerNames'],'captions',['mode','highlight','maxChars','maxLines','maxCps']);
  // GEN-05b opt-in: balanced cue splits and a short hold into the following pause (scripts/speech_plan.py caption_cues)
- if(c.captions.readable!==undefined&&c.captions.readable!==true)fail('captions.readable','true or absent required');choice(c.captions.mode,['burn-in','sidecar','both'],'captions.mode');bool(c.captions.highlight,'captions.highlight');int(c.captions.maxChars,24,36,'captions.maxChars');int(c.captions.maxLines,1,2,'captions.maxLines');int(c.captions.maxCps,12,24,'captions.maxCps');
+ if(c.captions.readable!==undefined&&c.captions.readable!==true)fail('captions.readable','true or absent required');
+ // Owner (Studio checkbox "Speaker names in captions"): false hides the speaker name above burned-in captions and in
+ // the .srt/.vtt sidecars; absent = names whenever a film has more than one speaker (unchanged).
+ if(c.captions.speakerNames!==undefined&&c.captions.speakerNames!==false)fail('captions.speakerNames','false or absent required');choice(c.captions.mode,['burn-in','sidecar','both'],'captions.mode');bool(c.captions.highlight,'captions.highlight');int(c.captions.maxChars,24,36,'captions.maxChars');int(c.captions.maxLines,1,2,'captions.maxLines');int(c.captions.maxCps,12,24,'captions.maxCps');
  if(ids&&shots.some(s=>s.narration.some(t=>words(t).some(w=>Array.from(w).length>c.captions.maxChars))))fail('captions','word exceeds configured line limit');
  fields(c.mix,['narration','music','ambience','sfx','duck','fadeSeconds','peak','master'],'mix',['narration','music','ambience','sfx','duck','fadeSeconds','peak']);
  if(c.mix.master!==undefined&&c.mix.master!=='mix-v2')fail('mix.master','mix-v2 required');
