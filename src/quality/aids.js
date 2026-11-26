@@ -5,7 +5,7 @@
 // - AIDS_ON_CAPTION: a plate meets the burned-in caption box of the active cue (normal or Reels layout).
 import {evaluateGraph} from '../core/graph.js';
 import {geometryBounds} from '../core/cinematography.js';
-import {layoutComposition,compositionPlates} from '../core/composition.js';
+import {layoutComposition,compositionPlates,phraseWindows} from '../core/composition.js';
 import {dialogueShot} from '../core/dialogue.js';
 import {createProjection} from '../visual/mesh.js';
 import {cueAt} from '../core/speech.js';
@@ -23,10 +23,10 @@ export function aidsCheck(project,t){
  const P=AIDS_POLICY,shots=[],warnings=[],r3=v=>Math.round(v*1000)/1000;
  for(const [i,s0] of project.shots.entries()){
   if(s0.template!=='cinematic-graph'||!s0.composition)continue;
-  const layout=layoutComposition(s0.composition),ts=t.shots[i],n=ts.endFrame-ts.startFrame,s={...dialogueShot(s0,ts),durationFrames:n};
+  const ts=t.shots[i],n=ts.endFrame-ts.startFrame,s={...dialogueShot(s0,ts),durationFrames:n},count=s0.narration?.length??0,layout=layoutComposition(s0.composition,'composition',{phrases:count}),phrases=phraseWindows(ts,count);
   const worst={},caption=[0,null];
   for(let f=0;f<n;f+=P.every){
-   const p=n>1?f/(n-1):0,plates=compositionPlates(layout,p);if(!plates.length)continue;
+   const p=n>1?f/(n-1):0,plates=compositionPlates(layout,p,phrases);if(!plates.length)continue;
    const st=evaluateGraph(s,p),c=st.camera,pr=createProjection(c.position,c.target,c.zoom,[360,640]);
    for(const a of st.assets){const b=geometryBounds([a]);if(!b)continue;let x0=Infinity,x1=-Infinity,y0=Infinity,y1=-Infinity,behind=false;
     for(const x of [b.lo[0],b.hi[0]])for(const y of [b.lo[1],b.hi[1]])for(const z of [b.lo[2],b.hi[2]]){const q=pr([x,y,z]);if(!(q[2]>.1))behind=true;x0=Math.min(x0,q[0]);x1=Math.max(x1,q[0]);y0=Math.min(y0,q[1]);y1=Math.max(y1,q[1]);}

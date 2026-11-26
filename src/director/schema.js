@@ -5,6 +5,7 @@ import {validateSpeechConfig} from '../core/speech.js';
 import {VOICES} from '../core/contract.js';
 import {validateDialogueRequest,validateDialogueShot} from './dialogue.js';
 import {CONTENT_MODES} from './aids.js';
+import {FONTS,THEMES} from '../core/composition.js';
 import {isCatalogCharacter} from '../quality/crowding.js';
 export const REQUEST_VERSION=1,IR_VERSION=1,MAX_JSON_BYTES=262144;
 const bad=(p,m)=>{throw Error(p+': '+m)};
@@ -22,7 +23,7 @@ export function safeJson(raw){
 }
 export const normalize=s=>s.trim().replace(/\s+/g,' ');
 export function request(input){
- fields(input,['version','id','topic','script','seconds','audience','tone','style','language','voice','backend','profile','seed','identityLibrary','cast','story','speech','staging','promptVersion','dialogue','delivery','sets','look','titles','content'], 'request',['version','id','topic','seconds']);
+ fields(input,['version','id','topic','script','seconds','audience','tone','style','language','voice','backend','profile','seed','identityLibrary','cast','story','speech','staging','promptVersion','dialogue','delivery','sets','look','titles','content','font','theme'], 'request',['version','id','topic','seconds']);
  // GEN-09 opt-in delivery mode (Instagram Reels layout and framing); absent = unchanged output.
  if(input.delivery!==undefined&&input.delivery!=='reels-v1')bad('request.delivery','reels-v1 or absent');
  // GEN-12 topic-fitting sets: 'topic-v1' or 'none'; absent = topic-v1 for dialogue films, unchanged output otherwise.
@@ -40,7 +41,12 @@ export function request(input){
  if(input.content!==undefined){if(!CONTENT_MODES.includes(input.content))bad('request.content',CONTENT_MODES.join(', ')+' or absent');
   if(input.identityLibrary)bad('request.content','identity stories keep their authored shots');
   if(input.content==='explainer-v1'&&input.dialogue)bad('request.content','explainer-v1 has no characters; use mixed-v1 for a dialogue with visual aids');
+  if(input.content==='typography-v1'&&input.dialogue)bad('request.content','typography-v1 has no characters; use mixed-v1 for a dialogue with visual aids');
   if(input.titles==='shots')bad('request.titles','visual aids replace the shot titles; use none or leave it out');}
+ // DUAL-02 opt-in typeface and theme of the visual aids (compose-v2); only with a content mode.
+ if(input.font!==undefined||input.theme!==undefined){if(input.content===undefined)bad('request.font','font and theme style the visual aids; set request.content');
+  if(input.font!==undefined&&!FONTS.includes(input.font))bad('request.font',FONTS.join(', ')+' or absent');
+  if(input.theme!==undefined&&!Object.hasOwn(THEMES,input.theme))bad('request.theme',Object.keys(THEMES).join(', ')+' or absent');}
  if(input.look!==undefined&&!['crafted-v1','crafted-v2','none'].includes(input.look))bad('request.look','crafted-v1, crafted-v2, none or absent');
  const q={audience:'general audience',tone:'clear',style:'cinematic explainer',language:'en',voice:'af_heart',backend:'cpu',profile:'polished',seed:0,...input};
  if(q.version!==REQUEST_VERSION)bad('request.version','unsupported');

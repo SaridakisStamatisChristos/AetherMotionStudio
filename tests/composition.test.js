@@ -35,7 +35,7 @@ test('compose-v1 layout is deterministic and wraps text inside its box',()=>{
 
 test('compose-v1 rejects malformed, hostile and overflowing compositions with explicit messages',()=>{
  const bad=(c,re)=>assert.throws(()=>validateComposition(c,'c'),re);
- bad(null,/object required/);bad({...C([card]),version:'compose-v2'},/compose-v1 required/);bad(C([card],'left'),/upper or full/);
+ bad(null,/object required/);bad({...C([card]),version:'compose-v9'},/compose-v1 or compose-v2 required/);bad({...C([card]),theme:'paper-v1'},/unknown field/);bad(C([{...card,font:'inter'}]),/unknown field/);bad(C([card],'left'),/upper or full/);
  bad({...C([card]),extra:1},/unknown field/);bad(C([]),/1–6 items/);bad(C(Array.from({length:7},(_,i)=>({id:'l'+i,type:'shape',shape:'ring',box:[0,0,.1,.1]}))),/1–6 items/);
  bad(C([{...card,type:'script'}]),/one of background/);bad(C([{...card,html:'<b>'}]),/unknown field/);
  bad(C([JSON.parse('{"__proto__":{"x":1},"id":"a","type":"label","box":[0,0,0.5,0.5],"text":"x"}')]),/unknown field/);
@@ -116,7 +116,7 @@ test('mixed-v1 keeps the cast; dialogue singles hold their aids steady',async()=
 });
 
 test('content modes are validated and conflicts refused',async()=>{
- assert.throws(()=>request({...base,content:'silent'}),/explainer-v1, mixed-v1 or absent/);
+ assert.throws(()=>request({...base,content:'silent'}),/explainer-v1, mixed-v1, typography-v1 or absent/);
  assert.throws(()=>request({...forest,content:'explainer-v1'}),/no characters; use mixed-v1/);
  assert.throws(()=>request({...base,content:'mixed-v1',titles:'shots'}),/replace the shot titles/);
  const r=await direct({...base,content:'explainer-v1'}),ir=structuredClone(r.ir);ir.shots[0].assets=[{asset:'retro-robot'}];

@@ -67,7 +67,10 @@ export function compile(q,ir,selection){
  if((q.titles??(q.dialogue||q.content?'none':'shots'))==='none')out={...out,shots:out.shots.map(s=>s.template==='cinematic-graph'?{...s,titles:'none'}:s)};
  // DUAL-01 opt-in content modes: one compose-v1 composition per planned shot from its own text (src/director/aids.js);
  // it replaces the IR lower-third overlay. Pieces of a shot split into singles keep the same aids, held steady.
- if(q.content){const {compositions}=planAids(q,ir);out={...out,shots:out.shots.map(s=>{if(s.template!=='cinematic-graph')return s;const n=Number(/^shot-(\d+)/.exec(s.id)?.[1]),c=compositions[n-1];if(!c)throw Error('aids: no composition for '+s.id);const {overlays,...rest}=s;return {...rest,composition:s.titleHold?holdComposition(c):c};})};}
+ if(q.content){const {compositions}=planAids(q,ir);out={...out,shots:out.shots.map(s=>{if(s.template!=='cinematic-graph')return s;const n=Number(/^shot-(\d+)/.exec(s.id)?.[1]),c=compositions[n-1];if(!c)throw Error('aids: no composition for '+s.id);const {overlays,...rest}=s;
+  // DUAL-02 typography-v1: the composition is the picture; no 3D asset, effect or framed subject.
+  if(q.content==='typography-v1'){rest.assets=[];rest.effects=[];rest.cameraRig={preset:s.cameraRig?.preset??'establishing'};}
+  return {...rest,composition:s.titleHold?holdComposition(c):c};})};}
  if(out!==project)validateProject(out);
  return out;
 }
