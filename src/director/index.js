@@ -9,7 +9,7 @@ import {directorCatalog,digest} from './catalog.js';
 import {request,validateIR,safeJson} from './schema.js';
 import {baseline,offlineIR} from './offline.js';
 import {stageProject,stageShot} from '../core/staging.js';
-import {topicSet,applySet,fitPieces} from './sets.js';
+import {applySet,topicSetFor,fitPiecesFor} from './sets.js';
 import {singleShots} from '../core/singles.js';
 import {reelsProject} from '../core/reels.js';
 import {dialogueSpeech,stageDialogueAssets,dialogueShotFields,pointAtSetPiece,DIALOGUE_CAMERAS} from './dialogue.js';
@@ -28,8 +28,10 @@ export function allocateFrames(shots,total){
 export function compile(q,ir,selection){
  validateIR(ir,q,selection);
  // GEN-12: the film's topic set; dialogue set pieces are re-picked from its category (after the IR check, on the IR).
- const set=q.sets==='topic-v1'||q.sets===undefined&&q.dialogue?topicSet(q,ir):null;
- if(set&&q.dialogue)ir=fitPieces(q,ir,set).ir;
+ // GEN-15 step 2: dialogue films default to topic-v2 (dressed sets, word-matched pieces); topic-v1 stays selectable.
+ const setVersion=q.sets==='none'?null:q.sets??(q.dialogue?'topic-v2':null);
+ const set=setVersion?topicSetFor(setVersion,q,ir):null;
+ if(set&&q.dialogue)ir=fitPiecesFor(setVersion,q,ir,set).ir;
  const budgets=allocateFrames(ir.shots,q.seconds*FPS),speech=q.dialogue?dialogueSpeech(q,ir):q.speech;
  const project={version:2,id:q.id,title:ir.title,voice:q.voice,...(speech?{speech}:{}),...(q.identityLibrary?{identityLibrary:restoreLibrary(q.identityLibrary)}:{}),shots:ir.shots.map((s,i)=>{
   // TALK-04: speakers staged as characters + one set piece; camera frames the whole line (no single subject).
@@ -45,11 +47,14 @@ export function compile(q,ir,selection){
  let out=q.staging?stageProject(project,q.staging):project;
  // GEN-11: dialogue films add the idle weight shift to every shot with body language (staging itself is unchanged,
  // so authored TALK showcases keep their accepted output).
- if(q.dialogue)out={...out,shots:out.shots.map(s=>s.bodyLanguage?{...s,bodyLanguage:{...s.bodyLanguage,weight:true}}:s)};
+ // GEN-15 step 2 follow-up (owner: "the characters move their left hand only"): dialogue gestures alternate arms.
+ if(q.dialogue)out={...out,shots:out.shots.map(s=>s.bodyLanguage?{...s,bodyLanguage:{...s.bodyLanguage,weight:true,alternateArms:true}}:s)};
  // GEN-12: one topic-fitting location per film (request.sets; default topic-v1 for dialogue films, none otherwise).
  if(set)out=applySet(out,set).project;
  // GEN-15: the crafted look (request.look; default crafted-v1 for dialogue films, none otherwise). Drawing only.
- if(q.look==='crafted-v1'||q.look===undefined&&q.dialogue)out={...out,shots:out.shots.map(s=>s.template==='cinematic-graph'&&!s.geometryProfile?{...s,look:'crafted-v1'}:s)};
+ // GEN-15 step 2: dialogue films default to crafted-v2 (crafted-v1 plus glass and metal parts); crafted-v1 stays selectable.
+ const look=q.look==='none'?null:q.look??(q.dialogue?'crafted-v2':null);
+ if(look)out={...out,shots:out.shots.map(s=>s.template==='cinematic-graph'&&!s.geometryProfile?{...s,look}:s)};
  // GEN-09: Reels delivery (layout + framing inside the Reels-safe area) before singles, so singles are solved for it.
  if(q.delivery)out=reelsProject(out).project;
  // GEN-06: dialogue cuts long lines to singles of the speaker (request.dialogue.singles false keeps group shots only).

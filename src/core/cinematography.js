@@ -280,9 +280,28 @@ export function emitCinematicAsset(a,box){
   box(center,size,highlight?(x.color??'#fff0ad'):color,q=>add(tf(q),shift),lit||highlight,bias);
  });
 }
-export const LAYERED_ENVIRONMENTS=Object.freeze(['solar-field','city-dusk','energy-hub']);
+// GEN-15 step 2 dressed sets (owner: "start gen-15 step 2"; the plan: richer sets): one per topic category. Each keeps
+// the far skyline blocks for depth and adds real catalog objects as set dressing behind the line of speakers
+// (z -2.6 … -4.4, never in front of a character). Drawn by both renderers through the same box stream; the quality
+// checks only read the film's assets, so dressing never changes them. Entries: [asset, x, z, yaw, scale].
+export const DRESSED_SETS=Object.freeze({
+ 'lab-set':{palette:['#3a4f5c','#2f4554','#56707c'],pieces:[['bookshelf',-2.7,-3.7,.35,.9],['laboratory-centrifuge',-1.7,-3.2,.2,.8],['microscope',2.1,-3.0,-.3,.8],['filing-cabinet',2.9,-3.9,-.35,.85]]},
+ 'tech-set':{palette:['#2e4152','#33495e','#4d6a7e'],pieces:[['server-rack',-2.8,-3.8,.3,.9],['server-rack',-2.0,-4.1,.3,.9],['control-panel',2.3,-3.3,-.35,.85],['data-storage',3.0,-3.9,-.35,.85]]},
+ 'forest-set':{palette:['#3f5550','#2f4a4c','#61705a'],pieces:[['pine-tree',-3.0,-4.2,0,1],['bush',-1.8,-3.0,.4,.8],['oak-tree',2.9,-4.4,0,1],['rock-cluster',1.9,-2.9,.3,.8],['fern',-2.5,-2.7,0,.7]]},
+ 'office-set':{palette:['#2f3d55','#3c4f6c','#4f6377'],pieces:[['bookshelf',-2.7,-3.7,.35,.9],['filing-cabinet',-1.9,-4.0,.3,.85],['desk',2.3,-3.4,-.3,.85],['floor-lamp',3.1,-3.9,0,.9]]},
+ 'street-set':{palette:['#303f58','#405473','#526878'],pieces:[['floor-lamp',-2.4,-3.0,0,1],['bench',-1.5,-3.6,.25,.85],['trash-bin',2.0,-2.9,0,.8],['floor-lamp',2.7,-3.4,0,1],['flower-pot',3.2,-2.8,0,.8]]},
+ 'home-set':{palette:['#4a4440','#3d4448','#6b6258'],pieces:[['bookshelf',-2.7,-3.7,.35,.9],['floor-lamp',-1.8,-3.9,0,.9],['sofa',2.5,-3.7,-.3,.85],['flower-pot',3.1,-2.9,0,.8]]}
+});
+export const LAYERED_ENVIRONMENTS=Object.freeze(['solar-field','city-dusk','energy-hub',...Object.keys(DRESSED_SETS)]);
 export function emitEnvironment(state,box){
  const env=state.layers;if(!env)return;
+ const dressed=DRESSED_SETS[env];
+ if(dressed){
+  const palette=dressed.palette;
+  for(let i=0;i<5;i++)box([(i-2)*2.6,1.2+(i%3)*.38,-5.5],[1.8,2.4+(i%3)*.76,.8],palette[i%3]);
+  for(const [id,x,z,yaw,scale] of dressed.pieces)emitAsset(id,box,{origin:[x,0,z],yaw,scale});
+  return;
+ }
  const palette={'solar-field':['#43555a','#314c58','#6b7562'],'city-dusk':['#303f58','#405473','#526878'],'energy-hub':['#364b55','#3b5668','#52717b']}[env];
  // True world-depth parallax; separate from subject framing and never changes authored assets.
  for(let i=0;i<5;i++)box([(i-2)*2.6,1.2+(i%3)*.38,-5.5],[1.8,2.4+(i%3)*.76,.8],palette[i%3]);

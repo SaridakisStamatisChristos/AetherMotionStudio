@@ -33,3 +33,25 @@ Owner: "lets skip 13 and 14 for now and go to the better looking shapes and mate
 Richer sets and set dressing; material accents per part (metal trims, glass screens); GEN-16 needs an owner decision (a Three-only cinematic profile).
 
 Tests: tests/gen15.test.js (chamfer geometry: counts, orientation, inside the box, area, absolute and thin bevels; palette; legacy CPU faces identical without the look; contract, Director default, none, legacy, prompt unchanged, negatives).
+
+## Step 2: part materials, dressed sets (2026-11-26)
+Owner: "Accept the GEN-15 look" and "start gen-15 step 2". The look was accepted, and cleanup step 2 was done.
+- **Look `crafted-v2`** (shot field `look`; the Director default for dialogue films; `crafted-v1` stays selectable and unchanged).
+  - It is crafted-v1 plus part materials. Recipes have no part names, so `partRole` (src/visual/crafted.js) derives a role from the recipe family, the colour slot and the shape:
+    - **glass:** a thin dark slab (slot 4; thinnest side at most 6 cm; the other two at least 8 cm) on a machine family (screens, visors, windows). It is drawn darker and bluer. CPU adds a view-dependent sheen; Three uses roughness 0.12 and metalness 0.18.
+    - **metal:** a thin secondary-colour part (slot 1; thinnest side at most 8 cm) on a machine family (trims, bezels, rails, rods). It is drawn cooler and lighter. CPU adds a sharp highlight and brighter bevels; Three uses roughness 0.3 and metalness 0.55.
+  - People, animals, plants and glowing parts never get a role.
+  - The role is an extra argument on the shared box stream. Renderers without crafted-v2 ignore it, so legacy and crafted-v1 drawing are identical (tested, digests unchanged).
+- **Dressed sets:** see docs/SETS.md "topic-v2".
+- Render `gen15b-sky-r1` (the sky script, 60 s), from clean 6dea830: CPU 6769a5630b61c789…, Three 07af439d90e3aa2f…. All PASS; CHECKS 0 (silence-v1 0, talk 77 %); QUALITY pass-with-findings, errors 0, warnings 0; matched hashes exact; glitch clean; −16.0 LUFS; vulkan. Render time: CPU 131.6 s (fixa-sky-r1 113.3 s, +16 % from the dressing), Three 55.0 s (56.0 s). Agent stills: the lab-set dressing shows behind the speakers, the pieces match the words, and both backends agree. **No human review.**
+- **Alternating gesture arms** (owner: "the characters move their left hand only … add it now"; old videos may stay as they are):
+  - Beats used to lift only the right arm (pose `armPitch`; the right arm appears on the viewer's left).
+  - Opt-in `bodyLanguage.alternateArms` (src/core/body.js): each character's beats alternate right, left, right … across the film, counted over earlier shots that also alternate. Left beats drive `leftArmPitch`.
+  - On by default for Director dialogue films. Accepted films keep the right arm. It is a boolean and does not count as an "enable" key.
+- Render `gen15b-sky-r2` (alternating arms), from clean a189015: CPU b5698d35a2e5fdf4…, Three 5849347e0ae35f46…. All PASS; CHECKS 0; matched hashes exact; glitch clean; −16.0 LUFS. Beats per character alternate right and left (Student and Explorer 7 each). Agent frames 336 and 632: the Explorer lifts its left arm, then its right arm, mirrored. **No human review.**
+- **Robot eyes on CPU** (owner: "in some frames in cpu rendering the robot has one eye"):
+  - Cause: the CPU painter sorts flat polygons by average depth. On a turned head the far eye sat deeper than the centres of the head block and face panel and was painted over. This also affects the historical painter.
+  - Fix in the crafted looks only (`CRAFTED.litBias` 0.18 m): glowing surface details (eyes, lights, mouths) sort nearer. 0.08 was not enough: gen15b-sky-r3 frame 1620 showed only the bevel strips of one eye. 0.16 is the smallest value that keeps every eye front visible for head turns up to ±0.9 rad and side cameras.
+  - Three has a depth buffer and is unaffected. The historical painter is unchanged.
+  - Render `gen15b-sky-r4`, from clean 751174a: CPU 096dbab2fcefe1e8…, Three 5849347e0ae35f46… (byte-identical to r2). All PASS; CHECKS 0; glitch clean; −16.0 LUFS. Agent frames 585, 1620, 1665 and 1710 show both eyes (r2 showed one). Gesture frames show nothing glowing through the arms. **No human review.**
+- Tests: tests/gen15b.test.js.

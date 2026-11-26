@@ -24,10 +24,12 @@ export function request(input){
  // GEN-09 opt-in delivery mode (Instagram Reels layout and framing); absent = unchanged output.
  if(input.delivery!==undefined&&input.delivery!=='reels-v1')bad('request.delivery','reels-v1 or absent');
  // GEN-12 topic-fitting sets: 'topic-v1' or 'none'; absent = topic-v1 for dialogue films, unchanged output otherwise.
- if(input.sets!==undefined&&!['topic-v1','none'].includes(input.sets))bad('request.sets','topic-v1, none or absent');
+ // GEN-15 step 2: 'topic-v2' (dressed sets, word-matched pieces) is the dialogue default; 'topic-v1' stays selectable.
+ if(input.sets!==undefined&&!['topic-v1','topic-v2','none'].includes(input.sets))bad('request.sets','topic-v1, topic-v2, none or absent');
  if(input.sets!==undefined&&input.identityLibrary)bad('request.sets','identity stories keep their authored locations');
  // GEN-15 look: 'crafted-v1' or 'none'; absent = crafted-v1 for dialogue films, unchanged output otherwise.
- if(input.look!==undefined&&!['crafted-v1','none'].includes(input.look))bad('request.look','crafted-v1, none or absent');
+ // GEN-15 step 2: 'crafted-v2' (glass and metal parts) is the dialogue default; 'crafted-v1' stays selectable.
+ if(input.look!==undefined&&!['crafted-v1','crafted-v2','none'].includes(input.look))bad('request.look','crafted-v1, crafted-v2, none or absent');
  const q={audience:'general audience',tone:'clear',style:'cinematic explainer',language:'en',voice:'af_heart',backend:'cpu',profile:'polished',seed:0,...input};
  if(q.version!==REQUEST_VERSION)bad('request.version','unsupported');
  if(typeof q.id!=='string'||!/^[a-z0-9][a-z0-9-]{0,47}$/.test(q.id)||/^(con|prn|aux|nul|com[1-9]|lpt[1-9])$/.test(q.id))bad('request.id','unsafe ID');

@@ -26,13 +26,17 @@ const fail=(p,m)=>{throw Error(p+': '+m)};
 export const WEIGHT=Object.freeze({amp:.022,holdMin:180,holdSpread:90,move:45});
 export const BODY=Object.freeze({beatFrames:18,beatMinPhrase:45,minGap:20,peakMin:600,peakRadius:5,beatPitch:.35,nodFrames:30,nodLead:10,nodMinGap:240,listenNod:.07,swayAmp:.015,swayPeriod:150,blinkFrames:[.55,.15,.1,.35,.8]});
 const KEYS=['beats','nods','blinks','sway','weight'];
+// GEN-15 step 2 follow-up (owner: "the characters move their left hand only"): opt-in alternateArms. Beats used to
+// lift only the right arm (pose armPitch); with alternateArms each character's beats alternate right, left, right …
+// across the film (counted over earlier shots that also alternate). Not an 'enable' key: it only changes beats.
+const OPTIONS=['alternateArms'];
 const ARM_ACTIONS=['point','wave','reach','grasp','release','carry'];
 export function validateBodyLanguage(project){
  project.shots.forEach((s,i)=>{
   if(s.bodyLanguage===undefined)return;
   const p='shots['+i+'].bodyLanguage',x=s.bodyLanguage;
   if(!x||typeof x!=='object'||Array.isArray(x))fail(p,'object required');
-  for(const [k,v] of Object.entries(x)){if(!KEYS.includes(k))fail(p+'.'+k,'unknown field');if(typeof v!=='boolean')fail(p+'.'+k,'boolean required');}
+  for(const [k,v] of Object.entries(x)){if(!KEYS.includes(k)&&!OPTIONS.includes(k))fail(p+'.'+k,'unknown field');if(typeof v!=='boolean')fail(p+'.'+k,'boolean required');}
   if(!KEYS.some(k=>x[k]===true))fail(p,'enable at least one of beats, nods, blinks, sway, weight');
   if(s.speakerAssets===undefined)fail(p,'speakerAssets required');
  });
@@ -73,7 +77,13 @@ export function bodyPlan(project,t,index){
   const next=ts.segments[k+1],replies=next!==undefined&&s.speakerAssets[next.speaker??'default']===addressee;
   const start=e-BODY.nodLead;if(addressee&&addressee!==who&&!replies&&(lastNod[addressee]===undefined||start-lastNod[addressee]>=BODY.nodMinGap)){nods.push({id:addressee,frame:start});lastNod[addressee]=start;}
  }
- const plan={beats,nods};byShot.set(index,plan);return plan;
+ const plan={beats,nods};byShot.set(index,plan);
+ if(s.bodyLanguage?.alternateArms){
+  // beats of each character before this shot (earlier alternating shots), so the sides keep alternating across cuts
+  const seen={};for(let j=0;j<index;j++){const sj=project.shots[j];if(!sj?.bodyLanguage?.alternateArms||!sj.speakerAssets)continue;for(const x of bodyPlan(project,t,j).beats)seen[x.id]=(seen[x.id]??0)+1;}
+  for(const x of beats){const k=seen[x.id]??0;x.arm=k%2?'left':'right';seen[x.id]=k+1;}
+ }
+ return plan;
 }
 export function bodyAt(project,t,frame,index){
  const s=project.shots[index],bl=s?.bodyLanguage;if(!bl||!s.speakerAssets)return null;
@@ -81,7 +91,7 @@ export function bodyAt(project,t,frame,index){
  for(const [sp,id] of Object.entries(s.speakerAssets)){
   const o={};
   // Started beats and nods always finish (no cut when the speaker changes).
-  if(bl.beats)for(const x of plan.beats){if(x.id!==id)continue;const a=bump((frame-x.frame)/BODY.beatFrames);if(a>0)o.beat=-BODY.beatPitch*a;}
+  if(bl.beats)for(const x of plan.beats){if(x.id!==id)continue;const a=bump((frame-x.frame)/BODY.beatFrames);if(a>0){if(x.arm==='left')o.beatLeft=-BODY.beatPitch*a;else o.beat=-BODY.beatPitch*a;}}
   if(bl.nods)for(const x of plan.nods){if(x.id!==id)continue;const u=bump((frame-x.frame)/BODY.nodFrames);if(u>0)o.nod=Math.max(o.nod??0,BODY.listenNod*u);}
   // Sway on every bound character (continuous across speaker changes).
   if(bl.sway)o.tilt=BODY.swayAmp*Math.sin(2*Math.PI*frame/BODY.swayPeriod+(hash(id)%628)/100);
@@ -113,6 +123,7 @@ export function applyBody(state,body){
   if(o.blink!==undefined)pose.blink=o.blink;
   if(o.hip!==undefined)pose.hip=o.hip;
   if(o.beat!==undefined)pose.armPitch=Math.max(-2.8,Math.min(1,(pose.armPitch??0)+o.beat));
+  if(o.beatLeft!==undefined)pose.leftArmPitch=Math.max(-2.8,Math.min(1,(pose.leftArmPitch??0)+o.beatLeft));
   a.pose=pose;}
  return state;
 }

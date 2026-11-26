@@ -42,3 +42,27 @@ Authorized by the owner: "Gen10 and onwards" and "merge and continue". Problem: 
 - "City bus route" scores architecture and vehicles equally; ties go to the earlier category (architecture).
 
 Tests: tests/gen12.test.js (category scoring, palettes, no-match report, fitting without repeats, everyday guard, Director defaults, sets none, legacy unchanged, prompt unchanged, negatives, every quality check clean on three fresh topics).
+
+## topic-v2: dressed sets and word-matched pieces (GEN-15 step 2, 2026-11-26)
+Owner saw a DNA helix in a film about the sky. topic-v1 kept any piece of the right category even when no word matched. `sets: 'topic-v2'` is the Director default for dialogue films; `'topic-v1'` stays selectable and unchanged.
+- **Dressed sets** (src/core/cinematography.js `DRESSED_SETS`; new layered environments):
+  - one set per category: lab-set (science), tech-set (technology), forest-set (nature), office-set (business), street-set (architecture and vehicles), home-set (everyday);
+  - each keeps the far skyline blocks and adds 4–5 real catalog objects as dressing behind the speakers (z −2.6 to −4.4): bookshelves, a centrifuge, a microscope, server racks, control panels, trees, rocks, a fern, desks, lamps, a bench, a sofa;
+  - drawn by both renderers through the same box stream. The quality checks read only the film's assets, so dressing never changes them.
+- **Pieces follow the words** (`fitPiecesFor`):
+  - a piece is kept only when its words meet the topic (×3) or the line (×2);
+  - its words are its ID plus curated tags (`PIECE_WORDS`; for example the prism matches light, colour, rainbow and sky, and the mountain matches volcano and lava);
+  - otherwise the best matching unused piece is used: the category first, then any catalog piece;
+  - a piece from another category must be named in full, so "train the body" never brings a passenger train and "tree" never brings a binary tree;
+  - with no matching word at all, the topic-v1 rules apply (no repeats; the everyday category never swaps in random objects).
+- **Extra category words** (`SETS_V2.words`): light, sky, colour, sound, heat (science); weather, volcano, bees (nature); pay, savings, jobs (business); food, cooking (everyday).
+
+| Topic | Set | Pieces (topic-v2) |
+|---|---|---|
+| Why is the sky blue? (script) | lab-set | prism, atom model, telescope, planet system, water and carbon dioxide molecules |
+| How do forests clean the air? (script) | forest-set | carbon dioxide molecule, pine, autumn tree, oak, palm, birch |
+| Internet / message | tech-set | laptop, network switch, router, smartphone, desktop computer |
+| Banks lend money | office-set | coin stack, banknotes, bank building, charts |
+| Vaccines | lab-set | cell model, virus model, atom and molecules (no passenger train) |
+| Volcanoes erupt | forest-set | mountain, trees |
+| Brew coffee at home | home-set | coffee machine (kept) |

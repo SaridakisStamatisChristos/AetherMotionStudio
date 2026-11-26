@@ -1,5 +1,5 @@
 # Current state — AetherMotion Studio
-Updated 2026-11-26 (main 135dbcc; Fix A IMPLEMENTED + TESTED + RENDERED on feature/fix-a, PR pending; GEN-15 look ACCEPTED; GEN-15 step 2 next after the Fix A merge). Authoritative rolling checkpoint for new coding sessions; update at verified transitions. This file references the historical ledger rather than replacing source or evidence. Baseline product merge: `04e3491bb21b4ebc3d54755a2a211b1a7affb3fa` (PR #13 merged into main). The handoff documentation commit may be newer; inspect git HEAD. No release publication implied.
+Updated 2026-11-26 (main 8e65805 = Fix A merged; GEN-15 step 2 IMPLEMENTED + TESTED + RENDERED on feature/gen-15-step2, PR pending; Studio UI refinement last). Authoritative rolling checkpoint for new coding sessions; update at verified transitions. This file references the historical ledger rather than replacing source or evidence. Baseline product merge: `04e3491bb21b4ebc3d54755a2a211b1a7affb3fa` (PR #13 merged into main). The handoff documentation commit may be newer; inspect git HEAD. No release publication implied.
 
 ## Current status and authority
 - v1.0 core pipeline and Asset Foundry AF01–AF09 implementation merged; do not reimplement.
@@ -19,6 +19,19 @@ Updated 2026-11-26 (main 135dbcc; Fix A IMPLEMENTED + TESTED + RENDERED on featu
 6. Source and approved decisions authoritative. This summary cannot discard binding facts; consult the source-specific contract when the task touches it. Keep state and handoff synchronized. No new native render runs on GitHub or release without authorization.
 
 ## Active unit
+**GEN-15 step 2 (part materials, dressed sets): IMPLEMENTED + TESTED + RENDERED on `feature/gen-15-step2` (from main 8e65805), not merged.** Owner: "i agree merge it and start gen-15 step 2"; Fix A was merged as PR #38 (8e65805) and #37 was closed (included).
+- Binding:
+  - look `crafted-v2` = crafted-v1 plus glass and metal part roles (crafted.js `partRole`); a role is an extra box-stream argument that legacy and crafted-v1 ignore;
+  - sets `topic-v2` = a dressed set per category (cinematography.js `DRESSED_SETS`; new layered environments) and set pieces matched to the words (sets.js `PIECE_WORDS`, `fitPiecesFor`; a piece from another category must be named in full);
+  - both are the Director defaults for dialogue films; `crafted-v1` and `topic-v1` stay selectable and unchanged; narrator films and authored projects are unchanged (digests unchanged).
+  - Details: docs/LOOK.md "Step 2", docs/SETS.md "topic-v2".
+- Evidence:
+  - 378 JS tests (0 fail, 1 skip), 56 Python OK.
+  - Render `gen15b-sky-r1` (the sky script, 60 s), from clean 6dea830: CPU 6769a5630b61c789…, Three 07af439d90e3aa2f…. All PASS; CHECKS 0 (silence-v1 0, talk 77 %); QUALITY pass-with-findings, errors 0, warnings 0; matched hashes exact; glitch clean; −16.0 LUFS; vulkan. Render time: CPU 131.6 s (fixa-sky-r1 113.3 s, +16 % from the dressing), Three 55.0 s (56.0 s). Agent stills: the lab-set dressing shows behind the speakers, the pieces match the words, and both backends agree. **No human review.**
+- Alternating gesture arms: `bodyLanguage.alternateArms` (owner: "add it now … for old videos there is no problem if they remain as they are. the last videos are those that count"). The dialogue default; accepted films keep the right arm. 379 JS tests. Render `gen15b-sky-r2` (alternating arms), from clean a189015: CPU b5698d35a2e5fdf4…, Three 5849347e0ae35f46…. All PASS; CHECKS 0; matched hashes exact; glitch clean; −16.0 LUFS. Beats per character alternate right and left (Student and Explorer 7 each). Agent frames 336 and 632: the Explorer lifts its left arm, then its right arm, mirrored. **No human review.**
+- CPU robot-eye fix in the crafted looks (`CRAFTED.litBias` 0.18; owner: "the robot has one eye"). The historical painter is unchanged. 380 JS tests. gen15b-sky-r4: CPU 096dbab2fcefe1e8…, Three 5849347e0ae35f46…, all PASS.
+- Plan order: Studio UI refinement is the last step (owner).
+
 **Fix A "film length follows the speech": IMPLEMENTED + TESTED + RENDERED on `feature/fix-a` (from main 135dbcc), not merged.** Owner (2026-11-26): "do these: Fix A … Accept the GEN-15 look … ui refinement will be the last … put it in a later step at the end".
 - Binding:
   - opt-in `speech.fit`: 'speech-v1', 'none', or absent (absent = exact target);
