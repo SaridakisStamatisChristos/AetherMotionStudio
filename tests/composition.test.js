@@ -147,7 +147,8 @@ test('content-mode productions fit their length to the speech; other requests ke
  const parse=q=>parseProduction(['--request','x.json','--backend','both'],{read:()=>JSON.stringify(q)}).request;
  assert.equal(parse({...base,content:'explainer-v1'}).speech.fit,'speech-v1');
  assert.equal(parse({...base,content:'mixed-v1'}).speech.fit,'speech-v1');
- assert.equal(parse(base).speech.fit,undefined);
+ assert.equal(parse({...base,content:'explainer-v1'}).speech.mix.master,'mix-v2');
+ assert.equal(parse(base).speech.fit,undefined);assert.equal(parse(base).speech.mix.master,undefined);
  assert.equal(parse({...base,content:'explainer-v1',speech:{...parse(base).speech}}).speech.fit,undefined,'a request with its own speech keeps it');
 });
 

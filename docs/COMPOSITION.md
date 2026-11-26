@@ -25,7 +25,7 @@ Each candidate must pass layout validation; the first that fits is used.
 
 Explainer objects: a real word match for the shot first (plurals tolerated), preferring one that differs from the previous shot's object (a change of scene). Then the film's best match, then the open book. Alphabetical ties at score 0 are never used.
 
-**Length:** a content-mode production without its own `speech` is fitted to its speech (Fix A `speech-v1`, as dialogue films already are: at most the requested seconds, calm pauses kept, silence-v1 is a gate). The first explainer render without the fit (`dual01-explainer-r1`, 40 s) kept three pauses of 3.0–4.0 s.
+**Length:** a content-mode production without its own `speech` is fitted to its speech (Fix A `speech-v1`, as dialogue films already are: at most the requested seconds, calm pauses kept, silence-v1 is a gate). The first explainer render without the fit (`dual01-explainer-r1`, 40 s) kept three pauses of 3.0–4.0 s. They also get the `mix-v2` master dialogue films use (about −16 LUFS; `dual01-explainer-r3` without it measured −18.7 LUFS).
 
 ## Shot field `composition`
 ```json
