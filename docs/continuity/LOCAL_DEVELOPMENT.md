@@ -89,7 +89,7 @@ node scripts/produce.mjs --project examples/cinematic-cpu-polished.json --pair e
 - Measure on a settled machine: after a real restart (Start → Restart or `shutdown /r /t 0`; "Shut down" with Fast Startup keeps kernel state), wait ~15 min. Free RAM near 0 is normal on Windows; watch *available* memory and non-paged pool (≈0.7 GB healthy; 2.2 GB was seen after 4.8 days uptime).
 
 ## Studio and authoring
-`npm run studio:local` → http://127.0.0.1:4173; local validated projects and native render jobs. `npm run studio` is Remotion Studio; `npm run prepare-audio -- examples/cinematic-cpu-polished.json` prepares audio before preview when appropriate. See docs/STUDIO.md and docs/DIRECTOR.md.
+Double-click `Start-AetherMotion-Studio.cmd` (STUDIO-01: sets the render env above for its window, starts the Studio and opens the page), or `npm run studio:local` → http://127.0.0.1:4173; local validated projects and native render jobs. `npm run studio` is Remotion Studio; `npm run prepare-audio -- examples/cinematic-cpu-polished.json` prepares audio before preview when appropriate. See docs/STUDIO.md and docs/DIRECTOR.md.
 ```bash
 npm run director -- --topic "How computers send messages across a network" --seconds 60
 npm run produce -- --topic "How a molecule is built" --seconds 30 --backend cpu --id local-molecule-01

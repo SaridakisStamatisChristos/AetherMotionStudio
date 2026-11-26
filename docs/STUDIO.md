@@ -29,3 +29,13 @@ Tests cover transactional edits, estimated budget, reference rejection, atomic p
     - talk02 with its bindings removed: all speakers re-bound by name;
     - workshop-extended calm: 1 turn changed, 4 reported;
     - Inspect: 4 motion warnings, 0 visibility warnings, timeline estimated.
+
+## Script to film (STUDIO-01)
+- **Start:** double-click `Start-AetherMotion-Studio.cmd` in the repository folder. For that window only it sets the render settings from docs/continuity/LOCAL_DEVELOPMENT.md (`AETHER_GL=vulkan` for the RTX, `AETHER_CONCURRENCY=8`, the venv Python, FFmpeg, FFprobe), runs `npm run studio:local` and opens http://127.0.0.1:4173. If the Studio is already running it only opens the page. It changes no system settings and installs nothing. A desktop shortcut is optional: right-click the file → Show more options → Send to → Desktop (create shortcut).
+- **Director form** (mapping in src/studio/director-form.js `directorRequest`, tested in tests/studio01.test.js):
+  - Topic (required) and Script (optional; paste the owner script, one sentence per line). The rules and a live word count with the range for the chosen seconds (2.0–2.33 words per second: 60 s → 120–140) sit under the Script box.
+  - Cast: **Student + Explorer (interview)** by default, the same request fields and voices as examples/gen01-interview.request.json and examples/gen12-forest-script.request.json; **Engineer, Robot, Scientist** (the TALK-04 cast, unchanged; turns rotate among all three); **Narrator only** (the earlier non-dialogue form; the voice and art-v1 staging options apply only here).
+  - Prompt guidance: "Need a script? Get one from Claude chat" shows the docs/SCRIPT_FORMAT.md prompt filled in for the topic, cast and seconds (`scriptPrompt`; lines ≈ words ÷ 8.6–8.75, 60 s → 14–16 lines) with Copy prompt. "Clean up pasted script" (`cleanScript`) removes speaker names of the offered casts, numbering, bullets, markdown, headings, wrapping quotes and blank lines, and moves a "Topic:" line into an empty Topic box. Ordinary sentences with colons or numbers are kept.
+  - Reels checkbox → `delivery: 'reels-v1'`. The cover and reels-report still come from `node scripts/reels-export.mjs out/<job id>` after the render.
+  - Backend: **Three.js** by default (RTX through the launcher; plain `npm run studio:local` uses the repository default swangle), or CPU Canvas. Seconds default 60.
+- **One backend per job.** Studio jobs render one saved project with one backend (one active job, one snapshot, one output folder). "Both" would need a second job or a new job contract, so it is not offered; use `node scripts/produce.mjs --backend both` for matched pairs.
