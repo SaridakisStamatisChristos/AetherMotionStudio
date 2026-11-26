@@ -1,5 +1,5 @@
 # Current state — AetherMotion Studio
-Updated 2026-11-26 (main 36f6fd6 = PR #35 merged; STUDIO-01 implemented on feature/studio-01, PR #36 open, CI passed, not merged). Authoritative rolling checkpoint for new coding sessions; update at verified transitions. This file references the historical ledger rather than replacing source or evidence. Baseline product merge: `04e3491bb21b4ebc3d54755a2a211b1a7affb3fa` (PR #13 merged into main). The handoff documentation commit may be newer; inspect git HEAD. No release publication implied.
+Updated 2026-11-26 (main 135dbcc: PR #35 and PR #36 STUDIO-01 merged; no unit active). Authoritative rolling checkpoint for new coding sessions; update at verified transitions. This file references the historical ledger rather than replacing source or evidence. Baseline product merge: `04e3491bb21b4ebc3d54755a2a211b1a7affb3fa` (PR #13 merged into main). The handoff documentation commit may be newer; inspect git HEAD. No release publication implied.
 
 ## Current status and authority
 - v1.0 core pipeline and Asset Foundry AF01–AF09 implementation merged; do not reimplement.
@@ -19,7 +19,7 @@ Updated 2026-11-26 (main 36f6fd6 = PR #35 merged; STUDIO-01 implemented on featu
 6. Source and approved decisions authoritative. This summary cannot discard binding facts; consult the source-specific contract when the task touches it. Keep state and handoff synchronized. No new native render runs on GitHub or release without authorization.
 
 ## Active unit
-**STUDIO-01 "script to film" — IMPLEMENTED and TESTED on `feature/studio-01` (from main 22ffec4), PR #36, test CI passed (run 45773673190), not merged** (authorized by the owner: "yeah thats what we need. exactly"). Details: HANDOFF.md.
+**STUDIO-01 "script to film" — MERGED** (PR #36 → main 135dbcc on the owner's word "for now merge 36"; PR CI 45774855761 and main CI 45775300788 passed). Owner: the UI is "practical"; "ui refinement can be done later" (authorized by the owner: "yeah thats what we need. exactly"). Details: HANDOFF.md.
 - Owner decision (2026-11-25, PR #35, MERGED 36f6fd6 on the owner's word): the owner writes scripts in Claude chat and pastes them into the Studio; GEN-14 not needed for now.
 - Binding: the Director form maps to a request only through src/studio/director-form.js `directorRequest` (cast presets `interview` = gen01 cast and fields, `trio` = TALK-04 cast unchanged, `narrator` = earlier form); defaults interview, Three, polished, 60 s, Reels off. Studio jobs remain one backend per job (job contract unchanged; "both" stays in produce.mjs). Launcher `Start-AetherMotion-Studio.cmd` sets the render env (vulkan) for its window only; the repo default GL stays swangle.
 - Evidence: 368 JS tests (0 fail, 1 skip; prompt guidance added), 51 Python OK, digests unchanged. Real Studio job studio-e3bb2326a60691aab621 (Three/vulkan, forest script, via HTTP API calls, not browser clicks): film b6f4a0fadef46d1f…, all PASS, quality errors 0 warnings 0, glitch clean, −16.0 LUFS. No human review. The forest example (ad893f7) was folded in as a56732e.

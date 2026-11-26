@@ -1,12 +1,12 @@
-# Forward-only handoff — STUDIO-01 implemented (owner types only "fod continue")
+# Forward-only handoff — STUDIO-01 merged (owner types only "fod continue")
 
 Date: 2026-11-26. Keep reports short and plain.
-Checkpoint: branch `feature/studio-01` from **main 22ffec4** (not stacked). Earlier handoff (before STUDIO-01): PR #35 branch `chore/record-gen-15` and git history of this file. Binding facts are in CURRENT_STATE.md.
+Checkpoint: **main 135dbcc** (PR #35 and PR #36 STUDIO-01 merged; main CI 45775300788 passed). Earlier handoff (before STUDIO-01): PR #35 branch `chore/record-gen-15` and git history of this file. Binding facts are in CURRENT_STATE.md.
 
 ## Where things stand
 | Item | State |
 |---|---|
-| STUDIO-01 "script to film" | **Implemented and tested** on `feature/studio-01`. One real Studio render passed (below). Owner has not tried it yet. PR #36 (pushed with the owner's permission: "i allow pushes"). **Merge only on the owner's word, after PR CI.** |
+| STUDIO-01 "script to film" | **MERGED** (PR #36 → 135dbcc, owner: "for now merge 36. ui refinement can be done later. at the moment its practical"). One real Studio render passed (below). UI refinement: later, not scheduled. |
 | PR #35 `chore/record-gen-15` | Docs only. **MERGED 36f6fd6** on the owner's word ("lets do it after the push is sucessfull"). It had no CI run because core.yml only runs on pushes to main and feature/**. STUDIO-01 was rebased onto it; SCRIPT_FORMAT "How the owner will feed it in" and NEXT_UNITS are updated. |
 | `feature/forest-script` (ad893f7) | **Folded into STUDIO-01** (cherry-picked as a56732e; examples/gen12-forest-script.request.json). The local branch is now redundant; delete only with the owner's OK. |
 | GEN-15 look, cleanup step 2, fix A, GEN-16 | Unchanged: waiting for owner decisions (see "Pending owner decisions"). |
@@ -30,7 +30,6 @@ Checkpoint: branch `feature/studio-01` from **main 22ffec4** (not stacked). Earl
 
 ## Pending owner decisions
 1. Try the launcher (double-click `Start-AetherMotion-Studio.cmd`) and a film from the form. Optional desktop shortcut: right-click → Show more options → Send to → Desktop.
-2. Merge PR #36 (STUDIO-01) after its CI on the rebased head.
 3. Fix A "film length follows speech" (proposed, not authorized).
 4. Accept the GEN-15 look (unlocks cleanup step 2 and GEN-15 step 2). Films: gen15-forest-r2, forest-script-r1, and now the Studio film above.
 5. GEN-16 policy; Instagram test upload deferred to the very end.
@@ -72,4 +71,4 @@ Checkpoint: branch `feature/studio-01` from **main 22ffec4** (not stacked). Earl
 
 ## Next action
 - "fod continue": bootstrap (expect `feature/studio-01` PR open, or merged if the owner said so), baseline digests and tests.
-- If PR #36 is open: report its CI and ask the owner to merge. Then wait for the owner's choice among the pending decisions. Never merge without the owner's word and a passing PR CI. Never stack branches.
+- No unit is active. Ask the owner which pending decision to take next (fix A, GEN-15 look acceptance → GEN-15 step 2, UI refinement, GEN-16). Branch each unit from main; never stack. Never merge without the owner's word and a passing PR CI. Never merge without the owner's word and a passing PR CI. Never stack branches.
