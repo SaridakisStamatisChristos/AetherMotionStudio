@@ -82,7 +82,10 @@ export function dialogueSpeech(q,ir){
  return {...base,speakers:Object.fromEntries(q.dialogue.speakers.map(s=>[s.id,{name:s.name,voice:s.voice,language:s.language}])),
   shotSpeakers:Object.fromEntries(ir.shots.map((s,i)=>['shot-'+(i+1),[...s.speakers]])),placement:'lead',mix:{...base.mix,master:'mix-v2'},
   // GEN-05 (owner: "speech a bit slower"): dialogue speaks at pace 0.92 unless the request sets dialogue.pace (1 = TALK-04 speed).
-  ...((q.dialogue.pace??SPEECH_PACE.dialogue)<1?{pace:q.dialogue.pace??SPEECH_PACE.dialogue}:{})};
+  ...((q.dialogue.pace??SPEECH_PACE.dialogue)<1?{pace:q.dialogue.pace??SPEECH_PACE.dialogue}:{}),
+  // Fix A (owner: "do these: Fix A"): dialogue films are as long as their speech plus calm pauses, at most the requested
+  // seconds, unless the request's speech says fit 'none'.
+  fit:base.fit??'speech-v1'};
 }
 // Speakers (bound by ID) and the set piece; compile then applies staging talk-v1, which places the line and the set piece
 // beside it and adds dialogue/bodyLanguage/lighting. A provider's set-piece x is replaced when talk-v1 places it.

@@ -52,7 +52,7 @@ else:
   assert np.sqrt(np.mean(segment**2))>.005
 if scene.get('speech') is not None:
  from speech_plan import subtitles,caption_metrics
- cfg=scene['speech'];sr=json.loads((out/'speech-report.json').read_text());assert timeline['durationFrames']==cfg['targetFrames']==sr['actualFrames'];assert sr['alignment']['phraseBoundaryErrorSamples']==0 and sr['alignment']['coverage']==1
+ cfg=scene['speech'];sr=json.loads((out/'speech-report.json').read_text());assert timeline['durationFrames']==sr['actualFrames'] and (180<=sr['actualFrames']<=cfg['targetFrames'] if cfg.get('fit')=='speech-v1' else sr['actualFrames']==cfg['targetFrames']);assert sr['alignment']['phraseBoundaryErrorSamples']==0 and sr['alignment']['coverage']==1
  assert caption_metrics(timeline['captions'],report['segments'],cfg['captions']['maxCps'])==sr['alignment']
  labels={k:v['name'] for k,v in cfg['speakers'].items()}
  if any(s['speaker']=='default' for s in report['segments']):labels['default']='Narrator'

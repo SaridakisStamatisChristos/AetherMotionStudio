@@ -20,7 +20,9 @@ def check_shared(a,b):
     """Project/timeline/shared-file/inventory parity without decoding media. Returns (total, shared hashes, inventory verified)."""
     project=normalized(a,'cpu');assert project==normalized(b,'three'),'different project'
     t=load(a,'timeline.json');assert t==load(b,'timeline.json'),'different timeline'
-    total=t['durationFrames'];assert total==expected_frames(project),'timeline frames differ from exact budget'
+    total=t['durationFrames'];fit=(project.get('speech') or {}).get('fit')=='speech-v1'
+    # Fix A: with speech.fit 'speech-v1' the measured length may be shorter than the budget (never longer).
+    assert (180<=total<=expected_frames(project)) if fit else total==expected_frames(project),'timeline frames differ from exact budget'
     shared={}
     for name in (SPEECH_SHARED if project.get('speech') else AUTHORED_SHARED):
         assert (a/name).is_file() and (b/name).is_file(),'shared artifact missing: '+name

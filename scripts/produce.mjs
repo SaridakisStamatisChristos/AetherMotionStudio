@@ -13,6 +13,8 @@ import {motionCheck} from '../src/quality/motion-check.js';
 import {crowdingCheck} from '../src/quality/crowding.js';
 import {visibility2Check} from '../src/quality/visibility.js';
 import {reelsCheck} from '../src/core/reels.js';
+import {silenceCheck} from '../src/quality/silence.js';
+const timelineFit=prepared=>prepared.some(p=>p.scene.speech?.fit==='speech-v1');
 import {renderNative,runChecked} from './native-render.mjs';
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..'),outRoot=join(root,'out');
 const o=parseProduction(process.argv.slice(2)),env={...process.env};
@@ -64,7 +66,9 @@ try{
   runChecked(root,process.execPath,['scripts/cli.mjs','prepare',join(production,'planned-project.json'),'--director-budget'],env);
  }
  const authored=validateProject(read(join(prep,'scene.json'))),timeline=validateTimeline(authored,read(join(prep,'timeline.json')));
- if(timeline.durationFrames!==manifest.targetFrames)throw Error('Exact target duration mismatch');
+ // Fix A: speech.fit 'speech-v1' may end the film earlier than requested (never later); the measured length becomes the target.
+ if(authored.speech?.fit==='speech-v1'){if(timeline.durationFrames<180||timeline.durationFrames>manifest.targetFrames)throw Error('Fitted duration outside the requested target');manifest.requestedFrames=manifest.targetFrames;manifest.targetFrames=timeline.durationFrames;}
+ else if(timeline.durationFrames!==manifest.targetFrames)throw Error('Exact target duration mismatch');
  if(o.mode==='project'&&digest(normalizedProject(authored))!==digest(normalizedProject(o.project)))throw Error('Prepared scene differs from authored project');
  // Non-speech preparation writes its lossless soundtrack only to public/audio; archive it beside the timeline.
  if(!authored.speech)copyFileSync(join(root,'public','audio',prepareId+'.wav'),join(prep,'mix.wav'));
@@ -88,9 +92,11 @@ try{
  for(const p of prepared)write(join(p.out,'shared-inputs.json'),inventory);
  // GEN-01 diagnostic checks on every production (measured timeline; not a gate): motion-speed-v1, visibility (v2 from
  // GEN-08: projected parts with a depth test; v1 stays exported and tested) and crowding-v1 (GEN-04).
- for(const p of prepared){const checks={version:1,motion:motionCheck(p.scene,timeline),visibility:visibility2Check(p.scene,timeline),crowding:crowdingCheck(p.scene,timeline),...(p.scene.delivery?{reels:reelsCheck(p.scene,timeline)}:{})};write(join(p.out,'quality-checks.json'),checks);
-  manifest.checks={motionWarnings:checks.motion.warnings.length,visibilityWarnings:checks.visibility.warnings.length,crowdingWarnings:checks.crowding.warnings.length,...(checks.reels?{reelsWarnings:checks.reels.warnings.length}:{})};
-  console.log('CHECKS:',p.backend,checks.motion.policy,'warnings',checks.motion.warnings.length,checks.visibility.policy,'warnings',checks.visibility.warnings.length,checks.crowding.policy,'warnings',checks.crowding.warnings.length,...(checks.reels?[checks.reels.policy,'warnings',checks.reels.warnings.length]:[]),JSON.stringify([...checks.motion.warnings,...checks.visibility.warnings,...checks.crowding.warnings,...(checks.reels?.warnings??[])].map(w=>w.code+':'+w.shot+'/'+(w.asset??w.pair))));}
+ for(const p of prepared){const checks={version:1,motion:motionCheck(p.scene,timeline),visibility:visibility2Check(p.scene,timeline),crowding:crowdingCheck(p.scene,timeline),...(p.scene.delivery?{reels:reelsCheck(p.scene,timeline)}:{}),silence:silenceCheck(p.scene,timeline)};write(join(p.out,'quality-checks.json'),checks);
+  manifest.checks={motionWarnings:checks.motion.warnings.length,visibilityWarnings:checks.visibility.warnings.length,crowdingWarnings:checks.crowding.warnings.length,...(checks.reels?{reelsWarnings:checks.reels.warnings.length}:{}),silenceWarnings:checks.silence.warnings.length};
+  console.log('CHECKS:',p.backend,checks.motion.policy,'warnings',checks.motion.warnings.length,checks.visibility.policy,'warnings',checks.visibility.warnings.length,checks.crowding.policy,'warnings',checks.crowding.warnings.length,...(checks.reels?[checks.reels.policy,'warnings',checks.reels.warnings.length]:[]),checks.silence.policy,'warnings',checks.silence.warnings.length,'talk',checks.silence.talkShare,JSON.stringify([...checks.motion.warnings,...checks.visibility.warnings,...checks.crowding.warnings,...(checks.reels?.warnings??[])].map(w=>w.code+':'+w.shot+'/'+(w.asset??w.pair))));}
+ // Fix A gate: a film fitted to its speech must not keep long silences (silence-v1); other films only report them.
+ if(timelineFit(prepared))for(const p of prepared){const w=read(join(p.out,'quality-checks.json')).silence.warnings;if(w.length)throw Error('silence-v1 failed for a speech-fitted film: '+JSON.stringify(w));}
  manifest.status='rendering';update();
  const outputHash=out=>name=>existsSync(join(out,name))?sha(join(out,name)):null;
  const soundtrack=id=>join(root,'public','audio',id+'.wav');
