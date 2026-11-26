@@ -115,3 +115,24 @@ test('clean up a pasted chat answer: names, numbering, markdown and topic line',
  // The cleaned answer passes the Director schema as a script.
  request(directorRequest(form({script:r.script})));
 });
+test('Studio UI refinement (owner: "Simple \'Make a film\' view"): simple by default, full editor behind Advanced',()=>{
+ const html=readFileSync(new URL('../studio/index.html',import.meta.url),'utf8'),js=readFileSync(new URL('../studio/app.js',import.meta.url),'utf8'),css=readFileSync(new URL('../studio/style.css',import.meta.url),'utf8');
+ assert.match(html,/<body class="simple">/);assert.match(html,/<button id="mode" type="button" aria-pressed="false"[^>]*>Advanced<\/button>/);
+ assert.match(css,/body\.simple \.adv\{display:none!important\}/);
+ // The film path stays visible: the form, the prompt box, the script, Reels, the preview and the production result.
+ const simpleIds=['topic','directCast','seconds','directBackend','promptHelp','copyPrompt','script','cleanScript','scriptCount','directReels','canvas','jobState','logs','downloads','film'];
+ const advanced=new Set();for(const m of html.matchAll(/<(\w+)[^>]*class="[^"]*\badv\b[^"]*"[^>]*>/g))advanced.add(m.index);
+ for(const id of simpleIds){const at=html.indexOf('id="'+id+'"');assert.ok(at>0,id);
+  // no advanced-only element encloses it: count unclosed adv wrappers before it (all adv wrappers here are divs, sections, asides or leaf elements)
+  const before=html.slice(0,at);const openAdv=[...before.matchAll(/<(div|section|aside)[^>]*class="[^"]*\badv\b[^"]*"[^>]*>/g)].filter(m=>{const rest=html.slice(m.index);let depth=0;const re=new RegExp('<(/?)'+m[1]+'\\b[^>]*>','g');let x;while((x=re.exec(rest))){depth+=x[1]?-1:1;if(depth===0)return m.index+x.index>at;}return true;});
+  assert.equal(openAdv.length,0,id+' must stay visible in the simple view');}
+ // The full editor is advanced-only.
+ for(const marker of ['<aside class="panel inspector adv">','<section class="timeline adv">','<div class="adv"><h2>Workspace</h2>','<div class="adv"><hr><h2>Asset library','<select id="jobs" class="adv"'])assert.ok(html.includes(marker),marker);
+ // The first submit button (Enter key) renders the film; "Generate project only" is advanced.
+ const submits=[...html.matchAll(/<button[^>]*type="submit"[^>]*>/g)].map(m=>m[0]);assert.match(submits[0],/data-produce="true"/);assert.match(submits[1],/class="adv"/);
+ assert.equal((html.match(/class="[^"]*narrator-only/g)??[]).length,2);
+ // label {display:grid} beats the hidden attribute, so the CSS must hide hidden narrator-only fields explicitly
+ // (the click-through screenshot showed "Narrator voice" with the interview cast).
+ assert.ok(css.includes('.narrator-only[hidden]{display:none!important}'));
+ assert.match(js,/function setMode\(advanced\)/);assert.match(js,/setMode\(false\)/);assert.match(js,/\.narrator-only'\)\)el\.hidden=!narrator/);
+});

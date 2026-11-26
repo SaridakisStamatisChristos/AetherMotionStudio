@@ -1,50 +1,42 @@
-# Forward-only handoff: GEN-15 step 2 done, Studio UI refinement last (owner types only "fod continue")
+# Forward-only handoff: the plan's last step (Studio UI) done (owner types only "fod continue")
 
 Date: 2026-11-26. Keep reports short and plain.
-Checkpoint: branch `feature/gen-15-step2` from **main 8e65805** (Fix A merged as PR #38; #37 closed, included). Earlier handoffs: git history of this file. Binding facts are in CURRENT_STATE.md.
+Checkpoint: branch `feature/studio-ui` from **main 0e0e0f1** (GEN-15 step 2 merged as PR #39). Earlier handoffs: git history of this file. Binding facts are in CURRENT_STATE.md.
 
 ## Plan being executed (owner, 2026-11-26)
 | # | Step | State |
 |---|---|---|
-| 1 | Fix A: film length follows the speech; silence-v1 | MERGED (PR #38). The owner watched fixa-sky-r1 ("great i seen the video"). |
+| 1 | Fix A: film length follows the speech; silence-v1 | MERGED (PR #38) |
 | 2 | GEN-15 look accepted; cleanup step 2 | DONE |
-| 3 | GEN-15 step 2: dressed sets, word-matched pieces, glass and metal parts, alternating arms, CPU eye fix | MERGED (PR #39 → 0e0e0f1, "merge 39"; main CI passed). |
-| 4 | **Last: Studio UI refinement** | ACTIVE on `feature/studio-ui` from main 0e0e0f1. Scope: ask the owner, then record it here. |
+| 3 | GEN-15 step 2 (sets, pieces, glass and metal, alternating arms, CPU eye fix) | MERGED (PR #39) |
+| 4 | Studio UI refinement: simple "Make a film" view | IMPLEMENTED + TESTED on `feature/studio-ui`. PR pending. **Merge only on the owner's word, after PR CI.** |
+After step 4 the plan is complete. Nothing else is authorized.
 
-## GEN-15 step 2: what changed
+## Studio UI refinement: what changed
 | File | Change |
 |---|---|
-| src/visual/crafted.js | `LOOKS` + 'crafted-v2', `isCrafted`, `MATERIALS`, `partRole`, `mixColor` |
-| src/visual/catalog.js | Every recipe part passes its role as an extra `box` argument (`primitive(..., family)`) |
-| src/visual/mesh.js, src/visual/three-backend.js | crafted-v2 glass sheen and metal highlight (CPU); glass and metal materials (Three); crafted lighting for both crafted looks |
-| src/core/cinematography.js | `DRESSED_SETS` (lab, tech, forest, office, street, home) added to `LAYERED_ENVIRONMENTS`; `emitEnvironment` draws catalog dressing behind the speakers |
-| src/director/sets.js | `SETS_V2`, `PIECE_WORDS`, `topicSetFor`, `fitPiecesFor` (topic-v1 functions unchanged) |
-| src/director/index.js, schema.js | Dialogue defaults topic-v2 and crafted-v2; v1 and none selectable; negatives |
-| src/core/body.js, src/director/index.js | `bodyLanguage.alternateArms` (owner: "the characters move their left hand only" → "add it now"; old videos may stay as they are): beats alternate right/left; the dialogue default |
-| src/visual/crafted.js `litBias`, src/visual/mesh.js | CPU eye fix in the crafted looks (owner: "the robot has one eye") |
-| tests/gen15b.test.js (new, 8); tests/talk04.test.js (bodyLanguage now includes alternateArms); tests/gen12.test.js, tests/gen15.test.js | v1 behaviour is now pinned by name (the default moved to v2) |
-| docs/LOOK.md, docs/SETS.md | Step 2 sections, topic table, evidence |
+| studio/index.html | `body.simple`; the Advanced button; `adv` tags on the workspace, Save/Export, the library, Foundry, the preview mode, timeline, the production toolbar, jobs, the inspector, "Generate project only" and Profile; `narrator-only` fields; "Generate & render film" is the first (primary) button; the title "Your film" and plain empty-stage text |
+| studio/app.js | `setMode` (simple by default) and narrator-only visibility |
+| studio/style.css | Simple-view rules; `.narrator-only[hidden]` |
+| tests/studio01.test.js | "Studio UI refinement" test (9 tests in the file) |
+| docs/STUDIO.md | "Simple 'Make a film' view" section and evidence |
 
 ## Evidence (this checkpoint)
 - Digests unchanged with `--exclude talk04,talk05,gen01,gen09,gen12,fixa`: graph 3d33fbaee198acad, geometry 14dec244d171dc56, detail2 e3f80439a292f21a, director 7 requests 2cbf9916e65da935.
-- Tests: 378 JS (0 fail, 1 skip); 56 Python OK.
-- Render `gen15b-sky-r1` (the sky script, 60 s), from clean 6dea830: CPU 6769a5630b61c789…, Three 07af439d90e3aa2f…. All PASS; CHECKS 0 (silence-v1 0, talk 77 %); QUALITY pass-with-findings, errors 0, warnings 0; matched hashes exact; glitch clean; −16.0 LUFS; vulkan. Render time: CPU 131.6 s (fixa-sky-r1 113.3 s, +16 % from the dressing), Three 55.0 s (56.0 s). Agent stills: the lab-set dressing shows behind the speakers, the pieces match the words, and both backends agree. **No human review.**
-- Render `gen15b-sky-r2` (alternating arms), from clean a189015: CPU b5698d35a2e5fdf4…, Three 5849347e0ae35f46…. All PASS; CHECKS 0; matched hashes exact; glitch clean; −16.0 LUFS. Beats per character alternate right and left (Student and Explorer 7 each). Agent frames 336 and 632: the Explorer lifts its left arm, then its right arm, mirrored. **No human review.**
-- **Robot eyes on CPU** (owner: "in some frames in cpu rendering the robot has one eye"):
-  - Cause: the CPU painter sorts flat polygons by average depth. On a turned head the far eye sat deeper than the centres of the head block and face panel and was painted over. This also affects the historical painter.
-  - Fix in the crafted looks only (`CRAFTED.litBias` 0.18 m): glowing surface details (eyes, lights, mouths) sort nearer. 0.08 was not enough: gen15b-sky-r3 frame 1620 showed only the bevel strips of one eye. 0.16 is the smallest value that keeps every eye front visible for head turns up to ±0.9 rad and side cameras.
-  - Three has a depth buffer and is unaffected. The historical painter is unchanged.
-  - Render `gen15b-sky-r4`, from clean 751174a: CPU 096dbab2fcefe1e8…, Three 5849347e0ae35f46… (byte-identical to r2). All PASS; CHECKS 0; glitch clean; −16.0 LUFS. Agent frames 585, 1620, 1665 and 1710 show both eyes (r2 showed one). Gesture frames show nothing glowing through the arms. **No human review.**
-- Preview stills (agent, Studio page drawing at 360×640, not native): the tech set (server racks, control panels, dark glassy screens) and the forest set (trees, fern, rocks) on both backends.
-- Known:
-  - glass and metal are subtle at feed size;
-  - the far skyline blocks remain behind the dressing;
-  - "How do bridges carry trucks?" still shows no set piece (GEN-06 singles; recorded in GEN-12).
+- Tests: 381 JS (0 fail, 1 skip); 56 Python OK.
+- Click-through (agent, headless Chrome on a fresh Studio from the branch code, vulkan):
+  - the simple view opened by default;
+  - the topic and the forest script were filled in (136 words, "Good length"), and "Generate & render film" was clicked;
+  - job studio-ddb5f4a61d08ce9e740e succeeded in about 65 s (speech cached; render 49.6 s);
+  - the finished film and the download links appeared in the page;
+  - film df90f17e13d52492…: 1800 frames, glitch clean, −16.0 LUFS; PASS lines; QUALITY errors 0, warnings 0; crafted-v2, forest-set, alternateArms.
+- The screenshot exposed a bug: "Narrator voice" stayed visible with the interview cast, because `label {display:grid}` overrode `hidden`. Fixed with `.narrator-only[hidden]{display:none!important}`, tested and re-checked by screenshot.
+- **The owner has not tried the new view.**
+- The Studio started by the launcher earlier in this session (port 4173) runs older server code. The owner should restart it (close its window, double-click the launcher) to get Fix A and GEN-15 step 2 in Studio films.
 
 ## Pending owner decisions
-1. Watch gen15b-sky-r4 (out/gen15b-sky-r4-cpu-polished/film.mp4 and the Three film; r4 = step 2 + alternating arms + the CPU eye fix) and compare it with fixa-sky-r1; then merge the GEN-15 step 2 PR (after its CI).
-2. Studio UI refinement (last): what to refine.
-3. GEN-16 policy. The Instagram test upload is deferred to the very end.
+1. Try the simple view (restart the Studio first), then merge the Studio UI PR (after its CI).
+2. Later options (not scheduled): a render progress bar, a finished-film panel, remembered settings; GEN-16 policy; the Instagram test upload (deferred to the very end).
 
 ## Owner working agreement and taste (binding; see also auto-memory)
 - **Delegation:** the owner delegates whole units and wants plain-language reports with short tables. Stop only for direction-changing or risky actions: backend defaults, dependencies, deletions, system settings, anything outside the repo, or changing accepted films.
@@ -85,8 +77,8 @@ Checkpoint: branch `feature/gen-15-step2` from **main 8e65805** (Fix A merged as
 - "fod continue": bootstrap and baseline:
   - `git status --short --branch`, `git rev-parse HEAD`, `git fetch`, `gh pr list --state all --limit 5`;
   - `node scripts/fod-digests.mjs . --exclude talk04,talk05,gen01,gen09,gen12,fixa` must print the digests above;
-  - `npm test` fail 0 (378 tests, 1 Windows skip);
+  - `npm test` fail 0 (381 tests, 1 Windows skip);
   - `PYTHONPATH=scripts .venv/Scripts/python.exe -m unittest discover -s tests -p "test_*.py"` 56 OK.
-- If the GEN-15 step 2 PR is open: report its CI and ask the owner to merge.
-- After the merge: Studio UI refinement (the last step); ask what to refine first.
+- If the Studio UI PR is open: report its CI and ask the owner to merge.
+- After that the owner's plan is complete. Ask what comes next; offer the later options above. Do not start anything unasked.
 - Never merge without the owner's word and a passing PR CI. Never stack branches.

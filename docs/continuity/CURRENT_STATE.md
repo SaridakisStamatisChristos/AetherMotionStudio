@@ -1,5 +1,5 @@
 # Current state — AetherMotion Studio
-Updated 2026-11-26 (main 0e0e0f1 = GEN-15 step 2 merged, PR #39, main CI 45799267039 passed; Studio UI refinement, the last step, active on feature/studio-ui). Authoritative rolling checkpoint for new coding sessions; update at verified transitions. This file references the historical ledger rather than replacing source or evidence. Baseline product merge: `04e3491bb21b4ebc3d54755a2a211b1a7affb3fa` (PR #13 merged into main). The handoff documentation commit may be newer; inspect git HEAD. No release publication implied.
+Updated 2026-11-26 (main 0e0e0f1; Studio UI refinement, the last step of the plan, IMPLEMENTED + TESTED on feature/studio-ui, PR pending). Authoritative rolling checkpoint for new coding sessions; update at verified transitions. This file references the historical ledger rather than replacing source or evidence. Baseline product merge: `04e3491bb21b4ebc3d54755a2a211b1a7affb3fa` (PR #13 merged into main). The handoff documentation commit may be newer; inspect git HEAD. No release publication implied.
 
 ## Current status and authority
 - v1.0 core pipeline and Asset Foundry AF01–AF09 implementation merged; do not reimplement.
@@ -19,6 +19,23 @@ Updated 2026-11-26 (main 0e0e0f1 = GEN-15 step 2 merged, PR #39, main CI 4579926
 6. Source and approved decisions authoritative. This summary cannot discard binding facts; consult the source-specific contract when the task touches it. Keep state and handoff synchronized. No new native render runs on GitHub or release without authorization.
 
 ## Active unit
+**Studio UI refinement (the last step of the owner's plan): IMPLEMENTED + TESTED on `feature/studio-ui` (from main 0e0e0f1), not merged.** Owner's choice (of four offered): "Simple 'Make a film' view".
+- Binding:
+  - the Studio opens in the simple view: the Make-a-film form, the preview and the production result;
+  - Advanced shows the full editor as before;
+  - no contract, job or request change; elements are tagged `adv`, and narrator-only fields show only for the Narrator cast.
+  - Details: docs/STUDIO.md "Simple 'Make a film' view".
+- Evidence: 381 JS tests (0 fail, 1 skip); digests unchanged.
+- Click-through (agent, headless Chrome on a fresh Studio from the branch code, vulkan):
+  - the simple view opened by default;
+  - the topic and the forest script were filled in (136 words, "Good length"), and "Generate & render film" was clicked;
+  - job studio-ddb5f4a61d08ce9e740e succeeded in about 65 s (speech cached; render 49.6 s);
+  - the finished film and the download links appeared in the page;
+  - film df90f17e13d52492…: 1800 frames, glitch clean, −16.0 LUFS; PASS lines; QUALITY errors 0, warnings 0; crafted-v2, forest-set, alternateArms.
+- The screenshot exposed a bug: "Narrator voice" stayed visible with the interview cast, because `label {display:grid}` overrode `hidden`. Fixed with `.narrator-only[hidden]{display:none!important}`, tested and re-checked by screenshot.
+- **The owner has not tried the new view.**
+- Not chosen (not scheduled): clear render progress, a finished-film panel, remembering settings.
+
 **GEN-15 step 2 (part materials, dressed sets): MERGED** (PR #39 → 0e0e0f1 on the owner's word "merge 39"; PR CI 45791417306, main CI 45799267039 passed). Owner: "i agree merge it and start gen-15 step 2"; Fix A was merged as PR #38 (8e65805) and #37 was closed (included).
 - Binding:
   - look `crafted-v2` = crafted-v1 plus glass and metal part roles (crafted.js `partRole`); a role is an extra box-stream argument that legacy and crafted-v1 ignore;

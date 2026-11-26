@@ -39,3 +39,24 @@ Tests cover transactional edits, estimated budget, reference rejection, atomic p
   - Reels checkbox → `delivery: 'reels-v1'`. The cover and reels-report still come from `node scripts/reels-export.mjs out/<job id>` after the render.
   - Backend: **Three.js** by default (RTX through the launcher; plain `npm run studio:local` uses the repository default swangle), or CPU Canvas. Seconds default 60.
 - **One backend per job.** Studio jobs render one saved project with one backend (one active job, one snapshot, one output folder). "Both" would need a second job or a new job contract, so it is not offered; use `node scripts/produce.mjs --backend both` for matched pairs.
+
+## Simple "Make a film" view (Studio UI refinement, 2026-11-26)
+Owner picked "Simple 'Make a film' view" (the last step of the plan; the other offered refinements were not chosen).
+- The page opens in the **simple view**:
+  - the "Make a film" form: topic, cast, seconds, backend, the Claude-chat prompt box, script, Clean up, word count and rules, Reels;
+  - **Generate & render film**, now the first button, so Enter renders;
+  - the preview;
+  - the production status, downloads and the finished film.
+- **Advanced** (header button; it reads "Simple view" when on) shows the full editor as before: workspace, Save/Export, the asset library, Foundry packs, the preview mode, timeline, the production toolbar and session jobs, the project settings, the shot inspector, speakers, JSON and the quality report.
+  - "Generate project only" and the Profile choice are advanced too.
+- Narrator voice and art-v1 staging show only when the Narrator cast is chosen.
+- No contract, job or request change: the same handlers and `directorRequest`. Each element is tagged `adv`, and CSS hides it in the simple view.
+- Click-through (agent, headless Chrome on a fresh Studio from the branch code, vulkan):
+  - the simple view opened by default;
+  - the topic and the forest script were filled in (136 words, "Good length"), and "Generate & render film" was clicked;
+  - job studio-ddb5f4a61d08ce9e740e succeeded in about 65 s (speech cached; render 49.6 s);
+  - the finished film and the download links appeared in the page;
+  - film df90f17e13d52492…: 1800 frames, glitch clean, −16.0 LUFS; PASS lines; QUALITY errors 0, warnings 0; crafted-v2, forest-set, alternateArms.
+- The screenshot exposed a bug: "Narrator voice" stayed visible with the interview cast, because `label {display:grid}` overrode `hidden`. Fixed with `.narrator-only[hidden]{display:none!important}`, tested and re-checked by screenshot.
+- **The owner has not tried the new view.**
+- Tests: tests/studio01.test.js "Studio UI refinement" (simple by default; every film-path field stays outside advanced wrappers; the editor parts are advanced; the first submit renders; narrator-only fields).
