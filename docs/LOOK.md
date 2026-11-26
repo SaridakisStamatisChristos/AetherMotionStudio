@@ -44,4 +44,9 @@ Owner: "Accept the GEN-15 look" and "start gen-15 step 2". The look was accepted
   - The role is an extra argument on the shared box stream. Renderers without crafted-v2 ignore it, so legacy and crafted-v1 drawing are identical (tested, digests unchanged).
 - **Dressed sets:** see docs/SETS.md "topic-v2".
 - Render `gen15b-sky-r1` (the sky script, 60 s), from clean 6dea830: CPU 6769a5630b61c789…, Three 07af439d90e3aa2f…. All PASS; CHECKS 0 (silence-v1 0, talk 77 %); QUALITY pass-with-findings, errors 0, warnings 0; matched hashes exact; glitch clean; −16.0 LUFS; vulkan. Render time: CPU 131.6 s (fixa-sky-r1 113.3 s, +16 % from the dressing), Three 55.0 s (56.0 s). Agent stills: the lab-set dressing shows behind the speakers, the pieces match the words, and both backends agree. **No human review.**
+- **Alternating gesture arms** (owner: "the characters move their left hand only … add it now"; old videos may stay as they are):
+  - Beats used to lift only the right arm (pose `armPitch`; the right arm appears on the viewer's left).
+  - Opt-in `bodyLanguage.alternateArms` (src/core/body.js): each character's beats alternate right, left, right … across the film, counted over earlier shots that also alternate. Left beats drive `leftArmPitch`.
+  - On by default for Director dialogue films. Accepted films keep the right arm. It is a boolean and does not count as an "enable" key.
+- Render `gen15b-sky-r2` (alternating arms), from clean a189015: CPU b5698d35a2e5fdf4…, Three 5849347e0ae35f46…. All PASS; CHECKS 0; matched hashes exact; glitch clean; −16.0 LUFS. Beats per character alternate right and left (Student and Explorer 7 each). Agent frames 336 and 632: the Explorer lifts its left arm, then its right arm, mirrored. **No human review.**
 - Tests: tests/gen15b.test.js.
