@@ -4,8 +4,8 @@
 import {clamp,smooth} from '../core/motion.js';
 import {roundedBox} from './primitives.js';
 import {cssFont,formatNumber} from '../core/composition.js';
-import {decimals} from '../core/charts.js';
-const fmt=v=>formatNumber(v,{decimals:decimals(v)});
+import {chartNumber} from '../core/charts.js';
+const fmt=chartNumber;
 function label(ctx,s,x,y,size,color,font,align='center',weight=700){ctx.font=cssFont(font,weight,size);ctx.textAlign=align;ctx.textBaseline='middle';ctx.fillStyle=color;ctx.fillText(s,x,y);}
 function arrow(ctx,a,b,color){const ang=Math.atan2(b[1]-a[1],b[0]-a[0]);ctx.strokeStyle=color;ctx.lineWidth=4;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(...a);ctx.lineTo(...b);for(const s of [-1,1]){ctx.moveTo(...b);ctx.lineTo(b[0]-14*Math.cos(ang+s*.45),b[1]-14*Math.sin(ang+s*.45));}ctx.stroke();}
 // Start of step j. With phrase anchors: that phrase's start. Otherwise: charts show their first state, then steps spread
@@ -39,15 +39,15 @@ export function drawChartItem(ctx,x,t,p,start,rv,phrases,font){
  if(L.kind==='pie'){const P=L.pie,eq=layers.length===1||L.states[sOld][0].every((v,i)=>v===L.states[sNew][0][i]);
   for(const [s,a] of layers){const la=elemAlpha(s,a,eq);if(la<=0)continue;const st=L.states[s][0],tot=st.reduce((u,v)=>u+v,0),pct=L.percents[s];let a0=-Math.PI/2;
    ctx.save();ctx.globalAlpha*=la*grow;
-   st.forEach((v,i)=>{const a1=a0+Math.PI*2*v/tot;ctx.save();ctx.globalAlpha*=eq?dimMix(0,i):dimOf(s,0,i);ctx.fillStyle=L.colours[i%L.colours.length];ctx.beginPath();ctx.moveTo(P.cx,P.cy);ctx.arc(P.cx,P.cy,P.r,a0,a1);ctx.closePath();ctx.fill();ctx.strokeStyle=t.fill;ctx.lineWidth=3;ctx.stroke();ctx.restore();a0=a1;});
-   L.cats.forEach((c,i)=>{const y=P.legendY-(L.cats.length*P.rowH)/2+P.rowH*(i+.5);ctx.save();ctx.globalAlpha*=eq?dimMix(0,i):dimOf(s,0,i);ctx.fillStyle=L.colours[i%L.colours.length];ctx.fillRect(P.legendX,y-9,18,18);label(ctx,c+'  '+fmt(st[i])+(L.unit?' '+L.unit:'')+'  '+pct[i]+'%',P.legendX+28,y,P.size,t.text,font,'left',400);ctx.restore();});
+   st.forEach((v,i)=>{const a1=a0+Math.PI*2*v/tot;ctx.save();ctx.globalAlpha*=eq?dimMix(0,i):dimOf(s,0,i);ctx.fillStyle=L.colours[i];ctx.beginPath();ctx.moveTo(P.cx,P.cy);ctx.arc(P.cx,P.cy,P.r,a0,a1);ctx.closePath();ctx.fill();ctx.strokeStyle=t.fill;ctx.lineWidth=3;ctx.stroke();ctx.restore();a0=a1;});
+   L.cats.forEach((c,i)=>{const y=P.legendY-(L.cats.length*P.rowH)/2+P.rowH*(i+.5);ctx.save();ctx.globalAlpha*=eq?dimMix(0,i):dimOf(s,0,i);ctx.fillStyle=L.colours[i];ctx.fillRect(P.legendX,y-9,18,18);label(ctx,c+'  '+fmt(st[i])+(L.unit?' '+L.unit:'')+'  '+pct[i]+'%',P.legendX+28,y,P.size,t.text,font,'left',400);ctx.restore();});
    ctx.restore();}}
  else{const A=L.area,yOf=v=>A.y+(L.Y[1]-v)*L.sy,zeroY=yOf(Math.min(Math.max(0,L.Y[0]),L.Y[1]));
   if(L.yLabel||L.unit)label(ctx,(L.yLabel??'')+(L.unit?(L.yLabel?' ('+L.unit+')':L.unit):''),A.x,A.y-18,20,t.sub,font,'left');
-  ctx.lineWidth=1;for(const v of L.yTicks){const y=yOf(v);ctx.strokeStyle=t.sub+'40';ctx.beginPath();ctx.moveTo(A.x,y);ctx.lineTo(A.x+A.w,y);ctx.stroke();label(ctx,fmt(v),A.x-8,y,18,t.sub,font,'right',400);}
+  ctx.lineWidth=1;for(const v of L.yTicks){const y=yOf(v);ctx.strokeStyle=t.sub+'40';ctx.beginPath();ctx.moveTo(A.x,y);ctx.lineTo(A.x+A.w,y);ctx.stroke();label(ctx,L.yLabels[L.yTicks.indexOf(v)],A.x-8,y,18,t.sub,font,'right',400);}
   ctx.strokeStyle=t.sub;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(A.x,zeroY);ctx.lineTo(A.x+A.w,zeroY);ctx.stroke();
   if(L.kind!=='scatter')L.cats.forEach((c,i)=>{ctx.save();ctx.globalAlpha*=hlOf(sNew)?.category!==undefined&&hlOf(sNew).category!==i?.6:1;label(ctx,c,A.x+L.slot*(i+.5),A.y+A.h+20,L.catSize,t.text,font,'center',400);ctx.restore();});
-  else{const xOf=v=>A.x+(v-L.X[0])*L.sx;for(const v of L.xTicks)label(ctx,fmt(v),xOf(v),A.y+A.h+16,18,t.sub,font,'center',400);if(L.xLabel||L.xUnit)label(ctx,(L.xLabel??'')+(L.xUnit?' ('+L.xUnit+')':''),A.x+A.w,A.y+A.h+42,20,t.sub,font,'right');}
+  else{const xOf=v=>A.x+(v-L.X[0])*L.sx;for(const v of L.xTicks)label(ctx,L.xLabels[L.xTicks.indexOf(v)],xOf(v),A.y+A.h+16,18,t.sub,font,'center',400);if(L.xLabel||L.xUnit)label(ctx,(L.xLabel??'')+(L.xUnit?' ('+L.xUnit+')':''),A.x+A.w,A.y+A.h+42,20,t.sub,font,'right');}
   // opening reveal: wipe the plotting area from left to right (geometry stays at its true coordinates)
   ctx.save();ctx.beginPath();ctx.rect(A.x-12,A.y-60,(A.w+24)*grow,A.h+80);ctx.clip();
   if(L.kind==='scatter'){const xOf=v=>A.x+(v-L.X[0])*L.sx;L.series.forEach((s,si)=>s.points.forEach(([px,py])=>{ctx.save();ctx.globalAlpha*=dimOf(sNew,si);ctx.fillStyle=L.colours[si];ctx.beginPath();ctx.arc(xOf(px),yOf(py),7,0,Math.PI*2);ctx.fill();ctx.restore();}));}

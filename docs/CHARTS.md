@@ -24,7 +24,8 @@ Opt-in `compose-v2` items, usually authored as Director `visuals` attached to sc
   - `valueLabels`: must fit their bars;
   - `annotations` (≤ 4, at a category, not at a missing value);
   - pie labels: "name  value unit  percent"; percentages use largest-remainder rounding, so they add up to exactly 100. The legend goes beside the pie, beside a smaller pie, or below it; if none fits, it is refused.
-- **Colours per theme:** aether-v1 cyan, gold, lavender, pink; paper-v1 rust, blue, ochre, green.
+- **Colours per theme:** six distinct colours, each at least 3:1 against the plate (tested). Series use the first four; every one of a pie's up to six slices has its own colour. aether-v1: cyan, gold, lavender, pink, green, orange. paper-v1: rust, blue, ochre, green, plum, teal.
+- **Numbers:** one adaptive formatter is used by layout measurement and by rendering. Plain grouped notation (up to 6 significant digits) between 0.001 and 1e9, scientific otherwise (`1e-6`, `2e-10`, `1.5e11`), so distinct small values never read as zero. Tick labels carry as many digits as their step needs. **Ticks** always lie inside their declared range; the only tolerance is a millionth of the step, for rounding (second repair pass).
 
 ## timeline, flow, compare
 - **`timeline`:** 2–8 events `{when ≤ 12, label ≤ 24}` on a line, labels alternating above and below. Each event appears at its cue, or evenly spread.

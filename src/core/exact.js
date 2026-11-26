@@ -16,7 +16,12 @@ function q(n,d=1n){if(d===0n)no('division by zero (undefined)');if(d<0n){n=-n;d=
 const add=(a,b)=>q(a.n*b.d+b.n*a.d,a.d*b.d),sub=(a,b)=>q(a.n*b.d-b.n*a.d,a.d*b.d),mul=(a,b)=>q(a.n*b.n,a.d*b.d),div=(a,b)=>{if(b.n===0n)no('division by zero (undefined)');return q(a.n*b.d,a.d*b.n);};
 function pow(a,e){if(e.d!==1n)no('a non-integer exponent');if(abs(e.n)>BigInt(EXACT_LIMITS.exponent))no('an exponent larger than '+EXACT_LIMITS.exponent);
  let k=e.n<0n?-e.n:e.n,r=q(1n),base=a;while(k>0n){if(k&1n)r=mul(r,base);k>>=1n;if(k)base=mul(base,base);}if(e.n<0n){if(r.n===0n)no('division by zero (undefined)');r=q(r.d,r.n);}return r;}
-function isqrt(n){if(n<0n)return null;if(n<2n)return n;let x=BigInt(Math.floor(Math.sqrt(Number(n))))||1n;for(let i=0;i<200;i++){const y=(x+n/x)>>1n;if(abs(y-x)<=1n){x=y;break;}x=y;}while(x*x>n)x--;while((x+1n)*(x+1n)<=n)x++;return x;}
+// Integer square root, pure BigInt (second repair pass: the float start overflowed to Infinity for large n). Newton
+// from 2^ceil(bits/2), which is >= sqrt(n), decreases monotonically to floor(sqrt(n)); bounded by the 2000-digit
+// limit (about 6650 bits), so it needs well under 20 steps; the step cap is a safety net, not the stopping rule.
+function isqrt(n){if(n<0n)return null;if(n<2n)return n;let x=1n<<BigInt(Math.ceil(n.toString(2).length/2));
+ for(let i=0;i<10000;i++){const y=(x+n/x)>>1n;if(y>=x)break;x=y;}
+ if(x*x>n||(x+1n)*(x+1n)<=n)throw Error('isqrt did not converge');return x;}
 function sqrt(a){if(a.n<0n)no('the square root of a negative number');const rn=isqrt(a.n),rd=isqrt(a.d);if(rn*rn!==a.n||rd*rd!==a.d)no('an irrational square root');return q(rn,rd);}
 function gcd(a,b){if(a.d!==1n||b.d!==1n)no('gcd of non-integers');return q(bgcd(a.n,b.n));}
 function tokens(s){if(s.length>EXACT_LIMITS.chars)no('longer than '+EXACT_LIMITS.chars+' characters');const out=[],re=/\s*(?:(\d+)(?:\.(\d+))?|(sqrt|gcd)|([-+*/^(),]))/y;let i=0;

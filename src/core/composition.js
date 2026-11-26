@@ -13,7 +13,7 @@
 // (src/core/reels-layout.js: x 40–640, y 147–1000) and above the caption boxes (normal and Reels, two lines).
 import {FONT_METRICS} from './font-metrics.js';
 import {layoutEquation,layoutPlot,layoutGraph,layoutArray} from './diagrams.js';
-import {layoutChart,layoutTimeline,layoutFlow,layoutCompare,parseCsv} from './charts.js';
+import {layoutChart,layoutTimeline,layoutFlow,layoutCompare,parseCsv,chartNumber} from './charts.js';
 export const COMPOSE_VERSION='compose-v1',COMPOSE_V2='compose-v2',COMPOSE_VERSIONS=Object.freeze([COMPOSE_VERSION,COMPOSE_V2]);
 export const REGIONS=Object.freeze({
  // the clean top of a 9:16 frame: above characters' heads at the medium framings the Director uses
@@ -122,7 +122,7 @@ function counterTemplate(x,m,size){const digits=[...'0123456789'],wide=digits.re
 // Text layout of one text item inside its pixel box (null for items without text). Throws on overflow.
 function layoutItem(x,b,q,m,opts={}){
  // DUAL-03 maths and diagram items (src/core/diagrams.js)
- if(DIAGRAMS.includes(x.type)){const ctx={measure:(s,size)=>m.width(s,size),format:v=>formatNumber(v,{decimals:decimalsOf(v)}),phraseOk:opts.phraseOk};return {equation:layoutEquation,plot:layoutPlot,graph:layoutGraph,array:layoutArray,chart:layoutChart,timeline:layoutTimeline,flow:layoutFlow,compare:layoutCompare}[x.type](x,b,q,{...ctx,theme:opts.theme});}
+ if(DIAGRAMS.includes(x.type)){const ctx={measure:(s,size)=>m.width(s,size),format:chartNumber,phraseOk:opts.phraseOk};return {equation:layoutEquation,plot:layoutPlot,graph:layoutGraph,array:layoutArray,chart:layoutChart,timeline:layoutTimeline,flow:layoutFlow,compare:layoutCompare}[x.type](x,b,q,{...ctx,theme:opts.theme});}
  const fit=(s,spec,w,h,what)=>{const r=fitText(s,spec,w,h,m);if(!r)fail(q,'text overflow: '+what+' "'+s.slice(0,40)+(s.length>40?'…':'')+'" does not fit a '+Math.round(w)+'×'+Math.round(h)+' px box at '+spec.sizes.at(-1)+' px; shorten it or enlarge the box');return r;};
  const over=what=>fail(q,'text overflow: '+what+' does not fit a '+Math.round(b.w)+'×'+Math.round(b.h)+' px box at the smallest sizes; shorten it or enlarge the box');
  if(x.type==='title'){const s=TEXT.title;return {text:fit(x.text,s,b.w-2*s.pad,b.h-2*s.pad,'title')};}

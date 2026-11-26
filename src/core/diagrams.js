@@ -33,7 +33,8 @@ export function layoutEquation(x,b,p,{measure}){
 function plotSpan([a,b],p){const span=b-a,mag=Math.max(Math.abs(a),Math.abs(b));if(!(span>=1e-9))fail(p,'the range spans less than 1e-9; rescale the unit');if(span<mag*1e-9)fail(p,'the range is narrower than one part in a billion of its values; plot differences instead');}
 // Nice tick step (1, 2 or 5 × 10^k) giving about 4–7 ticks.
 export function tickStep(span){const raw=span/5,k=10**Math.floor(Math.log10(raw)),f=raw/k;return (f<1.5?1:f<3.5?2:f<7.5?5:10)*k;}
-function ticks(a,b){const s=tickStep(b-a),out=[];for(let v=Math.ceil(a/s-1e-9)*s;v<=b+1e-9&&out.length<12;v+=s)out.push(Math.round(v/s)*s);return {step:s,values:out};}
+// Ticks lie inside [a, b] up to a millionth of the step (second repair pass).
+function ticks(a,b){const s=tickStep(b-a),tol=s*1e-6,out=[];for(let k=Math.ceil(a/s-1e-6);out.length<12;k++){const v=Math.round(k)*s;if(v>b+tol)break;if(v>=a-tol)out.push(v);}return {step:s,values:out};}
 export function layoutPlot(x,b,p,{measure,phraseOk}){
  only(x,['id','type','box','start','end','reveal','phrase','phrases','x','y','equal','grid','axes','xLabel','yLabel','shapes','tone','font','weight','align','emphasis','clip'],p);
  const X=pair(x.x,p+'.x'),Y=pair(x.y,p+'.y');if(X[0]>=X[1]||Y[0]>=Y[1])fail(p,'ranges must increase');plotSpan(X,p+'.x');plotSpan(Y,p+'.y');

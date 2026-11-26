@@ -45,9 +45,14 @@ export function validateCompiled(c,tex,p){
 // anything else is reported as unverifiable, never as verified.
 export function checkArithmetic(tex){
  let s=tex.replace(/\\left|\\right|\\,|\\;|\\!|\\quad|\\qquad/g,' ');
- for(let n=0;n<8&&/\\(?:frac|dfrac|tfrac)\{/.test(s);n++)s=s.replace(/\\(?:frac|dfrac|tfrac)\{([^{}]*)\}\{([^{}]*)\}/g,'(($1)/($2))');
- for(let n=0;n<8&&/\\sqrt\{/.test(s);n++)s=s.replace(/\\sqrt\{([^{}]*)\}/g,'sqrt($1)');
- s=s.replace(/\\cdot|\\times/g,'*').replace(/\\div/g,'/').replace(/\\gcd/g,'gcd').replace(/\^\{([^{}]*)\}/g,'^($1)').replace(/[{}]/g,m=>m==='{'?'(':')');
+ // Second repair pass (audit 2026-11-26): follow TeX semantics. An unbraced superscript takes exactly one token, so
+ // "2^12" renders as 2¹2, not 2¹²; such ambiguous forms (and an unbraced superscript that is a sign, a bracket or a
+ // command) are unverifiable instead of being read as 2^(12). Write 2^{12}.
+ if(/\^\s*(?:[0-9]\s*[0-9.]|[-+(]|\\)/.test(s))return {status:'unverifiable',reason:'ambiguous superscript: an unbraced superscript is one token in TeX; write the exponent in braces, e.g. 2^{12}'};
+ s=s.replace(/\^\s*([0-9A-Za-z])/g,'^{$1}');
+ // innermost first, so nested constructs (\sqrt{x^{9}}, \frac{a^{2}}{b}) convert at any depth
+ for(let n=0;n<24&&/\\(?:frac|dfrac|tfrac|sqrt)\{|\^\{/.test(s);n++)s=s.replace(/\^\{([^{}]*)\}/g,'^($1)').replace(/\\(?:frac|dfrac|tfrac)\{([^{}]*)\}\{([^{}]*)\}/g,'(($1)/($2))').replace(/\\sqrt\{([^{}]*)\}/g,'sqrt($1)');
+ s=s.replace(/\\cdot|\\times/g,'*').replace(/\\div/g,'/').replace(/\\gcd/g,'gcd').replace(/[{}]/g,m=>m==='{'?'(':')');
  if(/\\/.test(s))return {status:'unverifiable',reason:'not plain arithmetic'};
  const sides=s.split('=');if(sides.length<2)return {status:'unverifiable',reason:'no equals sign'};
  // Repair pass (audit 2026-11-26): exact rational arithmetic (src/core/exact.js). Floating-point agreement within a

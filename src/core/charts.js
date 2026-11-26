@@ -12,13 +12,23 @@
 // timeline: 2–8 events on a line; flow: 2–6 boxes joined by arrows (flowchart); compare: 2 cards side by side.
 import {tickStep} from './diagrams.js';
 export const CHART_KINDS=Object.freeze(['bar','line','area','scatter','pie']);
-export const SERIES_COLOURS=Object.freeze({'aether-v1':Object.freeze(['#6de6e3','#ffd17a','#a9b5ff','#f4989e']),'paper-v1':Object.freeze(['#a3401b','#2f4a96','#7a5600','#2e6b45'])});
+export const SERIES_COLOURS=Object.freeze({'aether-v1':Object.freeze(['#6de6e3','#ffd17a','#a9b5ff','#f4989e','#9fe39a','#ffa15c']),'paper-v1':Object.freeze(['#a3401b','#2f4a96','#7a5600','#2e6b45','#7b3f8c','#106b74'])});
+// Six colours per theme (series use the first four; every one of a pie's up to six slices gets its own colour).
 export const CSV_LIMITS=Object.freeze({chars:8000,rows:60,cols:5});
 const fail=(p,m)=>{throw Error(p+': '+m)};
 const only=(x,keys,p)=>{for(const k of Object.keys(x))if(!keys.includes(k))fail(p+'.'+k,'unknown field');};
 const text=(v,p,max)=>{if(typeof v!=='string'||v.length>max||!v.trim()||/[\u0000-\u001f\u007f-\u009f\u2028\u2029\u200b-\u200f\u202a-\u202e\u2066-\u2069\ufeff]/.test(v))fail(p,'printable text of at most '+max+' characters required');return v.trim();};
 const value=(v,p,nullable=true)=>{if(v===null&&nullable)return null;if(typeof v!=='number'||!Number.isFinite(v)||Math.abs(v)>1e12)fail(p,'finite number within ±1e12'+(nullable?' or null (missing)':'')+' required');return v;};
 const fitSize=(sizes,ok)=>sizes.find(ok)??null;
+// Second repair pass (audit 2026-11-26): ONE adaptive number formatter for chart and plot labels, used by layout
+// measurement and by rendering alike. Plain notation (grouped, up to 6 significant digits) between 0.001 and 1e9;
+// scientific notation (e.g. 2e-10, 1.5e11) outside it, so distinct small values never all read as zero.
+const trimZeros=s=>s.includes('.')?s.replace(/0+$/,'').replace(/\.$/,''):s;
+const group=s=>{const [i,f]=s.split('.');const neg=i.startsWith('-');const g=(neg?i.slice(1):i).replace(/\B(?=(\d{3})+(?!\d))/g,',');return (neg?'-':'')+g+(f!==undefined?'.'+f:'');};
+const sci=(v,sig)=>{const [m,e]=v.toExponential(Math.max(0,Math.min(14,sig))).split('e');return trimZeros(m)+'e'+Number(e);};
+export function chartNumber(v){if(v===0||Object.is(v,-0))return '0';const a=Math.abs(v);if(a>=1e-3&&a<1e9){const d=Math.max(0,Math.min(6,5-Math.floor(Math.log10(a))));return group(trimZeros(v.toFixed(d)));}return sci(v,5);}
+// Tick labels: as many digits as the tick step needs (so neighbouring ticks always differ), same notation rule.
+export function tickLabel(v,step){if(Math.abs(v)<step*1e-6)return '0';const a=Math.abs(v);if(step>=1e-3&&a<1e9){const d=Math.max(0,Math.min(6,Math.ceil(-Math.log10(step)-1e-9)));return group(trimZeros(v.toFixed(d)));}return sci(v,Math.max(0,Math.floor(Math.log10(a))-Math.floor(Math.log10(step)+1e-9)));}
 const decimals=v=>{for(let d=0;d<3;d++)if(Math.abs(v*10**d-Math.round(v*10**d))<1e-9)return d;return 3;};
 // Strict CSV: header row (first cell = category or x name), then rows; quoted fields allowed ("" escapes a quote);
 // numbers are plain decimals (-12, 3.5), an empty cell is missing; anything else in a numeric column is refused.
@@ -106,26 +116,28 @@ export function layoutChart(x,b,p,{measure,format,phraseOk,theme}){
  const L={kind,cats,series:data,states,steps,highlight:hl,annotations,unit,xUnit,yLabel,xLabel,valueLabels:x.valueLabels===true,colours:SERIES_COLOURS[theme]??SERIES_COLOURS['aether-v1'],legend:null,noteY:b.y+b.h-pad-noteH/2};
  if(legend&&kind!=='pie'){let lx=b.x+pad;L.legend=data.map(s=>{const w=24+measure(s.name,22)+20,item={x:lx,y:b.y+pad+14,name:s.name};lx+=w;return item;});if(lx-b.x-pad>b.w-2*pad)fail(p+'.series','legend wider than the chart; shorten series names');}
  if(kind==='pie'){const ar={x:b.x+pad,y:b.y+pad,w:b.w-2*pad,h:b.h-2*pad-noteH};
-  const rows=states.flatMap(st=>cats.map((c,i)=>c+'  '+format(st[0][i])+(unit?' '+unit:'')+'  '+percents(st[0])[i]+'%'));
+  const rows=states.flatMap(st=>cats.map((c,i)=>c+'  '+chartNumber(st[0][i])+(unit?' '+unit:'')+'  '+percents(st[0])[i]+'%'));
   // layouts tried in order: legend beside a large pie, beside a smaller pie, below the pie
   const tries=[...[.28,.2].map(f=>{const r=Math.min(ar.h/2,ar.w*f),rowH=Math.min(46,ar.h/cats.length);return {cx:ar.x+r+4,cy:ar.y+ar.h/2,r,legendX:ar.x+2*r+28,legendY:ar.y+ar.h/2,rowH,width:ar.w-2*r-32};}),
    (()=>{const rowH=36,lh=rowH*cats.length,r=Math.min(ar.w/2,(ar.h-lh-16)/2);return {cx:ar.x+ar.w/2,cy:ar.y+r,r,legendX:ar.x+8,legendY:ar.y+2*r+16+lh/2,rowH,width:ar.w-44};})()];
   for(const t of tries){if(t.r<50)continue;const size=fitSize([26,24,22,20,18],s=>rows.every(r=>measure(r,s)<=t.width)&&s*1.3<=t.rowH);if(size){L.pie={...t,size};break;}}
   if(!L.pie)fail(p,'slice labels do not fit beside or below the pie; shorten category names or enlarge the box');
   L.percents=states.map(st=>percents(st[0]));return {chart:L,phrases:stepPhrases(x,steps.length,p,phraseOk)};}
- const tickLabels=v=>format(v),ys=ticks(Y),yw=Math.max(...ys.map(v=>measure(tickLabels(v),18)))+10;
+ const ys=ticks(Y),yStep=tickStep(Y[1]-Y[0]),tickLabels=v=>tickLabel(v,yStep),yw=Math.max(...ys.map(v=>measure(tickLabels(v),18)))+10;
  const area={x:b.x+pad+yw+(yLabel?20:0),y:b.y+pad+legendH+title,w:0,h:0};area.w=b.x+b.w-pad-area.x;
  const bottom=kind==='scatter'?34+(xLabel?26:0):40;area.h=b.y+b.h-pad-noteH-bottom-area.y;
  if(area.w<120||area.h<100)fail(p+'.box','too small for a chart (the plotting area would be '+Math.round(area.w)+'×'+Math.round(area.h)+' px)');
- L.area=area;L.Y=Y;L.yTicks=ys;L.sy=area.h/(Y[1]-Y[0]);L.yOf=null;finiteScale(L.sy,ys,p+'.y');
- if(kind==='scatter'){L.X=X;L.xTicks=ticks(X);L.sx=area.w/(X[1]-X[0]);finiteScale(L.sx,L.xTicks,p+'.x');}
+ L.area=area;L.Y=Y;L.yTicks=ys;L.yStep=yStep;L.yLabels=ys.map(tickLabels);L.sy=area.h/(Y[1]-Y[0]);L.yOf=null;finiteScale(L.sy,ys,p+'.y');
+ if(kind==='scatter'){L.X=X;L.xTicks=ticks(X);L.xStep=tickStep(X[1]-X[0]);L.xLabels=L.xTicks.map(v=>tickLabel(v,L.xStep));L.sx=area.w/(X[1]-X[0]);finiteScale(L.sx,L.xTicks,p+'.x');}
  else{const slot=area.w/cats.length;L.slot=slot;L.catSize=fitSize([22,20,18,16,14],s=>cats.every(c=>measure(c,s)<=slot-6));if(!L.catSize)fail(p+'.categories','category names do not fit under the chart; shorten them or use fewer categories');
-  if(L.valueLabels){const all=states.flat(2).filter(v=>v!==null).map(v=>format(v));const bw=kind==='bar'?slot*.8/data.length:slot;L.valueSize=fitSize([20,18,16,14],s=>all.every(t=>measure(t,s)<=bw+8));if(!L.valueSize)fail(p+'.valueLabels','value labels do not fit their bars; turn them off or use fewer series');}}
+  if(L.valueLabels){const all=states.flat(2).filter(v=>v!==null).map(chartNumber);const bw=kind==='bar'?slot*.8/data.length:slot;L.valueSize=fitSize([20,18,16,14],s=>all.every(t=>measure(t,s)<=bw+8));if(!L.valueSize)fail(p+'.valueLabels','value labels do not fit their bars; turn them off or use fewer series');}}
  for(const a of annotations)if(measure(a.text,20)>area.w)fail(p+'.annotations','annotation wider than the chart');
  return {chart:L,phrases:stepPhrases(x,steps.length,p,phraseOk)};
 }
 function finiteScale(scale,tk,p){if(!Number.isFinite(scale)||scale<=0)fail(p,'the range gives no finite scale');if(tk.length<2||tk.some((v,i)=>!Number.isFinite(v)||(i&&v<=tk[i-1])))fail(p,'the range gives no usable ticks; widen it');}
-function ticks(R){const s=tickStep(R[1]-R[0]),out=[];for(let v=Math.ceil(R[0]/s-1e-9)*s;v<=R[1]+1e-9&&out.length<12;v+=s)out.push(Math.round(v/s)*s);return out;}
+// Ticks lie inside their range (second repair pass: an absolute 1e-9 tolerance produced ticks up to 2e-9 for [0, 1e-9]);
+// the only tolerance is a millionth of the tick step, for rounding.
+function ticks(R){const s=tickStep(R[1]-R[0]),tol=s*1e-6,out=[];for(let k=Math.ceil(R[0]/s-1e-6);out.length<12;k++){const v=Math.round(k)*s;if(v>R[1]+tol)break;if(v>=R[0]-tol)out.push(v);}return out;}
 // Whole-number percentages that add up to exactly 100 (largest-remainder rounding).
 export function percents(values){const t=values.reduce((a,v)=>a+v,0),raw=values.map(v=>v*100/t),base=raw.map(Math.floor);let left=100-base.reduce((a,v)=>a+v,0);
  const order=raw.map((v,i)=>[i,v-Math.floor(v)]).sort((a,b)=>b[1]-a[1]||a[0]-b[0]);for(const [i] of order){if(left<=0)break;base[i]++;left--;}return base;}

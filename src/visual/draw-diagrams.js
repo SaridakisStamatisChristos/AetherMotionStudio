@@ -3,6 +3,7 @@
 import {clamp,smooth} from '../core/motion.js';
 import {roundedBox} from './primitives.js';
 import {cssFont,formatNumber} from '../core/composition.js';
+import {tickLabel} from '../core/charts.js';
 const P2D=globalThis.Path2D;
 function label(ctx,s,x,y,size,color,font,align='center',weight=700){ctx.font=cssFont(font,weight,size);ctx.textAlign=align;ctx.textBaseline='middle';ctx.fillStyle=color;ctx.fillText(s,x,y);}
 function arrowHead(ctx,a,b,color,w=4,len=16){const ang=Math.atan2(b[1]-a[1],b[0]-a[0]);ctx.strokeStyle=color;ctx.lineWidth=w;ctx.beginPath();for(const s of [-1,1]){ctx.moveTo(...b);ctx.lineTo(b[0]-len*Math.cos(ang+s*.45),b[1]-len*Math.sin(ang+s*.45));}ctx.stroke();}
@@ -20,7 +21,7 @@ export function drawDiagram(ctx,x,t,p,start,rv,phrases,font){
   ctx.save();ctx.lineWidth=1;
   if(L.grid){ctx.strokeStyle=t.sub+'40';for(const k of L.ticks.x){ctx.beginPath();ctx.moveTo(k.at,L.oy);ctx.lineTo(k.at,L.oy+(L.Y[1]-L.Y[0])*L.sy);ctx.stroke();}for(const k of L.ticks.y){ctx.beginPath();ctx.moveTo(L.ox,k.at);ctx.lineTo(L.ox+(L.X[1]-L.X[0])*L.sx,k.at);ctx.stroke();}}
   if(L.axes){ctx.strokeStyle=t.sub;ctx.lineWidth=2;const [ox,oy]=L.origin;ctx.beginPath();ctx.moveTo(L.ox,oy);ctx.lineTo(L.ox+(L.X[1]-L.X[0])*L.sx,oy);ctx.moveTo(ox,L.oy);ctx.lineTo(ox,L.oy+(L.Y[1]-L.Y[0])*L.sy);ctx.stroke();
-   const fx=v=>formatNumber(v,{decimals:L.ticks.dx<1?Math.min(3,Math.ceil(-Math.log10(L.ticks.dx))):0}),fy=v=>formatNumber(v,{decimals:L.ticks.dy<1?Math.min(3,Math.ceil(-Math.log10(L.ticks.dy))):0});
+   const fx=v=>tickLabel(v,L.ticks.dx),fy=v=>tickLabel(v,L.ticks.dy);
    for(const k of L.ticks.x)if(Math.abs(k.at-ox)>2)label(ctx,fx(k.v),k.at,oy+16,20,t.sub,font,'center',400);
    for(const k of L.ticks.y)if(Math.abs(k.at-oy)>2)label(ctx,fy(k.v),ox-8,k.at,20,t.sub,font,'right',400);
    if(L.xLabel)label(ctx,L.xLabel,L.ox+(L.X[1]-L.X[0])*L.sx,b.y+b.h-16,18,t.sub,font,'right');
