@@ -25,7 +25,8 @@ export function request(input){
  if(input.delivery!==undefined&&input.delivery!=='reels-v1')bad('request.delivery','reels-v1 or absent');
  // GEN-12 topic-fitting sets: 'topic-v1' or 'none'; absent = topic-v1 for dialogue films, unchanged output otherwise.
  // GEN-15 step 2: 'topic-v2' (dressed sets, word-matched pieces) is the dialogue default; 'topic-v1' stays selectable.
- if(input.sets!==undefined&&!['topic-v1','topic-v2','none'].includes(input.sets))bad('request.sets','topic-v1, topic-v2, none or absent');
+ // Unit 5: 'topic-v3' (topic-v2 with far backdrops that fit the place) is the dialogue default; v1 and v2 stay selectable.
+ if(input.sets!==undefined&&!['topic-v1','topic-v2','topic-v3','none'].includes(input.sets))bad('request.sets','topic-v1, topic-v2, topic-v3, none or absent');
  if(input.sets!==undefined&&input.identityLibrary)bad('request.sets','identity stories keep their authored locations');
  // GEN-15 look: 'crafted-v1' or 'none'; absent = crafted-v1 for dialogue films, unchanged output otherwise.
  // GEN-15 step 2: 'crafted-v2' (glass and metal parts) is the dialogue default; 'crafted-v1' stays selectable.

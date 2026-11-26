@@ -137,9 +137,15 @@ export const PIECE_WORDS=Object.freeze({
  'balance-scale':'balance fair law weight'
 });
 const v2Index=()=>{const idx=new Map(wordIndex());for(const [c,w] of Object.entries(SETS_V2.words))for(const t of w.split(' '))if(!idx.has(t))idx.set(t,c);return idx;};
-// topicSet for a sets version ('topic-v1' unchanged; 'topic-v2' adds WORDS_V2 and the dressed layers).
+// Unit 5 'topic-v3' (dialogue default; owner "implement 1-2-3 and 5", OPEN-2): topic-v2 with the far backdrops of
+// src/core/cinematography.js FAR_SETS ('<set>-2' layers: same pieces, a backdrop that belongs to the place instead of the
+// plain skyline blocks). Category choice and piece fitting are exactly topic-v2's. topic-v1 and topic-v2 are unchanged.
+export const SETS_V3=Object.freeze({version:'topic-v3',layers:Object.freeze(Object.fromEntries(Object.entries(SETS_V2.layers).map(([c,l])=>[c,l+'-2'])))});
+const DRESSED_VERSIONS=['topic-v2','topic-v3'];
+// topicSet for a sets version ('topic-v1' unchanged; 'topic-v2' adds WORDS_V2 and the dressed layers; 'topic-v3' the far backdrops).
 export function topicSetFor(version,q,ir){
- if(version!=='topic-v2')return topicSet(q,ir);
+ if(!DRESSED_VERSIONS.includes(version))return topicSet(q,ir);
+ if(version==='topic-v3'){const s=topicSetFor('topic-v2',q,ir);return {...s,version:SETS_V3.version,layers:s.category?SETS_V3.layers[s.category]:null};}
  const idx=v2Index(),score=Object.fromEntries(Object.keys(SETS.categories).map(c=>[c,0]));
  for(const t of tokens(q.topic)){const c=idx.get(t);if(c)score[c]+=SETS.topicWeight;}
  for(const sh of ir.shots)for(const line of sh.narration)for(const t of tokens(line)){const c=idx.get(t);if(c)score[c]++;}
@@ -156,7 +162,7 @@ function pieceRank(id,inCategory,words,topic){
  return n;
 }
 export function fitPiecesFor(version,q,ir,set){
- if(version!=='topic-v2')return fitPieces(q,ir,set);
+ if(!DRESSED_VERSIONS.includes(version))return fitPieces(q,ir,set);
  if(!set.category)return {ir,changes:[]};
  const pieces=OBJECT_CATALOG.filter(pieceOk),topic=new Set(tokens(q.topic)),used=new Set(),changes=[];
  const shots=ir.shots.map((s,i)=>{

@@ -292,9 +292,70 @@ export const DRESSED_SETS=Object.freeze({
  'street-set':{palette:['#303f58','#405473','#526878'],pieces:[['floor-lamp',-2.4,-3.0,0,1],['bench',-1.5,-3.6,.25,.85],['trash-bin',2.0,-2.9,0,.8],['floor-lamp',2.7,-3.4,0,1],['flower-pot',3.2,-2.8,0,.8]]},
  'home-set':{palette:['#4a4440','#3d4448','#6b6258'],pieces:[['bookshelf',-2.7,-3.7,.35,.9],['floor-lamp',-1.8,-3.9,0,.9],['sofa',2.5,-3.7,-.3,.85],['flower-pot',3.1,-2.9,0,.8]]}
 });
-export const LAYERED_ENVIRONMENTS=Object.freeze(['solar-field','city-dusk','energy-hub',...Object.keys(DRESSED_SETS)]);
+// Far backdrops (owner: "implement 1-2-3 and 5", 5 = refine the far backdrop, OPEN-2). The dressed sets kept the five
+// plain skyline blocks behind every set, so a forest stood in front of grey towers. Each '<set>-2' layer keeps the same
+// pieces and replaces the blocks with a backdrop that belongs to the place: a hazy tree line on low hills (forest), a
+// lit building row (street), a back wall with a window or lit equipment (lab, tech, office, home). Everything stays
+// at z ≤ -5.6, behind the set pieces (≥ -4.4) and the characters; lit boxes sit in front of their wall. Drawn by both
+// renderers through the same box stream. The '-set' layers (topic-v2) are unchanged; topic-v3 uses these.
+const hash=(i,k)=>((i*73+k*151)%97)/97;
+// CPU painter: the wall is ten narrow columns (one wide face would sort by its far-away centre and cover a window seen
+// at an angle) and every detail on it carries a small sort bias (DETAIL); the Three depth buffer needs neither.
+const DETAIL=.3,id=p=>p;
+const on=(box,c,s,col,lit=false)=>box(c,s,col,id,lit,DETAIL);
+function wall(box,color,trim){for(let i=0;i<10;i++){const x=-6.75+i*1.5;box([x,2.6,-6.3],[1.5,5.2,.3],color);on(box,[x,.14,-6.08],[1.5,.28,.14],trim);}}
+function windowPane(box,x,y,w,h,glass,frame){
+ on(box,[x,y,-6.07],[w,h,.06],glass);
+ for(const s of [-1,1]){on(box,[x+s*w/2,y,-6.02],[.09,h+.09,.1],frame);on(box,[x,y+s*h/2,-6.02],[w+.09,.09,.1],frame);}
+ on(box,[x,y,-6.02],[.06,h,.08],frame);on(box,[x,y,-6.02],[w,.06,.08],frame);
+}
+export const FAR_BACKDROPS=Object.freeze({
+ forest(box){
+  box([-3.6,.32,-6.9],[8.6,.64,1.2],'#3d5245');box([3.9,.5,-7.2],[8.6,1,1.2],'#384c41');
+  for(let i=0;i<11;i++){
+   const x=-6+i*1.2+(hash(i,1)-.5)*.35,z=-6.15-(i%3)*.38,h=2.1+hash(i,2)*1.5,greens=['#3d5849','#43604f','#4a6655'];
+   box([x,.32,z],[.15,.64,.15],'#4a423a');
+   let y=.55;for(const [t,w] of [[0,1.15],[1,.82],[2,.48]]){const hh=h*.3;box([x,y+hh/2,z],[w,hh,w*.8],greens[(i+t)%3]);y+=hh*.78;}
+  }
+ },
+ street(box){
+  for(let i=0;i<6;i++){
+   const x=-5.6+i*2.25,h=3.3+hash(i,3)*1.9,z=-6.2-(i%2)*.4,w=1.95;
+   box([x,h/2,z],[w,h,.8],['#34435a','#3d4e68','#46566e'][i%3]);box([x,h+.08,z],[w+.12,.16,.9],'#2b3647');
+   for(let r=0;r*.62+.9<h-.3;r++)for(let c=0;c<3;c++){
+    const lit=hash(i*7+r,c)<.42;on(box,[x+(c-1)*.55,.9+r*.62,z+.42],[.3,.34,.04],lit?'#f0cf86':'#26303f',lit);
+   }
+  }
+ },
+ lab(box){
+  wall(box,'#2e404a','#222f37');
+  for(let i=-3;i<=3;i++)on(box,[i*2.1,2.6,-6.12],[.06,5.2,.06],'#26353e');
+  windowPane(box,0,2.4,6.4,1.2,'#6f94a2','#23313a');
+ },
+ tech(box){
+  wall(box,'#27333f','#1d2731');
+  for(let i=0;i<6;i++){
+   const x=-5+i*2;on(box,[x,1.75,-6.0],[1.25,3.5,.35],'#30404f');
+   for(let r=0;r<6;r++)on(box,[x-.32,.75+r*.48,-5.8],[.2,.05,.03],(i+r)%3?'#5fe3d0':'#7fb6ff',true);
+  }
+ },
+ office(box){
+  wall(box,'#2c384c','#212a3a');
+  for(const x of [-3.7,0,3.7])windowPane(box,x,2.4,2.3,1.9,'#7896ad','#222c3d');
+ },
+ home(box){
+  wall(box,'#4a423b','#352e29');for(let i=0;i<10;i++)on(box,[-6.75+i*1.5,.55,-6.12],[1.5,1.1,.06],'#3f3832');
+  windowPane(box,-2.3,2.3,2.0,1.7,'#93afbd','#d9d0c2');
+  on(box,[2.5,2.4,-6.1],[1.25,.95,.06],'#33291f');on(box,[2.5,2.4,-6.04],[1.0,.72,.04],'#a6835a');
+ }
+});
+// '<set>-2' layer → [backdrop, dressed set whose pieces it keeps]
+export const FAR_SETS=Object.freeze({'lab-set-2':['lab','lab-set'],'tech-set-2':['tech','tech-set'],'forest-set-2':['forest','forest-set'],'office-set-2':['office','office-set'],'street-set-2':['street','street-set'],'home-set-2':['home','home-set']});
+export const LAYERED_ENVIRONMENTS=Object.freeze(['solar-field','city-dusk','energy-hub',...Object.keys(DRESSED_SETS),...Object.keys(FAR_SETS)]);
 export function emitEnvironment(state,box){
  const env=state.layers;if(!env)return;
+ const far=FAR_SETS[env];
+ if(far){FAR_BACKDROPS[far[0]](box);for(const [id,x,z,yaw,scale] of DRESSED_SETS[far[1]].pieces)emitAsset(id,box,{origin:[x,0,z],yaw,scale});return;}
  const dressed=DRESSED_SETS[env];
  if(dressed){
   const palette=dressed.palette;

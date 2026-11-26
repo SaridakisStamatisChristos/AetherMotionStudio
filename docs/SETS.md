@@ -66,3 +66,24 @@ Owner saw a DNA helix in a film about the sky. topic-v1 kept any piece of the ri
 | Vaccines | lab-set | cell model, virus model, atom and molecules (no passenger train) |
 | Volcanoes erupt | forest-set | mountain, trees |
 | Brew coffee at home | home-set | coffee machine (kept) |
+
+## Far backdrops, sets 'topic-v3' (2026-11-26)
+Owner: "implement 1-2-3 and 5" (5 = refine the far backdrop; OPEN-2: "the far skyline blocks remain behind the dressed sets").
+- **`<set>-2` layers** (src/core/cinematography.js `FAR_SETS`, `FAR_BACKDROPS`): each keeps its dressed set's pieces. The five plain skyline blocks are replaced by a backdrop of the place:
+  - forest: a hazy tree line on low hills;
+  - street: a row of buildings with lit and dark windows;
+  - lab: a panelled back wall with an observation window;
+  - tech: a wall of racks with small lit indicators;
+  - office: a wall with three windows;
+  - home: a warm wall with wainscot, a window and a picture.
+- Every backdrop box sits at z ≤ −5.6, behind the set pieces (≥ −4.4) and the characters. Both renderers draw it through the same box stream.
+  - CPU painter: walls are ten narrow columns, and wall details carry a small sort bias (0.3), so a window is never covered by its own wall seen at an angle.
+  - Three: the depth buffer needs neither.
+- **Sets `topic-v3`** = topic-v2 with the `-2` layers: the same category choice and the same pieces (only `layers` differs). It is the **Director default for dialogue films**. `topic-v1` and `topic-v2` stay selectable and unchanged, and the `-set` layers draw exactly as before (tested).
+- Narrator films and authored projects are unchanged; baseline digests unchanged.
+- **Evidence:**
+  - Draft frames, both backends, for six topics (sky → lab, internet → tech, forests, banks → office, bridges → street, coffee → home): agent review only.
+    - The first try had light walls under the white headings, a lab light strip through the heading, and the home window glass lost behind its wall on CPU. All three were fixed before the render.
+  - Matched production far-forest-r1 (forest script, Director defaults, source f59a19b, sourceDirty false, vulkan): PASS on both backends and the matched comparison (shared hashes exact); CHECKS all 0 (talk 0.79); QUALITY errors 0 warnings 0; glitch clean; −16.0 LUFS on both; layers forest-set-2, look crafted-v2; GPU utilisation peak 64 %.
+  - Stills at frames 90, 400, 900 and 1500: agent review only; **the owner has not watched it**.
+- Tests: tests/far-backdrop.test.js (4). tests/gen15b.test.js now names `sets:'topic-v2'` where it checks topic-v2 behaviour, and uses `topic-v9` as the unknown value.
