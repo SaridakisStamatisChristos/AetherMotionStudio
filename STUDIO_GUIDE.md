@@ -43,7 +43,8 @@ The page opens on **Make a film** (the simple view).
 9. Press **Generate & render film**.
 
 ## 3. Get the finished film
-- While it works, the right side shows the status (planning, audio preparation, rendering, verification). A 60-second film usually takes 1 to 4 minutes.
+- While it works, a progress bar under **Production** shows the step (speech, rendering frames, checking the film), the percentage, the frame being rendered, about how long is left and how long it has run. During speech the bar only shows that it is working (speech has no frame count). A 60-second film usually takes 1 to 4 minutes.
+- If a film fails, the bar turns orange and says at which step it stopped.
 - When it is done, the page scrolls to **Your film is ready**:
   - the film, ready to play;
   - **Download film (MP4)**: the file to post;

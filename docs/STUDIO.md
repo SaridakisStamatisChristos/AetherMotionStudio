@@ -92,3 +92,20 @@ Owner picked "Simple 'Make a film' view" (the last step of the plan; the other o
     - job studio-7529a4a8064bd4d9e7f8: Content-Disposition film-mwxgyee6.mp4 and film-mwxgyee6.srt; the draft preview hidden; the screenshot shows the panel only.
   - The prompt box's step 3 now says extras are removed automatically.
 - Tests: tests/studio01.test.js "Studio UI refinement" (simple by default; every film-path field stays outside advanced wrappers; the editor parts are advanced; the first submit renders; narrator-only fields).
+
+## Render progress bar (2026-11-26)
+Owner: "implement 1-2-3 and 5" (1 = render progress bar).
+- `src/studio/progress.js` `jobProgress(job)` reads the newest step line of the job log and returns one bar for the whole job:
+  - speech 0–12 % (shown as "working", because speech has no frame count);
+  - preflight 13 %, renderer setup 13–18 %;
+  - rendering 18–90 % by Remotion's "Rendered N/M" lines, with its time-remaining estimate;
+  - encoding 90–96 % ("Encoded N/M"), checking the film 96–99 %;
+  - 100 % only for a finished job.
+- A failed job keeps its percentage and says at which step it stopped (orange).
+- Remotion prints these lines because the Studio runner pipes stdout (not a TTY: `shouldUseNonOverlayingLogger`). A step line counts only at the start of a line, so spoken text in the log never moves the bar.
+- Pure and browser-safe. No server, job or contract change: the page reads the log that `/api/jobs/<id>` already returns.
+- **Fix, already on main since #42:** `.finished{display:grid}` overrode `hidden`, so an empty "Your film is ready" panel showed while a film rendered. A global `[hidden]{display:none!important}` now keeps every hidden element hidden.
+- Click tests (agent, headless Chrome, fresh Studios from the branch, vulkan, forest script, speech cached):
+  - job studio-fd9f43a10cb0e33f5109: the bar went Starting → speech → plan check 13 % → renderer 18 % → "frame 73 of 1800 · about 51 s left" … 89 % → checking the film 96 %, never moving backwards. 1 sample per second.
+  - job studio-d4cf9677b63034074a3e (after both fixes): the finished panel was hidden in all 60 samples while running; the bar went 87 % → encoding 95 % → checking 96 %; then the finished panel showed "60.0 s · 1080×1920 (vertical) · checks passed (13 review notes)".
+- Tests: tests/studio-progress.test.js (7, with negative logs).
