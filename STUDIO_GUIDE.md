@@ -52,6 +52,7 @@ The Studio remembers your choices (cast, seconds, backend, Reels, speaker names,
   - **Download film (MP4)**: the file to post;
   - **Captions (.srt)**: subtitle file, if you want it;
   - one line with the length, the size and whether the checks passed.
+- **Make Reels cover** (under the film) picks a cover picture from the film and checks it for Instagram Reels (size, sound, length, layout). It shows the cover, **Download cover (JPG)** and the result in plain words. The film itself is not changed. For the best Reels result, tick **Instagram Reels layout** before you make the film.
 - **Render log** and **All files** are folded underneath, for when something goes wrong.
 - Every film is also saved on disk in `C:\Users\scsar\AetherMotionStudio\out\studio-…` (one folder per film).
 

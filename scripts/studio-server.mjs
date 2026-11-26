@@ -19,9 +19,12 @@ import {crowdingCheck} from '../src/quality/crowding.js';
 import {visibility2Check} from '../src/quality/visibility.js';
 import {reelsCheck} from '../src/core/reels.js';
 import {plannedTimeline} from '../src/studio/model.js';
+import {exportReels} from './reels-export.mjs';
 const ROOT=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const MAX_BODY=1024*1024,MAX_LOG=40000,MAX_JOBS=40;
-const FILES=new Set(['film.mp4','scene.json','timeline.json','props.json','voice-report.json','speech-report.json','captions.srt','captions.vtt','quality-report.json','quality-preflight.json','quality-original-project.json','quality-contact-sheet.jpg','probe.json','render-timing.json','kokoro-narration.wav','mix.wav','preview-audio.wav']);
+const FILES=new Set(['film.mp4','scene.json','timeline.json','props.json','voice-report.json','speech-report.json','captions.srt','captions.vtt','quality-report.json','quality-preflight.json','quality-original-project.json','quality-contact-sheet.jpg','probe.json','render-timing.json','kokoro-narration.wav','mix.wav','preview-audio.wav','reels-cover.jpg','reels-report.json']);
+// Owner choice 3 (Reels cover button): the export lives in <job>/reels/ (the CLI layout) and is served under flat names.
+const REELS_FILES=Object.freeze({'reels-cover.jpg':['reels','cover.jpg'],'reels-report.json':['reels','reels-report.json']});
 const mime={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json; charset=utf-8','.mp4':'video/mp4','.wav':'audio/wav','.jpg':'image/jpeg','.srt':'text/plain; charset=utf-8','.vtt':'text/vtt; charset=utf-8'};
 const hash=x=>createHash('sha256').update(x).digest('hex');
 const status=(n,m)=>Object.assign(Error(m),{status:n});
@@ -66,13 +69,13 @@ export function nativeRunner({root,job,snapshot,flags,log}){
   child.on('close',(code,signal)=>code===0?resolve():reject(Error('Native CLI exited '+(code??signal))));
  });
 }
-export async function createStudio({root=ROOT,dataDir=join(root,'studio-data'),runner=nativeRunner}={}){
+export async function createStudio({root=ROOT,dataDir=join(root,'studio-data'),runner=nativeRunner,reelsExport=exportReels}={}){
  const projectsDir=join(dataDir,'projects'),snapshots=join(dataDir,'jobs'),outputDir=join(root,'out');
  await Promise.all([mkdir(projectsDir,{recursive:true}),mkdir(snapshots,{recursive:true}),mkdir(outputDir,{recursive:true})]);
  const packsDir=join(dataDir,'packs');await mkdir(packsDir,{recursive:true});const registry=new PackRegistry();let packWriting=false;
  const packFiles=(await readdir(packsDir)).filter(n=>/^[a-f0-9]{64}\.json$/.test(n));if(packFiles.length>PACK_LIMITS.packs)throw Error('pack storage capacity');
  for(const name of packFiles){const p=await inside(packsDir,join(packsDir,name));if((await stat(p)).size>PACK_LIMITS.bytes)throw Error('pack file too large');const manifest=await json(p);if(manifest.digest!==name.slice(0,-5))throw Error('pack filename digest mismatch');registry.import(manifest);}
- const jobs=new Map();let active=null,writing=false,planning=false,origin=null;
+ const jobs=new Map(),reelsBusy=new Set();let active=null,writing=false,planning=false,origin=null;
  const projectPath=id=>join(projectsDir,safeId(id)+'.json');
  async function getProject(id){
   try{const p=await inside(projectsDir,projectPath(id)),raw=await readFile(p,'utf8'),project=validateProject(parse(raw));if(project.id!==id)throw Error('ID mismatch');return {project,revision:hash(raw)};}catch(e){if(e.code==='ENOENT')throw status(404,'Unknown project');throw e;}
@@ -175,8 +178,16 @@ export async function createStudio({root=ROOT,dataDir=join(root,'studio-data'),r
    if(method==='GET'&&path==='/api/jobs')return send(res,200,{jobs:[...jobs.values()].reverse().map(publicJob),active});
    match=/^\/api\/jobs\/(studio-[a-f0-9]{20})$/.exec(path);
    if(method==='GET'&&match){const j=jobs.get(match[1]);if(!j)throw status(404,'Unknown session job');return send(res,200,publicJob(j));}
+   // Owner choice 3: "Make Reels cover" in the finished panel. Only a succeeded render job of this session; no request
+   // fields (the default cover frame); one export per job at a time; an earlier export is returned, never overwritten.
+   match=/^\/api\/jobs\/(studio-[a-f0-9]{20})\/reels$/.exec(path);
+   if(method==='POST'&&match){const j=jobs.get(match[1]);keys(await body(req),[]);
+    if(!j)throw status(404,'Unknown session job');if(j.status!=='succeeded'||j.mode!=='render'||!j.files.includes('film.mp4'))throw status(409,'Reels export needs a finished film');
+    if(reelsBusy.has(j.id))throw status(409,'Reels export already running for this film');reelsBusy.add(j.id);
+    try{const r=await reelsExport(join(outputDir,j.id),{reuse:true});for(const f of Object.keys(REELS_FILES))if(!j.files.includes(f))j.files.push(f);return send(res,200,{report:r.report,created:r.created,files:j.files});}
+    catch(e){throw e.status?e:status(500,'Reels export failed: '+String(e.message??e).slice(0,500));}finally{reelsBusy.delete(j.id);}}
    match=/^\/api\/jobs\/(studio-[a-f0-9]{20})\/files\/([a-z0-9.-]+)$/.exec(path);
-   if(['GET','HEAD'].includes(method)&&match){const j=jobs.get(match[1]);if(!j||!j.files.includes(match[2])||!FILES.has(match[2]))throw status(404,'Artifact not available');return await serveFile(req,res,outputDir,join(outputDir,j.id,match[2]),{download:u.searchParams.get('download')==='1'&&downloadName(j.projectId,match[2])});}
+   if(['GET','HEAD'].includes(method)&&match){const j=jobs.get(match[1]);if(!j||!j.files.includes(match[2])||!FILES.has(match[2]))throw status(404,'Artifact not available');return await serveFile(req,res,outputDir,join(outputDir,j.id,...(REELS_FILES[match[2]]??[match[2]])),{download:u.searchParams.get('download')==='1'&&downloadName(j.projectId,match[2])});}
    if(!['GET','HEAD'].includes(method))throw status(404,'Unknown API route');
    if(path==='/'||['/app.js','/style.css'].includes(path))return await serveFile(req,res,join(root,'studio'),join(root,'studio',path==='/'?'index.html':path.slice(1)));
    if(/^\/src\/(?:core|visual|templates|studio|foundry)\/[a-z0-9-]+\.js$/.test(path))return await serveFile(req,res,join(root,'src'),join(root,path.slice(1)));

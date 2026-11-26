@@ -5,7 +5,7 @@ import {calmTurns} from '/src/core/calm.js';
 import {editProject,applyShotEdit,reorderShot,setBackend,setProfile,setStaging,addAsset,removeAsset,previewState,addFoundryAsset,setSpeakers,setLineSpeaker,bindSpeaker} from '/src/studio/model.js';
 // STUDIO-01: the Director form maps to a request in src/studio/director-form.js (casts, Reels, script help; tested).
 import {STUDIO_CASTS,STUDIO_DEFAULTS,directorRequest,scriptHelp,scriptPrompt,cleanScript} from '/src/studio/director-form.js';
-import {finishedSummary} from '/src/studio/finished.js';
+import {finishedSummary,reelsSummary} from '/src/studio/finished.js';
 import {SETTINGS_KEY,SETTINGS_DEFAULTS,readSettings,writeSettings} from '/src/studio/settings.js';
 import {jobProgress,formatSeconds} from '/src/studio/progress.js';
 const languageOf=voice=>voice.startsWith('b')?'en-gb':'en-us';
@@ -93,6 +93,7 @@ async function showJob(id){state.job=id;const j=await api('/api/jobs/'+id);$('jo
   if(state.finishedFacts!==id){state.finishedFacts=id;$('finishedFacts').textContent='';
    const [q,p]=await Promise.all(['quality-report.json','probe.json'].map(n=>j.files.includes(n)?api(base+n).catch(()=>null):null));
    if(state.job===id)$('finishedFacts').textContent=finishedSummary(q,p).text;}
+  showReels(j,base);
   document.body.classList.add('has-film');
   if($('finished').hidden){$('finished').hidden=false;if(state.scrolledTo!==id){state.scrolledTo=id;$('finished').scrollIntoView({behavior:'smooth',block:'start'});}}
  }else{$('finished').hidden=true;v.removeAttribute('src');document.body.classList.remove('has-film');}
@@ -112,6 +113,14 @@ function showProgress(j){const p=jobProgress(j),box=$('progress'),bar=$('progres
  $('progressPct').textContent=p.measured||p.percent>0?p.percent+'%':'';
  const t=Date.parse(j.createdAt),so=p.active&&Number.isFinite(t)?formatSeconds((Date.now()-t)/1000)+' so far':'';
  $('progressDetail').textContent=[p.detail,so].filter(Boolean).join(' · ');}
+// Owner choice 3: "Make Reels cover" (POST /api/jobs/<id>/reels, scripts/reels-export.mjs exportReels): the cover picture,
+// a download and the Reels check in plain words (finished.js reelsSummary). The film is never changed.
+function paintReels(report){const r=reelsSummary(report);$('reelsFacts').textContent=r.text;$('reelsFacts').className=r.ok?'':'warn';$('reelsNotes').replaceChildren(...r.notes.map(n=>{const li=document.createElement('li');li.textContent=n;return li;}));}
+function showReels(j,base){const has=j.files.includes('reels-cover.jpg');$('makeReels').hidden=has;$('reelsResult').hidden=!has;
+ if(has&&state.reelsShown!==j.id){state.reelsShown=j.id;$('reelsCover').src=base+'reels-cover.jpg';$('downloadCover').href=base+'reels-cover.jpg?download=1';$('downloadCover').setAttribute('download',j.projectId+'-reels-cover.jpg');
+  api(base+'reels-report.json').then(r=>{if(state.job===j.id)paintReels(r);}).catch(e=>status(e.message,true));}}
+$('makeReels').onclick=action(async()=>{const id=state.job;if(!id)throw Error('No finished film selected');$('makeReels').disabled=true;status('Making the Reels cover…');
+ try{const r=await api('/api/jobs/'+id+'/reels','POST',{});status(reelsSummary(r.report).text+(r.created?'':' (made earlier)'));}finally{$('makeReels').disabled=false;}await showJob(id);});
 let polling=false;
 async function poll(){if(polling)return;polling=true;try{const x=await api('/api/jobs');fill($('jobs'),[['','Session jobs'],...x.jobs.map(j=>[j.id,j.projectId+' · '+j.mode+' · '+j.status])]);if(state.job){$('jobs').value=state.job;await showJob(state.job);}for(const id of ['prepare','render'])$(id).disabled=!!x.active;}finally{polling=false;}}
 $('save').onclick=action(save);$('export').onclick=action(downloadJSON);$('play').onclick=action(play);$('scrub').oninput=()=>seek(Number($('scrub').value));$('search').oninput=renderAssets;$('category').onchange=renderAssets;
