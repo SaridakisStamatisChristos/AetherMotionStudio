@@ -1,5 +1,5 @@
 # Current state — AetherMotion Studio
-Updated 2026-11-26 (main ee4fbbc; the owner's plan is complete; follow-up STUDIO_GUIDE.md and the finished-film panel on feature/studio-finished, PR pending, merge authorized by the owner after CI). Authoritative rolling checkpoint for new coding sessions; update at verified transitions. This file references the historical ledger rather than replacing source or evidence. Baseline product merge: `04e3491bb21b4ebc3d54755a2a211b1a7affb3fa` (PR #13 merged into main). The handoff documentation commit may be newer; inspect git HEAD. No release publication implied.
+Updated 2026-11-26, Campaign A start (main 6c71875: owner units 1, 2, 3, 5 and 6 MERGED as PRs #44–#48; main CI 45837801078 passed). **Active: Campaign A — Universal Dual-Backend Finalization, owner-authorized; next milestone DUAL-00** (docs/continuity/CAMPAIGN_A.md). Authoritative rolling checkpoint for new coding sessions; update at verified transitions. This file references the historical ledger rather than replacing source or evidence. Baseline product merge: `04e3491bb21b4ebc3d54755a2a211b1a7affb3fa` (PR #13 merged into main). The handoff documentation commit may be newer; inspect git HEAD. No release publication implied.
 
 ## Current status and authority
 - v1.0 core pipeline and Asset Foundry AF01–AF09 implementation merged; do not reimplement.
@@ -19,7 +19,43 @@ Updated 2026-11-26 (main ee4fbbc; the owner's plan is complete; follow-up STUDIO
 6. Source and approved decisions authoritative. This summary cannot discard binding facts; consult the source-specific contract when the task touches it. Keep state and handoff synchronized. No new native render runs on GitHub or release without authorization.
 
 ## Active unit
-**Owner guide and finished-film panel: IMPLEMENTED + TESTED on `feature/studio-finished` (from main ee4fbbc).** Owner: "first of all write an md file with instructions on how to start the studio etc. then add the finished film with download button. then merge pr 41... or pr 42 whatever order you use". PR #41 (docs record) was MERGED (ee4fbbc); this PR's merge is authorized after CI.
+**Campaign A — Universal Dual-Backend Finalization** (owner, 2026-11-26: "Execute the attached AetherMotion Studio Dual-Backend Finalization Directive … Begin with DUAL-00 … Do not begin the GPU expansion campaign until the final dual-backend release has been verified, accepted and tagged.").
+- Requirements: docs/continuity/CAMPAIGN_A_DIRECTIVE.md (verbatim). Status and decisions: docs/continuity/CAMPAIGN_A.md. **Next: DUAL-00** (baseline and capability audit; no product code).
+- Binding: reuse before building; both backends equal; new behaviour opt-in or versioned; owner approval for dependencies, defaults, licences, merges and tags; Campaign B excluded until v1.2 is tagged.
+- Current product defaults that DUAL-00 must record as baseline: Director dialogue films use sets topic-v3, look crafted-v2, speech fit speech-v1, titles none and no speaker names; the Studio checkboxes "Speaker names in captions" and "Titles on top" start unticked and are remembered per browser.
+
+**Previous unit (done):** **Owner: "implement 1-2-3 and 5 leave 4 for next cause i am planning to do a lot in three.js … lets finish this dual cpu gpu functionality we have now."** **All MERGED** on the owner's word ("merge . after merging wait for my instructions"), each after its PR CI test job passed: #44 (1), #45 (2), #46 (3), #47 (5), #48 (6) → main 6c71875; main CI 45837801078 passed. Branches 2, 3 and 6 were rebased on main first (mechanical conflicts in the studio files, re-applied and re-tested). **Next: wait for the owner's new plan.** The branch heads quoted below are the pre-rebase local commits that the renders and click tests used.
+- **1. Render progress bar** (`feature/studio-progress` 2126be1; docs/STUDIO.md "Render progress bar"):
+  - `src/studio/progress.js` `jobProgress` reads the job log: speech shown as working; plan check; renderer setup; Remotion "Rendered N/M" with its time-remaining estimate; "Encoded N/M"; checking the film. 100 % only when finished; a failure says the step.
+  - No server or job contract change.
+  - Also fixes a bug on main since #42: `.finished{display:grid}` overrode `hidden`, so an empty "Your film is ready" panel showed while rendering. Global `[hidden]{display:none!important}`.
+  - Click tests: jobs studio-fd9f43a1…, studio-d4cf9677…. 392 JS tests.
+- **2. Remembered choices** (`feature/studio-remember` 9768aa5; docs/STUDIO.md "Remembered choices"):
+  - `src/studio/settings.js`: cast, seconds, backend, profile, narrator voice, staging, Reels, speaker names and the view, kept in browser localStorage (never topic or script).
+  - Every value is checked on read, field by field; **Reset choices** button.
+  - Browser check: set → reload → restored → reset → defaults. 391 JS tests.
+- **3. Make Reels cover** (`feature/studio-reels` 3035992; docs/STUDIO.md "Reels cover button"; closes OPEN-5):
+  - `exportReels` is shared by the CLI and `POST /api/jobs/<id>/reels`. It only accepts a succeeded render of this session, takes no fields, runs one export per film at a time, returns an earlier export and never overwrites; the film is untouched.
+  - The panel shows the cover, Download cover (JPG) and the check in plain words (`reelsSummary`).
+  - Click test: job studio-5e27ef25… "Ready for Reels · 60.0 s · cover from the first close-up (frame 189)"; the CLI on another job gives the same frame. 389 JS tests.
+- **5. Far backdrops** (`feature/far-backdrop` bee6ca7; docs/SETS.md "Far backdrops"):
+  - `<set>-2` layers replace the five skyline blocks with a backdrop of the place and keep the same pieces: tree line on hills, lit street, lab, tech, office and home walls.
+  - Sets `topic-v3` = topic-v2 + these layers; it is the **Director dialogue default**. topic-v1, topic-v2 and the `-set` layers are unchanged (tested); digests unchanged.
+  - Matched production far-forest-r1 (source f59a19b, vulkan): PASS both, CHECKS 0, QUALITY 0/0, glitch clean, −16.0 LUFS, GPU peak 64 %. Agent stills only; **the owner has not watched it**.
+  - 389 JS tests (gen15b names topic-v2 where it checks v2).
+- **6. Clean top, no roles (owner choice after seeing far-forest-r1: roles "Off by default", titles "No titles at all")** (`feature/clean-top` 67f296d; docs/STUDIO.md "Clean top and no roles by default"):
+  - Shot field `titles:'none'` hides the pill, the heading and the subheading (also the Reels heading); absent draws as before.
+  - `request.titles` defaults to none for dialogue films. Dialogue requests without their own speech (Director and `produce.mjs`) hide speaker names.
+  - In the Studio, "Speaker names in captions" and the new "Titles on top" start unticked.
+  - Matched clean-top-r2 (source 67f296d): PASS both, CHECKS 0, QUALITY 0/0, glitch clean, −16.0 LUFS, 0 names in srt/vtt, clean top in the stills.
+  - The first try, clean-top-r1 (31ce19b), still had names, because produce.mjs always supplies speech; fixed.
+  - 391 JS, 59 Python; digests unchanged.
+  - Conflicts with 1, 2 and 3 in studio files (mechanical). 2 (remembered choices) needs `titles` added to its settings list when rebased.
+- **4. GEN-16 (Three cinematic profile)** is held for the owner's coming Three.js instructions.
+
+**Previous: no active unit** (session end 2026-11-26).
+
+**Owner guide and finished-film panel: MERGED** (PR #42 → 8a74721; PR CI 45811297991, main CI 45811548096 passed). Owner: "first of all write an md file with instructions on how to start the studio etc. then add the finished film with download button. then merge pr 41... or pr 42 whatever order you use". PR #41 (docs record) was MERGED (ee4fbbc); PR #42 was merged on that authorization after CI.
 - **Finished-film panel and the owner guide** (owner: "write an md file with instructions on how to start the studio etc. then add the finished film with download button"):
   - STUDIO_GUIDE.md (repository root, for the owner): start, make a film, get the finished film, stop, troubleshooting.
   - A finished job shows **Your film is ready**: the film, **Download film (MP4)**, **Captions (.srt)** and one plain line (src/studio/finished.js `finishedSummary`: length, size, checks). The render log and all files fold away below; the page scrolls to the panel once.

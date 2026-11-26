@@ -1,4 +1,9 @@
 # Proposed forward-only local roadmap
+
+## Current: Campaign A — Universal Dual-Backend Finalization (owner-authorized 2026-11-26)
+DUAL-00 … DUAL-09 in order; requirements in [CAMPAIGN_A_DIRECTIVE.md](CAMPAIGN_A_DIRECTIVE.md), status in [CAMPAIGN_A.md](CAMPAIGN_A.md) (the single status authority; this file only indexes it). The earlier proposals below are history. The open GEN items (GEN-13 music, GEN-14 local model) and the "GEN-16 Three cinematic profile" are **not** scheduled; GEN-16 belongs to Campaign B, which waits for the tagged v1.2.
+
+## Earlier roadmap (history)
 This is an actionable proposed sequence for future work, not an approved requirement to implement every unit at once. Current user request takes precedence. Core-first; no new auth, SaaS or rewrite. Preserve AF01–AF09 and both backends. Each unit needs explicit scope, changed-file map, unit/adversarial tests, exact run evidence, reviewed samples where relevant, updated contracts/canon/handoff. Do not auto-launch full historical matrix.
 
 | Unit | Objective | Exit criteria |
@@ -152,7 +157,15 @@ Status 2026-11-25 (owner: "lets do it seriallized. Gen10 and onwards"):
   1. Fix A (film length follows speech, plus silence-v1): MERGED (PR #38, 8e65805).
   2. GEN-15 look ACCEPTED; render cleanup step 2 DONE.
   3. GEN-15 step 2 (dressed sets, word-matched pieces, glass and metal parts, alternating gesture arms, CPU eye fix): MERGED (PR #39, 0e0e0f1).
-  4. **Last: Studio UI refinement**: MERGED (PR #40, 4487805). It covers the simple "Make a film" view, auto-clean, length choices and the speaker-names checkbox. **The plan is complete.** Follow-up (owner): STUDIO_GUIDE.md and the finished-film panel with Download (feature/studio-finished). Offered but not chosen: render progress bar, finished-film panel, remembered settings. (owner: "ui refinement can be done later"; "will be the last").
+  4. **Last: Studio UI refinement**: MERGED (PR #40, 4487805). It covers the simple "Make a film" view, auto-clean, length choices and the speaker-names checkbox. **The plan is complete.** Follow-up (owner): STUDIO_GUIDE.md and the finished-film panel with Download: MERGED (PR #42, 8a74721).
+- **Later options (proposals, none authorized; the owner picks):** a render progress bar; the Studio remembering the last settings; a Reels cover/export button in the finished panel; GEN-16 (a Three cinematic profile; needs a policy decision); a refined far backdrop; the Instagram test upload (deferred by the owner to the very end). Offered but not chosen: render progress bar, finished-film panel, remembered settings. (owner: "ui refinement can be done later"; "will be the last").
+- **Owner, 2026-11-26: "implement 1-2-3 and 5 leave 4 for next cause i am planning to do a lot in three.js … lets finish this dual cpu gpu functionality we have now."** All MERGED: #44 (1), #45 (2), #46 (3), #47 (5), then #48, unit 6, the owner's later choice of no speaker roles in captions and no titles; main 6c71875. The owner will send a new plan next:
+  1. Render progress bar: `feature/studio-progress` (2126be1), plus the fix for the empty finished panel while rendering.
+  2. Remembered Make-a-film choices: `feature/studio-remember` (9768aa5).
+  3. Make Reels cover in the finished panel: `feature/studio-reels` (3035992). Closes OPEN-5.
+  5. Far backdrops, sets topic-v3 as the dialogue default: `feature/far-backdrop` (bee6ca7). Addresses OPEN-2, part 1 (the skyline blocks).
+  - 4 (GEN-16, Three cinematic profile) is **reserved for the owner's coming Three.js instructions**. Do not start it unasked.
+  - Merge order: 1, then rebase 2 and 3 on the new main; they conflict mechanically with 1 in studio/app.js, studio/index.html and docs/STUDIO.md, because those files keep whole sections on single long lines. 5 is independent.
 - GEN-15 step 1 (crafted look) MERGED (22ffec4).
 - GEN-13 needs music sources and licences, and GEN-14 needs a local model; both are owner decisions.
 - PR #29 revised: Reels captions low at normal size; GEN-05b readable captions.
