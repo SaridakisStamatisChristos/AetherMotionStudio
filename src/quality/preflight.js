@@ -47,7 +47,10 @@ export function inspectShot(source,timing=null,speech=null){
  const metrics={vertices,nearPlaneVertices:near,nonfiniteVertices:nonfinite,croppedFraction:rounded(cropped/Math.max(1,vertices)),safeOutsideFraction:rounded(safeOutside/Math.max(1,vertices)),smallSubjectSamples:small,meanProjectedCenterMotion:rounded(motion.reduce((a,b)=>a+b,0)/Math.max(1,motion.length))};
  const issues=[];
  if(nonfinite)issues.push(issue('NONFINITE_GEOMETRY','error',s.id,nonfinite));
- if(!vertices)issues.push(issue('EMPTY_GEOMETRY','error',s.id,0));
+ // DUAL-02: a typography shot (compose-v2 composition, no assets by design) has no geometry on purpose; it is
+ // reported for review, never silently. Any other shot without visible geometry stays a blocking error.
+ if(!vertices&&!(s.assets.length===0&&s.composition?.version==='compose-v2'))issues.push(issue('EMPTY_GEOMETRY','error',s.id,0));
+ if(!vertices&&s.assets.length===0&&s.composition?.version==='compose-v2')issues.push(issue('TYPOGRAPHY_SHOT','review',s.id,0));
  if(near)issues.push(issue('NEAR_PLANE_RISK','error',s.id,near));
  if(metrics.croppedFraction>.015)issues.push(issue('VIEWPORT_CROP','warning',s.id,metrics.croppedFraction));
  if(metrics.safeOutsideFraction>.12)issues.push(issue('SAFE_ZONE_RISK','warning',s.id,metrics.safeOutsideFraction));

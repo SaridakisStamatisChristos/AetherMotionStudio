@@ -163,3 +163,12 @@ test('regression: an explainer about books may show the open book without a NO_M
 test('list items drop leading "only", "just", "also" and "even"',()=>{
  assert.deepEqual(findList('The method needs only water, a vessel and pure gold.'),['Water','Vessel','Pure gold']);
 });
+
+test('preflight: a typography shot is a review note, an empty non-typography shot stays a blocking error',async()=>{
+ const {inspectShot}=await import('../src/quality/preflight.js');
+ const base={id:'s1',template:'cinematic-graph',backend:'cpu',durationFrames:90,transitionFrames:0,narration:['Words.'],heading:'H',subheading:'S',environment:'midnight',camera:{},cameraRig:{preset:'establishing'},assets:[],effects:[]};
+ const typo=inspectShot({...base,composition:V2([{id:'k',type:'kinetic',box:[0,0,1,.5],text:'Words matter'}])});
+ assert.deepEqual(typo.issues.filter(x=>x.severity==='error'),[]);assert.ok(typo.issues.some(x=>x.code==='TYPOGRAPHY_SHOT'));
+ const empty=inspectShot({...base,composition:{version:'compose-v1',region:'full',items:[{id:'t',type:'title',box:[0,0,1,.3],text:'Hi'}]}});
+ assert.ok(empty.issues.some(x=>x.code==='EMPTY_GEOMETRY'&&x.severity==='error'));
+});
