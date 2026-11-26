@@ -59,4 +59,11 @@ Owner picked "Simple 'Make a film' view" (the last step of the plan; the other o
   - film df90f17e13d52492…: 1800 frames, glitch clean, −16.0 LUFS; PASS lines; QUALITY errors 0, warnings 0; crafted-v2, forest-set, alternateArms.
 - The screenshot exposed a bug: "Narrator voice" stayed visible with the interview cast, because `label {display:grid}` overrode `hidden`. Fixed with `.narrator-only[hidden]{display:none!important}`, tested and re-checked by screenshot.
 - **The owner has not tried the new view.**
+- **Owner's first Studio film** ("great for the first production through pipeline looks great"):
+  - Job studio-69cffc5969ccc5a3504e, bees, 65 s: 1950 frames, pace 0.92 kept, longest pause 1.2 s, all checks 0, glitch clean, −16.0 LUFS.
+  - Agent inspection found a content bug: Claude's "Topic: …" line (which the prompt asks for) was pasted without Clean up and spoken. Every turn shifted, so the Student explained and the Explorer asked.
+  - **Fix:** the page now cleans the script automatically on Generate (`autoClean` → `cleanScript`). The word count counts only what will be spoken and flags pasted extras.
+  - **Length advice follows Fix A:** a long dialogue script says "set Seconds to N to keep the calm pace" (N = words ÷ 2.33, rounded up to 5 s); a short one says "the film will be about N s". Narrator films keep the old advice.
+  - Click re-test with the owner's exact answer at 60 s (job studio-cae85f1ea275cb3c4224): the Topic line was removed on click, 138 spoken words, "Good length". The Student asks and the Explorer explains. 60.0 s, glitch clean, −16.0 LUFS.
+  - Pace 0.92 was not kept at 138 words / 60 s: the 120–140 range may be slightly generous (owner decision; unchanged).
 - Tests: tests/studio01.test.js "Studio UI refinement" (simple by default; every film-path field stays outside advanced wrappers; the editor parts are advanced; the first submit renders; narrator-only fields).

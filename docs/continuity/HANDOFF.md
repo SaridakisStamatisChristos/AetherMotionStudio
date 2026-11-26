@@ -32,11 +32,19 @@ After step 4 the plan is complete. Nothing else is authorized.
   - film df90f17e13d52492…: 1800 frames, glitch clean, −16.0 LUFS; PASS lines; QUALITY errors 0, warnings 0; crafted-v2, forest-set, alternateArms.
 - The screenshot exposed a bug: "Narrator voice" stayed visible with the interview cast, because `label {display:grid}` overrode `hidden`. Fixed with `.narrator-only[hidden]{display:none!important}`, tested and re-checked by screenshot.
 - **The owner has not tried the new view.**
+- **Owner's first Studio film** ("great for the first production through pipeline looks great"):
+  - Job studio-69cffc5969ccc5a3504e, bees, 65 s: 1950 frames, pace 0.92 kept, longest pause 1.2 s, all checks 0, glitch clean, −16.0 LUFS.
+  - Agent inspection found a content bug: Claude's "Topic: …" line (which the prompt asks for) was pasted without Clean up and spoken. Every turn shifted, so the Student explained and the Explorer asked.
+  - **Fix:** the page now cleans the script automatically on Generate (`autoClean` → `cleanScript`). The word count counts only what will be spoken and flags pasted extras.
+  - **Length advice follows Fix A:** a long dialogue script says "set Seconds to N to keep the calm pace" (N = words ÷ 2.33, rounded up to 5 s); a short one says "the film will be about N s". Narrator films keep the old advice.
+  - Click re-test with the owner's exact answer at 60 s (job studio-cae85f1ea275cb3c4224): the Topic line was removed on click, 138 spoken words, "Good length". The Student asks and the Explorer explains. 60.0 s, glitch clean, −16.0 LUFS.
+  - Pace 0.92 was not kept at 138 words / 60 s: the 120–140 range may be slightly generous (owner decision; unchanged).
 - The Studio started by the launcher earlier in this session (port 4173) runs older server code. The owner should restart it (close its window, double-click the launcher) to get Fix A and GEN-15 step 2 in Studio films.
 
 ## Pending owner decisions
 1. Try the simple view (restart the Studio first), then merge the Studio UI PR (after its CI).
-2. Later options (not scheduled): a render progress bar, a finished-film panel, remembered settings; GEN-16 policy; the Instagram test upload (deferred to the very end).
+2. Whether to tighten the words-per-60-s range (pace 0.92 was not kept at 138 words).
+3. Later options (not scheduled): a render progress bar, a finished-film panel, remembered settings; GEN-16 policy; the Instagram test upload (deferred to the very end).
 
 ## Owner working agreement and taste (binding; see also auto-memory)
 - **Delegation:** the owner delegates whole units and wants plain-language reports with short tables. Stop only for direction-changing or risky actions: backend defaults, dependencies, deletions, system settings, anything outside the repo, or changing accepted films.

@@ -136,3 +136,23 @@ test('Studio UI refinement (owner: "Simple \'Make a film\' view"): simple by def
  assert.ok(css.includes('.narrator-only[hidden]{display:none!important}'));
  assert.match(js,/function setMode\(advanced\)/);assert.match(js,/setMode\(false\)/);assert.match(js,/\.narrator-only'\)\)el\.hidden=!narrator/);
 });
+test('owner\'s first Studio film: pasted extras are flagged, never spoken; length advice follows Fix A',async()=>{
+ const {scriptHelp,cleanScript,directorRequest}=await import('../src/studio/director-form.js');
+ // The bees answer started with Claude's Topic line; spoken, it made the Student explain and the Explorer ask.
+ const pastedChat='Topic: How do bees make honey?\nExplorer, how do bees make honey?\nIt all starts with nectar, a sweet, watery juice made by flowers.';
+ const h=scriptHelp(pastedChat,60);assert.match(h.notes.join(),/Topic line/);assert.equal(h.words,cleanScript(pastedChat).script.split(/\s+/).length,'counts what will be spoken');
+ assert.deepEqual(scriptHelp(pasted,60).notes,[],'a clean script has no notes');
+ // the page cleans before planning, so the request never contains the Topic line
+ const js=readFileSync(new URL('../studio/app.js',import.meta.url),'utf8');assert.match(js,/onsubmit=action\(async e=>\{autoClean\(\);/);
+ const c=cleanScript(pastedChat);const q=directorRequest(form({topic:'',script:c.script,...(c.topic?{topic:c.topic}:{})}));assert.doesNotMatch(q.script,/Topic:/);assert.equal(q.topic,'How do bees make honey?');
+ // Length advice: dialogue films follow the speech (Fix A); narrator films keep the exact length.
+ const long=Array.from({length:16},(_,i)=>'Line number '+i+' has a few more words here.').join('\n');
+ const d=scriptHelp(long,60,'interview');assert.equal(d.verdict,'long');assert.equal(d.suggestedSeconds,65);assert.match(d.summary,/set Seconds to 65 to keep the calm pace/);
+ assert.match(scriptHelp(long,60,'trio').summary,/set Seconds to 65/);
+ assert.match(scriptHelp(long,60,'narrator').summary,/sped up\. Set Seconds to 65 or shorten/);
+ assert.equal(scriptHelp(long,65).verdict,'ok','65 s fits 144 words');
+ assert.match(scriptHelp('Hello there. How are you today?',60).summary,/the film will be about 6 s/);
+ assert.match(scriptHelp('Hello there. How are you today?',60,'narrator').summary,/long silences/);
+ assert.equal(scriptHelp(Array(800).fill('word').join(' ')+'.',60).suggestedSeconds,300,'never above 300 s');
+ assert.equal(scriptHelp(pasted,60).suggestedSeconds,null);
+});

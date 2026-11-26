@@ -37,23 +37,35 @@ export function directorRequest(form){
  if(form.reels===true)q.delivery='reels-v1';else if(form.reels!==false&&form.reels!==undefined)bad('Reels must be on or off');
  return q;
 }
-// Live help under the Script box. Counts words and sentences, and flags lines the Director would split or reject.
+// Live help under the Script box. Counts what will be spoken (the cleaned script), flags lines the Director would
+// split or reject, and gives length advice. Since Fix A, dialogue films (interview, trio) are as long as their speech
+// plus calm pauses, at most the chosen seconds: a long script needs more seconds (never extra silence), and a short
+// script makes a shorter film. Narrator films keep the exact length, so they keep the old advice.
+// Owner's first Studio film: Claude's "Topic: …" line was spoken and shifted every turn (the Student explained, the
+// Explorer asked), so pasted extras are flagged here and removed automatically on Generate (studio/app.js).
 export function scriptHelp(script,seconds,cast='interview'){
- const text=typeof script==='string'?script.trim():'';
+ const raw=typeof script==='string'?script.trim():'',cleaned=raw?cleanScript(raw):{script:'',topic:null,lines:0},text=cleaned.script;
  let range=null;try{range=wordRange(Number(seconds));}catch{}
  const words=text?text.split(/\s+/).length:0;
  const lines=text?text.split(/\n+/).map(x=>x.trim()).filter(Boolean):[];
  const sentences=text?text.split(/(?<=[.!?])\s+/).filter(Boolean).length:0;
- const notes=[];
+ const notes=[],rawLines=raw?raw.split(/\r?\n/).map(x=>x.trim()).filter(Boolean):[];
+ if(raw&&(cleaned.topic!==null||rawLines.join('\n')!==text))notes.push('a Topic line, speaker names, numbering or headings were pasted: they are removed on Generate (or press Clean up now)');
  if(lines.some(l=>l.length>=140))notes.push('a line is 140 characters or longer (it will be split)');
  if(text.split(/\s+/).some(w=>w.replace(/[^A-Za-z]/g,'').length>32))notes.push('a word is longer than 32 letters');
- if(/https?:\/\/|```|<\/?script/i.test(text))notes.push('links or code are not allowed');
+ if(/https?:\/\/|```|<\/?script/i.test(raw))notes.push('links or code are not allowed');
  if(lines.some(l=>!/[.!?]["')\]]?$/.test(l)))notes.push('every line should end with . ? or !');
  let verdict='empty';
  if(words&&range)verdict=words<range.min?'short':words>range.max?'long':'ok';
- const advice={empty:'No script: the Director writes draft lines from the topic.',short:'Too few words: expect long silences.',long:'Too many words: the speech will be sped up.',ok:'Good length.'}[verdict];
- return {words,sentences,lines:lines.length,range,verdict,notes,
-  summary:words+' words, '+sentences+' sentences'+(range?' (aim for '+range.min+'–'+range.max+' for '+Number(seconds)+' s)':'')+'. '+advice+(notes.length?' Check: '+notes.join('; ')+'.':''),
+ const fits=cast!=='narrator',sec=Number(seconds);
+ // seconds that keep the calm pace for this many words, rounded up to 5 s (at most 300)
+ const suggestedSeconds=verdict==='long'?Math.min(300,Math.ceil(words/WORDS_PER_SECOND.max/5)*5):null;
+ const estimate=Math.max(6,Math.round(words/2.2));
+ const advice={empty:'No script: the Director writes draft lines from the topic.',ok:'Good length.',
+  long:fits?'A bit long for '+sec+' s: set Seconds to '+suggestedSeconds+' to keep the calm pace (the film only runs as long as the speech needs).':'Too many words: the speech will be sped up. Set Seconds to '+suggestedSeconds+' or shorten the script.',
+  short:fits?'Short script: the film will be about '+estimate+' s (it follows the speech, without long silences).':'Too few words: expect long silences.'}[verdict];
+ return {words,sentences,lines:lines.length,range,verdict,notes,suggestedSeconds,
+  summary:words+' words, '+sentences+' sentences'+(range?' (aim for '+range.min+'–'+range.max+' for '+sec+' s)':'')+'. '+advice+(notes.length?' Check: '+notes.join('; ')+'.':''),
   turns:cast==='trio'?'Turns rotate Engineer → Robot → Scientist, one sentence each.':cast==='narrator'?'One narrator reads every sentence.':'Turns alternate Student, Explorer, Student… one sentence each, starting with the Student.'};
 }
 // STUDIO-01 prompt guidance: the Claude-chat prompt from docs/SCRIPT_FORMAT.md, filled in for the chosen topic,
