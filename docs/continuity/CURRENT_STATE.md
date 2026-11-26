@@ -1,5 +1,5 @@
 # Current state — AetherMotion Studio
-Updated 2026-11-26 (main 8e65805 = Fix A merged; GEN-15 step 2 IMPLEMENTED + TESTED + RENDERED on feature/gen-15-step2, PR pending; Studio UI refinement last). Authoritative rolling checkpoint for new coding sessions; update at verified transitions. This file references the historical ledger rather than replacing source or evidence. Baseline product merge: `04e3491bb21b4ebc3d54755a2a211b1a7affb3fa` (PR #13 merged into main). The handoff documentation commit may be newer; inspect git HEAD. No release publication implied.
+Updated 2026-11-26 (main 0e0e0f1 = GEN-15 step 2 merged, PR #39, main CI 45799267039 passed; Studio UI refinement, the last step, active on feature/studio-ui). Authoritative rolling checkpoint for new coding sessions; update at verified transitions. This file references the historical ledger rather than replacing source or evidence. Baseline product merge: `04e3491bb21b4ebc3d54755a2a211b1a7affb3fa` (PR #13 merged into main). The handoff documentation commit may be newer; inspect git HEAD. No release publication implied.
 
 ## Current status and authority
 - v1.0 core pipeline and Asset Foundry AF01–AF09 implementation merged; do not reimplement.
@@ -19,7 +19,7 @@ Updated 2026-11-26 (main 8e65805 = Fix A merged; GEN-15 step 2 IMPLEMENTED + TES
 6. Source and approved decisions authoritative. This summary cannot discard binding facts; consult the source-specific contract when the task touches it. Keep state and handoff synchronized. No new native render runs on GitHub or release without authorization.
 
 ## Active unit
-**GEN-15 step 2 (part materials, dressed sets): IMPLEMENTED + TESTED + RENDERED on `feature/gen-15-step2` (from main 8e65805), not merged.** Owner: "i agree merge it and start gen-15 step 2"; Fix A was merged as PR #38 (8e65805) and #37 was closed (included).
+**GEN-15 step 2 (part materials, dressed sets): MERGED** (PR #39 → 0e0e0f1 on the owner's word "merge 39"; PR CI 45791417306, main CI 45799267039 passed). Owner: "i agree merge it and start gen-15 step 2"; Fix A was merged as PR #38 (8e65805) and #37 was closed (included).
 - Binding:
   - look `crafted-v2` = crafted-v1 plus glass and metal part roles (crafted.js `partRole`); a role is an extra box-stream argument that legacy and crafted-v1 ignore;
   - sets `topic-v2` = a dressed set per category (cinematography.js `DRESSED_SETS`; new layered environments) and set pieces matched to the words (sets.js `PIECE_WORDS`, `fitPiecesFor`; a piece from another category must be named in full);

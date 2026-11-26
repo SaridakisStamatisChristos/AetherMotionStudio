@@ -8,8 +8,8 @@ Checkpoint: branch `feature/gen-15-step2` from **main 8e65805** (Fix A merged as
 |---|---|---|
 | 1 | Fix A: film length follows the speech; silence-v1 | MERGED (PR #38). The owner watched fixa-sky-r1 ("great i seen the video"). |
 | 2 | GEN-15 look accepted; cleanup step 2 | DONE |
-| 3 | GEN-15 step 2: dressed sets, word-matched pieces, glass and metal parts | IMPLEMENTED + TESTED + RENDERED on `feature/gen-15-step2`. PR pending. **Merge only on the owner's word, after PR CI.** |
-| 4 | **Last: Studio UI refinement** | Next after step 3 is merged, on a new branch from main. The owner said it is practical now; ask what they want refined (layout, wording, prompt box) before starting. |
+| 3 | GEN-15 step 2: dressed sets, word-matched pieces, glass and metal parts, alternating arms, CPU eye fix | MERGED (PR #39 → 0e0e0f1, "merge 39"; main CI passed). |
+| 4 | **Last: Studio UI refinement** | ACTIVE on `feature/studio-ui` from main 0e0e0f1. Scope: ask the owner, then record it here. |
 
 ## GEN-15 step 2: what changed
 | File | Change |
