@@ -257,6 +257,11 @@ export function phraseWindows(timelineShot,count){
 // Start of an item (or of bullet j) in shot progress, given the phrase windows.
 export function itemStart(x,phrases,j=null){if(j!==null&&x.phrases)return phrases?.[x.phrases[j]]?.[0]??x.start;if(x.phrase!==undefined)return phrases?.[x.phrase]?.[0]??x.start;return x.start;}
 // Pixel rectangles of the text plates visible at shot progress p (for the composition-cover check).
-export function compositionPlates(layout,p,phrases=null){return layout.items.filter(x=>x.box&&x.type!=='background'&&x.type!=='shape'&&p>=(x.phrases?itemStart(x,phrases,0):itemStart(x,phrases))&&p<=x.end).map(x=>({id:x.id,...x.box}));}
+// When an item appears. Items whose steps reveal parts (bullets, plots, graphs, timelines, flows, cards) appear at their
+// first step; items that show an initial state before their steps (charts, arrays) appear at their own start or
+// phrase, so the initial state is actually on screen before the first step (fix found in dual04-bakery-r3 stills).
+export const SHOWS_INITIAL_STATE=Object.freeze(new Set(['chart','array']));
+export function appearAt(x,phrases){return x.phrases&&!SHOWS_INITIAL_STATE.has(x.type)?itemStart(x,phrases,0):itemStart(x,phrases);}
+export function compositionPlates(layout,p,phrases=null){return layout.items.filter(x=>x.box&&x.type!=='background'&&x.type!=='shape'&&p>=appearAt(x,phrases)&&p<=x.end).map(x=>({id:x.id,...x.box}));}
 // WCAG relative-luminance contrast ratio of two #rrggbb colours.
 export function contrast(a,b){const L=h=>{const [r,g,bl]=[1,3,5].map(i=>parseInt(h.slice(i,i+2),16)/255).map(v=>v<=.03928?v/12.92:((v+.055)/1.055)**2.4);return .2126*r+.7152*g+.0722*bl;};const [x,y]=[L(a),L(b)].sort((m,n)=>n-m);return (x+.05)/(y+.05);}

@@ -109,3 +109,13 @@ test('9. tolerances are relative to the range, depth is enforced everywhere, siz
  bad(V2([{id:'c',type:'chart',kind:'bar',box:[0,0,1,.6],categories:['a','b'],series:[{name:'s',values:[1,2]}],annotations:junk}]),/at most 4/);
  bad(V2([{id:'k',type:'kinetic',box:[0,0,1,.4],text:'\u0007'.repeat(5000)}]),/printable text required/);
 });
+
+test('found in validation stills: charts and arrays show their initial state before their first cued step',()=>{
+ const R=recorder();
+ const c=V2([{id:'c',type:'chart',kind:'bar',box:[0,0,1,.7],categories:['a','b'],series:[{name:'S',values:[100,50]}],y:[0,200],valueLabels:true,phrases:[2],steps:[{series:[{values:[200,50]}]}]}]);
+ const phrases=[[0,.3],[.3,.6],[.6,1]];R.reset();drawComposition(R.ctx,c,.4,3000,phrases);
+ const texts=R.ops.filter(o=>o.op==='fillText').map(o=>o.a[0]);const n200=texts.filter(t=>t==='200').length,n100=texts.filter(t=>t==='100').length;assert.equal(n200,1,'only the axis tick says 200 before the cue: '+texts.join(','));assert.equal(n100,2,'the 100 value label (plus the tick) is on screen');
+ R.reset();drawComposition(R.ctx,c,.95,3000,phrases);assert.ok(R.ops.some(o=>o.op==='fillText'&&o.a[0]==='200'&&o.alpha===1),'final state after the cue');
+ const arr=V2([{id:'a',type:'array',box:[.1,.6,.8,.36],values:[48,18],algorithm:{name:'euclid'},phrases:[2],steps:[{values:[18,12]}]}]);
+ R.reset();drawComposition(R.ctx,arr,.4,3000,phrases);const t2=R.ops.filter(o=>o.op==='fillText').map(o=>o.a[0]);assert.deepEqual(t2,['48','18']);
+});
