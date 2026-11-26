@@ -78,7 +78,9 @@ export function offlineDialogue(q,ir){
    return {...rest,narration,speakers,camera:cams[(i+q.seed)%cams.length],assets:[{asset:prop.asset,...(prop.action&&prop.action!=='idle'?{action:prop.action}:{})}]};})};
 }
 export function dialogueSpeech(q,ir){
- const base=q.speech??defaultSpeech(q.seconds);
+ // Owner 2026-11-26 (roles in captions "Off by default"): speech the Director builds hides the speaker names; a request
+ // that brings its own speech (the Studio always does, from its checkbox) keeps what it says.
+ const base=q.speech??(s=>({...s,captions:{...s.captions,speakerNames:false}}))(defaultSpeech(q.seconds));
  return {...base,speakers:Object.fromEntries(q.dialogue.speakers.map(s=>[s.id,{name:s.name,voice:s.voice,language:s.language}])),
   shotSpeakers:Object.fromEntries(ir.shots.map((s,i)=>['shot-'+(i+1),[...s.speakers]])),placement:'lead',mix:{...base.mix,master:'mix-v2'},
   // GEN-05 (owner: "speech a bit slower"): dialogue speaks at pace 0.92 unless the request sets dialogue.pace (1 = TALK-04 speed).

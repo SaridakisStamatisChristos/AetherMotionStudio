@@ -7,7 +7,7 @@ import {SETTINGS_KEY,SETTINGS_DEFAULTS,checkedSettings,readSettings,writeSetting
 import {STUDIO_DEFAULTS,directorRequest} from '../src/studio/director-form.js';
 import {VOICES} from '../src/core/contract.js';
 const voices=[...VOICES];
-const mine={cast:'trio',seconds:45,backend:'cpu',profile:'original',voice:'bm_george',staging:false,reels:true,speakerNames:false,advanced:true};
+const mine={cast:'trio',seconds:45,backend:'cpu',profile:'original',voice:'bm_george',staging:false,reels:true,speakerNames:true,titles:true,advanced:true};
 
 test('the choices come back exactly as they were kept',()=>{
  assert.deepEqual(readSettings(writeSettings(mine,voices),voices),mine);
@@ -25,7 +25,7 @@ test('topic and script are never kept',()=>{
 test('negative: damaged, foreign or hostile stored text falls back to the defaults, field by field',()=>{
  for(const text of ['','{','null','[]','"x"','42','{"version":2,"settings":{"cast":"trio"}}','{"settings":{"cast":"trio"}}','x'.repeat(5000)])
   assert.deepEqual(readSettings(text,voices),SETTINGS_DEFAULTS,text.slice(0,40));
- const bad={cast:'constructor',seconds:9999,backend:'gpu',profile:'ultra',voice:'evil_voice',staging:'yes',reels:1,speakerNames:null,advanced:'true'};
+ const bad={cast:'constructor',seconds:9999,backend:'gpu',profile:'ultra',voice:'evil_voice',staging:'yes',reels:1,speakerNames:null,titles:'on',advanced:'true'};
  assert.deepEqual(readSettings(JSON.stringify({version:1,settings:bad}),voices),SETTINGS_DEFAULTS);
  for(const seconds of [5,301,60.5,'60',NaN,-1])assert.equal(checkedSettings({seconds},voices).seconds,60,String(seconds));
  // one bad field does not throw away the good ones

@@ -64,7 +64,7 @@ export function inspectShot(source,timing=null,speech=null){
 function contentChecks(project){
  const issues=[],headings=new Map(),phrases=new Map();
  for(const s of project.shots??[]){
-  if(s.heading){const k=s.heading.trim().toLowerCase();if(headings.has(k))issues.push(issue('REPEATED_HEADING','review',s.id,headings.get(k)));else headings.set(k,s.id);}
+  if(s.heading&&s.titles!=='none'){const k=s.heading.trim().toLowerCase();if(headings.has(k))issues.push(issue('REPEATED_HEADING','review',s.id,headings.get(k)));else headings.set(k,s.id);}
   for(const p of s.narration){
    const k=p.toLowerCase().replace(/[^a-z0-9 ]/g,'').replace(/\s+/g,' ').trim();
    if(k.length>25&&phrases.has(k))issues.push(issue('REPEATED_NARRATION','review',s.id,phrases.get(k)));else phrases.set(k,s.id);

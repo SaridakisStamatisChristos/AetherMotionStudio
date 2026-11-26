@@ -20,7 +20,7 @@ export function safeJson(raw){
 }
 export const normalize=s=>s.trim().replace(/\s+/g,' ');
 export function request(input){
- fields(input,['version','id','topic','script','seconds','audience','tone','style','language','voice','backend','profile','seed','identityLibrary','cast','story','speech','staging','promptVersion','dialogue','delivery','sets','look'], 'request',['version','id','topic','seconds']);
+ fields(input,['version','id','topic','script','seconds','audience','tone','style','language','voice','backend','profile','seed','identityLibrary','cast','story','speech','staging','promptVersion','dialogue','delivery','sets','look','titles'], 'request',['version','id','topic','seconds']);
  // GEN-09 opt-in delivery mode (Instagram Reels layout and framing); absent = unchanged output.
  if(input.delivery!==undefined&&input.delivery!=='reels-v1')bad('request.delivery','reels-v1 or absent');
  // GEN-12 topic-fitting sets: 'topic-v1' or 'none'; absent = topic-v1 for dialogue films, unchanged output otherwise.
@@ -30,6 +30,9 @@ export function request(input){
  if(input.sets!==undefined&&input.identityLibrary)bad('request.sets','identity stories keep their authored locations');
  // GEN-15 look: 'crafted-v1' or 'none'; absent = crafted-v1 for dialogue films, unchanged output otherwise.
  // GEN-15 step 2: 'crafted-v2' (glass and metal parts) is the dialogue default; 'crafted-v1' stays selectable.
+ // Owner 2026-11-26 ("No titles at all"): 'none' (clean top) or 'shots' (a title per shot, as before); absent = none
+ // for dialogue films, shots otherwise.
+ if(input.titles!==undefined&&!['none','shots'].includes(input.titles))bad('request.titles','none, shots or absent');
  if(input.look!==undefined&&!['crafted-v1','crafted-v2','none'].includes(input.look))bad('request.look','crafted-v1, crafted-v2, none or absent');
  const q={audience:'general audience',tone:'clear',style:'cinematic explainer',language:'en',voice:'af_heart',backend:'cpu',profile:'polished',seed:0,...input};
  if(q.version!==REQUEST_VERSION)bad('request.version','unsupported');

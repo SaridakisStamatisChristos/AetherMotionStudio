@@ -65,8 +65,11 @@ export function drawGraph(ctx,p,W,H,s,three,frames=360,talk=null,body=null){
   finishFilm(ctx,a,f,focus,Math.round(p*(frames-1)));
  }
  ctx.save();ctx.scale(W/720,H/1280);
+ // Owner 2026-11-26 ("No titles at all" for new films): titles 'none' leaves the top clean (no pill, heading or
+ // subheading); absent keeps every earlier layout below exactly as it was.
+ if(s.titles==='none'){}
  // GEN-09 Reels layout: a smaller heading only, inside the Reels-safe area (no pill, subheading or progress bar).
- if(s.delivery===REELS.version){const H=REELS.heading;ctx.save();ctx.globalAlpha=s.titleHold||!(f&&f.typography>0)?1:Math.min(1,p*15);ctx.shadowColor='rgba(0,0,0,.7)';ctx.shadowBlur=10;text(ctx,s.heading,H.x,H.y,H.size,'#f8f3ea',900,'Arial',H.maxWidth);ctx.restore();}
+ else if(s.delivery===REELS.version){const H=REELS.heading;ctx.save();ctx.globalAlpha=s.titleHold||!(f&&f.typography>0)?1:Math.min(1,p*15);ctx.shadowColor='rgba(0,0,0,.7)';ctx.shadowBlur=10;text(ctx,s.heading,H.x,H.y,H.size,'#f8f3ea',900,'Arial',H.maxWidth);ctx.restore();}
  else if(f&&f.typography>0)polishedType(ctx,s,env,p,f.typography);
  else{
  text(ctx,'AETHER LAB / CINEMATIC STUDIES',360,77,15,env.accent,700);
