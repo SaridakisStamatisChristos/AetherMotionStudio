@@ -65,7 +65,7 @@ GEN-15 step 1, the crafted look — IMPLEMENTED + TESTED + RENDERED (agent-revie
   - PR #32 was merged (fae67c1, after its CI passed on the PR head; main CI 45702405758 success). GEN-15 was then restarted from main, not stacked.
   - GEN-13 and GEN-14 are skipped for now (owner).
 - 75c451a: shot field `look:'crafted-v1'` and request field `look` (default for dialogue films). Chamfered boxes with an absolute bevel on both renderers, softened palette, softer CPU light, matte Three. Doc: docs/LOOK.md.
-- Defaults unchanged with `--exclude talk04,talk05,gen01,gen09,gen12`. npm 359 run, 358 pass, 0 fail, 1 Windows skip.
+- Defaults unchanged with `--exclude talk04,talk05,gen01,gen09,gen12,fixa`. npm 359 run, 358 pass, 0 fail, 1 Windows skip.
 - Render `gen15-forest-r1`: CPU 0a996a7262fe460c…, Three 7f81ed48893f2bec…. All gates PASS.
   - CPU is clearly improved.
   - Three is slightly washed out (tuning possible after the owner's review).
