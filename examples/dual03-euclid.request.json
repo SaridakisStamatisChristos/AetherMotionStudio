@@ -1,0 +1,145 @@
+{
+  "version": 1,
+  "id": "dual03-euclid",
+  "topic": "Euclid's algorithm for the greatest common divisor",
+  "seconds": 60,
+  "audience": "curious beginners",
+  "tone": "friendly",
+  "style": "cinematic explainer",
+  "language": "en-us",
+  "voice": "am_michael",
+  "backend": "cpu",
+  "profile": "polished",
+  "seed": 4,
+  "content": "typography-v1",
+  "font": "jetbrains-mono",
+  "theme": "paper-v1",
+  "script": "How do we find the greatest common divisor of 48 and 18? Euclid's algorithm answers it with one repeated step. Divide the larger number by the smaller and keep the remainder. 48 divided by 18 is 2, with remainder 12. Now repeat with 18 and 12. 18 divided by 12 is 1, with remainder 6. Then 12 divided by 6 is 2, with remainder 0. When the remainder reaches zero, the last divisor is the answer. So the greatest common divisor of 48 and 18 is 6.",
+  "visuals": [
+    {
+      "at": "48 divided by 18 is 2, with remainder 12.",
+      "composition": {
+        "version": "compose-v2",
+        "region": "full",
+        "font": "jetbrains-mono",
+        "theme": "paper-v1",
+        "items": [
+          {
+            "id": "step1",
+            "type": "equation",
+            "box": [
+              0,
+              0,
+              1,
+              0.2
+            ],
+            "tex": "48 = 2 \\cdot18 + 12",
+            "check": "arithmetic",
+            "cue": "48 divided by 18 is 2"
+          },
+          {
+            "id": "step2",
+            "type": "equation",
+            "box": [
+              0,
+              0.22,
+              1,
+              0.2
+            ],
+            "tex": "18 = 1 \\cdot12 + 6",
+            "check": "arithmetic",
+            "cue": "18 divided by 12 is 1"
+          },
+          {
+            "id": "step3",
+            "type": "equation",
+            "box": [
+              0,
+              0.44,
+              1,
+              0.2
+            ],
+            "tex": "12 = 2 \\cdot6 + 0",
+            "check": "arithmetic",
+            "cue": "Then 12 divided by 6 is 2"
+          },
+          {
+            "id": "pairs",
+            "type": "array",
+            "box": [
+              0.1,
+              0.68,
+              0.8,
+              0.32
+            ],
+            "values": [
+              48,
+              18
+            ],
+            "algorithm": {
+              "name": "euclid"
+            },
+            "steps": [
+              {
+                "values": [
+                  18,
+                  12
+                ],
+                "highlight": [
+                  1
+                ]
+              },
+              {
+                "values": [
+                  12,
+                  6
+                ],
+                "highlight": [
+                  1
+                ]
+              },
+              {
+                "values": [
+                  6,
+                  0
+                ],
+                "highlight": [
+                  0
+                ]
+              }
+            ],
+            "cues": [
+              "Now repeat with 18 and 12",
+              "18 divided by 12 is 1",
+              "Then 12 divided by 6 is 2"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "at": "So the greatest common divisor of 48 and 18 is 6.",
+      "composition": {
+        "version": "compose-v2",
+        "region": "full",
+        "font": "jetbrains-mono",
+        "theme": "paper-v1",
+        "items": [
+          {
+            "id": "answer",
+            "type": "equation",
+            "box": [
+              0,
+              0.2,
+              1,
+              0.34
+            ],
+            "tex": "\\gcd(48, 18) = 6",
+            "check": "arithmetic",
+            "cue": "So the greatest common divisor of 48 and 18 is 6."
+          }
+        ]
+      }
+    }
+  ]
+}

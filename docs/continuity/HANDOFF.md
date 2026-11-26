@@ -1,41 +1,39 @@
-# Forward-only handoff: Campaign A, DUAL-02 rendered (2026-11-26)
+# Forward-only handoff: Campaign A, DUAL-03 rendered (2026-11-26)
 
 Unit: **Campaign A — Universal Dual-Backend Finalization**, owner-authorized.
-- DUAL-00 **MERGED** (PR #50 → 8e42d99).
-- DUAL-01 **MERGED** (PR #51 → 14a1da6, owner: "merge pr51 and also start dual-02").
-- DUAL-02 (typography): **TESTED + RENDERED** on `feature/dual-02-typography` (product code at 1115855). PR open; **merge only on the owner's word after PR CI passes**.
-- **Next milestone: DUAL-03** (mathematics, geometry and algorithm visualization).
+- DUAL-00, DUAL-01 and DUAL-02 are **MERGED**: PRs #50, #51 and #52, main now at 17ebecd. DUAL-02 was merged on "Yes, merge #52".
+- DUAL-03 (maths, geometry, algorithms): **TESTED + RENDERED** on `feature/dual-03-maths` (product code at 74e8b9c). PR open; **merge only on the owner's word after PR CI passes**.
+- **Next milestone: DUAL-04** (charts, diagrams and data storytelling).
 
-Date: 2026-11-26. The owner types only **"fod continue"**. Binding facts: CURRENT_STATE.md. Campaign status and evidence: CAMPAIGN_A.md ("DUAL-02 evidence"). Contracts: docs/COMPOSITION.md (compose-v1, compose-v2, fonts). Scope map: docs/CAMPAIGN_A_AUDIT.md. Evidence rules: CAMPAIGN_A_PROTOCOL.md. Earlier handoffs: the git history of this file.
+Date: 2026-11-26. The owner types only **"fod continue"**. Binding facts: CURRENT_STATE.md. Campaign status and evidence: CAMPAIGN_A.md ("DUAL-03 evidence", including the investigation of the DUAL-02 preflight block). Contracts: docs/COMPOSITION.md (compose-v1/v2, fonts), docs/MATHS.md (equations, plots, graphs, arrays, visuals). Scope map: docs/CAMPAIGN_A_AUDIT.md. Evidence rules: CAMPAIGN_A_PROTOCOL.md. Earlier handoffs: the git history of this file.
 
-## DUAL-02 in one table
+## DUAL-03 in one table
 | Item | Result |
 |---|---|
-| Owner decision | Bundle the four open font families (Inter, Merriweather, JetBrains Mono, Noto Sans; OFL-1.1; 2.8 MB; public/fonts with fonts.lock.json) |
-| New, opt-in | `compose-v2` typography (fonts and fallback, missing-glyph errors, weights, alignment, emphasis, paper-v1 theme, quote, bullets, counter, kinetic text, phrase-anchored reveals); zero-asset typography shots; Director `typography-v1`, request `font`/`theme`; preflight `TYPOGRAPHY_SHOT` |
-| Shared fixes | lost regex backslashes in src/director/aids.js (+ guard test); Python scripts read UTF-8 (+ tests/test_utf8_reads.py) |
-| Tests | 443 JS (442 pass, 0 fail, 1 skip); Python OK |
-| Films | dual02-eureka-r4 (Inter, Greek title) and dual02-forest-r3 (Merriweather, paper-v1), source 1115855: all PASS both backends, shared hashes exact, −16.0 LUFS; one QUALITY warning (caption 18.15 cps in one cue). Agent stills only, **no owner review** |
+| Owner decision | MathJax 4.1.3 (`@mathjax/src`, pinned, Apache-2.0), Node-only |
+| New, opt-in | equations (allowlisted TeX → outlines; optional verified arithmetic), plots and geometry (out-of-range refused), graphs (BFS verified), arrays (Euclid verified), Director `request.visuals` (authored compositions attached to script sentences; visuals define their shots; cue/cues), maths report |
+| Tests | 453 JS (452 pass, 0 fail, 1 skip); Python 61 OK |
+| Films | dual03-pythagoras-r2, dual03-euclid-r2, dual03-bfs-r2 (74e8b9c): all PASS both backends, shared hashes exact, −16.0 LUFS; euclid-r2 byte-identical to r1. Agent stills only, **no owner review** |
 
 ## Next action for "fod continue"
-1. Bootstrap. If the DUAL-02 PR is open: report its CI result and ask the owner to merge (do not merge without the word). Branch DUAL-03 from main only after DUAL-02 is merged (never stacked).
-2. DUAL-03: read its directive section and the DUAL-03 rows of docs/CAMPAIGN_A_AUDIT.md. **Owner decision first:** a local maths typesetter is a new dependency; otherwise build a declarative equation layout on compose-v2 (JetBrains Mono / Inter are bundled; Inter covers maths operators). Then geometry primitives (coordinate axes, points, lines, circles, polygons, vectors), graph/tree/array diagrams and versioned step animations for an algorithm (Euclid or BFS) with independently checked data; an allowlisted bounded expression parser (never eval); finite-number and pathological-expression negatives.
-3. Exit: fresh geometry/proof explainer and algorithm visualization on both backends, readable labels.
+1. Bootstrap. If the DUAL-03 PR is open: report its CI result and ask the owner to merge (no merge without the word). Branch DUAL-04 from main only after DUAL-03 is merged (never stacked). After pulling main, run `npm install` (MathJax is a new dependency).
+2. DUAL-04: read its directive section and the DUAL-04 rows of docs/CAMPAIGN_A_AUDIT.md. Extend compose-v2 (reuse `plot` axes/ticks and the visuals mechanism; do not build a second chart engine): bar, line, scatter, area/pie where appropriate; legends, units, annotations, highlights, data transitions with defined rules; flowcharts and directed diagrams (reuse `graph`), timelines, comparison cards. Validated local JSON data and optional bounded CSV import; reject NaN/Infinity, malformed series and invalid ranges; preserve units, signs and categorical order; document axis scaling and missing values; no automatic factual sourcing.
+3. Exit: a fresh data explainer on both backends using known fixture data, identical values and labels, no misleading clipping or scaling, adversarial numeric/layout tests.
 
 ## Known issue from this session
 - A headless-browser process (chrome-headless-shell, PID 343888) from a stopped DUAL-01 render may still be running; the agent was not permitted to stop it. It is harmless; Task Manager or a reboot ends it.
 
 ## Open issues carried into Campaign A
 - OPEN-1 calm word rate (2.15 words/s; refine with more films). OPEN-2 part 2: glass and metal subtle at phone size. OPEN-3: historical CPU one-eye, by the owner's choice. OPEN-4: "bridges" shows no set piece. OPEN-6: old draft PRs #2–#12; ask before closing. PR #43 (old handoff) is superseded by #49; ask before closing it.
-- OPEN-7 disk: out/ holds the agent test jobs, far-forest-r1*, clean-top-r1*/r2*, dual00-baseline-r1*, dual01-* and dual02-*; ask before deleting anything.
+- OPEN-7 disk: out/ holds the agent test jobs, far-forest-r1*, clean-top-r1*/r2*, dual00-baseline-r1*, dual01-*, dual02-* and dual03-*; ask before deleting anything.
 - Not yet run: a GPU benchmark, the full native matrix, a clean-install test.
 
 ## Bootstrap for "fod continue"
-1. `git status --short --branch`, `git rev-parse HEAD`, `git fetch`, `gh pr list --state open`, `git tag --list`. Expect main 14a1da6, or later if the DUAL-02 PR was merged.
+1. `git status --short --branch`, `git rev-parse HEAD`, `git fetch`, `gh pr list --state open`, `git tag --list`. Expect main 17ebecd, or later if the DUAL-03 PR was merged.
 2. Read CLAUDE.md, AGENTS.md, CURRENT_STATE.md, this file and CAMPAIGN_A.md (plus the directive section of the active milestone).
 3. Baseline:
    - `node scripts/fod-digests.mjs . --exclude talk04,talk05,gen01,gen09,gen12,fixa,dual` must print graph 3d33fbaee198acad, geometry 14dec244d171dc56, detail2 e3f80439a292f21a, director 7 requests 2cbf9916e65da935;
-   - `npm test` must give fail 0 (443 tests with DUAL-02, 1 Windows skip);
+   - `npm test` must give fail 0 (453 tests with DUAL-03, 1 Windows skip);
    - `PYTHONPATH=scripts .venv/Scripts/python.exe -m unittest discover -s tests -p "test_*.py"` must give 59 OK.
 
 ## Owner working agreement and taste (binding; see also auto-memory)

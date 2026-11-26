@@ -1,0 +1,54 @@
+{
+  "version": 1,
+  "id": "dual03-bfs",
+  "topic": "Breadth-first search, level by level",
+  "seconds": 40,
+  "audience": "curious beginners",
+  "tone": "friendly",
+  "style": "cinematic explainer",
+  "language": "en-us",
+  "voice": "af_bella",
+  "backend": "cpu",
+  "profile": "polished",
+  "seed": 5,
+  "content": "typography-v1",
+  "font": "inter",
+  "script": "Breadth-first search explores a network level by level. We start at node A. First we visit the neighbours of A, which are B and C. Then we visit their neighbours, D and E. Finally we reach F, the farthest node. Each level is finished before the next one begins.",
+  "visuals": [
+    {
+      "at": "We start at node A.",
+      "composition": {
+        "version": "compose-v2",
+        "region": "full",
+        "font": "inter",
+        "items": [
+          {
+            "id": "network", "type": "graph", "box": [0, 0.02, 1, 0.94],
+            "nodes": [
+              {"id": "A", "at": [0.5, 0.0]},
+              {"id": "B", "at": [0.2, 0.33]},
+              {"id": "C", "at": [0.8, 0.33]},
+              {"id": "D", "at": [0.1, 0.66]},
+              {"id": "E", "at": [0.9, 0.66]},
+              {"id": "F", "at": [0.5, 1.0]}
+            ],
+            "edges": [["A", "B"], ["A", "C"], ["B", "D"], ["C", "E"], ["D", "F"], ["E", "F"]],
+            "algorithm": {"name": "bfs", "start": "A"},
+            "steps": [
+              {"visit": ["A"], "note": "level 0"},
+              {"visit": ["B", "C"], "edges": [["A", "B"], ["A", "C"]], "note": "level 1"},
+              {"visit": ["D", "E"], "edges": [["B", "D"], ["C", "E"]], "note": "level 2"},
+              {"visit": ["F"], "edges": [["D", "F"]], "note": "level 3"}
+            ],
+            "cues": [
+              "We start at node A.",
+              "First we visit the neighbours of A",
+              "Then we visit their neighbours",
+              "Finally we reach F"
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}
