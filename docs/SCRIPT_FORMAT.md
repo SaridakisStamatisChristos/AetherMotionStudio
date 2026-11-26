@@ -31,10 +31,14 @@ Also give me a one-line topic question (under 60 characters).
 For 30 s, ask for "8 lines, 60–70 words" instead.
 
 ## Worked example
-`examples/gen12-forest-script.request.json`, on the local branch `feature/forest-script` (commit ad893f7; not pushed, because the push was blocked by a permission prompt).
+`examples/gen12-forest-script.request.json` (first committed as ad893f7; added to main with STUDIO-01).
 - Render `forest-script-r1` from clean ad893f7: CPU 93324d88432897bb…, Three 9d6034c9e7c6084f…. All gates PASS, glitch clean, −16.0 LUFS.
 - Talk fills 47 of 60 s (78 %), with about 1 s between lines. 6 lines were slowed to 0.85 for readable captions.
 - Known: section headings are generic (INTRODUCTION, KEY IDEA, …) because a supplied script has no headings.
 
-## How the owner will feed it in (STUDIO-01, authorized, not started)
-The owner does not want to use VS Code each time; Studio (`npm run studio:local`, http://127.0.0.1:4173) gets the workflow. See NEXT_UNITS STUDIO-01.
+## How the owner will feed it in (STUDIO-01)
+1. Double-click `Start-AetherMotion-Studio.cmd` in the repository folder. The Studio opens at http://127.0.0.1:4173 (keep its window open).
+2. In **Creative Director**, type the topic question and paste the script into **Script**. The live count under the box shows the words and the range for the chosen seconds.
+3. Leave **Cast** on *Student + Explorer (interview)*, **Backend** on *Three.js*, and Seconds on 60 (or 30). Tick **Instagram Reels layout** for Reels.
+4. Click **Generate & render film**. When the job says succeeded, the film plays below and **film.mp4** is in the download links (the output folder is `out/studio-…`).
+Details: docs/STUDIO.md "Script to film (STUDIO-01)".

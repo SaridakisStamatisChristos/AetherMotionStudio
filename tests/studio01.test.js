@@ -88,7 +88,7 @@ test('Studio API accepts the form request and the page uses the shared module; l
  const html=readFileSync(new URL('../studio/index.html',import.meta.url),'utf8');
  for(const id of ['directCast','directReels','scriptCount','scriptRules','scriptTurns'])assert.match(html,new RegExp('id="'+id+'"'));
  assert.match(html,/<select id="directBackend"><option value="three">/);
- const cmd=readFileSync(new URL('../Start AetherMotion Studio.cmd',import.meta.url),'utf8');
+ const cmd=readFileSync(new URL('../Start-AetherMotion-Studio.cmd',import.meta.url),'utf8');
  for(const re of [/AETHER_GL=vulkan/,/AETHER_CONCURRENCY=8/,/AETHER_FFMPEG=/,/AETHER_FFPROBE=/,/PYTHON=/,/npm run studio:local/,/127\.0\.0\.1:4173/])assert.match(cmd,re);
  assert.doesNotMatch(cmd,/setx|reg add|npm (i|install)/i);
 });

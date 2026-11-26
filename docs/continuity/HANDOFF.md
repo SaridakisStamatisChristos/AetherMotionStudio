@@ -1,55 +1,38 @@
-# Forward-only handoff — before STUDIO-01 (owner types only "fod continue")
+# Forward-only handoff — STUDIO-01 implemented (owner types only "fod continue")
 
-Date: 2026-11-25, near midnight. The owner is tired; keep the first report short and plain.
-Checkpoint: **main 22ffec4** (GEN-04..12, GEN-15 step 1 and the Three tune are all merged; main CI green). This file lives on `chore/record-gen-15` (PR #35, docs only, **not merged**).
-Earlier handoffs: git history of this file. Binding facts are in CURRENT_STATE.md.
+Date: 2026-11-26. Keep reports short and plain.
+Checkpoint: branch `feature/studio-01` from **main 22ffec4** (not stacked). Earlier handoff (before STUDIO-01): PR #35 branch `chore/record-gen-15` and git history of this file. Binding facts are in CURRENT_STATE.md.
 
 ## Where things stand
 | Item | State |
 |---|---|
-| PR #35 `chore/record-gen-15` | Docs only: records the #33/#34 merges, render cleanup step 1 and this handoff. **Ask the owner to merge it** (after its CI). |
-| Branch `feature/forest-script` (local only, ad893f7) | Adds examples/gen12-forest-script.request.json, the owner-requested scripted forest film. **Not pushed:** the push was blocked by a permission prompt. Next session: ask the owner whether to push it and open a PR (data only), or fold the example into STUDIO-01. |
-| Render cleanup step 1 | Done: out/ 1.8 GB. Kept: the reference set (gen03-interview-r3, gen03-network-r1, talk05-first-words-r10), bench, speech-cache, fixtures, gen15-forest-r1/r2 and forest-script-r1. Step 2 (delete the reference set) waits for the owner to accept the GEN-15 look. |
-| GEN-15 look | Merged. The owner has not yet said whether they accept it. Films to watch: gen15-forest-r2 (placeholder lines) and forest-script-r1 (real script). |
-| GEN-13 and GEN-14 | Skipped for now. **The owner chose to write scripts in Claude chat instead of a local writing model** ("yeah i prefer bring in my script"; "from now on this will be"). Format: docs/SCRIPT_FORMAT.md. |
+| STUDIO-01 "script to film" | **Implemented and tested** on `feature/studio-01`. One real Studio render passed (below). Owner has not tried it yet. PR #36 (pushed with the owner's permission: "i allow pushes"). **Merge only on the owner's word, after PR CI.** |
+| PR #35 `chore/record-gen-15` | Docs only. **MERGED 36f6fd6** on the owner's word ("lets do it after the push is sucessfull"). It had no CI run because core.yml only runs on pushes to main and feature/**. STUDIO-01 was rebased onto it; SCRIPT_FORMAT "How the owner will feed it in" and NEXT_UNITS are updated. |
+| `feature/forest-script` (ad893f7) | **Folded into STUDIO-01** (cherry-picked as a56732e; examples/gen12-forest-script.request.json). The local branch is now redundant; delete only with the owner's OK. |
+| GEN-15 look, cleanup step 2, fix A, GEN-16 | Unchanged: waiting for owner decisions (see "Pending owner decisions"). |
 
-## Next unit: STUDIO-01 "script to film" (AUTHORIZED by the owner: "yeah thats what we need. exactly")
-Goal: the owner pastes a topic and a script into the local Studio and gets the film, without VS Code.
-1. Branch `feature/studio-01` **from main**. Not stacked: the owner said "dont mess the code sequence".
-2. **Double-click launcher.**
-   - A `.cmd` file in the repo (for example `Start AetherMotion Studio.cmd`) that:
-     - sets the render env from the Environment section below (vulkan, so the RTX is used);
-     - runs `npm run studio:local`;
-     - opens http://127.0.0.1:4173.
-   - Placing a shortcut on the desktop is outside the repo: ask the owner first, or tell them how to do it.
-3. **Director form** (studio/index.html, studio/app.js; the server is scripts/studio-server.mjs):
-   - **cast choice:** "Student + Explorer (interview)" as the default (the same cast and voices as examples/gen01-interview.request.json: host Student af_bella en-us `student`, guest Explorer bm_george en-gb `explorer-robot`, style interview). The existing three-person cast (`DIALOGUE_CAST`: Engineer, Robot, Scientist) stays available. With three speakers, turns rotate among all three, so the help text must say the two-speaker rule applies only to the pair.
-   - **Reels checkbox** → `delivery:'reels-v1'`;
-   - **help text** under the Script box: the rules from docs/SCRIPT_FORMAT.md in 3–4 lines, plus a live word count with the recommended range for the chosen seconds (about 2.2 words per second).
-4. **Backends:** Studio jobs render one backend (`directBackend`). Check whether the job API can do both. Propose "both" only if it fits the existing job model; otherwise keep one backend, with **Three (RTX)** as the default. Do not change Studio job contracts silently.
-5. **Test end to end** with the forest script:
-   - unit tests for the form → request mapping (cast, delivery, script), including negatives (an empty script with no topic, an unknown cast);
-   - a real Studio run through the browser or the API, with the film found in downloads and its gates passing;
-   - report honestly what was clicked or observed.
-6. Docs (SCRIPT_FORMAT.md "How the owner will feed it in", LOCAL_DEVELOPMENT.md), checkpoint, push, PR, CI. **Merge only on the owner's word, after PR CI.**
+## STUDIO-01 what changed
+| File | Change |
+|---|---|
+| `Start-AetherMotion-Studio.cmd` (+ `.gitattributes` `*.cmd eol=crlf`) | Double-click launcher: sets PYTHON, AETHER_FFMPEG, AETHER_FFPROBE, AETHER_GL=vulkan, AETHER_CONCURRENCY=8 for its window only, checks the tools exist, runs `npm run studio:local`, opens http://127.0.0.1:4173; if the Studio already runs it only opens the page. First version had spaces in its name and nested quotes; the owner saw "Windows cannot find aethermotionstudio" → renamed without spaces and the browser line rewritten. |
+| src/studio/director-form.js | `STUDIO_CASTS` (interview = gen01 cast and request fields incl. seed 1; trio = TALK-04 cast unchanged; narrator = earlier form), `STUDIO_DEFAULTS` (interview, three, polished, 60 s, Reels off), `directorRequest`, `scriptHelp`, `wordRange` (2.0–2.33 words/s). Browser-safe. |
+| studio/index.html, app.js, style.css | Cast select replaces the "Dialogue" checkbox; Reels checkbox; rules text + live word count under Script; Three default; seconds 60; voice/staging only for the narrator cast. |
+| tests/studio01.test.js (new, 6 tests), tests/talk04.test.js | Form → request equals the forest example request; trio cast pinned; negatives (empty topic+script, missing topic, unknown cast/backend/profile, bad seconds/reels/id/voice; links rejected by the schema); script help; offline Director turns alternate host/guest over 14 lines; Studio API round trip; launcher contents. TALK-04 wiring test now checks `directCast` and `directorRequest(directorForm())` (the trio cast itself is pinned in studio01). |
+| docs/STUDIO.md, docs/continuity/LOCAL_DEVELOPMENT.md | "Script to film (STUDIO-01)" section; launcher line. |
+- **Backends:** Studio jobs stay one backend per job (one active job, one snapshot, one output). "Both" does not fit that model without a new job contract, so it is not offered; `produce.mjs --backend both` stays the matched-pair path. Job contracts unchanged.
 
-## Pending owner decisions (ask briefly, after STUDIO-01 or when relevant)
-1. Merge PR #35.
-2. Push `feature/forest-script`, or fold it into STUDIO-01.
-3. **Fix A, "film length follows speech"** (proposed, not authorized). The film length would follow the measured speech, with calm pauses up to the requested seconds, plus a check that fails long silences. It prevents films like gen15-forest (14 s of talk in 60 s). With owner-written scripts of the right length it matters less, but it still protects every video.
-4. Accept the GEN-15 look. Acceptance allows cleanup step 2 and GEN-15 step 2 (richer sets, part materials such as metal trims and glass screens; no other decision needed).
-5. GEN-16 (Three cinematic profile) needs a policy decision. The Instagram test upload is deferred to the very end.
+## Evidence (this checkpoint)
+- Baseline on main 22ffec4: digests graph 3d33fbaee198acad, geometry 14dec244d171dc56, detail2 e3f80439a292f21a, director 7 requests 2cbf9916e65da935 (unchanged after the change). `npm test` 360 → **366 tests, 365 pass, 0 fail, 1 skip**. Python 51 OK.
+- Launcher: run through cmd.exe by full path (not a mouse double-click by the agent); the Studio answered HTTP 200 and the page module loaded. The owner reported the first version failing; the fixed version has not yet been tried by the owner.
+- Real Studio run, **through the HTTP API with the same calls the page makes** (no browser clicks by the agent): forest script pasted one sentence per line, interview cast, Three, polished, 60 s, quality on. Job `studio-e3bb2326a60691aab621` from commit 5abe119 → **succeeded**. film.mp4 sha256 b6f4a0fadef46d1f…, 1800 frames, `gl: vulkan`, concurrency 8, render 57.3 s; nvidia-smi showed 15–45 % GPU and ~1.3–1.4 GB VRAM during the render. PASS speech allocation/captions/audio; PASS native 1800-frame MP4; QUALITY pass-with-findings, errors 0, warnings 0 (review-level LOW_PROJECTED_MOTION on singles); draft checks motion/visibility/crowding 0; frame_glitch clean; −16.0 LUFS; pace requested 0.92 (not kept), maxCps 18. Download link `?download=1` served the identical file (attachment). Agent looked at 4 stills: correct cast, captions and set. **No human review.**
+- Note: `scripts/frame_glitch.py` needs ffmpeg on PATH (the launcher sets only AETHER_FFMPEG); Studio itself does not need it.
 
-## Bootstrap for "fod continue"
-1. `git status --short --branch`, `git rev-parse HEAD`, `git fetch`; check `gh pr list --state all --limit 5`. Expect main 22ffec4 or later. The local branches chore/record-gen-15 and feature/forest-script exist.
-2. Read AGENTS.md, CURRENT_STATE.md, this file, NEXT_UNITS.md and docs/SCRIPT_FORMAT.md.
-3. Baseline on main: `node scripts/fod-digests.mjs . --exclude talk04,talk05,gen01,gen09,gen12` must print:
-   - graph 3d33fbaee198acad;
-   - geometry 14dec244d171dc56;
-   - detail2 e3f80439a292f21a;
-   - director 7 requests 2cbf9916e65da935.
-   Then `npm test` must give fail 0 (360 tests, 1 Windows skip), and `PYTHONPATH=scripts .venv/Scripts/python.exe -m unittest discover -s tests -p "test_*.py"` must give 51 OK.
-4. Report in one short table, ask question 1 (merge #35), then start STUDIO-01.
+## Pending owner decisions
+1. Try the launcher (double-click `Start-AetherMotion-Studio.cmd`) and a film from the form. Optional desktop shortcut: right-click → Show more options → Send to → Desktop.
+2. Merge PR #36 (STUDIO-01) after its CI on the rebased head.
+3. Fix A "film length follows speech" (proposed, not authorized).
+4. Accept the GEN-15 look (unlocks cleanup step 2 and GEN-15 step 2). Films: gen15-forest-r2, forest-script-r1, and now the Studio film above.
+5. GEN-16 policy; Instagram test upload deferred to the very end.
 
 ## Owner working agreement and taste (binding; see also auto-memory)
 - **Delegation:** the owner delegates whole units and wants plain-language reports with short tables. Stop only for direction-changing or risky actions: backend defaults, dependencies, deletions, system settings, anything outside the repo, or changing accepted films.
@@ -85,45 +68,7 @@ Goal: the owner pastes a topic and a script into the local Studio and gets the f
   - never use sed with code containing backticks or `\n`.
 - Stills: frame numbers from `<id>-prepared/timeline.json` (segment sample midpoints ÷ 1600). Then `ffmpeg -i film.mp4 -vf "select='eq(n,F1)+…',scale=216:384,tile=Nx1" -frames:v 1 <scratchpad>/x.png`.
 
-## Evidence trail (this checkpoint)
-- Renders from clean 33e576f; all gates PASS, checks 0, glitch clean, −16.0 LUFS:
-  - `gen06-interview-r3`: CPU 078f5ce03c69b457…, Three 480add012aa01cd7…;
-  - `gen09-reels-r3`: CPU 8801f584fe865dcd…, Three bbc9eb9a8d774224…; reels-export PASS.
-  - Max caption 17.94 cps, 0 outliers.
-- Render from clean be66483: `gen11-interview-r1`, CPU 915190f9b5727d0a…, Three 23631d257648561a…; all gates PASS.
-- Superseded: gen09-reels-r2. Interrupted: gen06-interview-r2. Both are kept on disk; ask before any cleanup.
-- Human review: none of these films has been watched by the owner.
-
-## Where things are (this branch)
-| Unit | Files | Contract / note |
-|---|---|---|
-| GEN-04 crowding | src/quality/crowding.js, tests/gen04.test.js, docs/QUALITY.md | `crowding-v1`, `isCatalogCharacter`; known findings: cast line-ups and the "steps" walk-past in older films |
-| GEN-05 pace | src/core/speech.js `SPEECH_PACE`, timeline.js, scripts/speech_pipeline.py, speech_plan.py `speed_ladder`, verify.py, src/director/dialogue.js, tests/gen05.test.js, test_speech_pace.py, docs/SPEECH.md | `speech.pace`, `request.dialogue.pace`; the report records `pace {requested, kept}` |
-| GEN-06 singles | src/core/singles.js, cinematography.js (`framing:'single'`), timeline.js (`titleHold`), fidelity-effects.js, motion-check.js OFF_FRAME, director/index.js, tests/gen06.test.js, docs/CINEMATOGRAPHY.md | `singles-v1`; only true singles; `request.dialogue.singles` |
-| GEN-08 visibility | src/quality/visibility.js, produce.mjs, studio-server.mjs, tests/gen08.test.js, docs/QUALITY.md | `visibility-v2`, threshold 0.70; v1 kept |
-| GEN-12 sets | src/director/sets.js (`SETS`, `topicSet`, `applySet`, `fitPieces`), director/index.js, schema.js (`request.sets`), examples/gen12-forest.request.json, tests/gen12.test.js, docs/SETS.md | `topic-v1` |
-| GEN-05b audit fix | scripts/quality_metrics.py `expected_subtitles`, quality_media.py reading speed, tests/test_captions_readable.py | holds honoured |
-| GEN-10 mouths | scripts/visemes.py, speech_pipeline.py, src/core/talk.js (`VISEMES`, `visemeAt`, `validateVisemes`), catalog.js (`mouthWidth`), speech.js (`mouths`), timeline.js, production.js, tests/gen10.test.js, test_visemes.py, docs/MOUTHS.md | `viseme-estimated-v1`, `speech.mouths` |
-| GEN-11 weight | src/core/body.js (`WEIGHT`, `weightAt`), catalog.js `headRoute` (`pose.hip`), director/index.js, tests/gen11.test.js, docs/IDLE.md | `bodyLanguage.weight` |
-| GEN-05b captions | scripts/speech_plan.py (`balanced`, `phrase_speed`, holds), speech_pipeline.py, verify.py, speech.js (`readable`, `holdSample`, `cueAt`), timeline.js, tests/gen05b.test.js, test_captions_readable.py, docs/SPEECH.md | `captions.readable` |
-| GEN-09 Reels | src/core/reels.js, reels-layout.js, cinematography.js (`safeArea`, `SAFE_AREAS`), draw-film.js, draw-graph.js, director schema/index, scripts/reels-export.mjs, tests/gen09.test.js, docs/REELS.md | `delivery:'reels-v1'`, `request.delivery`, `reelsProject`, `reelsCheck`; Director `AIM_BLEND` 0.12 |
-
-## Evidence trail (GEN-04..09, first version)
-- Renders from clean edd3a3d. All gates PASS, checks 0, frame-glitch clean, −16.0 LUFS:
-  - `gen06-interview-r1` (default layout, 3 singles): CPU 8b3278cf336ca49e…, Three 14673933adf21772….
-  - `gen09-reels-r2` (Reels): CPU 75f9259bf3391d68…, Three 5a9157feec85dba7…; reels-export PASS.
-- Superseded (kept on disk; ask before any cleanup): `gen09-reels-r1` (19bd7e4), whose "singles" still showed the neighbour in view.
-- Earlier accepted renders are unchanged (see CURRENT_STATE). Render cleanup plan: NEXT_UNITS (at the start of GEN-15).
-- Human review: none of the GEN-04..09 renders has been watched by the owner yet.
-
-## Open issues (not blockers)
-- Questions 2–4 above (Reels size, the last fast caption, Instagram numbers).
-- Three-speaker lines get no singles (neighbours 1 m apart), in either layout. Reels gets no singles with the Director spacing.
-- Older accepted films keep their recorded findings (crowding, visibility-v2 cottage guide, off-frame, fast turns); GEN-07 was deferred.
-- Still open from before: mouths follow loudness only (GEN-10); no idle weight shift (GEN-11); "Wrrrench" not heard by the owner; TALK-05 has a wide LRA.
 
 ## Next action
-- "fod continue": bootstrap, then the baseline.
-- Ask the owner to merge PR #35.
-- Start STUDIO-01 (authorized) on `feature/studio-01` from main.
-- Never merge without the owner's word and a passing PR CI. Never stack branches.
+- "fod continue": bootstrap (expect `feature/studio-01` PR open, or merged if the owner said so), baseline digests and tests.
+- If PR #36 is open: report its CI and ask the owner to merge. Then wait for the owner's choice among the pending decisions. Never merge without the owner's word and a passing PR CI. Never stack branches.
