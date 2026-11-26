@@ -15,8 +15,8 @@ Status words: PLANNED · ACTIVE · IMPLEMENTED · TESTED · RENDERED · OWNER-RE
 | DUAL-01 | Character-free content and shared composition | **MERGED** (PR #51 → 14a1da6, owner: "merge pr51") | `feature/dual-01-composition` | [docs/COMPOSITION.md](../COMPOSITION.md), "DUAL-01 evidence" below |
 | DUAL-02 | Typography and motion graphics | **MERGED** (PR #52 → 17ebecd, owner: "Yes, merge #52") | `feature/dual-02-typography` | docs/COMPOSITION.md "Typography", "DUAL-02 evidence" below |
 | DUAL-03 | Mathematics, geometry and algorithm visualization | **TESTED + RENDERED** (PR open, not merged) | `feature/dual-03-maths` | [docs/MATHS.md](../MATHS.md), "DUAL-03 evidence" below |
-| DUAL-04 | Charts, diagrams and data storytelling | **TESTED + RENDERED + REPAIRED** (PR #55 open; owner: "Do not merge PR #55 yet") | `feature/dual-04-charts` | [docs/CHARTS.md](../CHARTS.md), "DUAL-04 evidence" below |
-| DUAL-05 | Local media and illustration integration | **NEXT** | — | — |
+| DUAL-04 | Charts, diagrams and data storytelling | **COMPLETE: MERGED** (PR #55 → e520e4a, owner: "Approved. Merge PR #55"; two repair passes; third independent audit verified the repairs) | `feature/dual-04-charts` | [docs/CHARTS.md](../CHARTS.md), "DUAL-04 evidence" below |
+| DUAL-05 | Local media and illustration integration | **NEXT** (rules decided: raster only) | — | — |
 | DUAL-06 | Formats, themes and audio controls | PLANNED | — | — |
 | DUAL-07 | Universal Director and Studio integration | PLANNED | — | — |
 | DUAL-08 | Optional bounded batch production | PLANNED (**owner decides** whether before the freeze) | — | — |
@@ -153,6 +153,86 @@ Owner: "The independent second audit confirms that the original counterexamples 
 - **Tests:** tests/repair2.test.js (5 tests: rendered labels on intermediate and final frames, tick containment, large exact arithmetic, pie colours). Totals 475 JS (474 pass, 0 fail, 1 Windows skip), Python 61 OK, legacy digests unchanged, font metrics current.
 - **Validation films** from 5a786a3 (vulkan; agent checks only, **no owner review**): dual04-bakery-r5 PASS both backends, **byte-identical to r4 on CPU and Three.js** (befdef54a58c6981… / f01f06ea87941d88…): unaffected behaviour preserved. dual03-euclid-r5 PASS both backends; CPU byte-identical to r4 (c83a1e2346f62a26…); Three 86cddfe31cf594ac… differs from r4 by GPU rasterization noise only (scene.json identical apart from its id; PSNR average 64.4 dB, minimum 56.7 dB): the vulkan route is not bit-reproducible across runs (earlier r1/r2 happened to match).
 
+## Remaining work plan (DUAL-05 … DUAL-09)
+Written at the DUAL-04 close (main e520e4a). Each milestone follows the FOD loop in HANDOFF.md: one branch from main, tests including adversarial ones, fresh `dual<NN>-…` matched films, a checkpoint, a PR, and a merge only on the owner's word. Reuse first: extend the existing seams named here; no duplicate engines.
+
+### DUAL-05: local media and illustration (NEXT; rules decided by the owner)
+- **Owner rules (binding):**
+  - raster only: PNG, JPEG and **static** WebP;
+  - no external SVG, no remote fetching, no animated formats, no new dependencies without approval;
+  - file signature verification, bounded dimensions and decoded memory, safe paths, content hashing, provenance, correct orientation, deterministic fit/crop.
+- **Reuse:** the import quarantine and provenance ideas (src/foundry/import-bundle.js, scripts/import-sources.mjs, scripts/import-png.mjs `decodePNG`); the font loader pattern (src/visual/fonts.js plus src/index.jsx: load before frame 0, fail the render on error); compose-v2 items and `request.visuals`.
+- **Design sketch:**
+  1. **Media folder:** `public/media/<id>.<ext>`, with `public/media/media.lock.json` holding per-file id, sha256, format, width, height, orientation, licence, attribution and source. The lock is the only way an image gets in.
+  2. **Node-side header parser (no dependency):**
+     - signatures: PNG 89 50 4E 47; JPEG FF D8 FF; WebP RIFF….WEBP;
+     - dimensions: PNG IHDR, JPEG SOFn, WebP VP8 / VP8L / VP8X;
+     - **reject animation:** PNG `acTL` (APNG), WebP VP8X animation flag / `ANIM` / `ANMF`, multi-frame;
+     - read EXIF orientation (JPEG APP1, WebP EXIF chunk);
+     - bounds: each side ≤ 8192, decoded RGBA ≤ 64 MB;
+     - reject truncated or malformed headers.
+  3. **Safe paths:** project-relative ids only; reject `..`, absolute paths, drive letters, NUL and backslashes; resolve real paths and refuse symlinks or anything escaping `public/media`.
+  4. **compose-v2 item `image`:** `{id, type:'image', box, media:'<id>', fit:'contain'|'cover', crop?:[x,y,w,h] normalised, focus?:[x,y], move?:{from:{x,y,zoom}, to:{x,y,zoom}} (bounded pan/zoom), alt (required text), caption?, start/phrase/cue}`. The layout computes the exact source rectangle → destination rectangle (deterministic, orientation applied first). Layers follow item order.
+  5. **Rendering:** load the used images before frame 0 (like fonts) with `createImageBitmap(blob, {imageOrientation:'none'})`, apply the parsed orientation ourselves, and draw with drawImage on the shared 2D path, so both backends are identical. A failed decode fails the render.
+  6. **Validation of the request:** the media id must be in the lock and the file's sha256 must match at the production boundary (Node). Missing, corrupt or hostile files are explicit errors.
+  7. **Planner:** keep `VISUAL_AID_NOT_YET_SUPPORTED` for image words unless the request supplies authored visuals; never invent images.
+- **Tests:** signature spoofing (a .png containing JPEG bytes); truncated files; zero or huge dimensions; decompression-bomb sizes; APNG; animated WebP; EXIF orientations 1–8; traversal, symlinks, absolute and backslash paths; a sha mismatch; a missing file; crop and fit maths; pan/zoom bounds; mid-move frames.
+- **Fixtures:** create original test images with a deterministic script (e.g. procedural PNG/JPEG/WebP written by our own code, or rendered frames from our own films). Record licence "own work" in the lock. No third-party media.
+- **Exit:** a narrated illustration/history-style film (e.g. `dual05-gallery`) whose images have the same identity, crop and timing on both backends; corrupt, missing and hostile imports fail clearly.
+- **Owner check if needed:** JPEG and WebP decode in Chromium without any dependency; if a Node-side pixel decode turns out to be needed, ask first.
+
+### DUAL-06: formats, themes and audio controls
+- **Formats:** keep 1080×1920 at 30 fps as the default. Add opt-in presets 1920×1080 (landscape) and 1080×1080 (square).
+  - Today everything assumes a 720×1280 logical canvas: draw-graph.js, draw-film.js, overlays, captions, src/core/reels-layout.js, composition regions, the camera aspect in three-backend.js, and the quality checks' 720×1280 frames.
+  - Introduce a versioned format descriptor (logical width and height, safe area, caption box, regions) and **reflow** layouts. Never stretch or crop.
+  - Only tested combinations are valid; invalid presets are rejected.
+- **Themes:** versioned visual themes (colours, typography, backgrounds, caption style, contrast) built on the existing `THEMES` (aether-v1, paper-v1) and environments. Established defaults are retained.
+- **Audio:** expose existing controls that aren't in the Studio yet: speech `mix` (music, ambience, sfx, duck), voice, pace, caption mode and highlight. Add an explicit **mute/silent** mode that is reported as silent, never disguised as a speech failure.
+- **Exit:** the same authored content in all three aspect ratios on both backends; safe-area checks; sampled visual review; valid media probes; audio and caption semantics; invalid presets rejected.
+- **Owner decisions:** promoting any preset or theme to a default.
+
+### DUAL-07: universal Director and Studio integration
+- **Director:** select content mode, visuals, theme and format from validated capabilities. Keep pasted plain scripts, auto-clean, length advice and dialogue behaviour, and optional remote adapters (never mandatory). Prompts stay compact and versioned; old prompt digests are preserved.
+- **Studio:**
+  - Simple UI: topic, cast/content mode (dialogue, narrator, explainer, mixed, typography), duration, format, backend, theme, font, script, essential audio, generate/render.
+  - Advanced UI: timeline, plus data, equation and media editing (the visuals JSON with validation messages), and asset browsing.
+  - Reuse the job queue, progress bar, finished panel, downloads and Reels cover.
+  - **Known gap to close:** the Studio server does not serve `public/fonts` (or the future media), so its preview shows substitute fonts. Serve them read-only with safe paths, and load them in the preview.
+- **Docs:** an authoring guide with example scripts for each content mode (update STUDIO_GUIDE.md and docs/SCRIPT_FORMAT.md).
+- **Exit:**
+  - the agent clicks through representative modes in a headless browser (say "clicked through in a headless browser", never that the owner did);
+  - at least one render and download on each backend;
+  - actionable validation errors;
+  - no source changes per video;
+  - no UI regressions.
+
+### DUAL-08: optional bounded batch production (**owner decides first**)
+- Ask the owner: before the freeze, or deferred?
+- **If doing it:**
+  - a local queue of validated requests or projects, with explicit backend, preset and output root, unique IDs and per-job manifests;
+  - sequential or measured bounded concurrency; persistent minimal job state; cancel and resume; restart recovery;
+  - failures reported per job; never silently re-render accepted outputs or retry indefinitely;
+  - no SaaS, scheduling or posting.
+- **If deferred:** document it as a future shared service.
+- **Exit:** mixed success, failure and cancel fixtures, restart recovery, no lost outputs, bounded resources.
+
+### DUAL-09: final qualification and release (proposed tag `v1.2-dual-backend-final`)
+- **Consolidate and test:** merged branches only; all routine JS and Python tests and negative suites; compare legacy compatibility and digests against DUAL-00.
+- **New versioned qualification matrix** (`campaign-a-protocol-v1` final matrix; no Cartesian product):
+  - one fresh fixture each for dialogue, narrator-only, mixed, typography, maths/algorithm, charts/diagrams and image-based content, on both backends;
+  - all three aspect ratios, 30, 60 and 90 s, and one project near 300 s;
+  - selected accepted historical examples;
+  - frozen AF09 untouched; the full historical CI render only on the owner's word.
+- **Verify:**
+  - shared scene, timeline, audio and caption identity for matched pairs;
+  - probes: frame count, dimensions, fps, codecs, duration, audio decode, glitch frames, clipping, caption sync;
+  - cold and warm timing, peak RAM and VRAM on repeatable fixtures;
+  - the actual WebGL route (no silent software substitution).
+- **Review:** security boundaries (local server, imports, paths, render snapshots, logs, cancellation); a dependency, model and licence inventory (MathJax Apache-2.0, OFL fonts, Kokoro, Remotion licence terms); setup and launcher docs; troubleshooting; recovery.
+- **Deliver:** release notes, final capability matrix, evidence index, known limitations, user guide and a clean continuity handoff. A clean-install test where available, separating verified from unverified OS/GPU combinations.
+- **Exit:** the owner reviews representative final films and accepts the known limitations; the required gates pass. **The owner approves the merge and tag; tag the exact accepted commit; no automatic release publication.**
+- **After the tag:** Campaign B (GPU-only graphics) may start only with the owner's explicit authorization to revise docs/DUAL_BACKEND_POLICY.md.
+
 ## Decisions the owner must make (ask when the milestone reaches them, not before)
 - DUAL-02: fonts: **decided** (bundle the four open families).
 - DUAL-03: maths typesetter: **decided** (MathJax 4.1.3, Node-only).
@@ -182,3 +262,4 @@ Owner: "The independent second audit confirms that the original counterexamples 
 - 2026-11-26: Owner: "continue" (not a merge word for #54, which stays open). DUAL-04 tested and rendered on `feature/dual-04-charts` (215c2e1): bakery-r2 and bread-r2 all gates PASS on both backends; PR open, not merged. DUAL-05 next.
 - 2026-11-26: Owner: "Merge PR #54 … Do not merge PR #55 yet … dedicated repair pass". PR #54 MERGED (main 5145f50). Main merged into feature/dual-04-charts (b8f17a1). Repair pass 886e702, appearance fix 78df15d/ab693a3; 470 tests (469 pass, 1 skip); validation films bakery-r4, euclid-r4, bread-r3, pythagoras-r3 all PASS on both backends. Merge approval for #55 requested. DUAL-05 rules recorded (raster only).
 - 2026-11-26: Owner (second audit): one more targeted repair pass before merging #55. Done in 5a786a3: TeX superscript semantics, BigInt isqrt, tick containment, adaptive formatter, six pie colours; 475 tests (474 pass, 1 skip); bakery-r5 byte-identical to r4, euclid-r5 PASS. Merge approval requested again.
+- 2026-11-26: Owner: "Approved. Merge PR #55 after confirming that CI is green on the current head 9959720. The third independent audit successfully verified the targeted arithmetic, numerical range, formatting and palette repairs. Record DUAL-04 and both repair passes as complete." CI confirmed green on 9959720 (run 45889745389, 475/475, 0 skipped); PR #55 MERGED → main e520e4a. **DUAL-04 and both repair passes COMPLETE.** Handoff for DUAL-05…09 written (chore/fod-handoff-dual05-09). DUAL-05 next.
