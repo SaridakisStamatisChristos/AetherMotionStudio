@@ -54,9 +54,9 @@ export const TEXT=Object.freeze({
  // compose-v2
  pull:Object.freeze({sizes:[44,40,36,34,32,30,28,26,24,22],pad:24,max:220}),
  cite:Object.freeze({sizes:[24,22,20,18],pad:24,max:60}),
- bullet:Object.freeze({sizes:[30,28,26,24,22,20,18],pad:20,max:90}),
+ bullet:Object.freeze({sizes:[46,42,40,38,36,34,32,30,28,26,24,22,20,18],pad:20,max:90}),
  number:Object.freeze({sizes:[104,96,88,80,72,64,56,48,40],pad:16,max:0}),
- numberLabel:Object.freeze({sizes:[26,24,22,20,18],pad:16,max:48}),
+ numberLabel:Object.freeze({sizes:[36,34,32,30,28,26,24,22,20,18],pad:16,max:48}),
  kinetic:Object.freeze({sizes:[60,56,52,48,44,40,36,32,28],pad:20,max:140})
 });
 export const LINE=1.22,GAP=8,FONT='Arial',WEIGHT=700;
