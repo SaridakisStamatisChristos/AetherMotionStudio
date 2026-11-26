@@ -14,23 +14,26 @@ export function validateVisualsRequest(v){
   if(typeof x.at!=='string'||!x.at.trim()||x.at.length>300)fail(p+'.at','a sentence of the script (1–300 characters) required');
   if(!x.composition||typeof x.composition!=='object'||x.composition.version!=='compose-v2')fail(p+'.composition','a compose-v2 composition required');});
 }
-// A visual defines its shot: the planner's shots that contain any sentence the visual names (`at` and every cue) are
-// merged into one shot, so authors never need to know where the planner would cut. Two visuals whose sentences
-// would need the same shot are refused. Returns a new IR (the input is not modified).
+// A visual defines its shot: the narration phrases holding any sentence the visual names (`at` and every cue) become
+// one shot of their own, so authors never need to know where the planner would cut. Planner shots are split at
+// phrase boundaries or merged as needed; phrases no visual claims keep their planner grouping. Two visuals that need
+// the same phrase are refused. Returns a new IR (the input is not modified).
 const sentencesOf=v=>[v.at,...(Array.isArray(v.composition?.items)?v.composition.items.flatMap(x=>[x?.cue,...(Array.isArray(x?.cues)?x.cues:[])]):[])].filter(s=>typeof s==='string'&&s.trim());
 export function mergeShotsForVisuals(q,ir){
  if(!q.visuals)return ir;
- const spans=q.visuals.map((v,i)=>{const p='request.visuals['+i+']',ks=sentencesOf(v).map(s=>{const hits=ir.shots.map((sh,k)=>norm(sh.narration.join(' ')).includes(norm(s))?k:-1).filter(k=>k>=0);
-   if(!hits.length){const any=ir.shots.some(sh=>sh.narration.some(t=>norm(t).includes(norm(s).split(' ').slice(0,4).join(' '))));fail(p,'"'+norm(s).slice(0,60)+'" is not '+(any?'one continuous part of a sentence':'a sentence')+' of the script (exact words required)');}
-   return hits;});
-  for(const h of ks)if(h.length>1)fail(p,'a sentence it names occurs in more than one shot; quote a longer, unique part');
-  const all=ks.map(h=>h[0]);return {i,from:Math.min(...all),to:Math.max(...all)};}).sort((a,b)=>a.from-b.from);
- for(let j=1;j<spans.length;j++)if(spans[j].from<=spans[j-1].to)fail('request.visuals['+spans[j].i+']','its sentences share a shot with request.visuals['+spans[j-1].i+']; one visual per shot');
- const shots=[];let k=0;
- for(const sp of spans){while(k<sp.from)shots.push(ir.shots[k++]);const group=ir.shots.slice(sp.from,sp.to+1);k=sp.to+1;
-  const narration=group.flatMap(s=>s.narration);if(narration.length>8)fail('request.visuals['+sp.i+']','its sentences span '+narration.length+' narration phrases; at most 8 fit one shot');
-  shots.push({...group[0],narration,...(group[0].speakers?{speakers:group.flatMap(s=>s.speakers)}:{})});}
- while(k<ir.shots.length)shots.push(ir.shots[k++]);
+ // every narration phrase in order, with the planner shot it came from
+ const flat=ir.shots.flatMap((s,k)=>s.narration.map((t,j)=>({k,t,speaker:s.speakers?.[j]})));
+ const spans=q.visuals.map((v,i)=>{const p='request.visuals['+i+']',ks=sentencesOf(v).map(s=>{const hits=flat.map((f,n)=>norm(f.t).includes(norm(s))?n:-1).filter(n=>n>=0);
+   if(!hits.length){const any=flat.some(f=>norm(f.t).includes(norm(s).split(' ').slice(0,4).join(' ')));fail(p,'"'+norm(s).slice(0,60)+'" is not '+(any?'one continuous part of a sentence':'a sentence')+' of the script (exact words required)');}
+   if(hits.length>1)fail(p,'"'+norm(s).slice(0,40)+'" occurs in more than one place; quote a longer, unique part');return hits[0];});
+  return {i,from:Math.min(...ks),to:Math.max(...ks)};}).sort((a,b)=>a.from-b.from);
+ for(let j=1;j<spans.length;j++)if(spans[j].from<=spans[j-1].to)fail('request.visuals['+spans[j].i+']','its sentences overlap those of request.visuals['+spans[j-1].i+'] (the same spoken phrase); one visual per shot');
+ for(const sp of spans)if(sp.to-sp.from+1>8)fail('request.visuals['+sp.i+']','its sentences span '+(sp.to-sp.from+1)+' narration phrases; at most 8 fit one shot');
+ const shot=(from,to)=>{const base=ir.shots[flat[from].k],part=flat.slice(from,to+1);return {...base,narration:part.map(f=>f.t),...(base.speakers?{speakers:part.map(f=>f.speaker)}:{})};};
+ const shots=[];let n=0;
+ const rest=end=>{while(n<end){let m=n;while(m+1<end&&flat[m+1].k===flat[n].k)m++;shots.push(shot(n,m));n=m+1;}};
+ for(const sp of spans){rest(sp.from);shots.push(shot(sp.from,sp.to));n=sp.to+1;}
+ rest(flat.length);
  return {...ir,shots};
 }
 // Returns compositions keyed by IR shot index (0-based), cues resolved to phrase indices.

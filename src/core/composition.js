@@ -13,6 +13,7 @@
 // (src/core/reels-layout.js: x 40–640, y 147–1000) and above the caption boxes (normal and Reels, two lines).
 import {FONT_METRICS} from './font-metrics.js';
 import {layoutEquation,layoutPlot,layoutGraph,layoutArray} from './diagrams.js';
+import {layoutChart,layoutTimeline,layoutFlow,layoutCompare,parseCsv} from './charts.js';
 export const COMPOSE_VERSION='compose-v1',COMPOSE_V2='compose-v2',COMPOSE_VERSIONS=Object.freeze([COMPOSE_VERSION,COMPOSE_V2]);
 export const REGIONS=Object.freeze({
  // the clean top of a 9:16 frame: above characters' heads at the medium framings the Director uses
@@ -21,8 +22,8 @@ export const REGIONS=Object.freeze({
  full:Object.freeze({x:48,y:150,w:584,h:700})
 });
 export const TYPES=Object.freeze(['background','title','card','label','callout','arrow','shape']);
-export const TYPES_V2=Object.freeze([...TYPES,'quote','bullets','counter','kinetic','equation','plot','graph','array']);
-export const DIAGRAMS=Object.freeze(['equation','plot','graph','array']);
+export const TYPES_V2=Object.freeze([...TYPES,'quote','bullets','counter','kinetic','equation','plot','graph','array','chart','timeline','flow','compare']);
+export const DIAGRAMS=Object.freeze(['equation','plot','graph','array','chart','timeline','flow','compare']);
 // decimals needed to show v exactly (at most 3)
 const decimalsOf=v=>{for(let d=0;d<3;d++)if(Math.abs(v*10**d-Math.round(v*10**d))<1e-9)return d;return 3;};
 export const REVEALS=Object.freeze(['fade','slide','wipe','pop','none']);
@@ -121,7 +122,7 @@ function counterTemplate(x,m,size){const digits=[...'0123456789'],wide=digits.re
 // Text layout of one text item inside its pixel box (null for items without text). Throws on overflow.
 function layoutItem(x,b,q,m,opts={}){
  // DUAL-03 maths and diagram items (src/core/diagrams.js)
- if(DIAGRAMS.includes(x.type)){const ctx={measure:(s,size)=>m.width(s,size),format:v=>formatNumber(v,{decimals:decimalsOf(v)}),phraseOk:opts.phraseOk};return {equation:layoutEquation,plot:layoutPlot,graph:layoutGraph,array:layoutArray}[x.type](x,b,q,ctx);}
+ if(DIAGRAMS.includes(x.type)){const ctx={measure:(s,size)=>m.width(s,size),format:v=>formatNumber(v,{decimals:decimalsOf(v)}),phraseOk:opts.phraseOk};return {equation:layoutEquation,plot:layoutPlot,graph:layoutGraph,array:layoutArray,chart:layoutChart,timeline:layoutTimeline,flow:layoutFlow,compare:layoutCompare}[x.type](x,b,q,{...ctx,theme:opts.theme});}
  const fit=(s,spec,w,h,what)=>{const r=fitText(s,spec,w,h,m);if(!r)fail(q,'text overflow: '+what+' "'+s.slice(0,40)+(s.length>40?'…':'')+'" does not fit a '+Math.round(w)+'×'+Math.round(h)+' px box at '+spec.sizes.at(-1)+' px; shorten it or enlarge the box');return r;};
  const over=what=>fail(q,'text overflow: '+what+' does not fit a '+Math.round(b.w)+'×'+Math.round(b.h)+' px box at the smallest sizes; shorten it or enlarge the box');
  if(x.type==='title'){const s=TEXT.title;return {text:fit(x.text,s,b.w-2*s.pad,b.h-2*s.pad,'title')};}
@@ -176,7 +177,7 @@ export function layoutComposition(c,p='composition',opts={}){
   const q=p+'.items['+i+']';
   if(!x||typeof x!=='object'||Array.isArray(x))fail(q,'object required');
   const allowed={background:['tone'],title:['text','tone'],card:['text','body','tone'],label:['text','tone'],callout:['text','to','tone'],arrow:['from','to','tone'],shape:['shape','tone'],
-   ...(v2?{quote:['text','cite','tone'],bullets:['lines','phrases','tone'],counter:['from','to','decimals','group','prefix','suffix','text','tone'],kinetic:['text','tone'],equation:['tex','compiled','check','tone'],plot:['x','y','equal','grid','axes','xLabel','yLabel','shapes','clip','phrases','tone'],graph:['nodes','edges','directed','steps','algorithm','phrases','tone'],array:['values','steps','algorithm','phrases','tone']}:{})}[x.type];
+   ...(v2?{quote:['text','cite','tone'],bullets:['lines','phrases','tone'],counter:['from','to','decimals','group','prefix','suffix','text','tone'],kinetic:['text','tone'],equation:['tex','compiled','check','tone'],plot:['x','y','equal','grid','axes','xLabel','yLabel','shapes','clip','phrases','tone'],graph:['nodes','edges','directed','steps','algorithm','phrases','tone'],array:['values','steps','algorithm','phrases','tone'],chart:['kind','categories','series','csv','x','y','unit','xUnit','yLabel','xLabel','valueLabels','highlight','annotations','steps','phrases','tone'],timeline:['events','phrases','tone'],flow:['nodes','direction','phrases','tone'],compare:['cards','phrases','tone']}:{})}[x.type];
   if(!allowed)fail(q+'.type','one of '+(v2?TYPES_V2:TYPES).join(', ')+' required');
   const textual=!['background','arrow','shape'].includes(x.type);
   const extra=v2?['phrase',...(textual?['font','weight','align','emphasis']:[])]:[];
@@ -217,8 +218,10 @@ export function layoutComposition(c,p='composition',opts={}){
   if(v2)for(const [k,s] of Object.entries(fields)){const miss=missingGlyphs(s,m);if(miss.length)fail(q+'.'+k,'missing glyphs in '+fontChain(font).join(' → ')+': '+miss.slice(0,8).join(', ')+(font==='arial'?' (Arial accepts ASCII only in compose-v2; choose a bundled font)':''));}
   const quoted=x.type==='quote'?(m.covers('“')&&m.covers('”')?'“'+fields.text+'”':'"'+fields.text+'"'):null;
   // labels and notes inside diagrams need glyphs too
-  if(v2&&DIAGRAMS.includes(x.type)){const extra=[x.xLabel,x.yLabel,...(Array.isArray(x.shapes)?x.shapes.flatMap(s=>[s?.label,s?.text]):[]),...(Array.isArray(x.nodes)?x.nodes.map(n=>n?.label??n?.id):[]),...(Array.isArray(x.steps)?x.steps.map(s=>s?.note):[])].filter(s=>typeof s==='string');for(const s of extra){const miss=missingGlyphs(s,m);if(miss.length)fail(q,'missing glyphs in '+fontChain(font).join(' → ')+': '+miss.slice(0,8).join(', '));}}
-  const laid=b?layoutItem(v2&&!DIAGRAMS.includes(x.type)?{...x,...fields,lines:x.type==='bullets'?x.lines.map(norm):x.lines,quoted}:x,b,q,m,{phraseOk}):{};
+  if(v2&&DIAGRAMS.includes(x.type)){let csvText=[];if(typeof x.csv==='string'){try{const t=parseCsv(x.csv,q+'.csv');csvText=[...t.header,...t.rows.map(r=>r[0])];}catch{}}
+   const chartText=[x.unit,x.xUnit,...(Array.isArray(x.categories)?x.categories:[]),...(Array.isArray(x.series)?x.series.map(s=>s?.name):[]),...(Array.isArray(x.annotations)?x.annotations.map(a=>a?.text):[]),...(Array.isArray(x.events)?x.events.flatMap(e=>[e?.when,e?.label]):[]),...(Array.isArray(x.nodes)&&x.type==='flow'?x.nodes:[]),...(Array.isArray(x.cards)?x.cards.flatMap(c=>[c?.title,...(Array.isArray(c?.points)?c.points:[])]):[]),...csvText];
+   const extra=[...chartText,x.xLabel,x.yLabel,...(Array.isArray(x.shapes)?x.shapes.flatMap(s=>[s?.label,s?.text]):[]),...(Array.isArray(x.nodes)?x.nodes.map(n=>n?.label??n?.id):[]),...(Array.isArray(x.steps)?x.steps.map(s=>s?.note):[])].filter(s=>typeof s==='string');for(const s of extra){const miss=missingGlyphs(s,m);if(miss.length)fail(q,'missing glyphs in '+fontChain(font).join(' → ')+': '+miss.slice(0,8).join(', '));}}
+  const laid=b?layoutItem(v2&&!DIAGRAMS.includes(x.type)?{...x,...fields,lines:x.type==='bullets'?x.lines.map(norm):x.lines,quoted}:x,b,q,m,{phraseOk,theme:c.theme??'aether-v1'}):{};
   const emphasis=v2&&x.emphasis!==undefined?emphasisRanges(x.emphasis,Object.entries(x.type==='quote'?{text:quoted}:fields).filter(([k])=>!['fromValue','toValue'].includes(k)),q):[];
   const align=x.align??(['card','quote','bullets'].includes(x.type)?'left':'center');
   const item={id:x.id,type:x.type,start,end,reveal:x.reveal??'fade',tone:tones[x.tone??(x.type==='title'?'accent':'neutral')],box:b,...laid,

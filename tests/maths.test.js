@@ -115,10 +115,10 @@ test('authored visuals: sentences define shots, cues become phrase indices, conf
   assert.ok(r.project.shots.every(s=>s.assets.length===0&&s.composition.version==='compose-v2'));
   for(const s of r.project.shots)for(const x of s.composition.items)if(x.type==='equation')assert.equal(x.compiled.key,mathKey(x.tex));}
  const e=await direct(fixture('euclid'));assert.deepEqual(e.manifest.maths,{items:5,verified:5,notChecked:0});
- const b=await direct(fixture('bfs'));const g=b.project.shots.find(s=>s.composition.items.some(x=>x.type==='graph'));assert.equal(g.narration.length,5);assert.deepEqual(g.composition.items[0].phrases,[0,1,2,3]);
+ const b=await direct(fixture('bfs'));const g=b.project.shots.find(s=>s.composition.items.some(x=>x.type==='graph'));assert.equal(g.narration.length,4);assert.deepEqual(g.composition.items[0].phrases,[0,1,2,3]);
  const base=fixture('bfs'),vis=base.visuals[0];
  await assert.rejects(direct({...base,visuals:[{...vis,at:'We start at node Z.'}]}),/is not (one continuous part of )?a sentence of the script/);
- await assert.rejects(direct({...base,visuals:[vis,{at:'Finally we reach F, the farthest node.',composition:V2([{id:'k',type:'kinetic',box:[0,0,1,.4],text:'F'}])}]}),/share a shot with request.visuals\[0\]/);
+ await assert.rejects(direct({...base,visuals:[vis,{at:'Finally we reach F, the farthest node.',composition:V2([{id:'k',type:'kinetic',box:[0,0,1,.4],text:'F'}])}]}),/overlap those of request.visuals\[0\]/);
  await assert.rejects(direct({...base,visuals:[{...vis,composition:{...vis.composition,items:[{...vis.composition.items[0],cues:['We start at node A.','not spoken here','x','y']}]}}]}),/is not a sentence of the script/);
  await assert.rejects(direct({...base,visuals:[{...vis,composition:V2([{id:'k',type:'kinetic',box:[0,0,1,.4],text:'A',cue:'We start at node A.',start:.2}])}]}),/use cue, phrase or start/);
  assert.throws(()=>request({version:1,id:'x',topic:'t',seconds:30,visuals:[vis]}),/visuals need request.content/);

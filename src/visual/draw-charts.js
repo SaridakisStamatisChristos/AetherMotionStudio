@@ -1,0 +1,52 @@
+// DUAL-04 drawing of chart, timeline, flow and compare items (layout in src/core/charts.js). Shared 2D path on both
+// backends; deterministic from layout, shot progress and step start times. Values interpolate only number→number;
+// a value that appears or disappears fades (never invented in-between values). Axes are fixed for every state.
+import {clamp,smooth} from '../core/motion.js';
+import {roundedBox} from './primitives.js';
+import {cssFont,formatNumber} from '../core/composition.js';
+import {decimals} from '../core/charts.js';
+const fmt=v=>formatNumber(v,{decimals:decimals(v)});
+function label(ctx,s,x,y,size,color,font,align='center',weight=700){ctx.font=cssFont(font,weight,size);ctx.textAlign=align;ctx.textBaseline='middle';ctx.fillStyle=color;ctx.fillText(s,x,y);}
+function arrow(ctx,a,b,color){const ang=Math.atan2(b[1]-a[1],b[0]-a[0]);ctx.strokeStyle=color;ctx.lineWidth=4;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(...a);ctx.lineTo(...b);for(const s of [-1,1]){ctx.moveTo(...b);ctx.lineTo(b[0]-14*Math.cos(ang+s*.45),b[1]-14*Math.sin(ang+s*.45));}ctx.stroke();}
+// Start of step j. With phrase anchors: that phrase's start. Otherwise: charts show their first state, then steps spread
+// over 70 % of the window; timeline/flow/compare reveal element j at j/n of 70 % of the window.
+function stepAt(x,j,n,phrases,start,initialFirst){if(x.phrases&&phrases?.[x.phrases[j]])return phrases[x.phrases[j]][0];return start+(x.end-start)*.7*(initialFirst?(j+1)/(n+1):j/Math.max(1,n));}
+export function drawChartItem(ctx,x,t,p,start,rv,phrases,font){
+ const b=x.box;roundedBox(ctx,b.x,b.y,b.w,b.h,14,t.fill+'f2',t.edge);
+ if(x.type==='timeline'){const T=x.timeline;ctx.strokeStyle=t.sub;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(T.x0,T.y);ctx.lineTo(T.x1,T.y);ctx.stroke();
+  T.events.forEach((e,j)=>{const k=smooth(clamp((p-stepAt(x,j,T.events.length,phrases,start,false))/rv));if(k<=0)return;ctx.save();ctx.globalAlpha*=k;ctx.fillStyle=t.mark;ctx.beginPath();ctx.arc(e.x,T.y,9,0,Math.PI*2);ctx.fill();
+   const d=e.above?-1:1,s=T.size;label(ctx,e.when,e.x,T.y+d*(18+s*.6),s,t.mark,font);label(ctx,e.label,e.x,T.y+d*(18+s*1.9),s,t.text,font,'center',400);ctx.restore();});return;}
+ if(x.type==='flow'){const F=x.flow;F.boxes.forEach((bx,j)=>{const k=smooth(clamp((p-stepAt(x,j,F.boxes.length,phrases,start,false))/rv));if(k<=0)return;ctx.save();ctx.globalAlpha*=k;
+   if(j){const a=F.boxes[j-1];arrow(ctx,F.row?[a.x+a.w+4,a.y+a.h/2]:[a.x+a.w/2,a.y+a.h+4],F.row?[bx.x-4,bx.y+bx.h/2]:[bx.x+bx.w/2,bx.y-4],t.mark);}
+   roundedBox(ctx,bx.x,bx.y,bx.w,bx.h,12,t.fill,t.mark);const s=F.size,top=bx.y+bx.h/2-bx.lines.length*s*1.22/2;bx.lines.forEach((l,i)=>label(ctx,l,bx.x+bx.w/2,top+s*1.22*(i+.5),s,t.text,font));ctx.restore();});return;}
+ if(x.type==='compare'){const C=x.compare;C.cards.forEach((c,j)=>{const k=smooth(clamp((p-stepAt(x,j,2,phrases,start,false))/rv));if(k<=0)return;ctx.save();ctx.globalAlpha*=k;roundedBox(ctx,c.x+6,c.y+6,c.w-12,c.h-12,12,t.fill,j?t.edge:t.mark);
+   const s=C.size;label(ctx,c.title,c.x+c.w/2,c.y+24+s*.7,s+4,t.mark,font);let y=c.y+24+(s+4)*1.4+6;
+   for(const rows of c.rows){ctx.fillStyle=t.mark;ctx.beginPath();ctx.arc(c.x+30,y+s*.62,s*.16,0,Math.PI*2);ctx.fill();rows.forEach(r=>{label(ctx,r,c.x+44,y+s*.62,s,t.text,font,'left',400);y+=s*1.25;});y+=8;}ctx.restore();});return;}
+ // chart
+ const L=x.chart,n=L.steps.length,cur=L.steps.reduce((c,_,j)=>p>=stepAt(x,j,n,phrases,start,true)?j:c,-1),k=cur>=0?smooth(clamp((p-stepAt(x,cur,n,phrases,start,true))/rv)):1;
+ const prev=L.states[Math.max(0,cur)],next=L.states[cur+1],grow=smooth(clamp((p-start)/rv)),hl=(cur>=0?L.steps[cur].highlight:null)??L.highlight;
+ const val=(s,i)=>{const a=prev[s][i],b2=next[s][i];if(cur<0||k>=1)return {v:b2,alpha:b2===null?0:1};if(a!==null&&b2!==null)return {v:a+(b2-a)*k,alpha:1};return b2===null?{v:a,alpha:1-k}:{v:b2,alpha:k};};
+ const dim=(s,i)=>hl&&((hl.series!==undefined&&hl.series!==s)||(hl.category!==undefined&&i!==undefined&&hl.category!==i))?.35:1;
+ if(L.legend)L.legend.forEach((g,s)=>{ctx.fillStyle=L.colours[s];ctx.fillRect(g.x,g.y-8,16,16);label(ctx,g.name,g.x+24,g.y,22,t.text,font,'left',400);});
+ if(L.kind==='pie'){const P=L.pie,st=next[0],pr=prev[0],vals=st.map((v,i)=>cur<0||k>=1?v:pr[i]+(v-pr[i])*k),tot=vals.reduce((a,v)=>a+v,0),pct=L.percents[cur+1];let a0=-Math.PI/2;
+  vals.forEach((v,i)=>{const a1=a0+Math.PI*2*v/tot*grow;ctx.save();ctx.globalAlpha*=dim(0,i);ctx.fillStyle=L.colours[i%L.colours.length]+(i>=L.colours.length?'99':'');ctx.beginPath();ctx.moveTo(P.cx,P.cy);ctx.arc(P.cx,P.cy,P.r,a0,a1);ctx.closePath();ctx.fill();ctx.strokeStyle=t.fill;ctx.lineWidth=3;ctx.stroke();ctx.restore();a0=a1;});
+  L.cats.forEach((c,i)=>{const y=P.legendY-(L.cats.length*P.rowH)/2+P.rowH*(i+.5);ctx.save();ctx.globalAlpha*=dim(0,i);ctx.fillStyle=L.colours[i%L.colours.length];ctx.fillRect(P.legendX,y-9,18,18);label(ctx,c+'  '+fmt(st[i])+(L.unit?' '+L.unit:'')+'  '+pct[i]+'%',P.legendX+28,y,P.size,t.text,font,'left',400);ctx.restore();});}
+ else{const A=L.area,yOf=v=>A.y+(L.Y[1]-v)*L.sy,zeroY=yOf(Math.min(Math.max(0,L.Y[0]),L.Y[1]));
+  if(L.yLabel||L.unit)label(ctx,(L.yLabel??'')+(L.unit?(L.yLabel?' ('+L.unit+')':L.unit):''),A.x,A.y-18,20,t.sub,font,'left');
+  ctx.lineWidth=1;for(const v of L.yTicks){const y=yOf(v);ctx.strokeStyle=t.sub+'40';ctx.beginPath();ctx.moveTo(A.x,y);ctx.lineTo(A.x+A.w,y);ctx.stroke();label(ctx,fmt(v),A.x-8,y,18,t.sub,font,'right',400);}
+  ctx.strokeStyle=t.sub;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(A.x,zeroY);ctx.lineTo(A.x+A.w,zeroY);ctx.stroke();
+  if(L.kind==='scatter'){const xOf=v=>A.x+(v-L.X[0])*L.sx;for(const v of L.xTicks)label(ctx,fmt(v),xOf(v),A.y+A.h+16,18,t.sub,font,'center',400);if(L.xLabel||L.xUnit)label(ctx,(L.xLabel??'')+(L.xUnit?' ('+L.xUnit+')':''),A.x+A.w,A.y+A.h+42,20,t.sub,font,'right');
+   L.series.forEach((s,si)=>s.points.forEach(([px,py],i)=>{ctx.save();ctx.globalAlpha*=grow*dim(si);ctx.fillStyle=L.colours[si];ctx.beginPath();ctx.arc(xOf(px),yOf(py),7,0,Math.PI*2);ctx.fill();ctx.restore();}));}
+  else{const sx=i=>A.x+L.slot*(i+.5);L.cats.forEach((c,i)=>{ctx.save();ctx.globalAlpha*=dim(undefined,i)===1||hl?.category===undefined?1:.6;label(ctx,c,sx(i),A.y+A.h+20,L.catSize,t.text,font,'center',400);ctx.restore();});
+   const ns=L.series.length,bw=L.slot*.8/ns;
+   L.series.forEach((s,si)=>{const col=L.colours[si];
+    if(L.kind==='bar')L.cats.forEach((_,i)=>{const {v,alpha}=val(si,i),x0=A.x+L.slot*i+L.slot*.1+bw*si;ctx.save();ctx.globalAlpha*=dim(si,i);
+     if(v===null||alpha===0){if(next[si][i]===null)label(ctx,'no data',x0+bw/2,zeroY-12,14,t.sub,font,'center',400);ctx.restore();return;}
+     ctx.globalAlpha*=alpha;const top=yOf(v*grow);ctx.fillStyle=col;ctx.fillRect(x0+2,Math.min(top,zeroY),bw-4,Math.abs(zeroY-top));
+     if(L.valueLabels&&grow>.95)label(ctx,fmt(next[si][i]??v),x0+bw/2,v>=0?top-12:top+14,L.valueSize,t.text,font);ctx.restore();});
+    else{ctx.save();ctx.globalAlpha*=dim(si);ctx.strokeStyle=col;ctx.fillStyle=col;ctx.lineWidth=4;ctx.lineJoin='round';let run=[];
+     const flush=()=>{if(run.length>1){if(L.kind==='area'){ctx.save();ctx.globalAlpha*=.25;ctx.beginPath();ctx.moveTo(run[0][0],zeroY);run.forEach(q=>ctx.lineTo(...q));ctx.lineTo(run.at(-1)[0],zeroY);ctx.closePath();ctx.fill();ctx.restore();}ctx.beginPath();run.forEach((q,i)=>i?ctx.lineTo(...q):ctx.moveTo(...q));ctx.stroke();}run=[];};
+     L.cats.forEach((_,i)=>{const {v,alpha}=val(si,i);if(v===null||alpha<.5){flush();return;}const q=[sx(i),yOf(v*grow)];run.push(q);ctx.beginPath();ctx.arc(...q,6,0,Math.PI*2);ctx.fill();if(L.valueLabels&&grow>.95)label(ctx,fmt(v),q[0],q[1]-16,L.valueSize,t.text,font);});flush();ctx.restore();}});
+   for(const a of L.annotations){const v=next[a.series][a.category];if(v===null)continue;const q=[A.x+L.slot*(a.category+.5),yOf(v)];ctx.save();ctx.globalAlpha*=grow;ctx.strokeStyle=t.mark;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(q[0],q[1]-8);ctx.lineTo(q[0],q[1]-34);ctx.stroke();label(ctx,a.text,Math.min(Math.max(q[0],A.x+60),A.x+A.w-60),q[1]-48,20,t.mark,font);ctx.restore();}}}
+ const note=cur>=0?L.steps[cur].note:null;if(note)label(ctx,note,b.x+b.w/2,L.noteY,22,t.text,font);
+}

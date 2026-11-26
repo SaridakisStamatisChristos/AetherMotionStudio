@@ -47,7 +47,9 @@ function row(texts,total){const need=texts.map(t=>textWidth(t,30)+2*TEXT.label.p
 // The offline planner's generic outline roles (src/director/offline.js `roles`).
 const GENERIC=new Set(['introduction','context','key idea','how it works','connections','implications','summary']);
 const keySentence=(narration,max)=>narration.flatMap(sentences).find(x=>!x.endsWith('?')&&x.length<=max&&x.split(/\s+/).length>=4)??null;
-const HINTS=[[/\b(?:chart|graph|percent|percentage|statistics|data)\b|%/i,'chart or data (DUAL-04)'],[/\b(?:equation|formula|theorem|proof|algebra)\b/i,'mathematics (DUAL-03)'],[/\b(?:photo|photograph|picture|painting|portrait|map)\b/i,'image (DUAL-05)']];
+// The planner never invents data or formulas. Charts (DUAL-04) and maths (DUAL-03) exist as authored visuals
+// (request.visuals); images arrive in DUAL-05. The note says which.
+const HINTS=[[/\b(?:chart|graph|percent|percentage|statistics|data)\b|%/i,'chart or data (DUAL-04)','AUTHORED_VISUAL_SUGGESTED','add a chart with your data in request.visuals'],[/\b(?:equation|formula|theorem|proof|algebra)\b/i,'mathematics (DUAL-03)','AUTHORED_VISUAL_SUGGESTED','add the formula in request.visuals'],[/\b(?:photo|photograph|picture|painting|portrait|map)\b/i,'image (DUAL-05)','VISUAL_AID_NOT_YET_SUPPORTED',null]];
 // DUAL-02: a number in the text, verbatim: "$3.5 billion tons of carbon" → {value:3.5, decimals:1, prefix:'$',
 // suffix:' billion', label:'tons of carbon'}. Scale words are shown, never multiplied out. Bare years (1000–2100
 // without a unit) are not counted.
@@ -93,7 +95,7 @@ export function planAids(q,ir){
  ir.shots.forEach((s,i)=>{
   const text=s.narration.join(' '),base=v2?{version:COMPOSE_V2,region:typo?'full':'upper',font:q.font??(typo?'inter':'arial'),...(q.theme?{theme:q.theme}:{})}:{version:COMPOSE_VERSION,region:'upper'};
   if(q.content==='explainer-v1'&&s.assets.some(a=>a.asset===EXPLAINER_FALLBACK)&&!/\bbooks?\b/i.test(q.topic+' '+text))diagnostics.push({code:'NO_MATCHING_OBJECT',shot:'shot-'+(i+1),used:EXPLAINER_FALLBACK});
-  for(const [re,what] of HINTS)if(re.test(text))diagnostics.push({code:'VISUAL_AID_NOT_YET_SUPPORTED',shot:'shot-'+(i+1),wanted:what,used:'card from the narration'});
+  for(const [re,what,code,advice] of HINTS)if(re.test(text))diagnostics.push({code,shot:'shot-'+(i+1),wanted:what,used:'card from the narration',...(advice?{advice}:{})});
   const generic=GENERIC.has(s.heading.toLowerCase()),heading=!generic&&s.heading.length<=TEXT.label.max?s.heading:null,top=heading?[{id:'heading',type:'label',box:[.1,0,.8,.3],text:heading,tone:'accent'}]:[];
   const tries=typo?typographyTries(q,ir,s,i,base,heading):[];
   if(i===0){const t=ir.title.length<=TEXT.title.max?ir.title:s.heading;tries.push(['title',{...base,items:[{id:'title',type:'title',box:[0,.08,1,.62],text:t}]}]);}
