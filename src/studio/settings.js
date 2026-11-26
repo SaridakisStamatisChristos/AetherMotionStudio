@@ -1,5 +1,5 @@
 // Owner choice 2026-11-26 ("implement 1-2-3 and 5", 2 = the Studio remembers the last settings). The "Make a film"
-// choices (cast, seconds, backend, profile, narrator voice, staging, Reels, speaker names) and the Simple/Advanced view
+// choices (cast, seconds, backend, profile, narrator voice, staging, Reels, speaker names, titles on top) and the Simple/Advanced view
 // are kept in this browser's localStorage, never on the server. Topic and script are not kept (every film is new).
 // Every value is checked when read back; anything unknown, damaged or from another version falls back to
 // STUDIO_DEFAULTS field by field, so a stored value can never produce a request the form could not. Pure, browser-safe.
@@ -15,7 +15,7 @@ export function checkedSettings(x,voices=[]){
  if(['polished','original'].includes(o.profile))s.profile=o.profile;
  if(Number.isSafeInteger(o.seconds)&&o.seconds>=6&&o.seconds<=300)s.seconds=o.seconds;
  if(typeof o.voice==='string'&&voices.includes(o.voice))s.voice=o.voice;
- for(const k of ['reels','speakerNames','staging','advanced'])if(isBool(o[k]))s[k]=o[k];
+ for(const k of ['reels','speakerNames','titles','staging','advanced'])if(isBool(o[k]))s[k]=o[k];
  return s;
 }
 // Read from storage text (JSON). Damaged text, a wrong shape or a newer/older version gives the defaults.
