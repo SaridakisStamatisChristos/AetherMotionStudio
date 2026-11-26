@@ -82,4 +82,13 @@ Owner picked "Simple 'Make a film' view" (the last step of the plan; the other o
   - Short dialogue scripts say "the film will be about N s". Short narrator scripts offer Use N s or Keep.
   - The page renders the choices under the word count: "Use" sets Seconds; "Keep" closes the choice for this script and length. The 120–140 range is unchanged.
   - Browser check (agent): the bees script at 60 s showed "Use 65 s / Keep 60 s". Clicking Use set 65 s and showed "Good length, calm pace".
+- **Finished-film panel and the owner guide** (owner: "write an md file with instructions on how to start the studio etc. then add the finished film with download button"):
+  - STUDIO_GUIDE.md (repository root, for the owner): start, make a film, get the finished film, stop, troubleshooting.
+  - A finished job shows **Your film is ready**: the film, **Download film (MP4)**, **Captions (.srt)** and one plain line (src/studio/finished.js `finishedSummary`: length, size, checks). The render log and all files fold away below; the page scrolls to the panel once.
+  - In the simple view the draft preview hides once the film is ready (`body.has-film`).
+  - Downloads are named after the film (studio-server.mjs `downloadName`): `<project id>.mp4/.srt/.vtt`, other files `<project id>-<file>`.
+  - Click tests (agent, headless Chrome, fresh Studios from the branch, vulkan):
+    - job studio-0e63bc8fcae50c78d99c: the panel appeared at 74 s with "65.0 s · 1080×1920 (vertical) · checks passed (13 review notes)", and the download returned the 49.6 MB MP4. That download was still named film.mp4, which led to `downloadName`.
+    - job studio-7529a4a8064bd4d9e7f8: Content-Disposition film-mwxgyee6.mp4 and film-mwxgyee6.srt; the draft preview hidden; the screenshot shows the panel only.
+  - The prompt box's step 3 now says extras are removed automatically.
 - Tests: tests/studio01.test.js "Studio UI refinement" (simple by default; every film-path field stays outside advanced wrappers; the editor parts are advanced; the first submit renders; narrator-only fields).
