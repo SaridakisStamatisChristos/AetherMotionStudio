@@ -21,7 +21,8 @@ Checkpoint: branch `feature/gen-15-step2` from **main 8e65805** (Fix A merged as
 | src/director/sets.js | `SETS_V2`, `PIECE_WORDS`, `topicSetFor`, `fitPiecesFor` (topic-v1 functions unchanged) |
 | src/director/index.js, schema.js | Dialogue defaults topic-v2 and crafted-v2; v1 and none selectable; negatives |
 | src/core/body.js, src/director/index.js | `bodyLanguage.alternateArms` (owner: "the characters move their left hand only" → "add it now"; old videos may stay as they are): beats alternate right/left; the dialogue default |
-| tests/gen15b.test.js (new, 7); tests/talk04.test.js (bodyLanguage now includes alternateArms); tests/gen12.test.js, tests/gen15.test.js | v1 behaviour is now pinned by name (the default moved to v2) |
+| src/visual/crafted.js `litBias`, src/visual/mesh.js | CPU eye fix in the crafted looks (owner: "the robot has one eye") |
+| tests/gen15b.test.js (new, 8); tests/talk04.test.js (bodyLanguage now includes alternateArms); tests/gen12.test.js, tests/gen15.test.js | v1 behaviour is now pinned by name (the default moved to v2) |
 | docs/LOOK.md, docs/SETS.md | Step 2 sections, topic table, evidence |
 
 ## Evidence (this checkpoint)
@@ -29,6 +30,11 @@ Checkpoint: branch `feature/gen-15-step2` from **main 8e65805** (Fix A merged as
 - Tests: 378 JS (0 fail, 1 skip); 56 Python OK.
 - Render `gen15b-sky-r1` (the sky script, 60 s), from clean 6dea830: CPU 6769a5630b61c789…, Three 07af439d90e3aa2f…. All PASS; CHECKS 0 (silence-v1 0, talk 77 %); QUALITY pass-with-findings, errors 0, warnings 0; matched hashes exact; glitch clean; −16.0 LUFS; vulkan. Render time: CPU 131.6 s (fixa-sky-r1 113.3 s, +16 % from the dressing), Three 55.0 s (56.0 s). Agent stills: the lab-set dressing shows behind the speakers, the pieces match the words, and both backends agree. **No human review.**
 - Render `gen15b-sky-r2` (alternating arms), from clean a189015: CPU b5698d35a2e5fdf4…, Three 5849347e0ae35f46…. All PASS; CHECKS 0; matched hashes exact; glitch clean; −16.0 LUFS. Beats per character alternate right and left (Student and Explorer 7 each). Agent frames 336 and 632: the Explorer lifts its left arm, then its right arm, mirrored. **No human review.**
+- **Robot eyes on CPU** (owner: "in some frames in cpu rendering the robot has one eye"):
+  - Cause: the CPU painter sorts flat polygons by average depth. On a turned head the far eye sat deeper than the centres of the head block and face panel and was painted over. This also affects the historical painter.
+  - Fix in the crafted looks only (`CRAFTED.litBias` 0.18 m): glowing surface details (eyes, lights, mouths) sort nearer. 0.08 was not enough: gen15b-sky-r3 frame 1620 showed only the bevel strips of one eye. 0.16 is the smallest value that keeps every eye front visible for head turns up to ±0.9 rad and side cameras.
+  - Three has a depth buffer and is unaffected. The historical painter is unchanged.
+  - Render `gen15b-sky-r4`, from clean 751174a: CPU 096dbab2fcefe1e8…, Three 5849347e0ae35f46… (byte-identical to r2). All PASS; CHECKS 0; glitch clean; −16.0 LUFS. Agent frames 585, 1620, 1665 and 1710 show both eyes (r2 showed one). Gesture frames show nothing glowing through the arms. **No human review.**
 - Preview stills (agent, Studio page drawing at 360×640, not native): the tech set (server racks, control panels, dark glassy screens) and the forest set (trees, fern, rocks) on both backends.
 - Known:
   - glass and metal are subtle at feed size;
@@ -36,7 +42,7 @@ Checkpoint: branch `feature/gen-15-step2` from **main 8e65805** (Fix A merged as
   - "How do bridges carry trucks?" still shows no set piece (GEN-06 singles; recorded in GEN-12).
 
 ## Pending owner decisions
-1. Watch gen15b-sky-r2 (out/gen15b-sky-r2-three-polished/film.mp4; r1 is the same without alternating arms) and compare it with fixa-sky-r1; then merge the GEN-15 step 2 PR (after its CI).
+1. Watch gen15b-sky-r4 (out/gen15b-sky-r4-cpu-polished/film.mp4 and the Three film; r4 = step 2 + alternating arms + the CPU eye fix) and compare it with fixa-sky-r1; then merge the GEN-15 step 2 PR (after its CI).
 2. Studio UI refinement (last): what to refine.
 3. GEN-16 policy. The Instagram test upload is deferred to the very end.
 

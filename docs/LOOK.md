@@ -49,4 +49,9 @@ Owner: "Accept the GEN-15 look" and "start gen-15 step 2". The look was accepted
   - Opt-in `bodyLanguage.alternateArms` (src/core/body.js): each character's beats alternate right, left, right … across the film, counted over earlier shots that also alternate. Left beats drive `leftArmPitch`.
   - On by default for Director dialogue films. Accepted films keep the right arm. It is a boolean and does not count as an "enable" key.
 - Render `gen15b-sky-r2` (alternating arms), from clean a189015: CPU b5698d35a2e5fdf4…, Three 5849347e0ae35f46…. All PASS; CHECKS 0; matched hashes exact; glitch clean; −16.0 LUFS. Beats per character alternate right and left (Student and Explorer 7 each). Agent frames 336 and 632: the Explorer lifts its left arm, then its right arm, mirrored. **No human review.**
+- **Robot eyes on CPU** (owner: "in some frames in cpu rendering the robot has one eye"):
+  - Cause: the CPU painter sorts flat polygons by average depth. On a turned head the far eye sat deeper than the centres of the head block and face panel and was painted over. This also affects the historical painter.
+  - Fix in the crafted looks only (`CRAFTED.litBias` 0.18 m): glowing surface details (eyes, lights, mouths) sort nearer. 0.08 was not enough: gen15b-sky-r3 frame 1620 showed only the bevel strips of one eye. 0.16 is the smallest value that keeps every eye front visible for head turns up to ±0.9 rad and side cameras.
+  - Three has a depth buffer and is unaffected. The historical painter is unchanged.
+  - Render `gen15b-sky-r4`, from clean 751174a: CPU 096dbab2fcefe1e8…, Three 5849347e0ae35f46… (byte-identical to r2). All PASS; CHECKS 0; glitch clean; −16.0 LUFS. Agent frames 585, 1620, 1665 and 1710 show both eyes (r2 showed one). Gesture frames show nothing glowing through the arms. **No human review.**
 - Tests: tests/gen15b.test.js.
