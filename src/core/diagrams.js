@@ -61,7 +61,7 @@ export function layoutPlot(x,b,p,{measure,phraseOk}){
    if(finite<n*.5)fail(q+'.expr','fewer than half of the samples are finite numbers');
    if(outside&&!x.clip)fail(q+'.expr',outside+' of '+(n+1)+' samples fall outside y; widen y or set clip:true (the clipped parts are then left out, not flattened)');
    out.runs=runs;out.label=lab;}
-  if(out.label){const m=measure(out.label,22);if(m>b.w-2*pad)fail(q+'.label','label wider than the plot');}
+  if(out.label){const m=measure(out.label,30);if(m>b.w-2*pad)fail(q+'.label','label wider than the plot');}
   return out;});
  const tx=x.axes===false?null:ticks(X[0],X[1]),ty=x.axes===false?null:ticks(Y[0],Y[1]);
  return {plot:{inner,map:null,X,Y,sx,sy,ox,oy,axes:x.axes!==false,grid:x.grid===true,ticks:{x:tx?.values.map(v=>({v,at:map([v,Y[0]])[0]}))??[],y:ty?.values.map(v=>({v,at:map([X[0],v])[1]}))??[],dx:tx?.step,dy:ty?.step},origin:map([Math.min(Math.max(0,X[0]),X[1]),Math.min(Math.max(0,Y[0]),Y[1])]),xLabel:lx,yLabel:ly,shapes,steps:maxStep+1,phrases:stepPhrases(x,maxStep+1,p,phraseOk)}};
@@ -87,7 +87,7 @@ export function layoutGraph(x,b,p,{measure,phraseOk}){
  const steps=x.steps.map((s,i)=>{const q=p+'.steps['+i+']';if(!s||typeof s!=='object')fail(q,'object required');only(s,['visit','edges','note'],q);
   const visit=(s.visit??[]).map((v,j)=>{if(!ids.has(v))fail(q+'.visit['+j+']','unknown node');return v;});
   const es=(s.edges??[]).map((e,j)=>{if(!Array.isArray(e)||e.length!==2||!seen.has(key(e[0],e[1])))fail(q+'.edges['+j+']','an existing edge required');return key(e[0],e[1]);});
-  const note=s.note!==undefined?text(s.note,q+'.note',48):null;if(note&&measure(note,22)>area.w)fail(q+'.note','note wider than the diagram');return {visit,edges:es,note};});
+  const note=s.note!==undefined?text(s.note,q+'.note',48):null;if(note&&measure(note,30)>area.w)fail(q+'.note','note wider than the diagram');return {visit,edges:es,note};});
  let algorithm=null;
  if(x.algorithm!==undefined){only(x.algorithm,['name','start'],p+'.algorithm');if(x.algorithm.name!=='bfs')fail(p+'.algorithm.name','bfs required');if(!ids.has(x.algorithm.start))fail(p+'.algorithm.start','a node ID required');
   const expected=bfsOrder(nodes.map(n=>n.id),edges,!!x.directed,x.algorithm.start),claimed=steps.flatMap(s=>s.visit);
