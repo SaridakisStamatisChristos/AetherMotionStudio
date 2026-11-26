@@ -1,4 +1,22 @@
-# One-time startup prompt (also reusable after context reset)
+# Session start prompt (current: Campaign A)
+
+Open Claude Code in the AetherMotionStudio repository root and type:
+
+```text
+fod continue
+```
+
+CLAUDE.md makes that a full bootstrap: Git state, AGENTS.md, CURRENT_STATE.md, HANDOFF.md, CAMPAIGN_A.md, then the HANDOFF "Next action" (the earliest unfinished Campaign A milestone). A longer form, if a session needs it:
+
+```text
+FOD RESUME. Continue Campaign A (docs/continuity/CAMPAIGN_A_DIRECTIVE.md, status in CAMPAIGN_A.md) from the earliest unfinished milestone, following CLAUDE.md, AGENTS.md, CURRENT_STATE.md and HANDOFF.md. Inspect existing implementations before building; reuse and extend, never rebuild. Preserve both backends, all accepted features and the production workflow. Real tests and local renders only; checkpoint state, handoff and the campaign tracker after each verified transition. Merge or tag only on my word. Do not begin Campaign B.
+```
+
+Before context runs out: "FOD CHECKPOINT".
+
+---
+
+## Original one-time prompt (LOCAL-01, 2026-11-24; historical)
 
 Open Claude Code in the cloned AetherMotionStudio repository root and paste:
 

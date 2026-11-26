@@ -1,4 +1,9 @@
 # Proposed forward-only local roadmap
+
+## Current: Campaign A — Universal Dual-Backend Finalization (owner-authorized 2026-11-26)
+DUAL-00 … DUAL-09 in order; requirements in [CAMPAIGN_A_DIRECTIVE.md](CAMPAIGN_A_DIRECTIVE.md), status in [CAMPAIGN_A.md](CAMPAIGN_A.md) (the single status authority; this file only indexes it). The earlier proposals below are history. The open GEN items (GEN-13 music, GEN-14 local model) and the "GEN-16 Three cinematic profile" are **not** scheduled; GEN-16 belongs to Campaign B, which waits for the tagged v1.2.
+
+## Earlier roadmap (history)
 This is an actionable proposed sequence for future work, not an approved requirement to implement every unit at once. Current user request takes precedence. Core-first; no new auth, SaaS or rewrite. Preserve AF01–AF09 and both backends. Each unit needs explicit scope, changed-file map, unit/adversarial tests, exact run evidence, reviewed samples where relevant, updated contracts/canon/handoff. Do not auto-launch full historical matrix.
 
 | Unit | Objective | Exit criteria |

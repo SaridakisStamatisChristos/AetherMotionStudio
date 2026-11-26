@@ -1,58 +1,45 @@
-# Forward-only handoff: session 2026-11-26 (owner units 1, 2, 3 and 5)
+# Forward-only handoff: Campaign A start (2026-11-26)
 
-Unit: owner "implement 1-2-3 and 5 leave 4 for next cause i am planning to do a lot in three.js … lets finish this dual cpu gpu functionality we have now"
-Checkpoint: **main 6c71875** (PRs #44–#48 merged; main CI 45837801078 passed). This record: `chore/record-units-1235` (docs only; it also carries the previous handoff commit of PR #43).
-Status: **MERGED** on the owner's word ("merge . after merging wait for my instructions"); each PR merged after its PR CI test job passed. **Waiting for the owner's new plan.**
-Date: 2026-11-26. The owner types only **"fod continue"**. Binding facts: CURRENT_STATE.md. Earlier handoffs: the git history of this file (previous: ef20c93 on `chore/handoff-session-end`, PR #43 still open).
+Unit: **Campaign A — Universal Dual-Backend Finalization**, owner-authorized; next milestone **DUAL-00** (baseline and capability audit).
+Checkpoint: **main 6c71875** (PRs #44–#48 merged; main CI 45837801078 passed). The continuity docs for this checkpoint are on `chore/record-units-1235` (PR #49, docs only). If #49 is still open, its content is the latest canon: ask the owner to merge it (the session permission check refused the agent's merge of this docs-only PR), or merge it on the owner's word.
+Status: Campaign A **PLANNED, DUAL-00 NEXT**. No product code changed since 6c71875.
+Date: 2026-11-26. The owner types only **"fod continue"**. Binding facts: CURRENT_STATE.md. Campaign status: CAMPAIGN_A.md. Earlier handoffs: the git history of this file.
 
-## Scope completed (all MERGED; branches 2, 3 and 6 rebased on main before their PRs)
-| Unit | Branch (head) | What the owner gets |
-|---|---|---|
-| 1 | PR #44 → 8c214f6 (CI 45835503444) | Progress bar under Production: step, %, frame N of M, about how long is left, time so far; orange with the step on failure. Fix: no empty "Your film is ready" panel while rendering |
-| 2 | PR #45 → e29dd99 | The Make-a-film choices and the view come back next time (this browser); **Reset choices** |
-| 3 | PR #46 → 18378bf | **Make Reels cover** under the finished film: cover picture, Download cover (JPG), the Reels check in plain words (OPEN-5 closed) |
-| 5 | PR #47 → 49f5354 | Dialogue films get a backdrop that fits the place (sets topic-v3 default): tree line on hills, lit street, lab, tech, office and home walls (OPEN-2, part 1) |
-| 6 | PR #48 → 6c71875 (main CI 45837801078 passed); the "Titles on top" choice is also remembered | Owner chose after seeing far-forest-r1: **no speaker roles in captions** and **no big titles** for new films (checkboxes "Speaker names in captions" and "Titles on top", both unticked by default). Matched clean-top-r2: all gates pass, 0 names in subtitles |
-| 4 | — | GEN-16 Three cinematic profile: **held for the owner's Three.js instructions** |
+## What the owner asked
+"Execute the attached AetherMotion Studio Dual-Backend Finalization Directive … Begin with DUAL-00. Inspect existing implementations before building anything. Reuse all completed capabilities and extend only what is missing. Preserve both backends, all accepted features and the existing production workflow. Execute the milestones sequentially with appropriate positive, negative, regression and actual local rendering tests. Maintain persistent handoffs so I can resume through 'fod continue'. Do not begin the GPU expansion campaign until the final dual-backend release has been verified, accepted and tagged." Also: "update the claude.md, agents.md and etc with fod architecture in mind so i can start from a new session" (done in this checkpoint).
 
-## Evidence (all observed in this session)
-- Bootstrap baseline at 8a74721: digests 3d33fbaee198acad / 14dec244d171dc56 / e3f80439a292f21a / 2cbf9916e65da935; `npm test` 385 tests, 0 fail, 1 skip; Python 59 OK.
-- Per branch, `npm test` 0 fail (1 Windows skip): progress 392, remember 391, reels 389, far-backdrop 389. Digests unchanged on far-backdrop.
-- Agent click tests (headless Chrome, fresh Studio from the branch, vulkan, forest script):
-  - progress: studio-fd9f43a10cb0e33f5109, studio-d4cf9677b63034074a3e;
-  - reels: studio-5e27ef2535fc0429316e (cover frame 189, first single, 1080×1920; the NOT_REELS_LAYOUT note shown);
-  - remember: browser storage check (set, reload, restored, reset, defaults).
-- Matched production **far-forest-r1** (examples/gen12-forest-script.request.json, Director defaults, source f59a19b, sourceDirty false, vulkan, concurrency 8; 254 s with speech prepared once):
-  - PASS on CPU and Three, and the matched comparison (shared hashes exact);
-  - CHECKS 0 on both (talk 0.79); QUALITY errors 0, warnings 0;
-  - frame_glitch clean on both; −16.0 LUFS on both;
-  - layers forest-set-2, look crafted-v2; nvidia-smi peak 64 % (167 samples).
-- Human review: **none this session.** The owner has not seen the new panel features or far-forest-r1. The agent reviewed stills and draft frames only.
-- Not run: CI (nothing pushed), the full native matrix, a GPU benchmark.
+## Previous session in one table (all MERGED)
+| PR | Unit |
+|---|---|
+| #44 | Studio render progress bar; global `[hidden]` fix |
+| #45 | Remembered Make-a-film choices; Reset choices |
+| #46 | Make Reels cover in the finished panel (OPEN-5 closed) |
+| #47 | Far backdrops that fit the place; sets topic-v3 is the dialogue default |
+| #48 | Titles none and no speaker names by default for new dialogue films; Studio checkboxes unticked |
 
-## Contract deltas (all additive)
-- Studio API: `POST /api/jobs/<id>/reels`; job files `reels-cover.jpg` and `reels-report.json` (served from `<job>/reels/`); `createStudio({reelsExport})` for tests. The job contract is otherwise unchanged.
-- scripts/reels-export.mjs: `exportReels(dir,{explicit,reuse,ffmpeg,extract})`, `ffmpegFrame`. CLI behaviour unchanged (refuses an existing export).
-- Layers `lab-set-2`, `tech-set-2`, `forest-set-2`, `office-set-2`, `street-set-2`, `home-set-2` (LAYERED_ENVIRONMENTS); `request.sets` adds `'topic-v3'`, the dialogue default.
-- Browser-only: localStorage `aethermotion.studio.settings.v1`.
+- Renders behind them: far-forest-r1 (source f59a19b) and clean-top-r2 (source 67f296d). All gates passed on both backends; agent stills only.
+- **The owner has not watched these films or tried the new Studio features.** No film has been rendered from main 6c71875 itself.
 
-## Open issues and risks
-- Rebases before the PRs: the conflicts in studio/app.js, studio/index.html, studio/style.css and docs/STUDIO.md were resolved by taking main and re-applying each unit's edits. Tests after each rebase: 398, 402, 406 and 412 JS tests, 0 fail. Headless-browser smoke tests of the merged page: choices restored, titles remembered, finished panel hidden, no console errors.
-- Not re-rendered after the merges: the films were rendered from the unit branches (far-forest-r1 at f59a19b, clean-top-r2 at 67f296d). A new film from main combines the new backgrounds with the clean top; that combination has not been rendered yet.
-- Human review: none this session. The owner has not watched far-forest-r1 or clean-top-r2, or tried the new Studio features.
-- OPEN-2 part 2 (glass and metal subtle at phone size); OPEN-1, OPEN-3, OPEN-4, OPEN-6 as before. OPEN-7: out/ grew by agent test jobs (studio-d99e3445…, studio-fd9f43a1…, studio-d4cf9677…, studio-5e27ef25…), far-forest-r1* and clean-top-r1*/r2*; ask before deleting anything.
-- PR #43 (previous handoff) is still open; its commit is included in this record branch.
+## Next action for "fod continue": DUAL-00
+Follow CAMPAIGN_A.md "DUAL-00 work plan" exactly. In short:
+1. Bootstrap and record: start commit, open PRs and tags, the environment, and the WebGL identity for swangle and vulkan.
+2. Run the tests and digests below; record skips.
+3. Write the capability audit as docs/CAMPAIGN_A_AUDIT.md: one row per directive capability, each marked existing / partial / missing / out of scope, with source paths. No product code in DUAL-00.
+4. Make one baseline matched film from the current main with a new `dual00-…` ID: a dialogue film through Director defaults, showing topic-v3 and titles none together. Use vulkan; record the gates.
+5. Fix the campaign fixture ID scheme and protocol file; frozen AF09 stays untouched.
+6. Branch `chore/dual-00-audit` from main. Open a PR; merge only on the owner's word. Run FOD CHECKPOINT. Then report the audit to the owner in a short table, with the owner decisions CAMPAIGN_A.md lists for later milestones, before starting DUAL-01.
 
-## Next action for "fod continue"
-1. Bootstrap (below). Expect main 6c71875 or later.
-2. **Wait for the owner's new plan** (owner: "after merging wait for my instructions. i have created a new plan that i will feed it to you"). Do not start anything unasked. GEN-16 (Three cinematic profile) is reserved for the owner's Three.js instructions.
+## Open issues carried into Campaign A
+- OPEN-1 calm word rate (2.15 words/s; refine with more films). OPEN-2 part 2: glass and metal subtle at phone size. OPEN-3: historical CPU one-eye, by the owner's choice. OPEN-4: "bridges" shows no set piece. OPEN-6: old draft PRs #2–#12; ask before closing. PR #43 (old handoff) is superseded by #49; ask before closing it.
+- OPEN-7 disk: out/ holds the agent test jobs and far-forest-r1*, clean-top-r1*/r2*; ask before deleting anything.
+- Not yet run: a GPU benchmark, the full native matrix, a clean-install test.
 
 ## Bootstrap for "fod continue"
-1. `git status --short --branch`, `git rev-parse HEAD`, `git fetch`, `gh pr list --state all --limit 6`. Expect main 8a74721 unless the owner merged something.
-2. Read AGENTS.md, CURRENT_STATE.md, this file and NEXT_UNITS.md.
+1. `git status --short --branch`, `git rev-parse HEAD`, `git fetch`, `gh pr list --state open`, `git tag --list`. Expect main 6c71875, or later if #49 was merged.
+2. Read CLAUDE.md, AGENTS.md, CURRENT_STATE.md, this file and CAMPAIGN_A.md (plus the directive section of the active milestone).
 3. Baseline:
-   - `node scripts/fod-digests.mjs . --exclude talk04,talk05,gen01,gen09,gen12,fixa` must print the digests above;
-   - `npm test` must give fail 0 (412 tests, 1 Windows skip);
+   - `node scripts/fod-digests.mjs . --exclude talk04,talk05,gen01,gen09,gen12,fixa` must print graph 3d33fbaee198acad, geometry 14dec244d171dc56, detail2 e3f80439a292f21a, director 7 requests 2cbf9916e65da935;
+   - `npm test` must give fail 0 (412 tests at 6c71875, 1 Windows skip);
    - `PYTHONPATH=scripts .venv/Scripts/python.exe -m unittest discover -s tests -p "test_*.py"` must give 59 OK.
 
 ## Owner working agreement and taste (binding; see also auto-memory)
