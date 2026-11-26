@@ -6,7 +6,12 @@ import {readFileSync,readdirSync} from 'node:fs';
 import {join} from 'node:path';
 import {parseExpr} from '../src/core/expr.js';
 import {validateTex,validateCompiled,checkArithmetic,mathKey} from '../src/core/math.js';
-import {compileTex,compileProjectMath} from '../src/director/math-compile.js';
+// MathJax is a package (npm install). Tests that compile TeX skip with this reason where it is not installed, e.g.
+// a CI job that installs no packages; everything else (parser, checks, plots, graphs, arrays, isolation) always runs.
+const MJ=await import('../src/director/math-compile.js').catch(e=>{if(e?.code==='ERR_MODULE_NOT_FOUND')return null;throw e;});
+const NEEDS_MJ={skip:MJ?false:'MathJax (@mathjax/src) is not installed here; run npm install to run this test'};
+const compileTex=(...a)=>MJ.compileTex(...a),compileProjectMath=(...a)=>MJ.compileProjectMath(...a);
+import {mathJaxAvailable,compileProjectMath as loaderCompile} from '../src/director/math-loader.js';
 import {layoutComposition,validateComposition} from '../src/core/composition.js';
 import {bfsOrder,tickStep} from '../src/core/diagrams.js';
 import {drawComposition} from '../src/visual/draw-composition.js';
@@ -24,7 +29,7 @@ test('expression parser: allowlisted grammar, bounded, never code',()=>{
  assert.throws(()=>parseExpr(Array(70).fill('1').join('+')),/more than 120 tokens/);
 });
 
-test('TeX allowlist, key binding and compiled-outline validation',()=>{
+test('TeX allowlist, key binding and compiled-outline validation',NEEDS_MJ,()=>{
  for(const t of [B+'frac{a}{b}',B+'begin{pmatrix}1&2'+B+B+'3&4'+B+'end{pmatrix}',B+'gcd(48,18)=6',B+'angle ABC=90^'+B+'circ'])assert.equal(validateTex(t),t);
  for(const [t,re] of [[B+'href{http://x}{y}',/href is not an allowed/],[B+'def'+B+'x{1}',/def is not/],[B+'require{html}',/require is not/],[B+'begin{array}{c}1'+B+'end{array}',/environment array/],['$x$',/without \$/],['{'.repeat(9)+'x'+'}'.repeat(9),/deeper than 8/],['x}',/unbalanced/],[B+'@',/is not allowed/],['x'.repeat(201),/1–200/],['a\u0007b',/control characters/]])assert.throws(()=>validateTex(t),re,t);
  assert.notEqual(mathKey('x'),mathKey('y'));
@@ -34,7 +39,7 @@ test('TeX allowlist, key binding and compiled-outline validation',()=>{
  for(const bad of [{...c,paths:[{d:'M0 0 url(javascript:alert(1))',m:[1,0,0,1,0,0]}]},{...c,paths:[{d:'M0 0',m:[1,0,0,1,0,NaN]}]},{...c,paths:Array(601).fill({d:'M0 0',m:[1,0,0,1,0,0]})},{...c,extra:1},{...c,box:[0,0,-1,1]}])assert.throws(()=>validateCompiled(bad,B+'frac{1}{2}','c'));
 });
 
-test('MathJax compilation: fractions, roots, matrices; errors and unsupported characters are explicit',()=>{
+test('MathJax compilation: fractions, roots, matrices; errors and unsupported characters are explicit',NEEDS_MJ,()=>{
  for(const t of [B+'frac{a}{b}='+B+'sqrt{x^2+y^2}',B+'begin{pmatrix}1&2'+B+B+'3&4'+B+'end{pmatrix}','a^2+b^2=c^2'])assert.ok(compileTex(t).paths.length>=3,t);
  assert.throws(()=>compileTex(B+'frac{1}{2'),/unbalanced/);
  assert.throws(()=>compileTex(B+'text{café}'),/outside the base maths font/);
@@ -43,7 +48,7 @@ test('MathJax compilation: fractions, roots, matrices; errors and unsupported ch
  assert.equal(compileProjectMath(q),q,'already compiled: unchanged');
 });
 
-test('arithmetic checks: true claims pass, false claims and unverifiable checked claims are rejected',()=>{
+test('arithmetic checks: true claims pass, false claims and unverifiable checked claims are rejected',NEEDS_MJ,()=>{
  for(const t of ['48 = 2 '+B+'cdot 18 + 12',B+'gcd(48,18) = 6','3^2+4^2=9+16=25',B+'frac{1}{2}+'+B+'frac{1}{3}='+B+'frac{5}{6}',B+'sqrt{25}=5'])assert.equal(checkArithmetic(t).status,'true',t);
  assert.equal(checkArithmetic('2+2=5').status,'false');assert.equal(checkArithmetic('a^2+b^2=c^2').status,'unverifiable');assert.equal(checkArithmetic('42').status,'unverifiable');
  validateComposition(V2([eq('48 = 2 '+B+'cdot 18 + 12',{check:'arithmetic'})]));
@@ -97,7 +102,7 @@ test('arrays: Euclid states are verified step by step',()=>{
  assert.throws(()=>validateComposition(A(Array(10).fill(123456),[{highlight:[0]}],{algorithm:undefined,box:[0,0,.3,.2]})),/do not fit|too small/);
 });
 
-test('drawing: array states and graph highlights follow the steps; equations draw their outlines',()=>{
+test('drawing: array states and graph highlights follow the steps; equations draw their outlines',NEEDS_MJ,()=>{
  const texts=[];let fills=0;const ctx=new Proxy({},{get:(o,k)=>k==='measureText'?(s=>({width:s.length*10})):k in o?o[k]:(...a)=>{if(k==='fillText')texts.push(a[0]);if(k==='fill')fills++;},set:(o,k,v)=>{o[k]=v;return true;}});
  const c=V2([{id:'a',type:'array',box:[.1,.6,.8,.36],values:[48,18],algorithm:{name:'euclid'},steps:[{values:[18,12]},{values:[12,6]},{values:[6,0]}],start:0,end:1,reveal:'none'}]);
  const at=p=>{texts.length=0;drawComposition(ctx,c,p,900);return [...texts];};
@@ -105,7 +110,7 @@ test('drawing: array states and graph highlights follow the steps; equations dra
  fills=0;drawComposition(ctx,V2([eq(B+'frac{1}{2}',{reveal:'none'})]),.5,300);assert.ok(fills>=3);
 });
 
-test('authored visuals: sentences define shots, cues become phrase indices, conflicts and unknown sentences are refused',async()=>{
+test('authored visuals: sentences define shots, cues become phrase indices, conflicts and unknown sentences are refused',NEEDS_MJ,async()=>{
  for(const n of ['pythagoras','euclid','bfs']){const r=await direct(fixture(n));
   assert.ok(r.project.shots.every(s=>s.assets.length===0&&s.composition.version==='compose-v2'));
   for(const s of r.project.shots)for(const x of s.composition.items)if(x.type==='equation')assert.equal(x.compiled.key,mathKey(x.tex));}
@@ -125,4 +130,12 @@ test('MathJax never reaches the browser bundles (Remotion entry and Studio page)
  const root=new URL('..',import.meta.url).pathname.replace(/^\/([A-Za-z]:)/,'$1'),seen=new Set(),hits=[];
  const walk=f=>{if(seen.has(f))return;seen.add(f);let s;try{s=readFileSync(f,'utf8');}catch{return;}for(const m of s.matchAll(/(?:import|from)\s*['"]([^'"]+)['"]/g)){let t=m[1];if(t.startsWith('/'))t=join(root,t);else if(t.startsWith('.'))t=join(f,'..',t);else{if(/mathjax/i.test(t))hits.push(f+' imports '+t);continue;}if(/math-compile/.test(t))hits.push(f+' imports '+t);walk(t);}};
  walk(join(root,'src','index.jsx'));walk(join(root,'studio','app.js'));assert.deepEqual(hits,[]);assert.ok(seen.size>40);
+});
+
+test('MathJax loader: projects without equations never need it; uncompiled equations without it fail explicitly',()=>{
+ const plain={version:2,shots:[{composition:V2([{id:'k',type:'kinetic',box:[0,0,1,.4],text:'Hi'}])}]};
+ assert.equal(loaderCompile(plain),plain);
+ const withEq={version:2,shots:[{composition:V2([{id:'e',type:'equation',box:[0,0,1,.3],tex:'x^2'}])}]};
+ if(mathJaxAvailable())assert.equal(loaderCompile(withEq).shots[0].composition.items[0].compiled.key,mathKey('x^2'));
+ else assert.throws(()=>loaderCompile(withEq),/not installed here; run npm install/);
 });

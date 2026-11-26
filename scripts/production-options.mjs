@@ -5,7 +5,7 @@ import {request,safeJson} from '../src/director/schema.js';
 import {digest} from '../src/director/catalog.js';
 import {validateProject} from '../src/core/timeline.js';
 import {defaultSpeech,productionId,matchedTargetFrames,projectProfile,normalizedProject} from '../src/studio/production.js';
-import {compileProjectMath} from '../src/director/math-compile.js';
+import {compileProjectMath} from '../src/director/math-loader.js';
 export function parseProduction(args,{read=p=>readFileSync(resolve(p),'utf8'),newId=()=> 'film-'+randomBytes(6).toString('hex')}={}){
  const o={},flags=new Set(['repair']),values=new Set(['request','topic','project','pair','script','script-file','seconds','backend','profile','voice','language','id','seed','import']);
  const queue=[...args];while(queue.length){

@@ -14,7 +14,7 @@ import {singleShots} from '../core/singles.js';
 import {reelsProject} from '../core/reels.js';
 import {planAids,holdComposition} from './aids.js';
 import {placeVisuals,mergeShotsForVisuals} from './visuals.js';
-import {compileProjectMath} from './math-compile.js';
+import {compileProjectMath} from './math-loader.js';
 import {dialogueSpeech,stageDialogueAssets,dialogueShotFields,pointAtSetPiece,DIALOGUE_CAMERAS} from './dialogue.js';
 export function foundryShortlist(query,registry){return searchRegistry({...query,limit:300},registry).filter(x=>x.kind!=='legacy').slice(0,Math.min(query.limit??8,20)).map(({id,kind,revision,category,pack,quality,backends,lods,motion})=>({id,kind,revision,category,pack,quality,backends,lods,motion}));}
 export const PROMPT_VERSION='director-ir-v1.1';
