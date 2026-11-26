@@ -14,7 +14,7 @@ Status words: PLANNED · ACTIVE · IMPLEMENTED · TESTED · RENDERED · OWNER-RE
 | DUAL-00 | Baseline and capability audit | **MERGED** (PR #50 → 8e42d99, owner: "merge it") | `chore/dual-00-audit` | [CAMPAIGN_A_AUDIT.md](../CAMPAIGN_A_AUDIT.md), [protocol v1](CAMPAIGN_A_PROTOCOL.md), "DUAL-00 baseline" below |
 | DUAL-01 | Character-free content and shared composition | **MERGED** (PR #51 → 14a1da6, owner: "merge pr51") | `feature/dual-01-composition` | [docs/COMPOSITION.md](../COMPOSITION.md), "DUAL-01 evidence" below |
 | DUAL-02 | Typography and motion graphics | **MERGED** (PR #52 → 17ebecd, owner: "Yes, merge #52") | `feature/dual-02-typography` | docs/COMPOSITION.md "Typography", "DUAL-02 evidence" below |
-| DUAL-03 | Mathematics, geometry and algorithm visualization | **TESTED + RENDERED** (PR open, not merged) | `feature/dual-03-maths` | [docs/MATHS.md](../MATHS.md), "DUAL-03 evidence" below |
+| DUAL-03 | Mathematics, geometry and algorithm visualization | **MERGED** (PR #53 → 1b1543b, owner: "merge and yes") | `feature/dual-03-maths` | [docs/MATHS.md](../MATHS.md), "DUAL-03 evidence" below |
 | DUAL-04 | Charts, diagrams and data storytelling | **NEXT** | — | — |
 | DUAL-05 | Local media and illustration integration | PLANNED | — | — |
 | DUAL-06 | Formats, themes and audio controls | PLANNED | — | — |
@@ -124,3 +124,5 @@ Status words: PLANNED · ACTIVE · IMPLEMENTED · TESTED · RENDERED · OWNER-RE
 - 2026-11-26: DUAL-02 MERGED (PR #52 → main 17ebecd, PR CI 45865359538 passed) on the owner's word.
 - 2026-11-26: DUAL-03 tested and rendered on `feature/dual-03-maths` (74e8b9c): pythagoras-r2, euclid-r2, bfs-r2 all gates PASS on both backends; PR open, not merged. DUAL-04 next.
 - 2026-11-26: PR #53 CI run 45876257187 FAILED (34 tests): the CI test job runs npm test without npm install and the Director imported MathJax at load time. Fixed in 86d1af4: src/director/math-loader.js loads MathJax only when installed and needed; films without equations never need it; uncompiled equations without it fail with "run npm install". CI run 45876723838 PASSED: 454 tests, 449 pass, 5 skipped (the MathJax tests, reason stated), 0 fail. Locally all 454 run (453 pass, 1 Windows symlink skip). Adding npm ci to the CI test job is a workflow change for the owner to decide.
+- 2026-11-26: DUAL-03 MERGED (PR #53 → main 1b1543b, CI 45876981549 passed) on the owner's word ("merge and yes").
+- 2026-11-26: Owner approved npm ci in the CI test job ("yes"). Branch `feature/ci-npm-ci`: CI run 45879511370 PASSED with 454 tests, 454 pass, 0 skipped, 0 fail (npm ci 8 s, 267 packages). PR open; merge on the owner's word.

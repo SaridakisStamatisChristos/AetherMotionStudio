@@ -2,7 +2,8 @@
 
 Unit: **Campaign A — Universal Dual-Backend Finalization**, owner-authorized.
 - DUAL-00, DUAL-01 and DUAL-02 are **MERGED**: PRs #50, #51 and #52, main now at 17ebecd. DUAL-02 was merged on "Yes, merge #52".
-- DUAL-03 (maths, geometry, algorithms): **TESTED + RENDERED** on `feature/dual-03-maths` (product code at 74e8b9c). PR open; **merge only on the owner's word after PR CI passes**.
+- DUAL-03 (maths, geometry, algorithms): **MERGED** (PR #53 → main 1b1543b, owner: "merge and yes").
+- CI test job `npm ci` step (owner: "yes"): on `feature/ci-npm-ci`, CI 45879511370 passed 454/454 with 0 skipped; PR open, **merge on the owner's word**.
 - **Next milestone: DUAL-04** (charts, diagrams and data storytelling).
 
 Date: 2026-11-26. The owner types only **"fod continue"**. Binding facts: CURRENT_STATE.md. Campaign status and evidence: CAMPAIGN_A.md ("DUAL-03 evidence", including the investigation of the DUAL-02 preflight block). Contracts: docs/COMPOSITION.md (compose-v1/v2, fonts), docs/MATHS.md (equations, plots, graphs, arrays, visuals). Scope map: docs/CAMPAIGN_A_AUDIT.md. Evidence rules: CAMPAIGN_A_PROTOCOL.md. Earlier handoffs: the git history of this file.
@@ -16,7 +17,7 @@ Date: 2026-11-26. The owner types only **"fod continue"**. Binding facts: CURREN
 | Films | dual03-pythagoras-r2, dual03-euclid-r2, dual03-bfs-r2 (74e8b9c): all PASS both backends, shared hashes exact, −16.0 LUFS; euclid-r2 byte-identical to r1. Agent stills only, **no owner review** |
 
 ## Next action for "fod continue"
-1. Bootstrap. If the DUAL-03 PR is open: report its CI result and ask the owner to merge (no merge without the word). Branch DUAL-04 from main only after DUAL-03 is merged (never stacked). After pulling main, run `npm install` (MathJax is a new dependency).
+1. Bootstrap. If the CI `npm ci` PR is still open, ask the owner to merge it. Pull main and run `npm install` (MathJax is a dependency since DUAL-03). Branch `feature/dual-04-…` from main.
 2. DUAL-04: read its directive section and the DUAL-04 rows of docs/CAMPAIGN_A_AUDIT.md. Extend compose-v2 (reuse `plot` axes/ticks and the visuals mechanism; do not build a second chart engine): bar, line, scatter, area/pie where appropriate; legends, units, annotations, highlights, data transitions with defined rules; flowcharts and directed diagrams (reuse `graph`), timelines, comparison cards. Validated local JSON data and optional bounded CSV import; reject NaN/Infinity, malformed series and invalid ranges; preserve units, signs and categorical order; document axis scaling and missing values; no automatic factual sourcing.
 3. Exit: a fresh data explainer on both backends using known fixture data, identical values and labels, no misleading clipping or scaling, adversarial numeric/layout tests.
 
@@ -29,7 +30,7 @@ Date: 2026-11-26. The owner types only **"fod continue"**. Binding facts: CURREN
 - Not yet run: a GPU benchmark, the full native matrix, a clean-install test.
 
 ## Bootstrap for "fod continue"
-1. `git status --short --branch`, `git rev-parse HEAD`, `git fetch`, `gh pr list --state open`, `git tag --list`. Expect main 17ebecd, or later if the DUAL-03 PR was merged.
+1. `git status --short --branch`, `git rev-parse HEAD`, `git fetch`, `gh pr list --state open`, `git tag --list`. Expect main 1b1543b, or later if the CI npm ci PR was merged.
 2. Read CLAUDE.md, AGENTS.md, CURRENT_STATE.md, this file and CAMPAIGN_A.md (plus the directive section of the active milestone).
 3. Baseline:
    - `node scripts/fod-digests.mjs . --exclude talk04,talk05,gen01,gen09,gen12,fixa,dual` must print graph 3d33fbaee198acad, geometry 14dec244d171dc56, detail2 e3f80439a292f21a, director 7 requests 2cbf9916e65da935;
