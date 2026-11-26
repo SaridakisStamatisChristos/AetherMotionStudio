@@ -1,7 +1,7 @@
-# Forward-only handoff: the plan's last step (Studio UI) done (owner types only "fod continue")
+# Forward-only handoff: the owner's plan is complete (owner types only "fod continue")
 
 Date: 2026-11-26. Keep reports short and plain.
-Checkpoint: branch `feature/studio-ui` from **main 0e0e0f1** (GEN-15 step 2 merged as PR #39). Earlier handoffs: git history of this file. Binding facts are in CURRENT_STATE.md.
+Checkpoint: **main 4487805** (PR #40 merged; main CI 45809562848 passed). This record is on `chore/record-studio-ui` (docs only; it gets no CI, by design). Earlier handoffs: git history of this file. Binding facts are in CURRENT_STATE.md.
 
 ## Plan being executed (owner, 2026-11-26)
 | # | Step | State |
@@ -9,8 +9,8 @@ Checkpoint: branch `feature/studio-ui` from **main 0e0e0f1** (GEN-15 step 2 merg
 | 1 | Fix A: film length follows the speech; silence-v1 | MERGED (PR #38) |
 | 2 | GEN-15 look accepted; cleanup step 2 | DONE |
 | 3 | GEN-15 step 2 (sets, pieces, glass and metal, alternating arms, CPU eye fix) | MERGED (PR #39) |
-| 4 | Studio UI refinement: simple "Make a film" view | IMPLEMENTED + TESTED on `feature/studio-ui`. PR pending. **Merge only on the owner's word, after PR CI.** |
-After step 4 the plan is complete. Nothing else is authorized.
+| 4 | Studio UI refinement: simple view, auto-clean, length choices, speaker-names checkbox | MERGED (PR #40 → 4487805, "merge 40") |
+**The plan is complete. Nothing else is authorized.**
 
 ## Studio UI refinement: what changed
 | File | Change |
@@ -58,7 +58,7 @@ After step 4 the plan is complete. Nothing else is authorized.
 - The Studio started by the launcher earlier in this session (port 4173) runs older server code. The owner should restart it (close its window, double-click the launcher) to get Fix A and GEN-15 step 2 in Studio films.
 
 ## Pending owner decisions
-1. Try the simple view (restart the Studio first), then merge the Studio UI PR (after its CI).
+1. Merge this docs record (chore/record-studio-ui).
 3. Later options (not scheduled): a render progress bar, a finished-film panel, remembered settings; GEN-16 policy; the Instagram test upload (deferred to the very end).
 
 ## Owner working agreement and taste (binding; see also auto-memory)
@@ -102,6 +102,5 @@ After step 4 the plan is complete. Nothing else is authorized.
   - `node scripts/fod-digests.mjs . --exclude talk04,talk05,gen01,gen09,gen12,fixa` must print the digests above;
   - `npm test` fail 0 (383 tests, 1 Windows skip);
   - `PYTHONPATH=scripts .venv/Scripts/python.exe -m unittest discover -s tests -p "test_*.py"` 59 OK.
-- If the Studio UI PR is open: report its CI and ask the owner to merge.
 - After that the owner's plan is complete. Ask what comes next; offer the later options above. Do not start anything unasked.
 - Never merge without the owner's word and a passing PR CI. Never stack branches.

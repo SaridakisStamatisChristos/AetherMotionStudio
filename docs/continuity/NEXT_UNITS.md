@@ -152,7 +152,7 @@ Status 2026-11-25 (owner: "lets do it seriallized. Gen10 and onwards"):
   1. Fix A (film length follows speech, plus silence-v1): MERGED (PR #38, 8e65805).
   2. GEN-15 look ACCEPTED; render cleanup step 2 DONE.
   3. GEN-15 step 2 (dressed sets, word-matched pieces, glass and metal parts, alternating gesture arms, CPU eye fix): MERGED (PR #39, 0e0e0f1).
-  4. **Last: Studio UI refinement** (owner chose the simple "Make a film" view): IMPLEMENTED + TESTED on `feature/studio-ui`, PR pending. Offered but not chosen: render progress bar, finished-film panel, remembered settings. (owner: "ui refinement can be done later"; "will be the last").
+  4. **Last: Studio UI refinement**: MERGED (PR #40, 4487805). It covers the simple "Make a film" view, auto-clean, length choices and the speaker-names checkbox. **The plan is complete.** Offered but not chosen: render progress bar, finished-film panel, remembered settings. (owner: "ui refinement can be done later"; "will be the last").
 - GEN-15 step 1 (crafted look) MERGED (22ffec4).
 - GEN-13 needs music sources and licences, and GEN-14 needs a local model; both are owner decisions.
 - PR #29 revised: Reels captions low at normal size; GEN-05b readable captions.
