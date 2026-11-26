@@ -1,4 +1,5 @@
 import {localArm} from './catalog-rig.js';
+import {partRole} from './crafted.js';
 import {RECIPES} from './catalog-data.js';
 import {add,sub,norm,cross,rx,ry,rz} from './vectors.js';
 const PALETTES={teal:['#309b9b','#29475b','#b6fff2'],amber:['#cf943d','#67452d','#ffe1a0'],white:['#d9e0df','#677f8d','#8ee6f4'],orange:['#c16b3b','#4b3840','#ffe19b'],slate:['#62758b','#253344','#83d7ed'],lime:['#7eaa5a','#3c6342','#d5f49b'],blue:['#486ea9','#253854','#8ce9ff'],violet:['#9373bc','#433450','#d5bcff'],wood:['#b17c4b','#634334','#e8c18e'],red:['#bc544e','#60343f','#ffbd9d'],pine:['#4c8968','#355347','#a9d49b']};
@@ -17,7 +18,9 @@ export function validateAssetParams(id,params){
  else if(['width','height','depth'].includes(k)){if(typeof v!=='number'||!Number.isFinite(v)||v<.7||v>1.3)throw Error('invalid asset dimension: '+k);}else throw Error('unknown asset param: '+k);}
  return params;
 }
-function primitive(box,pose,palette,params={}){
+// GEN-15 step 2: every part also passes its material role (crafted.js partRole) as an extra argument; renderers
+// without crafted-v2 ignore it, so legacy and crafted-v1 drawing stay identical.
+function primitive(box,pose,palette,params={},family=null){
  const {origin=[0,0,0],yaw=0,scale=1}=pose,dimensions=[params.width??1,params.height??1,params.depth??1];
  const tf=p=>add(ry(p.map((v,i)=>v*scale*dimensions[i]),yaw),origin);
  const [primary,secondary,accent]=palette;
@@ -25,19 +28,19 @@ function primitive(box,pose,palette,params={}){
  // bias: CPU painter-sort depth bias only (Three ignores it); 0 for every legacy box.
  const b=(x,y,z,w,h,d,c=0,angle=0,axis='z',lit=false,bias=0)=>{
   const local=p=>tf(add((axis==='x'?rx:axis==='y'?ry:rz)(p,angle),[x,y,z]));
-  box([0,0,0],[w,h,d],col[c],local,lit,bias);
+  box([0,0,0],[w,h,d],col[c],local,lit,bias,partRole(family,c,[w,h,d],lit));
  };
  const rod=(a,c,width,color=1,depth=width,lit=false)=>{
   const dx=c[0]-a[0],dy=c[1]-a[1],dz=c[2]-a[2],len=Math.hypot(dx,dy,dz);
   if(len<1e-7)return;
   const u=[dx/len,dy/len,dz/len],ref=Math.abs(u[1])>.95?[1,0,0]:[0,1,0],cross=(x,y)=>[x[1]*y[2]-x[2]*y[1],x[2]*y[0]-x[0]*y[2],x[0]*y[1]-x[1]*y[0]],norm=v=>{const l=Math.hypot(...v);return v.map(x=>x/l)},right=norm(cross(ref,u)),forward=cross(right,u),mid=a.map((x,i)=>(x+c[i])/2);
-  box([0,0,0],[width,len,depth],col[color],p=>tf(mid.map((v,i)=>v+right[i]*p[0]+u[i]*p[1]+forward[i]*p[2])),lit,0);
+  box([0,0,0],[width,len,depth],col[color],p=>tf(mid.map((v,i)=>v+right[i]*p[0]+u[i]*p[1]+forward[i]*p[2])),lit,0,partRole(family,color,[width,len,depth],lit));
  };
  const ring=(x,y,z,r,w,d,n=12,c=0,axis='z',phase=0)=>{for(let i=0;i<n;i++){const a=phase+(i+.5)*TAU/n,k=2*r*Math.tan(Math.PI/n)*1.03;if(axis==='y')b(x+r*Math.cos(a),y,z+r*Math.sin(a),k,d,w,c,-a-Math.PI/2,'y');else b(x+r*Math.cos(a),y+r*Math.sin(a),z,w,k,d,c,a,'z');}};
  // TALK-03 opt-in: the same builders with a local-space pre-transform (used to rotate the head about the neck).
  const headed=pre=>({
-  b:(x,y,z,w,h,d,c=0,angle=0,axis='z',lit=false,bias=0)=>box([0,0,0],[w,h,d],col[c],p=>tf(pre(add((axis==='x'?rx:axis==='y'?ry:rz)(p,angle),[x,y,z]))),lit,bias),
-  rod:(a,c,width,color=1,depth=width,lit=false)=>{const dx=c[0]-a[0],dy=c[1]-a[1],dz=c[2]-a[2],len=Math.hypot(dx,dy,dz);if(len<1e-7)return;const u=[dx/len,dy/len,dz/len],ref=Math.abs(u[1])>.95?[1,0,0]:[0,1,0],right=norm(cross(ref,u)),forward=cross(right,u),mid=a.map((v,i)=>(v+c[i])/2);box([0,0,0],[width,len,depth],col[color],p=>tf(pre(mid.map((v,i)=>v+right[i]*p[0]+u[i]*p[1]+forward[i]*p[2]))),lit,0);}
+  b:(x,y,z,w,h,d,c=0,angle=0,axis='z',lit=false,bias=0)=>box([0,0,0],[w,h,d],col[c],p=>tf(pre(add((axis==='x'?rx:axis==='y'?ry:rz)(p,angle),[x,y,z]))),lit,bias,partRole(family,c,[w,h,d],lit)),
+  rod:(a,c,width,color=1,depth=width,lit=false)=>{const dx=c[0]-a[0],dy=c[1]-a[1],dz=c[2]-a[2],len=Math.hypot(dx,dy,dz);if(len<1e-7)return;const u=[dx/len,dy/len,dz/len],ref=Math.abs(u[1])>.95?[1,0,0]:[0,1,0],right=norm(cross(ref,u)),forward=cross(right,u),mid=a.map((v,i)=>(v+c[i])/2);box([0,0,0],[width,len,depth],col[color],p=>tf(pre(mid.map((v,i)=>v+right[i]*p[0]+u[i]*p[1]+forward[i]*p[2]))),lit,0,partRole(family,color,[width,len,depth],lit));}
  });
  return {b,rod,ring,headed};
 }
@@ -218,6 +221,6 @@ const F={
 };
 export function emitRecipe(id,box,pose){
  const q=recipes[id];if(!Object.hasOwn(recipes,id))throw Error('Unknown recipe '+id);
- const params=pose.params??{};F[q.family](primitive(box,pose,PALETTES[q.palette],params),q.args,pose);
+ const params=pose.params??{};F[q.family](primitive(box,pose,PALETTES[q.palette],params,q.family),q.args,pose);
 }
 export const CATALOG_ASSETS=Object.freeze(Object.fromEntries(RECIPE_IDS.map(id=>[id,(box,pose)=>emitRecipe(id,box,pose)])));

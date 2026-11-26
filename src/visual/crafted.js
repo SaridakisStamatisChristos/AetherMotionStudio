@@ -14,7 +14,31 @@ export const CRAFTED=Object.freeze({version:'crafted-v1',bevel:Object.freeze({ma
  // palette lift and fully matte materials washed it out. Three uses a lighter palette touch, a little less ambient
  // light and exposure, and slightly less matte materials. CPU is unchanged.
  three:Object.freeze({palette:Object.freeze({saturation:.94,lift:.015,warm:.012}),ambient:.78,exposure:.93,roughness:.56,roughnessDetail:.08,metalness:.12})});
-export const LOOKS=Object.freeze(['crafted-v1']);
+export const LOOKS=Object.freeze(['crafted-v1','crafted-v2']);
+export const isCrafted=look=>look==='crafted-v1'||look==='crafted-v2';
+// GEN-15 step 2 (owner: "start gen-15 step 2"): 'crafted-v2' = crafted-v1 plus part materials. Recipes have no part
+// names, so a part's role comes from its recipe family, colour slot and shape (partRole):
+// - glass: a thin dark slab (slot 4, thinnest side <= 6 cm, the other two >= 8 cm) on a device, robot or vehicle:
+//   screens, visors, windows. Drawn darker and bluer with a view-dependent sheen (CPU) / low roughness (Three).
+// - metal: a thin secondary-colour part (slot 1, thinnest side <= 8 cm) on a machine family: trims, bezels, rails,
+//   rods. Drawn cooler and lighter with a sharp highlight (CPU) / metalness (Three).
+// Glowing parts, people, animals and plants never get a role. crafted-v1 ignores roles (unchanged).
+const MACHINES=new Set(['robot','screen','rack','antenna','dish','panel','turbine','board','device','camera','frame','arm','motor','vehicle','aircraft','boat','instrument','case','lamp','dial']);
+export const MATERIALS=Object.freeze({version:'crafted-v2',
+ glass:Object.freeze({tint:'#16324a',mix:.4,sheen:.5,power:9,minSide:.08,maxThin:.06}),
+ metal:Object.freeze({tint:'#a9b6c2',mix:.32,spec:.42,power:14,maxThin:.08}),
+ three:Object.freeze({glass:Object.freeze({roughness:.12,metalness:.18}),metal:Object.freeze({roughness:.3,metalness:.55})})});
+export function partRole(family,slot,size,lit){
+ if(lit||!MACHINES.has(family)||!Array.isArray(size)||size.length!==3)return null;
+ const s=size.map(Math.abs).sort((a,b)=>a-b);
+ if(slot===4&&s[0]<=MATERIALS.glass.maxThin&&s[1]>=MATERIALS.glass.minSide)return 'glass';
+ if(slot===1&&s[0]<=MATERIALS.metal.maxThin)return 'metal';
+ return null;
+}
+// Mix two hex colours (t = share of b), cached.
+const mixes=new Map();
+export function mixColor(a,b,t){const k=a+b+t;if(mixes.has(k))return mixes.get(k);const p=h=>{const n=parseInt(h.slice(1),16);return [n>>16&255,n>>8&255,n&255];};
+ const x=p(a),y=p(b),h='#'+x.map((v,i)=>Math.round(v+(y[i]-v)*t).toString(16).padStart(2,'0')).join('');mixes.set(k,h);return h;}
 
 export function bevelRadius(size){const m=Math.min(...size.map(Math.abs));return m<=0?0:Math.min(CRAFTED.bevel.max,m*CRAFTED.bevel.share);}
 const cross=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]],sub=(a,b)=>a.map((v,i)=>v-b[i]),dot=(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2];

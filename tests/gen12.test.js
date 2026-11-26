@@ -42,7 +42,8 @@ test('fitPieces: category pieces without repeats; fitting originals kept; everyd
  const nq={topic:'Why?'},ns=topicSet(nq,{shots:[]});assert.equal(fitPieces(nq,{shots:[shot('chair')]},ns).changes.length,0);
 });
 test('Director: dialogue films get one topic location and fitting pieces; sets none and legacy requests unchanged; negatives',async()=>{
- const forest=await film('How do forests clean the air?');
+ // GEN-15 step 2 made topic-v2 the dialogue default (tests/gen15b.test.js); topic-v1 is pinned here by name.
+ const forest=await film('How do forests clean the air?',{sets:'topic-v1'});
  const env=new Set(forest.shots.map(s=>s.environment+'/'+s.layers));assert.deepEqual([...env],['amber/solar-field']);
  const ps=pieces(forest);assert.ok(ps.length>=3&&ps.every(a=>cat(a)==='nature'));assert.equal(new Set(ps).size,ps.length);
  const off=await film('How do forests clean the air?',{sets:'none'});assert.ok(off.shots.every(s=>s.layers===undefined));assert.ok(new Set(off.shots.map(s=>s.environment)).size>1,'Director alternation without sets');

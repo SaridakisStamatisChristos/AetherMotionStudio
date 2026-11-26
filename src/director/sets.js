@@ -82,3 +82,101 @@ export function fitPieces(q,ir,set){
  });
  return {ir:{...ir,shots},changes};
 }
+
+// GEN-15 step 2 'topic-v2' (default for dialogue films; 'topic-v1' stays selectable and unchanged). Owner saw a DNA
+// helix in a film about the sky: topic-v1 kept any piece of the right category even when no word matched.
+// - each category gets a dressed set (src/core/cinematography.js DRESSED_SETS) instead of the plain block backdrop;
+// - pieces also match on topic words (PIECE_WORDS), so "light, colour, sky" finds the prism or the telescope;
+// - a piece is kept only when its words match the topic or the line; otherwise the best matching unused piece from
+//   the category (or any catalog piece whose words match) is used; with no match at all, topic-v1 rules apply;
+// - extra category words (WORDS_V2) for common explainer topics (light, sky, weather, money, food …).
+export const SETS_V2=Object.freeze({version:'topic-v2',
+ layers:Object.freeze({technology:'tech-set',science:'lab-set',architecture:'street-set',business:'office-set',nature:'forest-set',vehicles:'street-set',everyday:'home-set'}),
+ words:Object.freeze({
+  science:'light lights sunlight colour colours color colors rainbow spectrum wave waves sky skies sun moon gravity magnet magnets electricity sound heat temperature',
+  nature:'weather cloud clouds wind storm storms snow ice volcano volcanoes earthquake bee bees insect insects bird birds fish seed seeds',
+  business:'pay payment payments coin coins cash save saving savings invest investing loan loans tax taxes job jobs work',
+  everyday:'food cook cooking sleep habit habits clean cleaning'
+ })
+});
+export const PIECE_WORDS=Object.freeze({
+ 'prism':'light lights sunlight colour colours color colors rainbow spectrum white blue violet red orange wave waves sky',
+ 'telescope':'sky skies star stars space night moon planet planets galaxy',
+ 'planet-system':'sun planet planets solar orbit orbits space sky moon earth',
+ 'rocket':'space launch fly flight moon',
+ 'space-station':'space astronaut orbit',
+ 'molecule-dioxide':'carbon dioxide air gas breathe',
+ 'molecule-water':'water rain cloud clouds vapour steam ice',
+ 'molecule-methane':'gas methane',
+ 'atom-model':'atom atoms nitrogen oxygen particle particles matter',
+ 'microscope':'cell cells tiny small bacteria germ germs microbe microbes',
+ 'magnet':'magnet magnets magnetic',
+ 'pendulum':'gravity swing time',
+ 'cell-model':'cell cells body',
+ 'virus-model':'virus viruses sick illness vaccine vaccines',
+ 'mountain':'volcano volcanoes lava rock rocks mountain mountains',
+ 'pine-tree':'forest forests tree trees wood woods',
+ 'oak-tree':'forest forests tree trees leaf leaves',
+ 'flower':'bee bees pollen flower flowers garden',
+ 'waterfall':'water river rivers',
+ 'snow-mountain':'snow ice cold winter',
+ 'island':'ocean oceans sea seas',
+ 'coral-reef':'ocean oceans sea seas fish reef',
+ 'router':'internet wifi message messages network',
+ 'server-rack':'cloud data internet website websites server servers',
+ 'smartphone':'phone phones call app apps message',
+ 'laptop':'computer computers code coding program',
+ 'satellite-dish':'signal signals satellite satellites',
+ 'solar-panel':'sun solar energy electricity',
+ 'wind-turbine':'wind energy electricity power',
+ 'battery-stack':'battery batteries energy charge',
+ 'coin-stack':'money coin coins save saving savings',
+ 'banknote-stack':'money cash pay',
+ 'bank-building':'bank banks loan loans',
+ 'growth-arrow':'growth grow profit invest investing',
+ 'balance-scale':'balance fair law weight'
+});
+const v2Index=()=>{const idx=new Map(wordIndex());for(const [c,w] of Object.entries(SETS_V2.words))for(const t of w.split(' '))if(!idx.has(t))idx.set(t,c);return idx;};
+// topicSet for a sets version ('topic-v1' unchanged; 'topic-v2' adds WORDS_V2 and the dressed layers).
+export function topicSetFor(version,q,ir){
+ if(version!=='topic-v2')return topicSet(q,ir);
+ const idx=v2Index(),score=Object.fromEntries(Object.keys(SETS.categories).map(c=>[c,0]));
+ for(const t of tokens(q.topic)){const c=idx.get(t);if(c)score[c]+=SETS.topicWeight;}
+ for(const sh of ir.shots)for(const line of sh.narration)for(const t of tokens(line)){const c=idx.get(t);if(c)score[c]++;}
+ let best=null;for(const [c,v] of Object.entries(score))if(v>0&&(best===null||v>score[best]))best=c;
+ return {version:SETS_V2.version,category:best,environment:best?SETS.categories[best].environment:null,layers:best?SETS_V2.layers[best]:null,scores:score};
+}
+const pieceWords=id=>new Set([...id.split('-'),...(PIECE_WORDS[id]?.split(' ')??[])]);
+// A piece matches a shot when its curated words (PIECE_WORDS) meet the topic (×3) or the line (×2). Its ID words count
+// too, but a piece from another category must be named in full ("passenger train", not just "train the body").
+function pieceRank(id,inCategory,words,topic){
+ const parts=id.split('-'),named=parts.every(t=>words.has(t)||topic.has(t));
+ let n=0;for(const t of PIECE_WORDS[id]?.split(' ')??[])n+=(words.has(t)?2:0)+(topic.has(t)?3:0);
+ if(inCategory||named)for(const t of parts)n+=(words.has(t)?2:0)+(topic.has(t)?3:0);
+ return n;
+}
+export function fitPiecesFor(version,q,ir,set){
+ if(version!=='topic-v2')return fitPieces(q,ir,set);
+ if(!set.category)return {ir,changes:[]};
+ const pieces=OBJECT_CATALOG.filter(pieceOk),topic=new Set(tokens(q.topic)),used=new Set(),changes=[];
+ const shots=ir.shots.map((s,i)=>{
+  const a=s.assets?.[0];if(!a)return s;
+  const words=new Set([...tokens(s.heading),...s.narration.flatMap(tokens)]);
+  const rank=id=>pieceRank(id,categoryOf(id)===set.category,words,topic);
+  let pick=null;
+  if(rank(a.asset)>0&&!used.has(a.asset))pick=a.asset;
+  else{
+   // the category's pieces first, then other matching pieces; ties keep catalog order
+   const ranked=pieces.filter(o=>!used.has(o.id)).map((o,k)=>[o.id,rank(o.id),o.category===set.category?0:1,k]).filter(x=>x[1]>0).sort((x,y)=>y[1]-x[1]||x[2]-y[2]||x[3]-y[3]);
+   if(ranked.length)pick=ranked[0][0];
+   // no matching words anywhere: topic-v1 rules (keep a fitting unused piece; else the first unused category piece;
+   // the broad everyday category never swaps in an unrelated object)
+   else if(categoryOf(a.asset)===set.category&&!used.has(a.asset))pick=a.asset;
+   else if(set.category!=='everyday')pick=pieces.find(o=>o.category===set.category&&!used.has(o.id))?.id??null;
+  }
+  if(!pick){used.add(a.asset);return s;}
+  used.add(pick);if(pick===a.asset)return s;changes.push({shot:i,from:a.asset,to:pick});
+  return {...s,assets:[{asset:pick},...s.assets.slice(1)]};
+ });
+ return {ir:{...ir,shots},changes};
+}

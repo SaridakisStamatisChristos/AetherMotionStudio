@@ -41,7 +41,8 @@ test('CPU mesh: legacy faces unchanged without the look; crafted adds bevel face
  assert.ok(c.every(f=>f.p.length===4||f.p.length===3));
 });
 test('shot look contract; state carries it; Director default for dialogue, none and legacy unchanged; negatives',async()=>{
- const q=read('gen12-forest.request'),p=(await direct({...q,speech:defaultSpeech(q.seconds)})).project;
+ // GEN-15 step 2 made crafted-v2 the dialogue default (tests/gen15b.test.js); crafted-v1 is pinned here by name.
+ const q=read('gen12-forest.request'),p=(await direct({...q,speech:defaultSpeech(q.seconds),look:'crafted-v1'})).project;
  assert.ok(p.shots.every(s=>s.look==='crafted-v1'));validateProject(p);assert.equal(evaluateGraph(p.shots[0],.5).look,'crafted-v1');
  const off=(await direct({...q,speech:defaultSpeech(q.seconds),look:'none'})).project;assert.ok(off.shots.every(s=>s.look===undefined));
  assert.equal(evaluateGraph(off.shots[0],.5).look,undefined);
