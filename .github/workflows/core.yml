@@ -25,6 +25,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+      # Owner 2026-11-26 ("yes"): install the locked packages so the MathJax tests run in CI too (DUAL-03).
+      - run: npm ci --no-audit --no-fund
       - run: npm test
       - run: node scripts/foundry-qualify.mjs plan
       - uses: actions/upload-artifact@v4
