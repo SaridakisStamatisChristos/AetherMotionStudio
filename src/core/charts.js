@@ -120,7 +120,7 @@ export function layoutTimeline(x,b,p,{measure,phraseOk}){
  only(x,['id','type','box','start','end','reveal','phrase','phrases','events','tone','font','weight','align','emphasis'],p);
  if(!Array.isArray(x.events)||x.events.length<2||x.events.length>8)fail(p+'.events','2–8 events required');
  const events=x.events.map((e,i)=>{const q=p+'.events['+i+']';if(!e||typeof e!=='object')fail(q,'object required');only(e,['when','label'],q);return {when:text(e.when,q+'.when',12),label:text(e.label,q+'.label',24)};});
- const pad=24,y=b.y+b.h/2,slot=(b.w-2*pad)/events.length,size=fitSize([24,22,20,18,16],s=>events.every(e=>Math.max(measure(e.when,s),measure(e.label,s))<=slot*1.9-8)&&2*s*1.25+20<=b.h/2-pad);
+ const pad=24,y=b.y+b.h/2,slot=(b.w-2*pad)/events.length,size=fitSize([32,30,28,26,24,22,20,18,16],s=>events.every(e=>Math.max(measure(e.when,s),measure(e.label,s))<=slot*1.9-8)&&2*s*1.25+20<=b.h/2-pad);
  if(!size)fail(p,'event labels do not fit; shorten them or use fewer events');
  return {timeline:{y,x0:b.x+pad,x1:b.x+b.w-pad,size,events:events.map((e,i)=>({...e,x:b.x+pad+slot*(i+.5),above:i%2===0}))},phrases:stepPhrases(x,events.length,p,phraseOk)};
 }
@@ -143,7 +143,7 @@ export function layoutCompare(x,b,p,{measure,phraseOk}){
  if(!Array.isArray(x.cards)||x.cards.length!==2)fail(p+'.cards','exactly 2 cards required');
  const gap=20,cw=(b.w-gap)/2,cards=x.cards.map((c,i)=>{const q=p+'.cards['+i+']';if(!c||typeof c!=='object')fail(q,'object required');only(c,['title','points'],q);const title=text(c.title,q+'.title',24);if(!Array.isArray(c.points)||c.points.length<1||c.points.length>5)fail(q+'.points','1–5 points required');return {title,points:c.points.map((t,j)=>text(t,q+'.points['+j+']',48)),x:b.x+i*(cw+gap),y:b.y,w:cw,h:b.h};});
  const wrap=(s,size,w)=>{const out=[];let line='';for(const t of s.split(/\s+/)){const n=line?line+' '+t:t;if(line&&measure(n,size)>w){out.push(line);line=t;}else line=n;}if(line)out.push(line);return out;};
- const size=fitSize([26,24,22,20,18,16],s=>cards.every(c=>{const lines=c.points.flatMap(t=>wrap(t,s,cw-56));return measure(c.title,s+4)<=cw-32&&lines.every(l=>measure(l,s)<=cw-56)&&(s+4)*1.4+lines.length*s*1.25+c.points.length*8<=b.h-40;}));
+ const size=fitSize([34,32,30,28,26,24,22,20,18,16],s=>cards.every(c=>{const lines=c.points.flatMap(t=>wrap(t,s,cw-56));return measure(c.title,s+4)<=cw-32&&lines.every(l=>measure(l,s)<=cw-56)&&(s+4)*1.4+lines.length*s*1.25+c.points.length*8<=b.h-40;}));
  if(!size)fail(p,'card texts do not fit; shorten them');
  return {compare:{size,cards:cards.map(c=>({...c,rows:c.points.map(t=>wrap(t,size,cw-56))}))},phrases:stepPhrases(x,2,p,phraseOk)};
 }

@@ -41,7 +41,7 @@ export function drawChartItem(ctx,x,t,p,start,rv,phrases,font){
    const ns=L.series.length,bw=L.slot*.8/ns;
    L.series.forEach((s,si)=>{const col=L.colours[si];
     if(L.kind==='bar')L.cats.forEach((_,i)=>{const {v,alpha}=val(si,i),x0=A.x+L.slot*i+L.slot*.1+bw*si;ctx.save();ctx.globalAlpha*=dim(si,i);
-     if(v===null||alpha===0){if(next[si][i]===null)label(ctx,'no data',x0+bw/2,zeroY-12,14,t.sub,font,'center',400);ctx.restore();return;}
+     if(v===null||alpha===0){if(next[si][i]===null)label(ctx,'no data',x0+bw/2,zeroY-14,18,t.sub,font,'center',400);ctx.restore();return;}
      ctx.globalAlpha*=alpha;const top=yOf(v*grow);ctx.fillStyle=col;ctx.fillRect(x0+2,Math.min(top,zeroY),bw-4,Math.abs(zeroY-top));
      if(L.valueLabels&&grow>.95)label(ctx,fmt(next[si][i]??v),x0+bw/2,v>=0?top-12:top+14,L.valueSize,t.text,font);ctx.restore();});
     else{ctx.save();ctx.globalAlpha*=dim(si);ctx.strokeStyle=col;ctx.fillStyle=col;ctx.lineWidth=4;ctx.lineJoin='round';let run=[];

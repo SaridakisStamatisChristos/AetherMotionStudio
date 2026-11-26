@@ -73,7 +73,7 @@ export function layoutGraph(x,b,p,{measure,phraseOk}){
  only(x,['id','type','box','start','end','reveal','phrase','phrases','nodes','edges','directed','steps','algorithm','tone','font','weight','align','emphasis'],p);
  if(!Array.isArray(x.nodes)||x.nodes.length<2||x.nodes.length>12)fail(p+'.nodes','2–12 nodes required');
  const notes=Array.isArray(x.steps)&&x.steps.some(s=>s?.note!==undefined),pad=20,area={x:b.x+pad,y:b.y+pad,w:b.w-2*pad,h:b.h-2*pad-(notes?44:0)};
- const r=Math.max(18,Math.min(34,Math.min(area.w,area.h)*.07)),ids=new Map();
+ const r=Math.max(18,Math.min(44,Math.min(area.w,area.h)*.075)),ids=new Map();
  const nodes=x.nodes.map((n,i)=>{const q=p+'.nodes['+i+']';if(!n||typeof n!=='object')fail(q,'object required');only(n,['id','label','at'],q);if(typeof n.id!=='string'||!/^[a-z0-9][a-z0-9-]{0,11}$/i.test(n.id)||ids.has(n.id))fail(q+'.id','unique short ID required');
   const at=pair(n.at,q+'.at');if(at.some(v=>v<0||v>1))fail(q+'.at','0–1 inside the item box required');const label=text(n.label??n.id,q+'.label',10);
   const size=fitSize([26,24,22,20,18,16],s=>measure(label,s)<=2*r-6);if(!size)fail(q+'.label','"'+label+'" does not fit its node circle');
