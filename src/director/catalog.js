@@ -14,6 +14,13 @@ const aliases={
  characters:'people human guide robot worker',
  everyday:'object tool home household work'
 };
+// Word relevance of a catalog object to a query: 12 per word of its id, 2 per category/family/alias word (DUAL-01
+// exports it so the explainer can tell a real match from an alphabetical tie at 0).
+const relevanceOf=(tokens,o)=>{const own=words(o.id),tags=words(o.category+' '+o.family+' '+(aliases[o.category]??''));return own.reduce((n,w)=>n+(tokens.has(w)?12:0),0)+tags.reduce((n,w)=>n+(tokens.has(w)?2:0),0);};
+// Plural-tolerant (trees → tree, berries → berry, boxes → box); used only by the DUAL-01 explainer, so the retrieval
+// order of every earlier request is unchanged.
+const singular=w=>w.length>4&&w.endsWith('ies')?w.slice(0,-3)+'y':w.length>4&&/(?:x|ch|sh|ss)es$/.test(w)?w.slice(0,-2):w.length>3&&w.endsWith('s')&&!w.endsWith('ss')?w.slice(0,-1):w;
+export const relevance=(query,o)=>{const t=words(query);return relevanceOf(new Set([...t,...t.map(singular)]),o);};
 let cache;
 export function directorCatalog(){
  if(cache)return cache;
@@ -28,9 +35,6 @@ export function directorCatalog(){
 export function retrieveAssets(query,limit=8,preferred=[]){
  if(!Number.isInteger(limit)||limit<1||limit>20)throw Error('catalog limit');
  const tokens=new Set(words(query));
- const score=o=>{
-  const own=words(o.id),tags=words(o.category+' '+o.family+' '+(aliases[o.category]??''));
-  return (preferred.includes(o.id)?1000:0)+own.reduce((n,w)=>n+(tokens.has(w)?12:0),0)+tags.reduce((n,w)=>n+(tokens.has(w)?2:0),0);
- };
+ const score=o=>(preferred.includes(o.id)?1000:0)+relevanceOf(tokens,o);
  return [...directorCatalog().objects].sort((a,b)=>score(b)-score(a)||(a.id<b.id?-1:a.id>b.id?1:0)).slice(0,limit);
 }

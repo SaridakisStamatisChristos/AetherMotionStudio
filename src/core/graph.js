@@ -8,6 +8,7 @@ import {validateMaterialProfile} from '../foundry/materials.js';
 import {PROFILE,SUPPORTED,meshCommands} from '../foundry/instances.js';
 import {supportedChannels,RIG_CAMERA_LIMITS,validateCameraRig,sampleCameraRig,frameCamera,validateActions,composePose,validateAttachments,resolveAttachments,validateAssembly,emitCinematicAsset,LAYERED_ENVIRONMENTS,emitEnvironment} from './cinematography.js';
 import {validateOverlays} from './overlays.js';
+import {validateComposition} from './composition.js';
 import {LOOKS} from '../visual/crafted.js';
 import {validateAssetParams} from '../visual/catalog.js';
 import {recipeSpec} from '../visual/catalog-rig.js';
@@ -58,7 +59,7 @@ export function validateGraph(s,p='shot'){
  for(const [i,a] of s.assets.entries())if(Object.hasOwn(a,'restOn')){const q=p+'.assets['+i+'].restOn';validateSurfaceRef(a.restOn,ids,a.id,q,fail);const sf=s.assets.find(b=>b.id===a.restOn.surface);
   if(sf.restOn||sf.attachment)fail(q+'.surface','surface must not rest on or attach to another asset');for(const ch of ['x','y','z'])if(Object.hasOwn(a.tracks,ch))fail(q,'restOn sets the position; remove the '+ch+' track');}
  for(const [i,a] of s.assets.entries())if(Object.hasOwn(a,'turnSteps'))validateTurnSteps(a,p+'.assets['+i+'].turnSteps',fail);
- if(Object.hasOwn(s,'cameraRig'))validateCameraRig(s.cameraRig,ids,p+'.cameraRig');validateAttachments(s.assets,p+'.assets');if(Object.hasOwn(s,'overlays'))validateOverlays(s.overlays,p+'.overlays');if(Object.hasOwn(s,'layers')&&!LAYERED_ENVIRONMENTS.includes(s.layers))fail(p+'.layers','unknown environment layer preset');
+ if(Object.hasOwn(s,'cameraRig'))validateCameraRig(s.cameraRig,ids,p+'.cameraRig');validateAttachments(s.assets,p+'.assets');if(Object.hasOwn(s,'overlays'))validateOverlays(s.overlays,p+'.overlays');if(Object.hasOwn(s,'composition'))validateComposition(s.composition,p+'.composition');if(Object.hasOwn(s,'layers')&&!LAYERED_ENVIRONMENTS.includes(s.layers))fail(p+'.layers','unknown environment layer preset');
  if(!Array.isArray(s.effects)||s.effects.length>4)fail(p+'.effects','0–4 effects required');
  const fx=new Set();for(const [i,raw] of s.effects.entries()){const q=p+'.effects['+i+']';if(raw&&Object.hasOwn(raw,'preset'))object(raw,['preset','target'],q);else object(raw,['type','target','color','start','end'],q);const e=resolveEffect(raw);if(!['orbit','sparkles','glow'].includes(e.type))fail(q+'.type','unknown effect');if(!ids.has(e.target))fail(q+'.target','unknown target');if(typeof e.color!=='string'||!/^#[0-9a-fA-F]{6}$/.test(e.color))fail(q+'.color','hex color required');number(e.start,0,1,q+'.start');number(e.end,0,1,q+'.end');if(e.start>=e.end)fail(q,'invalid effect window');const key=e.type+':'+e.target;if(fx.has(key))fail(q,'duplicate effect');fx.add(key);}
  if([LOD_PROFILE,HERO_PROFILE,IMPORT_PROFILE,GENERATED_PROFILE].includes(s.geometryProfile))planLOD(s,t=>evaluateGraphRaw(s,t));

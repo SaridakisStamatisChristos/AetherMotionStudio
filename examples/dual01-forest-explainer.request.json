@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "id": "dual01-forest-explainer",
+  "topic": "How do forests clean the air?",
+  "seconds": 40,
+  "audience": "curious beginners",
+  "tone": "friendly",
+  "style": "cinematic explainer",
+  "language": "en-us",
+  "voice": "af_bella",
+  "backend": "cpu",
+  "profile": "polished",
+  "seed": 1,
+  "content": "explainer-v1",
+  "script": "How do forests clean the air we breathe? Trees take in carbon dioxide through tiny pores in their leaves. Sunlight turns that carbon into sugar and wood, and the leaves release oxygen. Much of it stays in trunks, roots and forest soil, sometimes for centuries. Leaves and needles catch fine dust, and rain washes it down. A whole forest works like a giant living filter. So protecting forests means cleaner air for everyone."
+}

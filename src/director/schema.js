@@ -4,6 +4,8 @@ import {ACTIONS,supportedChannels} from '../core/cinematography.js';
 import {validateSpeechConfig} from '../core/speech.js';
 import {VOICES} from '../core/contract.js';
 import {validateDialogueRequest,validateDialogueShot} from './dialogue.js';
+import {CONTENT_MODES} from './aids.js';
+import {isCatalogCharacter} from '../quality/crowding.js';
 export const REQUEST_VERSION=1,IR_VERSION=1,MAX_JSON_BYTES=262144;
 const bad=(p,m)=>{throw Error(p+': '+m)};
 export function safeText(s,max,p){literal(s,max,p);if(/https?:\/\/|file:\/\/|javascript:|<\/?script\b|<iframe\b|\x60\x60\x60/i.test(s))bad(p,'URLs or executable markup not permitted');}
@@ -20,7 +22,7 @@ export function safeJson(raw){
 }
 export const normalize=s=>s.trim().replace(/\s+/g,' ');
 export function request(input){
- fields(input,['version','id','topic','script','seconds','audience','tone','style','language','voice','backend','profile','seed','identityLibrary','cast','story','speech','staging','promptVersion','dialogue','delivery','sets','look','titles'], 'request',['version','id','topic','seconds']);
+ fields(input,['version','id','topic','script','seconds','audience','tone','style','language','voice','backend','profile','seed','identityLibrary','cast','story','speech','staging','promptVersion','dialogue','delivery','sets','look','titles','content'], 'request',['version','id','topic','seconds']);
  // GEN-09 opt-in delivery mode (Instagram Reels layout and framing); absent = unchanged output.
  if(input.delivery!==undefined&&input.delivery!=='reels-v1')bad('request.delivery','reels-v1 or absent');
  // GEN-12 topic-fitting sets: 'topic-v1' or 'none'; absent = topic-v1 for dialogue films, unchanged output otherwise.
@@ -33,6 +35,12 @@ export function request(input){
  // Owner 2026-11-26 ("No titles at all"): 'none' (clean top) or 'shots' (a title per shot, as before); absent = none
  // for dialogue films, shots otherwise.
  if(input.titles!==undefined&&!['none','shots'].includes(input.titles))bad('request.titles','none, shots or absent');
+ // DUAL-01 opt-in content mode: 'explainer-v1' (narrator, no characters, visual aids) or 'mixed-v1' (the usual cast plus
+ // visual aids); absent = unchanged output. Aids replace the per-shot titles, so titles 'shots' is refused with a mode.
+ if(input.content!==undefined){if(!CONTENT_MODES.includes(input.content))bad('request.content',CONTENT_MODES.join(', ')+' or absent');
+  if(input.identityLibrary)bad('request.content','identity stories keep their authored shots');
+  if(input.content==='explainer-v1'&&input.dialogue)bad('request.content','explainer-v1 has no characters; use mixed-v1 for a dialogue with visual aids');
+  if(input.titles==='shots')bad('request.titles','visual aids replace the shot titles; use none or leave it out');}
  if(input.look!==undefined&&!['crafted-v1','crafted-v2','none'].includes(input.look))bad('request.look','crafted-v1, crafted-v2, none or absent');
  const q={audience:'general audience',tone:'clear',style:'cinematic explainer',language:'en',voice:'af_heart',backend:'cpu',profile:'polished',seed:0,...input};
  if(q.version!==REQUEST_VERSION)bad('request.version','unsupported');
@@ -85,6 +93,7 @@ export function validateIR(ir,q,selection){
    }else{
     if(a.variant!==undefined||a.hold!==undefined||!allowed.has(a.asset))bad(v,'unknown asset or orphan identity fields');key='asset:'+a.asset;actions=allowed.get(a.asset).actions;
    }
+   if(q.content==='explainer-v1'&&isCatalogCharacter(a.asset))bad(v,'explainer-v1 shots show no characters; choose an object');
    if(ids.has(key))bad(v,'duplicate identity or asset');ids.add(key);
    if(a.action!==undefined)choice(a.action,actions,v+'.action');
    if(a.x!==undefined)finite(a.x,-2.4,2.4,v+'.x');if(a.scale!==undefined)finite(a.scale,.5,1.25,v+'.scale');

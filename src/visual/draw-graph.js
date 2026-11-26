@@ -1,5 +1,6 @@
 import {drawFoundry} from '../foundry/canvas.js';
 import {drawOverlays} from './draw-overlays.js';
+import {drawComposition} from './draw-composition.js';
 import {createProjection,createMesh} from '../visual/mesh.js';
 import {polygon,glow,star,text,r} from '../visual/primitives.js';
 import {evaluateGraph,emitGraph} from '../core/graph.js';
@@ -77,6 +78,8 @@ export function drawGraph(ctx,p,W,H,s,three,frames=360,talk=null,body=null){
 
  }
  drawOverlays(ctx,s.overlays,p);
+ // DUAL-01 opt-in compose-v1 visual aids on the same shared 2D path (absent = nothing drawn).
+ if(s.composition)drawComposition(ctx,s.composition,p,frames);
  if(s.delivery!==REELS.version){ctx.fillStyle=env.accent+'35';ctx.fillRect(54,1212,612,3);ctx.fillStyle=env.accent;ctx.fillRect(54,1212,612*p,3);}
  ctx.restore();
 }

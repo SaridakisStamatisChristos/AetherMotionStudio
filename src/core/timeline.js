@@ -27,7 +27,7 @@ export function validateProject(s){
  const ids=new Set();let minimum=0;
  for(const [i,x] of s.shots.entries()){
   const p='shots['+i+']',chapter=x?.template==='blockchain-chapter',graph=x?.template==='cinematic-graph';
-  fields(x,['id','template','durationFrames','transitionFrames','narration',...(chapter?['chapter','heading','subheading']:graph?['backend','heading','subheading','environment','camera','assets','effects']:['copy'])],p,graph?['fidelity','cameraRig','overlays','layers','transition','continuity','geometryProfile','materialProfile','lodPolicy','cameraInterpolation','lighting','speakerAssets','dialogue','bodyLanguage','titleHold','look','titles']:[]);
+  fields(x,['id','template','durationFrames','transitionFrames','narration',...(chapter?['chapter','heading','subheading']:graph?['backend','heading','subheading','environment','camera','assets','effects']:['copy'])],p,graph?['fidelity','cameraRig','overlays','layers','transition','continuity','geometryProfile','materialProfile','lodPolicy','cameraInterpolation','lighting','speakerAssets','dialogue','bodyLanguage','titleHold','look','titles','composition']:[]);
   if(Object.hasOwn(x,'titleHold')&&x.titleHold!==true)fail(p+'.titleHold','true or absent');
   if(x.titleHold&&i===0)fail(p+'.titleHold','the first shot has nothing to continue');
   slug(x.id,p+'.id');if(ids.has(x.id))fail(p,'duplicate ID');ids.add(x.id);
