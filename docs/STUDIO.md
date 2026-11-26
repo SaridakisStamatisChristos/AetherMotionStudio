@@ -144,6 +144,7 @@ Owner, after seeing far-forest-r1 ("i see you rendered the video with roles in s
 - **`request.titles`** (`'none'` | `'shots'`): absent = `'none'` for dialogue films, `'shots'` (unchanged) otherwise. The Director sets `titles:'none'` on every graph shot, singles included.
 - **Speaker names:** speech that the Director builds for a dialogue film now sets `captions.speakerNames:false`. A request that brings its own speech keeps what it says. The Studio always sends its own speech, so its checkbox decides.
 - **Studio:** "Speaker names in captions" and the new "Titles on top" both start **unticked** (`STUDIO_DEFAULTS` speakerNames false, titles false). The form always sends `titles`.
+- One-click production (`produce.mjs` → production-options.mjs) always gives the Director speech, so it applies the same default: a dialogue request without its own speech gets `speakerNames:false`. The first render (clean-top-r1, 31ce19b) still had names because of this; fixed and re-rendered as clean-top-r2.
 - Preflight: REPEATED_HEADING is not reported for hidden titles.
 - Old films and authored projects are unchanged.
 - Tests: tests/clean-top.test.js (5, with negatives); studio01 updated to the new defaults (the contract checks are kept).

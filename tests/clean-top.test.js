@@ -44,3 +44,10 @@ test('preflight: repeated headings are not reported when titles are hidden',asyn
  assert.ok(!inspectProject(x).issues.some(i=>i.code==='REPEATED_HEADING'));
  for(const s of x.shots)delete s.titles;assert.ok(inspectProject(x).issues.some(i=>i.code==='REPEATED_HEADING'),'shown titles are still checked');
 });
+test('one-click production (produce.mjs): a dialogue request without speech gets no speaker names; its own speech is kept; narrator unchanged',async()=>{
+ const {parseProduction}=await import('../scripts/production-options.mjs');
+ const parse=q=>parseProduction(['--request','x.json','--backend','both'],{read:()=>JSON.stringify(q)}).request;
+ assert.equal(parse(forest).speech.captions.speakerNames,false);
+ assert.equal(parse({...forest,speech:defaultSpeech(forest.seconds)}).speech.captions.speakerNames,undefined);
+ assert.equal(parse(narrator).speech.captions.speakerNames,undefined);
+});
