@@ -19,7 +19,7 @@ Status words: PLANNED · NEXT · ACTIVE · IMPLEMENTED · TESTED · RENDERED · 
 |---|---|---|---|---|
 | GPU-00 | Architecture transition (ADR) and measurable budget | **TESTED + MEASURED** (ADR-001 Accepted; budget delegated → protocol-v1 frozen) | `feature/gpu-00-architecture` / PR #67 (open) | ADR-001, CAMPAIGN_B_AUDIT.md, CAMPAIGN_B_PROTOCOL.md, tests/gpu00-profiles.test.js, out/bench/gpu00-*-r1-bench |
 | GPU-01 | PBR materials and colour management | **MERGED** (PR #68 → 936d0cb) | `feature/gpu-01-pbr` | src/visual/pbr.js, tests/gpu01-pbr.test.js, tests/test_profile_pair.py, out/gpu01-{swatches,portrait}-r2-*, out/bench/gpu01-portrait-r2-* |
-| FIX-RS | Render stability: random striped frames and the one-frame flash at cuts with parallel tabs (pre-existing, GPU Standard too) | **TESTED + RENDERED** (PR open, not merged) | `fix/render-stability` | FIX-RS section below; out/gpu01-swatches-r3-*, out/bench/fixrs2-* |
+| FIX-RS | Render stability: random striped frames and the one-frame flash at cuts with parallel tabs (pre-existing, GPU Standard too) | **TESTED + RENDERED** (PR open, not merged) | `feature/fix-render-stability`, PR #70 | FIX-RS section below; out/gpu01-swatches-r3-*, out/bench/fixrs2-* |
 | GPU-02 | Lighting, shadows and environment illumination | NEXT (after the FIX-RS merge) | — | — |
 | GPU-03 | Procedural texture and material library | PLANNED | — | — |
 | GPU-04 | External 3D assets (GLB) and high-detail geometry | PLANNED | — | — |

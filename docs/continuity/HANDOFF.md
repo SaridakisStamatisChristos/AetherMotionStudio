@@ -1,6 +1,6 @@
 # Forward-only handoff: FIX-RS TESTED + RENDERED, PR open; next GPU-02 (2026-11-28)
 
-**Latest checkpoint (FIX-RS):** `fix/render-stability` from main 936d0cb. GPU-01 is merged as PR #68 on the owner's "merge and start the fix", after CI passed on dca76d5. **The FIX-RS PR is open, not merged.**
+**Latest checkpoint (FIX-RS):** `feature/fix-render-stability` (renamed from fix/… so the CI test job runs; PR #69 closed → #70) from main 936d0cb. GPU-01 is merged as PR #68 on the owner's "merge and start the fix", after CI passed on dca76d5. **The FIX-RS PR is open, not merged.**
 - **Changed:**
   - `src/index.jsx` (1-pixel read after drawFilm);
   - `src/core/fidelity.js` (`blurRGBA`);
@@ -58,7 +58,7 @@
 - **Next action for "fod continue":**
   1. If the GPU-01 PR is open, report it, confirm CI on its head, and wait for the owner's merge word.
   2. After the merge, clear renders older than GPU-01: keep the GPU-00 references, gpu01-*-r2, out/bench/gpu00-* and gpu01-portrait-r2-*, out/speech-cache, public/media and the v1.2 final batches.
-  3. Then FIX-RS on `fix/render-stability` from main (plan in CAMPAIGN_B.md "FIX-RS"). Then GPU-02.
+  3. Then FIX-RS on `feature/fix-render-stability` (renamed from fix/… so the CI test job runs; PR #69 closed → #70) from main (plan in CAMPAIGN_B.md "FIX-RS"). Then GPU-02.
 
 **Previous checkpoint (GPU-00):** `feature/gpu-00-architecture` from main 69a3a5e (PR #66 merged on the owner's "merge pr 66 and start gpu-00"). **PR #67 is open, not merged.**
 - **Owner decisions this session:**
