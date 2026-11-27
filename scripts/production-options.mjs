@@ -7,6 +7,7 @@ import {validateProject} from '../src/core/timeline.js';
 import {defaultSpeech,requestSpeech,productionId,matchedTargetFrames,projectProfile,normalizedProject} from '../src/studio/production.js';
 import {compileProjectMath} from '../src/director/math-loader.js';
 import {resolveProjectMedia} from '../src/director/media-loader.js';
+import {assertNegotiated} from '../src/core/render-profiles.js';
 export function parseProduction(args,{read=p=>readFileSync(resolve(p),'utf8'),newId=()=> 'film-'+randomBytes(6).toString('hex')}={}){
  const o={},flags=new Set(['repair']),values=new Set(['request','topic','project','pair','script','script-file','seconds','backend','profile','voice','language','id','seed','import','format']);
  const queue=[...args];while(queue.length){
@@ -34,6 +35,8 @@ export function parseProduction(args,{read=p=>readFileSync(resolve(p),'utf8'),ne
  // speech-v1, as dialogue films are), so a short script does not leave long pauses. Other requests are unchanged.
  // They also get the mix-v2 master that dialogue films use (about -16 LUFS; dual01-explainer-r3 without it: -18.7).
  // Both rules now live in src/studio/production.js requestSpeech (DUAL-07), shared with the Studio.
+ // GPU-00 / ADR-001: a render profile is negotiated against every requested backend before any speech or planning.
+ if(raw.renderProfile!==undefined)assertNegotiated({renderProfile:raw.renderProfile,backends:directorBackends,path:'request.renderProfile'});
  raw.id=id;const q=request({...raw,speech:raw.speech??requestSpeech(raw)});
  // Strictly reject conflicting supplied speech target, never silently retime authored data.
  const ids=directorBackends.map(b=>productionId(id,b,q.profile));
@@ -46,6 +49,7 @@ function authored(o,backends,read,newId){
  // DUAL-05: image items are resolved from the local media library (hash and structure verified) at the same boundary.
  const load=p=>validateProject(resolveProjectMedia(compileProjectMath(safeJson(read(p)))));
  const project=load(o.project),targetFrames=matchedTargetFrames(project),profile=projectProfile(project);
+ if(project.renderProfile!==undefined)assertNegotiated({renderProfile:project.renderProfile,project,backends,path:'film.renderProfile'});
  if(o.pair!==undefined){
   const pair=load(o.pair);
   if(digest(normalizedProject(pair))!==digest(normalizedProject(project)))throw Error('Authored backend pair differs after normalization; refusing matched production');

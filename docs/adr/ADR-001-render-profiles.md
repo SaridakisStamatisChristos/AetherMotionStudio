@@ -1,6 +1,6 @@
 # ADR-001: Render profiles and capability negotiation
 
-**Status:** Proposed (drafted at GPU-00, 2026-11-27). It becomes binding only when the owner approves it. Until then [DUAL_BACKEND_POLICY.md](../DUAL_BACKEND_POLICY.md) stays fully binding and no GPU-exclusive capability may be implemented.
+**Status:** **Accepted** by the owner on 2026-11-27 ("Approve as written", a UI choice during GPU-00). Drafted at GPU-00 the same day. [DUAL_BACKEND_POLICY.md](../DUAL_BACKEND_POLICY.md) points here in its section "Campaign B render profiles (ADR-001)"; all its earlier sections stay binding.
 
 **Context:** Campaign B directive §2 and §4 GPU-00 ([CAMPAIGN_B_DIRECTIVE.md](../continuity/CAMPAIGN_B_DIRECTIVE.md)). Inventory: [CAMPAIGN_B_AUDIT.md](../CAMPAIGN_B_AUDIT.md).
 
@@ -55,7 +55,7 @@ Before any expensive work, a preflight check compares the capabilities a film ne
 | `RP-01 unknown-profile` | `renderProfile` is not a known value | correct the value |
 | `RP-02 backend-mismatch` | `cinematic-*` on a shot with `backend: 'cpu'` | render on Three.js Cinematic; or run the explicit "make shared" conversion (below); or cancel |
 | `RP-03 capability-unsupported` | the film uses a capability its profile lacks (for example `pbr-v1` with no `renderProfile`) | add `renderProfile: 'cinematic-v1'`; or run the conversion; or cancel |
-| `RP-04 matched-pair-mismatch` | `--backend both` (CPU + Three) for a film that needs Cinematic-only capabilities | a Standard vs Cinematic comparison instead; or cancel |
+| `RP-04 matched-pair-mismatch` | `--backend both` (CPU + Three) for a Cinematic film | `--backend three`; or remove `renderProfile` for a CPU + Standard pair (an explicit edit); or cancel. A Standard vs Cinematic matched mode arrives with the first visible Cinematic difference (GPU-01) |
 | `RP-05 software-gl` (warning) | Cinematic on a software GL route (`swangle`) | continue (slow, byte-stable); or switch to `vulkan` yourself |
 | `RP-06 over-budget` | estimated resources exceed the agreed budget (GPU-10 fills in the estimate) | lower settings yourself, named; or cancel |
 
@@ -81,7 +81,8 @@ Every native render report (timing.json and the production manifest) gains: `ren
 - **Cost:** every new Cinematic field needs a capability entry and a test that wrong pairings fail; the matched-pair tooling learns a Standard vs Cinematic mode.
 - **Not decided here:** budgets (GPU-00 step 6), quality tiers (GPU-10), the Studio default (GPU-11).
 
-## 10. First implementation step after approval (no visual change)
+## 10. First implementation step after approval (no visual change; implemented at GPU-00)
+- Implemented in `src/core/render-profiles.js`; wired into `validateProject`, the Director request, `production-options.mjs` (also used by batch jobs), `produce.mjs` (RP-05 warning) and `native-render.mjs` (report fields). Tests: `tests/gpu00-profiles.test.js`.
 - `renderProfile` validation, the capability table with only `shared`, preflight codes RP-01 to RP-04, and the report fields.
 - `cinematic-v1` renders exactly like Standard until GPU-01.
 - Tests: legacy digests unchanged; every wrong pairing fails before speech preparation with its code.

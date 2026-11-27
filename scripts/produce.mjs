@@ -18,8 +18,12 @@ import {aidsCheck} from '../src/quality/aids.js';
 const timelineFit=prepared=>prepared.some(p=>p.scene.speech?.fit==='speech-v1');
 import {renderNative,runChecked} from './native-render.mjs';
 import {holdRenderLock} from './render-lock.mjs';
+import {renderSettings} from './perf-options.mjs';
+import {negotiate,DIAGNOSTIC_CODES} from '../src/core/render-profiles.js';
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..'),outRoot=join(root,'out');
 const o=parseProduction(process.argv.slice(2)),env={...process.env};
+// GPU-00 / ADR-001: warnings (RP-05 software GL) are printed before any work; errors were already refused while parsing.
+{const rp=o.request?.renderProfile??o.project?.renderProfile;if(rp!==undefined)for(const d of negotiate({renderProfile:rp,backends:o.backends,gl:renderSettings(env).gl}).diagnostics)if(d.severity==='warning')console.warn('WARNING',d.code,DIAGNOSTIC_CODES[d.code]+':',d.message,'Choices:',d.choices.join('; '));}
 // DUAL-08: one render at a time on this machine (inherited when a batch runner started this production).
 holdRenderLock(root,'produce '+o.id,env);
 const venv=join(root,'.venv',process.platform==='win32'?'Scripts/python.exe':'bin/python');

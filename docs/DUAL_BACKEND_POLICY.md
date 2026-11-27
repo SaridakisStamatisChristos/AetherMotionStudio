@@ -51,3 +51,10 @@ Campaign A is verified, owner-accepted and tagged (`v1.2-dual-backend-final` →
 - Its first gate (GPU-00) is an ADR (docs/adr/ADR-001-render-profiles.md). It would keep CPU Classic and GPU Standard first-class for every shared feature and allow GPU-exclusive capabilities only in an opt-in GPU Cinematic profile, with capability negotiation and no silent substitution.
 - **Until the owner approves that ADR, every section of this policy above stays fully binding**, including "both backends first-class" for all features.
 - After approval, a new section here points to the ADR, and the earlier sections stay.
+
+## Campaign B render profiles (ADR-001, owner-approved 2026-11-27)
+The owner approved [ADR-001](adr/ADR-001-render-profiles.md) ("Approve as written"). Every section above stays binding. In addition:
+- **Three profiles on two backends:** CPU Classic (`cpu`) and GPU Standard (`three`) are exactly v1.2 and stay first-class for every shared feature. GPU Cinematic is the opt-in, versioned film-level field `renderProfile: 'cinematic-v1'` on the same Three.js backend.
+- **Replaced only for future Cinematic-only capabilities:** the requirement that every new graphical feature exists on both backends. Such features exist only in GPU Cinematic.
+- **Negotiation, never silent change:** capabilities are derived from the film's fields, and preflight runs before speech preparation. A mismatch stops with a coded diagnostic (RP-01 … RP-06) and the user's choices. Nothing is stripped, substituted or switched.
+- CPU Classic and GPU Standard regressions gate every Campaign B milestone. GPU pixels are not byte-stable; CPU and `swangle` are.

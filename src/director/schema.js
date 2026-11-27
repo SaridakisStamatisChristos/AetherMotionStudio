@@ -10,6 +10,7 @@ import {CONTENT_MODES} from './aids.js';
 import {validateVisualsRequest} from './visuals.js';
 import {FONTS,THEMES} from '../core/composition.js';
 import {isCatalogCharacter} from '../quality/crowding.js';
+import {assertNegotiated} from '../core/render-profiles.js';
 export const REQUEST_VERSION=1,IR_VERSION=1,MAX_JSON_BYTES=262144;
 const bad=(p,m)=>{throw Error(p+': '+m)};
 export function safeText(s,max,p){literal(s,max,p);if(/https?:\/\/|file:\/\/|javascript:|<\/?script\b|<iframe\b|\x60\x60\x60/i.test(s))bad(p,'URLs or executable markup not permitted');}
@@ -26,7 +27,7 @@ export function safeJson(raw){
 }
 export const normalize=s=>s.trim().replace(/\s+/g,' ');
 export function request(input){
- fields(input,['version','id','topic','script','seconds','audience','tone','style','language','voice','backend','profile','seed','identityLibrary','cast','story','speech','staging','promptVersion','dialogue','delivery','sets','look','titles','content','font','theme','visuals','format','captionStyle','soundtrack','music'], 'request',['version','id','topic','seconds']);
+ fields(input,['version','id','topic','script','seconds','audience','tone','style','language','voice','backend','profile','seed','identityLibrary','cast','story','speech','staging','promptVersion','dialogue','delivery','sets','look','titles','content','font','theme','visuals','format','captionStyle','soundtrack','music','renderProfile'], 'request',['version','id','topic','seconds']);
  // GEN-09 opt-in delivery mode (Instagram Reels layout and framing); absent = unchanged output.
  if(input.delivery!==undefined&&input.delivery!=='reels-v1')bad('request.delivery','reels-v1 or absent');
  // GEN-12 topic-fitting sets: 'topic-v1' or 'none'; absent = topic-v1 for dialogue films, unchanged output otherwise.
@@ -76,7 +77,10 @@ export function request(input){
  // TALK-04: opt-in dialogue; its prompt is director-ir-v1.3 (selected automatically), which requires dialogue.
  if(q.dialogue!==undefined){if(q.promptVersion===undefined)q.promptVersion='director-ir-v1.3';else if(q.promptVersion!=='director-ir-v1.3')bad('request.promptVersion','dialogue requires director-ir-v1.3');}
  else if(q.promptVersion==='director-ir-v1.3')bad('request.promptVersion','director-ir-v1.3 requires request.dialogue');
- choice(q.backend,['cpu','three'],'request.backend');choice(q.profile,['original','polished'],'request.profile');validateIdentityRequest(q);if(q.speech!==undefined){validateSpeechConfig(q.speech);if(q.speech.targetFrames!==q.seconds*30)bad('speech','targetFrames must equal seconds*30');}validateDialogueRequest(q);return q;
+ choice(q.backend,['cpu','three'],'request.backend');choice(q.profile,['original','polished'],'request.profile');
+ // GPU-00 / ADR-001: opt-in render profile (not the fidelity `profile`); refused before any planning when it cannot render.
+ if(q.renderProfile!==undefined)assertNegotiated({renderProfile:q.renderProfile,backends:[q.backend],path:'request.renderProfile'});
+ validateIdentityRequest(q);if(q.speech!==undefined){validateSpeechConfig(q.speech);if(q.speech.targetFrames!==q.seconds*30)bad('speech','targetFrames must equal seconds*30');}validateDialogueRequest(q);return q;
 }
 export function validateIR(ir,q,selection){
  fields(ir,['version','title','treatment','shots'],'ir',['version','title','treatment','shots']);
