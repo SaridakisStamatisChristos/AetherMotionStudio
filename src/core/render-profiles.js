@@ -14,13 +14,17 @@ const ALL=Object.freeze([...PROFILE_IDS]);
 // adds its own entry (pbr-v1, env-light-v1, …) only when it is accepted.
 export const CAPABILITIES=Object.freeze({shared:Object.freeze({since:'v1.2',profiles:ALL}),
  // GPU-01: physically based material presets (src/visual/pbr.js), selected by film.cinematic.materials 'pbr-v1'.
- 'pbr-v1':Object.freeze({since:'GPU-01',profiles:Object.freeze(['cinematic-v1'])})});
+ 'pbr-v1':Object.freeze({since:'GPU-01',profiles:Object.freeze(['cinematic-v1'])}),
+ // GPU-02: lighting presets and environment light (src/visual/cinematic-lights.js), selected by film.cinematic.lights.
+ 'env-light-v1':Object.freeze({since:'GPU-02',profiles:Object.freeze(['cinematic-v1'])})});
+// GPU-02 light preset ids. 'auto-v1' picks a preset per shot from the shot's environment (laboratory, midnight, amber).
+export const LIGHT_PRESET_IDS=Object.freeze(['auto-v1','neutral-studio-v1','warm-interior-v1','forest-daylight-v1','night-v1','scientific-dark-v1']);
 // GPU-01: the film-level Cinematic feature block (versioned, every key optional). It only selects capabilities; the
 // profile itself is renderProfile. Absent = no Cinematic feature (cinematic-v1 then draws GPU Standard pixels).
 export const CINEMATIC_VERSION=1;
-export const CINEMATIC_FEATURES=Object.freeze({materials:Object.freeze({'pbr-v1':'pbr-v1'})});
+export const CINEMATIC_FEATURES=Object.freeze({materials:Object.freeze({'pbr-v1':'pbr-v1'}),lights:Object.freeze(Object.fromEntries(LIGHT_PRESET_IDS.map(id=>[id,'env-light-v1'])))});
 // What a Director request with renderProfile gets when it brings no cinematic block of its own (every accepted feature).
-export const CINEMATIC_DEFAULTS=Object.freeze({version:CINEMATIC_VERSION,materials:'pbr-v1'});
+export const CINEMATIC_DEFAULTS=Object.freeze({version:CINEMATIC_VERSION,materials:'pbr-v1',lights:'auto-v1'});
 export function validateCinematic(x,path='film.cinematic'){
  if(!x||typeof x!=='object'||Array.isArray(x))throw Error(path+': object required');
  for(const k of Object.keys(x))if(k!=='version'&&!Object.hasOwn(CINEMATIC_FEATURES,k))throw Error(path+'.'+k+': unknown field');
@@ -57,7 +61,7 @@ export function requiredCapabilities(project){
 // Renderer options for one film: the Cinematic features to draw, only when the film is Cinematic (validated first).
 export function threeOptions(project){
  if(project?.renderProfile===undefined||!project.cinematic)return {};
- return {renderProfile:project.renderProfile,materials:project.cinematic.materials??null};
+ return {renderProfile:project.renderProfile,materials:project.cinematic.materials??null,lights:project.cinematic.lights??null};
 }
 // Full negotiation for a v2 project, or for a planned production (renderProfile + requested backends) before any
 // project exists. Returns {ok, profile, capabilities, diagnostics}; never changes its input.

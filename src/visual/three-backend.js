@@ -6,7 +6,8 @@ import * as THREE from 'three';
 import {RoundedBoxGeometry} from 'three/addons/geometries/RoundedBoxGeometry.js';
 import {CRAFTED,MATERIALS,chamferedBox,craftedColor,isCrafted,mixColor} from './crafted.js';
 import {hashNoise} from '../core/fidelity.js';
-import {emitGraph,boxBasis} from '../core/graph.js';
+import {emitGraph,boxBasis,ENVIRONMENTS} from '../core/graph.js';
+import {CINEMATIC_SHADOW,lightPresetFor,resolveLights} from './cinematic-lights.js';
 import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
 import {PBR_LIGHT,pbrParameters,surfaceFor} from './pbr.js';
 // Explicit real WebGL renderer. No silent fallback. Remotion CI uses software GL.
@@ -20,6 +21,11 @@ export function createThreeBackend(options={}){
  const ambient=new THREE.HemisphereLight('#b6d9fa','#40332a',2.0);scene.add(ambient);
  const key=new THREE.DirectionalLight('#fff1df',3.2);key.position.set(-3,6,5);key.castShadow=true;key.shadow.mapSize.set(1024,1024);Object.assign(key.shadow.camera,{left:-5,right:5,top:5,bottom:-5,near:.1,far:20});key.shadow.normalBias=.025;scene.add(key,key.target);
  const rim=new THREE.DirectionalLight('#75bfff',2.2);rim.position.set(4,3,-4);scene.add(rim);
+ // GPU-02 env-light-v1 (Cinematic only): a fill light from the camera side and a finer key shadow; GPU Standard has
+ // neither (the fill light is not even created, so Standard scenes are unchanged).
+ const lights=options.renderProfile==='cinematic-v1'&&options.lights?options.lights:null;let fill=null,envShare=1;
+ if(lights){fill=new THREE.DirectionalLight('#ffffff',0);scene.add(fill);key.shadow.mapSize.set(CINEMATIC_SHADOW.mapSize,CINEMATIC_SHADOW.mapSize);key.shadow.normalBias=CINEMATIC_SHADOW.normalBias;}
+ const environmentName=env=>Object.keys(ENVIRONMENTS).find(k=>ENVIRONMENTS[k]===env)??null;
  const floorGeo=new THREE.PlaneGeometry(120,120),floorMat=new THREE.MeshStandardMaterial({color:'#263d4b',roughness:.72,metalness:.13});
  const floor=new THREE.Mesh(floorGeo,floorMat);floor.rotation.x=-Math.PI/2;floor.position.y=-.04;floor.receiveShadow=true;scene.add(floor);
  const grid=new THREE.GridHelper(24,24,'#46616d','#344a55');grid.position.y=-.025;grid.material.transparent=true;grid.material.opacity=.22;scene.add(grid);
@@ -48,7 +54,7 @@ export function createThreeBackend(options={}){
   // The room light is attached per material, never as scene.environment: with scene.environment three ignores each
   // material's envMapIntensity and uses scene.environmentIntensity for all (WebGLRenderer.js, three 0.180), which left
   // metals as faint as paint. Per material, each preset keeps its own share; the floor and glowing parts get none.
-  m.envMap=roomTexture;m.envMapIntensity=envMapIntensity*PBR_LIGHT.environmentIntensity;pbrMaterials.set(k,m);return m;}
+  m.envMap=roomTexture;m.userData.envBase=envMapIntensity*PBR_LIGHT.environmentIntensity;m.envMapIntensity=m.userData.envBase*envShare;pbrMaterials.set(k,m);return m;}
  let width=0,height=0;
  function render(state,W,H){
   if(width!==W||height!==H){renderer.setSize(W,H,false);width=W;height=H;}
@@ -57,6 +63,13 @@ export function createThreeBackend(options={}){
   const f=state.fidelity,detail=f?.surfaceDetail??0;ambient.intensity=f?2-.55*f.contactShadow:2;key.intensity=f?3.2+.65*f.atmosphere:3.2;rim.intensity=f?2.2+.8*f.atmosphere:2.2;floorMat.roughness=f?.surfaceDetail>0?.61:.72;renderer.toneMappingExposure=f?1.25+.06*f.grade:1.25;if(isCrafted(state.look)){ambient.intensity*=CRAFTED.three.ambient;renderer.toneMappingExposure*=CRAFTED.three.exposure;}
   if(pbr){ambient.intensity*=PBR_LIGHT.ambientScale;renderer.toneMappingExposure*=PBR_LIGHT.exposure;}
   scene.environment=premium.begin(state.materialProfile);if(state.materialProfile){key.position.set(...materialLight(state.materialProfile.lighting,state.progress).map(x=>x*8));}else key.position.set(-3,6,5);
+  // GPU-02: the shot's light preset replaces the Standard rig values (Foundry material-profile shots keep their own).
+  if(lights&&!state.materialProfile){const L=resolveLights(lightPresetFor(lights,environmentName(env)).preset,env),cs=f?1-.275*f.contactShadow:1;
+   ambient.color.set(L.hemi.sky);ambient.groundColor.set(L.hemi.ground);ambient.intensity=L.hemi.intensity*cs;
+   key.color.set(L.key.color);key.intensity=L.key.intensity;key.position.set(...L.key.dir);fill.color.set(L.fill.color);fill.intensity=L.fill.intensity;fill.position.set(...L.fill.dir);
+   rim.color.set(L.rim.color);rim.intensity=L.rim.intensity;rim.position.set(...L.rim.dir);renderer.toneMappingExposure*=L.exposure;
+   if(L.environment!==envShare){envShare=L.environment;for(const m of pbrMaterials.values())m.envMapIntensity=m.userData.envBase*envShare;}}
+  else if(fill)fill.intensity=0;
   let i=0;if(state.geometryProfile){const commands=meshCommands(state);if(state.geometryProfile==='foundry-af05'){const needed=new Set(commands.map(c=>c.meshKey));for(const [k,g] of foundryGeometry)if(!needed.has(k)){g.dispose();foundryGeometry.delete(k)}}for(const cmd of commands){if(!foundryGeometry.has(cmd.meshKey))foundryGeometry.set(cmd.meshKey,toBufferGeometry(cmd.mesh));let mesh=pool[i++];if(!mesh){mesh=new THREE.Mesh();mesh.matrixAutoUpdate=false;scene.add(mesh);pool.push(mesh);}mesh.geometry=foundryGeometry.get(cmd.meshKey);mesh.material=cmd.surface?premium.get(cmd.surface,cmd.importTexture):material(cmd.color,cmd.emissive,detail);mesh.castShadow=!cmd.emissive&&cmd.surface?.alphaMode!=='blend';mesh.receiveShadow=true;mesh.visible=true;mesh.matrix.makeBasis(...cmd.axes.map(a=>new THREE.Vector3(...a)));mesh.matrix.setPosition(...cmd.origin);mesh.matrixWorldNeedsUpdate=true;}}else emitGraph(state,(center,size,color,tf=p=>p,emissive=false,bias=0,role=null,faceDetail=false,surface=null)=>{
    let mesh=pool[i++];if(!mesh){mesh=new THREE.Mesh(geometry,material(color,emissive,detail));mesh.matrixAutoUpdate=false;scene.add(mesh);pool.push(mesh);}
    const look=isCrafted(state.look);mesh.geometry=look?crafted(size):geometry;

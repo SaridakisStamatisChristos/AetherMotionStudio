@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "id": "gpu02-product",
+  "seconds": 60,
+  "language": "en-us",
+  "backend": "three",
+  "profile": "polished",
+  "topic": "How a laptop stays cool",
+  "audience": "curious beginners",
+  "tone": "clear",
+  "style": "product explainer",
+  "voice": "am_michael",
+  "seed": 12,
+  "script": "A laptop packs a powerful computer into a body thinner than a book. All that work makes heat, and heat is the enemy of speed. Inside, a thin copper pipe touches the processor. A little liquid in the pipe turns to vapour and carries the heat away. At the far end, the vapour cools and flows back again. A small fan pushes air across thin metal fins. The warm air leaves through vents at the back. When the processor works harder, the fan spins faster. If it still gets too hot, the laptop slows itself down to stay safe. Good cooling is why a thin laptop can still feel fast.",
+  "renderProfile": "cinematic-v1"
+}

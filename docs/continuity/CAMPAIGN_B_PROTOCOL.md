@@ -70,3 +70,18 @@ The owner asked for a budget that is not tied to one laptop. So every limit is *
 - **Brightness (tuning stills, mean luma of the picture band):** Cinematic 3–5 % below Standard with slightly higher contrast (portrait 69.4 vs 71.5; product 56.9 vs 59.8).
 - **Regression:** GPU Standard stills on swangle are byte-identical between main and this branch (3 frames, 2 films). CPU is covered by the unchanged digests and tests.
 - **Glitch scan:** gpu01-portrait-r2 Standard and Cinematic clean; gpu01-swatches-r2 both flag frame 480 (pre-existing cut flash, FIX-RS).
+
+## GPU-02 measurements (env-light-v1 + pbr-v1 vs GPU Standard, same prepared film)
+- gpu02-portrait-r1 (1800 frames; `--compare standard`; commit f46c097, sourceDirty false; vulkan; concurrency 8; FIX-RS included, hence lower fps than GPU-01). Three runs each.
+
+| Side | Wall time (runs) | fps median | Peak GPU memory (runs) | RAM growth (runs) |
+|---|---|---|---|---|
+| GPU Standard | 66.0, 66.2, 62.9 s | 28.2 | 1452–1508 MiB | 2.13, 3.04, 2.88 GB |
+| GPU Cinematic (pbr-v1 + env-light-v1) | 66.3, 64.8, 66.0 s | 28.2 | 1849–1857 MiB | 2.86, 3.40, 3.13 GB |
+
+- **Against the budget:**
+  - wall time 1.0 × Standard (limit 3 ×);
+  - GPU memory about +350 MiB (2048 px shadow map, fill light), 1.8 of 6 GiB;
+  - **RAM over the 3 GB reference cap:** Cinematic median 3.13 GB, max 3.40 GB. The Standard side of the same film reached 3.04 GB too, so the reference laptop's free RAM (about 3.4 GB) is the real constraint. Reported, not hidden. It goes to the owner's GPU-10 budget configuration (lower concurrency is the declared remedy there).
+- **Flicker:** median frame-to-frame change identical on both sides (0.51/0.51 portrait, 0.49/0.51 product, 0.40/0.41 environment). The 95th–99th percentiles are 10–25 % higher in Cinematic: cuts and fades with more contrast. frame_glitch is clean on all 6 films; no stale frames.
+- **Regression:** GPU Standard swangle stills byte-identical to main (portrait frame 726). Digests unchanged.

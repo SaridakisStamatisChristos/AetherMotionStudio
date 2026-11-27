@@ -1,4 +1,27 @@
-# Forward-only handoff: FIX-RS TESTED + RENDERED, PR open; next GPU-02 (2026-11-28)
+# Forward-only handoff: GPU-02 TESTED + RENDERED, PR open; next GPU-03 (2026-11-28)
+
+**Latest checkpoint (GPU-02):** `feature/gpu-02-lighting` from main 3a59a65. FIX-RS is merged as PR #70 on the owner's "continue i agree with merge", after CI passed on 8c01269. **The GPU-02 PR is open, not merged.**
+- **Owner decision:** the "stronger" lighting values (UI choice over Standard / subtle / stronger stills).
+- **Changed:**
+  - `src/visual/cinematic-lights.js` (new);
+  - `src/visual/three-backend.js` (fill light, 2048 px shadow, presets per shot, room-reflection share);
+  - `src/core/render-profiles.js` (env-light-v1, LIGHT_PRESET_IDS, defaults, threeOptions.lights);
+  - tests `tests/gpu02-lights.test.js` (6), with `tests/gpu00-profiles.test.js` and `tests/gpu01-pbr.test.js` updated for the new defaults;
+  - fixtures `examples/gpu02-{portrait,product,environment}.request.json`.
+- **Results:**
+  - `npm test` 596 (0 fail); digests unchanged; GPU Standard stills byte-identical to main;
+  - 3 comparison films PASS (f46c097, sourceDirty false), clean on glitch and stale checks; no added flicker;
+  - bench: Cinematic wall time 1.0 × Standard, +350 MiB GPU memory; RAM over the 3 GB cap (reported).
+- **Unresolved:**
+  - the RAM cap on this laptop (→ GPU-10 configuration);
+  - the product film's pre-existing CHECKS warnings (OFF_FRAME object-2 etc.; Director staging, not lighting);
+  - the PR CI result to confirm before the merge.
+- **Next action for "fod continue":**
+  1. If the GPU-02 PR is open, report it, confirm CI on its head, and wait for the merge word.
+  2. After the merge, clear renders older than GPU-02: keep gpu02-*-r1, out/bench/gpu02-*, the GPU-00 references and out/bench/gpu00-*, out/speech-cache, public/media and the v1.2 final batches; remove gpu01-*.
+  3. Then GPU-03 on `feature/gpu-03-textures` from main (CAMPAIGN_B.md "GPU-03"). Ask the owner first about importing local textures that carry third-party licences (an owner decision for GPU-03); procedural generators need no approval.
+
+**Previous checkpoint (FIX-RS), heading as written:** FIX-RS TESTED + RENDERED, PR open; next GPU-02 (2026-11-28)
 
 **Latest checkpoint (FIX-RS):** `feature/fix-render-stability` (renamed from fix/… so the CI test job runs; PR #69 closed → #70) from main 936d0cb. GPU-01 is merged as PR #68 on the owner's "merge and start the fix", after CI passed on dca76d5. **The FIX-RS PR is open, not merged.**
 - **Changed:**
