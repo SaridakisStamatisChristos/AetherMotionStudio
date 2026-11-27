@@ -162,6 +162,12 @@ test('explainer objects change between shots when the shot text names another ob
 test('list starts never turn a pronoun or auxiliary verb into an item; row labels share one size',async()=>{
  assert.deepEqual(findList('Much of it does, in trunks, roots and forest soil, sometimes for centuries.'),['Trunks','Roots','Forest soil']);
  assert.equal(findList('It does, in trunks, roots and soil.'),null);
+ // DUAL-09: a long opening part that ends with the first item never yields a list with that item missing
+ assert.equal(findList('In spring the volunteers planted tomatoes, beans, lettuce and squash.'),null);
+ assert.equal(findList('In spring, the volunteers planted tomatoes, beans, lettuce and squash.'),null);
+ assert.deepEqual(findList('In spring the volunteers planted crops such as tomatoes, beans, lettuce and squash.'),['Tomatoes','Beans','Lettuce','Squash'],'four items, first one unambiguous after "such as"');
+ assert.deepEqual(findList('In spring the volunteers planted crops such as tomatoes, beans and squash.'),['Tomatoes','Beans','Squash']);
+ assert.deepEqual(findList('The water is stored for decades, in rivers, lakes and glaciers.'),['Rivers','Lakes','Glaciers']);
  const {project}=await direct({...forest,id:'dual-test-row',content:'mixed-v1'});
  for(const s of project.shots){const L=layoutComposition(s.composition),labels=L.items.filter(x=>x.type==='label'&&x.id!=='heading');
   if(labels.length>1)assert.equal(new Set(labels.map(x=>x.text.size)).size,1,s.id+' '+labels.map(x=>x.text.size));}
