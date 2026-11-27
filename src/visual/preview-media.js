@@ -3,7 +3,9 @@
 //   the same function the native renderer uses (src/core/media.js verifyImageBytes), and the decoded size must be the
 //   verified upright size; anything else becomes an explicit diagnostic and a labelled placeholder (preview only);
 // - the registry holds only the current film's pictures: switching films unregisters (and closes) the others, so the
-//   decoded memory stays within the per-film bound (MEDIA_LIMITS.filmDecodedBytes) however long the session runs;
+//   registered decoded memory stays within the per-film bound (MEDIA_LIMITS.filmDecodedBytes) however long the session
+//   runs. Loads already in flight for a replaced film still complete before being closed, so transient memory is not
+//   hard-bounded yet (DUAL-09 hardening: bounded concurrent decoding, cancelled obsolete fetches);
 // - concurrent requests for the same picture share one load;
 // - a load that finishes after its film was replaced is closed, never registered (stale loads cannot repopulate);
 // - each sync's diagnostics are tagged with its generation, so the caller can ignore results of older films.
