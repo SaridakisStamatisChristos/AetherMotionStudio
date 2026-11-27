@@ -1,8 +1,12 @@
 # Proposed forward-only local roadmap
 
-## Current: Campaign A — Universal Dual-Backend Finalization (owner-authorized 2026-11-26)
-DUAL-00 … DUAL-09 in order; requirements in [CAMPAIGN_A_DIRECTIVE.md](CAMPAIGN_A_DIRECTIVE.md), status in [CAMPAIGN_A.md](CAMPAIGN_A.md) (the single status authority; this file only indexes it). The earlier proposals below are history. The open GEN items (GEN-13 music, GEN-14 local model) and the "GEN-16 Three cinematic profile" are **not** scheduled; GEN-16 belongs to Campaign B, which waits for the tagged v1.2.
+## Current: Campaign B — GPU-First Cinematic Expansion (directive supplied 2026-11-27)
+GPU-00 … GPU-12 in order. Requirements: [CAMPAIGN_B_DIRECTIVE.md](CAMPAIGN_B_DIRECTIVE.md). Status, FOD plan and owner decisions: [CAMPAIGN_B.md](CAMPAIGN_B.md), the single status authority; this file only indexes it.
+- Next: GPU-00 (ADR-001 first; owner approval before any GPU-exclusive capability).
+- The earlier "GEN-16 Three cinematic profile" proposal is absorbed into Campaign B (GPU-01/02/08).
 
+## Completed: Campaign A — Universal Dual-Backend Finalization (2026-11-26 … 27)
+DUAL-00 … DUAL-09 merged; tag `v1.2-dual-backend-final` → 2cb82ef. Requirements [CAMPAIGN_A_DIRECTIVE.md](CAMPAIGN_A_DIRECTIVE.md), record [CAMPAIGN_A.md](CAMPAIGN_A.md), release notes [docs/RELEASE_1_2.md](../RELEASE_1_2.md). Still unscheduled from earlier proposals: GEN-13 (music), GEN-14 (local model); the Instagram test upload deferred by the owner; CPU-only polish deferred to later general fixes.
 ## Earlier roadmap (history)
 This is an actionable proposed sequence for future work, not an approved requirement to implement every unit at once. Current user request takes precedence. Core-first; no new auth, SaaS or rewrite. Preserve AF01–AF09 and both backends. Each unit needs explicit scope, changed-file map, unit/adversarial tests, exact run evidence, reviewed samples where relevant, updated contracts/canon/handoff. Do not auto-launch full historical matrix.
 

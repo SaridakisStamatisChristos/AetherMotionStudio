@@ -1,4 +1,4 @@
-# Session start prompt (current: Campaign A)
+# Session start prompt (current: Campaign B)
 
 Open Claude Code in the AetherMotionStudio repository root and type:
 
@@ -6,14 +6,13 @@ Open Claude Code in the AetherMotionStudio repository root and type:
 fod continue
 ```
 
-CLAUDE.md makes that a full bootstrap: Git state, AGENTS.md, CURRENT_STATE.md, HANDOFF.md, CAMPAIGN_A.md, then the HANDOFF "Next action" (the earliest unfinished Campaign A milestone). A longer form, if a session needs it:
+CLAUDE.md makes that a full bootstrap: Git state, AGENTS.md, CURRENT_STATE.md, HANDOFF.md, CAMPAIGN_B.md, then the HANDOFF "Next action" (the earliest unfinished Campaign B milestone; first GPU-00). A longer form, if a session needs it:
 
 ```text
-FOD RESUME. Continue Campaign A (docs/continuity/CAMPAIGN_A_DIRECTIVE.md, status in CAMPAIGN_A.md) from the earliest unfinished milestone, following CLAUDE.md, AGENTS.md, CURRENT_STATE.md and HANDOFF.md. Inspect existing implementations before building; reuse and extend, never rebuild. Preserve both backends, all accepted features and the production workflow. Real tests and local renders only; checkpoint state, handoff and the campaign tracker after each verified transition. Merge or tag only on my word. Do not begin Campaign B.
+FOD RESUME. Continue Campaign B (docs/continuity/CAMPAIGN_B_DIRECTIVE.md, status and plan in CAMPAIGN_B.md) from the earliest unfinished milestone, following CLAUDE.md, AGENTS.md, CURRENT_STATE.md and HANDOFF.md. Preserve the tag v1.2-dual-backend-final and keep CPU Classic and GPU Standard unchanged. Draft ADR-001 and get my approval before any GPU-exclusive capability. Inspect existing implementations before building; reuse and extend, never rebuild. Real tests, local RTX renders and measured budgets only; checkpoint state, handoff and the campaign tracker after each verified transition. Merge or tag only on my word.
 ```
 
 Before context runs out: "FOD CHECKPOINT".
-
 ---
 
 ## Original one-time prompt (LOCAL-01, 2026-11-24; historical)

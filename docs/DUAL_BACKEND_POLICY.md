@@ -44,3 +44,10 @@ Verified [recovery run 45447693269](https://github.com/SaridakisStamatisChristos
 
 ## Campaign A scope (owner-authorized 2026-11-26)
 Campaign A (docs/continuity/CAMPAIGN_A_DIRECTIVE.md) extends **both** backends equally: character-free content, typography, maths, charts, local images, formats, themes and audio controls. Content semantics must match across backends; pixels may differ. GPU-exclusive features (Campaign B) stay out of scope, and this policy stays unchanged until v1.2 is verified, owner-accepted and tagged and the owner explicitly authorizes a revision. All earlier sections of this policy remain binding.
+
+## Status 2026-11-27: v1.2 tagged; Campaign B revision pending (no rule changed here)
+Campaign A is verified, owner-accepted and tagged (`v1.2-dual-backend-final` → 2cb82ef).
+- The owner has supplied the Campaign B directive (docs/continuity/CAMPAIGN_B_DIRECTIVE.md).
+- Its first gate (GPU-00) is an ADR (docs/adr/ADR-001-render-profiles.md). It would keep CPU Classic and GPU Standard first-class for every shared feature and allow GPU-exclusive capabilities only in an opt-in GPU Cinematic profile, with capability negotiation and no silent substitution.
+- **Until the owner approves that ADR, every section of this policy above stays fully binding**, including "both backends first-class" for all features.
+- After approval, a new section here points to the ADR, and the earlier sections stay.
