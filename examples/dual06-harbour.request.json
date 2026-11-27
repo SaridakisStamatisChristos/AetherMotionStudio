@@ -1,0 +1,385 @@
+{
+  "version": 1,
+  "id": "dual06-harbour",
+  "topic": "The lighthouse keeper of Port Haven (three formats)",
+  "seconds": 60,
+  "audience": "curious beginners",
+  "tone": "calm",
+  "style": "illustrated history",
+  "language": "en-us",
+  "voice": "am_michael",
+  "backend": "cpu",
+  "profile": "polished",
+  "seed": 7,
+  "content": "typography-v1",
+  "font": "merriweather",
+  "theme": "paper-v1",
+  "script": "In 1850, a lighthouse stood on the rocks above the harbour. Every evening at dusk, the keeper climbed one hundred and twelve steps to light the lamp. The old harbour map shows why the light mattered. Three reefs lay hidden just outside the harbour mouth. A ship coming in at night had to pass between them. The great lens gathered the small flame into one strong beam. On a clear night, sailors could see it twenty miles away. In winter storms the keeper stayed awake until morning. Thanks to the light, the ships came home safely.",
+  "visuals": [
+    {
+      "at": "In 1850, a lighthouse stood on the rocks above the harbour.",
+      "composition": {
+        "version": "compose-v2",
+        "region": "full",
+        "font": "merriweather",
+        "theme": "paper-v1",
+        "items": [
+          {
+            "id": "tower",
+            "type": "image",
+            "box": [
+              0.04,
+              0,
+              0.92,
+              1
+            ],
+            "media": "dual05-lighthouse",
+            "alt": "Illustration of a red and white lighthouse on dark rocks at dusk, its beam crossing the sky",
+            "caption": "The lighthouse at dusk (illustration)",
+            "fit": "cover",
+            "focus": [
+              0.6,
+              0.4
+            ],
+            "under": true,
+            "move": {
+              "from": {
+                "x": 0.5,
+                "y": 0.55,
+                "zoom": 1
+              },
+              "to": {
+                "x": 0.58,
+                "y": 0.4,
+                "zoom": 1.25
+              }
+            },
+            "formats": {
+              "landscape-v1": {
+                "box": [
+                  0.02,
+                  0,
+                  0.6,
+                  1
+                ]
+              },
+              "square-v1": {
+                "box": [
+                  0.04,
+                  0,
+                  0.92,
+                  1
+                ]
+              }
+            }
+          },
+          {
+            "id": "steps",
+            "type": "counter",
+            "box": [
+              0.52,
+              0.04,
+              0.4,
+              0.22
+            ],
+            "from": 0,
+            "to": 112,
+            "text": "steps",
+            "tone": "warm",
+            "cue": "Every evening at dusk",
+            "formats": {
+              "landscape-v1": {
+                "box": [
+                  0.66,
+                  0.3,
+                  0.32,
+                  0.34
+                ]
+              },
+              "square-v1": {
+                "box": [
+                  0.52,
+                  0.04,
+                  0.44,
+                  0.3
+                ]
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "at": "The old harbour map shows why the light mattered.",
+      "composition": {
+        "version": "compose-v2",
+        "region": "full",
+        "font": "merriweather",
+        "theme": "paper-v1",
+        "items": [
+          {
+            "id": "map",
+            "type": "image",
+            "box": [
+              0,
+              0.08,
+              1,
+              0.62
+            ],
+            "media": "dual05-harbour",
+            "alt": "Illustrated harbour map of Port Haven in 1850 with three reefs outside the harbour mouth and a dashed safe channel",
+            "fit": "cover",
+            "under": true,
+            "move": {
+              "from": {
+                "x": 0.5,
+                "y": 0.5,
+                "zoom": 1
+              },
+              "to": {
+                "x": 0.52,
+                "y": 0.7,
+                "zoom": 1.8
+              }
+            },
+            "formats": {
+              "landscape-v1": {
+                "box": [
+                  0,
+                  0,
+                  0.62,
+                  1
+                ]
+              },
+              "square-v1": {
+                "box": [
+                  0.08,
+                  0,
+                  0.84,
+                  0.74
+                ]
+              }
+            }
+          },
+          {
+            "id": "rose",
+            "type": "image",
+            "box": [
+              0.76,
+              0.1,
+              0.22,
+              0.18
+            ],
+            "media": "dual05-compass",
+            "alt": "Compass rose pointing north",
+            "fit": "contain",
+            "plate": false,
+            "formats": {
+              "landscape-v1": {
+                "box": [
+                  0.48,
+                  0.02,
+                  0.12,
+                  0.2
+                ]
+              },
+              "square-v1": {
+                "box": [
+                  0.74,
+                  0.02,
+                  0.18,
+                  0.2
+                ]
+              }
+            }
+          },
+          {
+            "id": "reefs",
+            "type": "label",
+            "box": [
+              0.02,
+              0.74,
+              0.56,
+              0.1
+            ],
+            "text": "Three hidden reefs",
+            "tone": "warm",
+            "cue": "Three reefs lay hidden",
+            "formats": {
+              "landscape-v1": {
+                "box": [
+                  0.65,
+                  0.3,
+                  0.35,
+                  0.14
+                ]
+              },
+              "square-v1": {
+                "box": [
+                  0.02,
+                  0.76,
+                  0.46,
+                  0.12
+                ]
+              }
+            }
+          },
+          {
+            "id": "channel",
+            "type": "label",
+            "box": [
+              0.42,
+              0.87,
+              0.56,
+              0.1
+            ],
+            "text": "One safe channel",
+            "tone": "accent",
+            "cue": "A ship coming in at night",
+            "formats": {
+              "landscape-v1": {
+                "box": [
+                  0.65,
+                  0.5,
+                  0.35,
+                  0.14
+                ]
+              },
+              "square-v1": {
+                "box": [
+                  0.52,
+                  0.88,
+                  0.46,
+                  0.12
+                ]
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "at": "The great lens gathered the small flame into one strong beam.",
+      "composition": {
+        "version": "compose-v2",
+        "region": "full",
+        "font": "merriweather",
+        "theme": "paper-v1",
+        "items": [
+          {
+            "id": "lens",
+            "type": "image",
+            "box": [
+              0,
+              0,
+              1,
+              0.64
+            ],
+            "media": "dual05-lens",
+            "alt": "Illustration of a lighthouse lens: glowing concentric glass rings around a small flame",
+            "caption": "Rings of glass around one flame (illustration)",
+            "fit": "contain",
+            "formats": {
+              "landscape-v1": {
+                "box": [
+                  0,
+                  0,
+                  0.6,
+                  1
+                ]
+              },
+              "square-v1": {
+                "box": [
+                  0,
+                  0,
+                  1,
+                  0.6
+                ]
+              }
+            }
+          },
+          {
+            "id": "miles",
+            "type": "counter",
+            "box": [
+              0.12,
+              0.7,
+              0.76,
+              0.28
+            ],
+            "from": 0,
+            "to": 20,
+            "suffix": " miles",
+            "text": "seen on a clear night",
+            "cue": "On a clear night",
+            "formats": {
+              "landscape-v1": {
+                "box": [
+                  0.64,
+                  0.3,
+                  0.36,
+                  0.4
+                ]
+              },
+              "square-v1": {
+                "box": [
+                  0.12,
+                  0.64,
+                  0.76,
+                  0.34
+                ]
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "at": "In winter storms the keeper stayed awake until morning.",
+      "composition": {
+        "version": "compose-v2",
+        "region": "full",
+        "font": "merriweather",
+        "theme": "paper-v1",
+        "items": [
+          {
+            "id": "storm",
+            "type": "image",
+            "box": [
+              0,
+              0.04,
+              1,
+              0.86
+            ],
+            "media": "dual05-storm",
+            "alt": "Illustration of a sailing ship in high waves at night, a lighthouse beam reaching it from the right",
+            "caption": "A winter storm (illustration)",
+            "fit": "cover",
+            "crop": [
+              0.05,
+              0.08,
+              0.9,
+              0.86
+            ],
+            "focus": [
+              0.4,
+              0.6
+            ],
+            "move": {
+              "from": {
+                "x": 0.5,
+                "y": 0.5,
+                "zoom": 1.2
+              },
+              "to": {
+                "x": 0.42,
+                "y": 0.55,
+                "zoom": 1
+              }
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

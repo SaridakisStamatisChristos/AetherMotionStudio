@@ -2,17 +2,20 @@
 import json,os,sys,subprocess
 from pathlib import Path
 import numpy as np
+from formats import dims
 from matched_inventory import load,sha,normalized,check_shared,SPEECH_SHARED,AUTHORED_SHARED
-def frame(p,t):
-    ff=os.environ.get('AETHER_FFMPEG','ffmpeg')
-    data=subprocess.run([ff,'-v','error','-ss',str(t),'-i',str(p/'film.mp4'),'-frames:v','1','-vf','scale=180:320','-pix_fmt','rgb24','-f','rawvideo','-'],check=True,capture_output=True).stdout
-    return np.frombuffer(data,dtype=np.uint8).astype(np.float32).reshape(320,180,3)
+def frame(p,t,size=(180,320)):
+    ff=os.environ.get('AETHER_FFMPEG','ffmpeg');w,h=size
+    data=subprocess.run([ff,'-v','error','-ss',str(t),'-i',str(p/'film.mp4'),'-frames:v','1','-vf',f'scale={w}:{h}','-pix_fmt','rgb24','-f','rawvideo','-'],check=True,capture_output=True).stdout
+    return np.frombuffer(data,dtype=np.uint8).astype(np.float32).reshape(h,w,3)
 def compare(a,b):
     total,shared,inventory=check_shared(a,b);t=load(a,'timeline.json')
+    # DUAL-06: expected size from the project's format; sampled rows keep the historical 80:210 of 320 band
+    W,H=dims(load(a,'scene.json'));size=(W//6,H//6);r0,r1=round(size[1]*80/320),round(size[1]*210/320)
     outputs=[]
     for p,backend in ((a,'cpu'),(b,'three')):
         probe=load(p,'probe.json');v=next(x for x in probe['streams'] if x['codec_type']=='video');audio=next(x for x in probe['streams'] if x['codec_type']=='audio')
-        assert (v['width'],v['height'],int(v['nb_frames']),v['codec_name'],audio['codec_name'],v['r_frame_rate'])==(1080,1920,total,'h264','aac','30/1')
+        assert (v['width'],v['height'],int(v['nb_frames']),v['codec_name'],audio['codec_name'],v['r_frame_rate'])==(W,H,total,'h264','aac','30/1')
         assert abs(float(probe['format']['duration'])-total/30)<.08
         timing=load(p,'render-timing.json');q=load(p,'quality-report.json');assert timing['backend']==backend and q['errors']==0
         outputs.append({'backend':backend,'renderSeconds':timing['renderSeconds'],'framesPerSecond':total/timing['renderSeconds'],'gl':timing['gl'],'filmBytes':(p/'film.mp4').stat().st_size,'filmSha256':sha(p/'film.mp4'),'qualityStatus':q['status'],'warnings':q['warnings']})
@@ -21,7 +24,7 @@ def compare(a,b):
     for s in t['shots']:
         for fraction in (.25,.5,.75):
             second=(s['startFrame']+fraction*(s['endFrame']-s['startFrame']))/30
-            x,y=frame(a,second)[80:210],frame(b,second)[80:210]
+            x,y=frame(a,second,size)[r0:r1],frame(b,second,size)[r0:r1]
             samples.append({'shot':s['id'],'second':second,'meanAbsRgbDifference':float(np.abs(x-y).mean()),'cpuStd':float(x.std()),'threeStd':float(y.std())})
     assert all(min(s['cpuStd'],s['threeStd'])>4 for s in samples),'flat sampled geometry'
     assert any(s['meanAbsRgbDifference']>1 for s in samples),'no meaningful sampled backend difference'

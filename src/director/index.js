@@ -83,6 +83,8 @@ export function compile(q,ir,selection,{mediaRoot}={}){
   // DUAL-02 typography-v1: the composition is the picture; no 3D asset, effect or framed subject.
   if(q.content==='typography-v1'){rest.assets=[];rest.effects=[];rest.cameraRig={preset:s.cameraRig?.preset??'establishing'};}
   return {...rest,composition:s.titleHold?holdComposition(c):c};})};}
+ // DUAL-06: opt-in output format (absent = vertical-v1, unchanged).
+ if(q.format)out={...out,format:q.format};
  // DUAL-03: equations are compiled to outlines here (Node, MathJax) before the final validation.
  out=compileProjectMath(out);
  // DUAL-05: image items are resolved from the local media library (hash and structure verified), never invented.

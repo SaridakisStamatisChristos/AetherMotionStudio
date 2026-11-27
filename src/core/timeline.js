@@ -1,5 +1,6 @@
 import {FORMAT,TEMPLATES,VOICES,validateScene} from './contract.js';
 import {validateGraph} from './graph.js';
+import {validateFormat} from './formats.js';
 import {continuityLedger} from './identity.js';
 import {validateSpeechConfig,validateSpeechTimeline} from './speech.js';
 import {validateSpeakerAssets,validateEnvelope,validateVisemes} from './talk.js';
@@ -14,7 +15,7 @@ function integer(x,min,max,p){if(!Number.isSafeInteger(x)||x<min||x>max)fail(p,'
 function slug(x,p){if(typeof x!=='string'||!/^[a-z0-9][a-z0-9-]{0,47}$/.test(x)||/^(con|prn|aux|nul|com[1-9]|lpt[1-9])$/.test(x))fail(p,'unsafe ID');}
 export function validateProject(s){
  if(s?.version===1)return validateScene(s);
- fields(s,['version','id','title','voice','shots'],'film',['identityLibrary','speech','audio','delivery']);
+ fields(s,['version','id','title','voice','shots'],'film',['identityLibrary','speech','audio','delivery','format']);
  // GEN-09 opt-in delivery layout (src/core/reels.js); absent = the historical layout.
  if(s.delivery!==undefined&&s.delivery!=='reels-v1')fail('film.delivery','reels-v1 or absent');
  if(s.version!==2)fail('version','only 1 or 2 supported');
@@ -22,6 +23,8 @@ export function validateProject(s){
  if(s.audio!==undefined){if(!s.audio||typeof s.audio!=='object'||Array.isArray(s.audio))fail('audio','object required');const ks=Object.keys(s.audio);if(!ks.length)fail('audio','master or placement required');for(const k of ks)if(!['master','placement'].includes(k))fail('audio.'+k,'unknown field');if(s.audio.master!==undefined&&s.audio.master!=='mix-v2')fail('audio.master','mix-v2 required');
   // POLISH-03: narration placement inside each shot ('center' historical, 'lead' = speak early, silence at the end).
   if(s.audio.placement!==undefined&&!['center','lead'].includes(s.audio.placement))fail('audio.placement','center or lead required');if(s.speech!==undefined)fail('audio','speech projects use speech.mix.master and speech.placement');}
+ // DUAL-06: opt-in output format (src/core/formats.js); only tested combinations (checked before the shots).
+ if(Array.isArray(s.shots))validateFormat(s);
  slug(s.id,'id');str(s.title,'title',100);if(!VOICES.includes(s.voice))fail('voice','unsupported');
  if(!Array.isArray(s.shots)||s.shots.length<1||s.shots.length>60)fail('shots','1–60 required');
  const ids=new Set();let minimum=0;
@@ -36,7 +39,7 @@ export function validateProject(s){
   if(!Array.isArray(x.narration)||x.narration.length<1||x.narration.length>8)fail(p,'1–8 narration phrases required');
   x.narration.forEach((t,j)=>str(t,p+'.narration['+j+']',180));
   if(chapter){if(!CHAPTERS.includes(x.chapter))fail(p,'unknown chapter');str(x.heading,p+'.heading',42);str(x.subheading,p+'.subheading',64);}
-  else if(graph)validateGraph(x,p);
+  else if(graph)validateGraph(x,p,{format:s.format});
   else{if(!TEMPLATES.includes(x.template))fail(p,'unknown template');validateScene({version:1,id:x.id,template:x.template,title:s.title,voice:s.voice,copy:x.copy,narration:[{start:0,end:1,text:'Validation'}],captions:[]});}
   minimum+=x.durationFrames??60;
  }
