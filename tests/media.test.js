@@ -311,3 +311,12 @@ test('15. resolved sources cannot be forged into the shared validator: shape, or
  assert.throws(()=>validateSource({...SRC,width:4096,height:8192,displayWidth:4096,displayHeight:8192},'s'),/decoded size over 64 MB/);
  assert.equal(validateSource({...SRC,orientation:6,displayWidth:600,displayHeight:800},'s').orientation,6);
 });
+
+test('16. the planner suggests an authored image for picture words and never invents one',async()=>{
+ const {direct}=await import('../src/director/index.js');
+ const q=JSON.parse(readFileSync(new URL('../examples/dual04-bread.request.json',import.meta.url),'utf8'));delete q.visuals;
+ const r=await direct({...q,id:'dual05-hint',script:'This old photo shows the harbour. The keeper kept a careful log.'});
+ const d=r.stages.aids.diagnostics.find(x=>/DUAL-05/.test(x.wanted));
+ assert.equal(d.code,'AUTHORED_VISUAL_SUGGESTED');assert.match(d.advice,/media-import\.mjs/);assert.match(d.advice,/never invented/);
+ assert.ok(r.project.shots.every(s=>!(s.composition?.items??[]).some(x=>x.type==='image')),'no image without an authored visual');
+});
