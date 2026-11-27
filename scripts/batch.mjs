@@ -47,7 +47,7 @@ async function main(argv){
   const r=requestCancel(batchDir(arg),{root,action:cmd,job});console.log(r.message);return 0;
  }
  if(cmd==='verify'){if(rest.length)throw Error(usage);const rows=verifyBatch(batchDir(arg));let bad=0;
-  for(const r of rows){console.log(pad(r.job,22)+pad(r.state,11)+(r.ok===null?'not finished':r.ok?'ok':'PROBLEM: '+r.error));if(r.ok===false)bad++;}
+  for(const r of rows){console.log(pad(r.job,22)+pad(r.state,11)+(r.ok===null?(r.state==='failed'||r.state==='cancelled'?'no film ('+r.state+')':'not finished yet'):r.ok?'ok':'PROBLEM: '+r.error));if(r.ok===false)bad++;}
   return bad?1:0;}
  throw Error(usage);
 }
