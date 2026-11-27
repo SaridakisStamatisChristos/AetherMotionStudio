@@ -1,6 +1,43 @@
-# Forward-only handoff: Campaign A complete — DUAL-00…09 merged; v1.2 tag pending the owner (2026-11-27)
+# Forward-only handoff: Campaign B (GPU-First Cinematic Expansion) ready to start at GPU-00 (2026-11-27)
 
-**Latest checkpoint (merge):** PR #64 (DUAL-09) merged on the owner's "merge and finilize" → main 79f76d7 (CI 46033308643 green on 7cabbf6, 560 tests). Renders older than DUAL-09 cleared (1,465 MB); kept out/batches/dual09-matrix-r2 and dual09-final-r1 (both verify), out/bench/d09-*, out/dual09-preview-mem/result.json, the speech cache and public/media.
+**Latest checkpoint (Campaign B setup):**
+- **Campaign A is complete:** tag `v1.2-dual-backend-final` → main 2cb82ef (owner "tag"; no release publication).
+- **The owner supplied the Campaign B master directive** and asked for the FOD setup to start in a new session.
+- **Stored on `chore/campaign-b-setup`** (docs only):
+  - directive verbatim (docs/continuity/CAMPAIGN_B_DIRECTIVE.md);
+  - tracker with binding rules, reuse map, proposed protocol, FOD plan per milestone, owner decisions and ledger (docs/continuity/CAMPAIGN_B.md);
+  - CLAUDE.md, AGENTS.md, CURRENT_STATE, NEXT_UNITS, START_CLAUDE, the continuity README;
+  - a status note in DUAL_BACKEND_POLICY.md (no rule changed).
+- **If its PR is still open at bootstrap, its content is the latest canon:** read it from that branch and ask the owner to merge it.
+
+**Next action for "fod continue": GPU-00** (plan: CAMPAIGN_B.md "GPU-00"; directive §4 GPU-00 and §2)
+1. **Bootstrap.**
+   - Confirm `git rev-list -n 1 v1.2-dual-backend-final` = 2cb82efc060ff13e06274fe557e5c4927a119056 and main clean.
+   - `git switch main && git pull && npm install`, then branch `feature/gpu-00-architecture` from main.
+2. **Baseline.**
+   - Run `npm test` (fail 0), Python 63 OK, `node scripts/font-metrics.mjs --check`.
+   - Run `node scripts/fod-digests.mjs . --exclude talk04,talk05,gen01,gen09,gen12,fixa,dual`: graph 3d33fbaee198acad, geometry 14dec244d171dc56, detail2 e3f80439a292f21a, director 8a0ad025b6c9f6d6.
+   - Run `nvidia-smi` and `node scripts/gl-probe.mjs` (WebGL renderer per GL route).
+3. **Inventory (read-only)** → docs/CAMPAIGN_B_AUDIT.md:
+   - three-backend.js renderer, colour, shadows, lights, materials, caches, disposal;
+   - Foundry materials, textures and LOD; graph and box-stream APIs; Remotion render settings;
+   - the `three/examples/jsm` modules available (verified present: GLTFLoader, DRACOLoader, KTX2Loader, meshopt decoder, RGBE/HDR loaders, EffectComposer, UnrealBloomPass, BokehPass, RoomEnvironment).
+4. **Draft `docs/adr/ADR-001-render-profiles.md`** (Proposed):
+   - the three profiles; shared vs exclusive capabilities with a typed capability vocabulary;
+   - a distinct versioned profile field (`profile` is taken by the fidelity profile);
+   - the preflight negotiation contract with diagnostic codes and user choices;
+   - the determinism statement; what DUAL_BACKEND_POLICY keeps and replaces.
+   - **Stop and ask the owner to approve it (UI choice).** No GPU-exclusive capability before approval.
+5. **After approval:**
+   - ADR → Accepted; add a pointer section to DUAL_BACKEND_POLICY.md.
+   - Profile skeleton: field, validation, capability table, preflight refusals, report fields. No visual change; tests prove legacy renders and digests unchanged and that wrong pairings fail before rendering.
+6. **Reference scenes** (portrait character, product hero, environment, scientific visualization), each with one prepared audio and timeline. Run them on Standard via perf-bench (≥ 3 runs, cold then warm): wall time, fps, peak GPU memory, process RAM, WebGL renderer, concurrency, encoder.
+7. **Budget table** for the owner to agree or revise (directive targets: Cinematic ≤ 6 GiB GPU memory for 60 s references, ≥ 2 GiB headroom, ≤ 3× Standard median wall time). Then freeze `campaign-b-protocol-v1` (CAMPAIGN_B_PROTOCOL.md), checkpoint and open the PR. Merge only on the owner's word.
+
+- **Render session:** `$env:PYTHON=(Resolve-Path .venv/Scripts/python.exe).Path; $env:AETHER_FFMPEG=(Resolve-Path .venv/Lib/site-packages/imageio_ffmpeg/binaries/ffmpeg-win-x86_64-v7.1.exe).Path; $env:AETHER_FFPROBE=(Resolve-Path node_modules/@remotion/compositor-win32-x64-msvc/ffprobe.exe).Path; $env:AETHER_GL="vulkan"`. Run long jobs detached (CLAUDE.md "Tooling lessons").
+- **Kept renders:** out/batches/dual09-matrix-r2 and dual09-final-r1 (v1.2 final films; both verify), out/bench/d09-*, out/dual09-preview-mem/result.json, out/speech-cache, public/media. The v1.2 harbour fixture (reg-harbour06) is a ready regression input for perf-bench, but its soundtrack in public/audio was cleared: re-create it with a fresh `produce.mjs` pair before benchmarking.
+
+**Previous checkpoint (merge):** PR #64 (DUAL-09) merged on the owner's "merge and finilize" → main 79f76d7 (CI 46033308643 green on 7cabbf6, 560 tests). Renders older than DUAL-09 cleared (1,465 MB); kept out/batches/dual09-matrix-r2 and dual09-final-r1 (both verify), out/bench/d09-*, out/dual09-preview-mem/result.json, the speech cache and public/media.
 - **Next action for "fod continue":** ask the owner for the tag word. On "tag": tag `v1.2-dual-backend-final` on the exact accepted main commit (79f76d7 or the commit of this record's merge, as the owner says), push the tag, no release publication. **Campaign B (GPU-only graphics) only with the owner's separate authorization after the tag** (it revises docs/DUAL_BACKEND_POLICY.md).
 - Deferred by the owner: CPU-only detail polish ("we can fix anything in cpu in later stages"), generalized, not per film.
 
