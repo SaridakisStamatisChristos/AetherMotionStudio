@@ -67,7 +67,12 @@ def emit(out):
     pcm=np.frombuffer(raw,dtype='<i2').astype(np.float32)/32768
     expected=total*1600
     if abs(len(pcm)-expected)>4096:issue('DECODED_AUDIO_LENGTH','error',{'actual':len(pcm),'expected':expected})
-    if rms(pcm)<.003:issue('SILENT_AUDIO','error',rms(pcm))
+    silent=bool(scene.get('speech')) and scene['speech'].get('soundtrack')=='silent'
+    # DUAL-06: a requested silent soundtrack must decode as silence; otherwise silence is an error
+    if silent:
+        decoded_peak=float(np.max(np.abs(pcm))) if len(pcm) else 0.
+        if decoded_peak>.001:issue('NOT_SILENT','error',decoded_peak)
+    elif rms(pcm)<.003:issue('SILENT_AUDIO','error',rms(pcm))
     if np.count_nonzero(np.abs(pcm)>=.999)>0:issue('DECODED_AUDIO_SATURATION','warning',int(np.count_nonzero(np.abs(pcm)>=.999)))
     report=read_json(out/'voice-report.json');segments=report['segments'];intervals=[]
     for i,s in enumerate(segments):
@@ -78,9 +83,9 @@ def emit(out):
             if rms(v[start:start+n])<.005:low+=n;longest=max(longest,low)
             else:low=0
         intervals.append({'phrase':i,'startSample':a,'endSample':b,'decodedRms':energy,'longestLowEnergySamples':longest})
-        if energy<.005:issue('INAUDIBLE_DECODED_PHRASE','error',i)
-        if longest>R*.7:issue('LOW_ENERGY_INSIDE_PHRASE','warning',{'phrase':i,'samples':longest})
-    audio={'decodedSamples':len(pcm),'expectedSamples':expected,'rms':rms(pcm),'peak':float(np.max(np.abs(pcm))) if len(pcm) else 0,'intervals':intervals,'method':'decoded AAC mono PCM; not LUFS, true peak or intelligibility'}
+        if energy<.005 and not silent:issue('INAUDIBLE_DECODED_PHRASE','error',i)
+        if longest>R*.7 and not silent:issue('LOW_ENERGY_INSIDE_PHRASE','warning',{'phrase':i,'samples':longest})
+    audio={**({'soundtrack':'silent (requested)'} if silent else {}),'decodedSamples':len(pcm),'expectedSamples':expected,'rms':rms(pcm),'peak':float(np.max(np.abs(pcm))) if len(pcm) else 0,'intervals':intervals,'method':'decoded AAC mono PCM; not LUFS, true peak or intelligibility'}
     captions=None
     if scene.get('speech'):
         from speech_plan import caption_labels

@@ -12,7 +12,7 @@
 // timeline: 2–8 events on a line; flow: 2–6 boxes joined by arrows (flowchart); compare: 2 cards side by side.
 import {tickStep} from './diagrams.js';
 export const CHART_KINDS=Object.freeze(['bar','line','area','scatter','pie']);
-export const SERIES_COLOURS=Object.freeze({'aether-v1':Object.freeze(['#6de6e3','#ffd17a','#a9b5ff','#f4989e','#9fe39a','#ffa15c']),'paper-v1':Object.freeze(['#a3401b','#2f4a96','#7a5600','#2e6b45','#7b3f8c','#106b74'])});
+export const SERIES_COLOURS=Object.freeze({'contrast-v1':Object.freeze(['#ffe14d','#5fe8ff','#ff8fd0','#9dff7a','#ffb347','#d2b8ff']),'aether-v1':Object.freeze(['#6de6e3','#ffd17a','#a9b5ff','#f4989e','#9fe39a','#ffa15c']),'paper-v1':Object.freeze(['#a3401b','#2f4a96','#7a5600','#2e6b45','#7b3f8c','#106b74'])});
 // Six colours per theme (series use the first four; every one of a pie's up to six slices gets its own colour).
 export const CSV_LIMITS=Object.freeze({chars:8000,rows:60,cols:5});
 const fail=(p,m)=>{throw Error(p+': '+m)};

@@ -1,5 +1,13 @@
 import {VOICES} from './contract.js';
 import {fields,finite,choice,literal} from './cinematography.js';
+// DUAL-06 caption styles for burned-in captions (box-v1 = the historical dark box). Text and highlight contrast
+// against the box: at least 4.5:1, and 7:1 for contrast-v1 (tests/themes.test.js).
+export const CAPTION_STYLES=Object.freeze({
+ 'box-v1':Object.freeze({fill:'rgba(5,15,28,.94)',solid:'#050f1c',edge:'#567485',edgeWidth:2,text:'#f5f9ff',highlight:'#ffd47a',speaker:'#9bdef3'}),
+ 'paper-v1':Object.freeze({fill:'rgba(250,246,236,.96)',solid:'#faf6ec',edge:'#c7b994',edgeWidth:2,text:'#1b2129',highlight:'#a3401b',speaker:'#2f4a96'}),
+ 'contrast-v1':Object.freeze({fill:'rgba(0,0,0,.97)',solid:'#000000',edge:'#ffffff',edgeWidth:3,text:'#ffffff',highlight:'#ffe14d',speaker:'#9fe6ff'})
+});
+export const SOUNDTRACKS=Object.freeze(['mix','silent']);
 export const VOICE_METADATA=Object.freeze(VOICES.map(id=>Object.freeze({id,language:id.startsWith('b')?'en-gb':'en-us',engine:'kokoro-onnx'})));
 const fail=(p,m)=>{throw Error(p+': '+m)};
 export const SPEECH_PACE=Object.freeze({min:.85,dialogue:.92});
@@ -10,9 +18,12 @@ function arr(x,max,p){if(!Array.isArray(x)||x.length>max)fail(p,'invalid array')
 const bool=(x,p)=>{if(typeof x!=='boolean')fail(p,'boolean required');};
 const map=(x,p,max)=>{if(!x||typeof x!=='object'||Array.isArray(x)||Object.keys(x).length>max)fail(p,'invalid mapping');};
 export function validateSpeechConfig(c,shots=null){
- fields(c,['version','targetFrames','fixedShots','speakers','shotSpeakers','pronunciations','captions','mix','cues','syncActions','placement','pace','mouths','fit'],'speech',['version','targetFrames','fixedShots','speakers','shotSpeakers','pronunciations','captions','mix','cues','syncActions']);
+ fields(c,['version','targetFrames','fixedShots','speakers','shotSpeakers','pronunciations','captions','mix','cues','syncActions','placement','pace','mouths','fit','soundtrack'],'speech',['version','targetFrames','fixedShots','speakers','shotSpeakers','pronunciations','captions','mix','cues','syncActions']);
  // POLISH-03 opt-ins: placement of narration inside shots, and mastering profile mix-v2 inside speech.mix.
  if(c.placement!==undefined&&!['center','lead'].includes(c.placement))fail('speech.placement','center or lead required');
+ // DUAL-06 explicit silent soundtrack: narration still sets timing and captions; the delivered audio is declared
+ // digital silence and every check treats it as requested silence, never as a speech failure.
+ if(c.soundtrack!==undefined&&!SOUNDTRACKS.includes(c.soundtrack))fail('speech.soundtrack',SOUNDTRACKS.join(' or ')+' or absent');
  // GEN-05 opt-in: starting Kokoro speed below 1 (slightly slower, easier-to-read speech). Absent = 1 (unchanged).
  if(c.pace!==undefined)finite(c.pace,SPEECH_PACE.min,1,'speech.pace');
  // GEN-10 opt-in estimated mouth shapes for bound speakers (src/core/talk.js VISEMES, scripts/visemes.py)
@@ -36,7 +47,9 @@ export function validateSpeechConfig(c,shots=null){
  map(c.shotSpeakers,'shotSpeakers',60);
  for(const [id,v] of Object.entries(c.shotSpeakers)){shotId(id,'shotSpeakers');arr(v,8,'shotSpeakers');if(!v.length||ids&&v.length!==ids.get(id).narration.length||v.some(k=>!Object.hasOwn(c.speakers,k)))fail('shotSpeakers','unknown speaker or phrase count mismatch');}
  map(c.pronunciations,'pronunciations',64);for(const [k,v] of Object.entries(c.pronunciations)){if(!/^[A-Za-z0-9][A-Za-z0-9'-]{0,31}$/.test(k)||['constructor','prototype'].includes(k))fail('pronunciations','invalid token');if(typeof v!=='string'||!/^[A-Za-z0-9][A-Za-z0-9 ',-]{0,79}$/.test(v))fail('pronunciations','invalid replacement');}
- fields(c.captions,['mode','highlight','maxChars','maxLines','maxCps','readable','speakerNames'],'captions',['mode','highlight','maxChars','maxLines','maxCps']);
+ fields(c.captions,['mode','highlight','maxChars','maxLines','maxCps','readable','speakerNames','style'],'captions',['mode','highlight','maxChars','maxLines','maxCps']);
+ // DUAL-06 opt-in burned-in caption style (absent = box-v1, the historical look).
+ if(c.captions.style!==undefined&&!Object.hasOwn(CAPTION_STYLES,c.captions.style))fail('captions.style',Object.keys(CAPTION_STYLES).join(', ')+' or absent');
  // GEN-05b opt-in: balanced cue splits and a short hold into the following pause (scripts/speech_plan.py caption_cues)
  if(c.captions.readable!==undefined&&c.captions.readable!==true)fail('captions.readable','true or absent required');
  // Owner (Studio checkbox "Speaker names in captions"): false hides the speaker name above burned-in captions and in

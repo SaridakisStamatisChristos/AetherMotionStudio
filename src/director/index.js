@@ -36,6 +36,13 @@ export function allocateFrames(shots,total){
  const deficit=total-frames.reduce((a,b)=>a+b,0);for(let i=0;i<deficit;i++)frames[order[i][0]]++;
  return frames;
 }
+// DUAL-06 request shortcuts applied to whatever speech settings the request ends up with (its own or the defaults):
+// captionStyle → speech.captions.style, soundtrack → speech.soundtrack. They need speech (narrated films).
+export function withSoundOptions(q,speech){
+ if(q.captionStyle===undefined&&q.soundtrack===undefined)return speech;
+ if(!speech)throw Error('request.'+(q.captionStyle!==undefined?'captionStyle':'soundtrack')+': needs speech settings (narrated films)');
+ return {...speech,...(q.soundtrack!==undefined?{soundtrack:q.soundtrack}:{}),...(q.captionStyle!==undefined?{captions:{...speech.captions,style:q.captionStyle}}:{})};
+}
 export function compile(q,ir,selection,{mediaRoot}={}){
  validateIR(ir,q,selection);
  // DUAL-03: authored visuals define their shots (sentences they name are merged into one shot).
@@ -46,7 +53,7 @@ export function compile(q,ir,selection,{mediaRoot}={}){
  const setVersion=q.sets==='none'?null:q.sets??(q.dialogue?'topic-v3':null);
  const set=setVersion?topicSetFor(setVersion,q,ir):null;
  if(set&&q.dialogue)ir=fitPiecesFor(setVersion,q,ir,set).ir;
- const budgets=allocateFrames(ir.shots,q.seconds*FPS),speech=q.dialogue?dialogueSpeech(q,ir):q.speech;
+ const budgets=allocateFrames(ir.shots,q.seconds*FPS),speech=withSoundOptions(q,q.dialogue?dialogueSpeech(q,ir):q.speech);
  const project={version:2,id:q.id,title:ir.title,voice:q.voice,...(speech?{speech}:{}),...(q.identityLibrary?{identityLibrary:restoreLibrary(q.identityLibrary)}:{}),shots:ir.shots.map((s,i)=>{
   // TALK-04: speakers staged as characters + one set piece; camera frames the whole line (no single subject).
   // GEN-02: stage first (line, set piece, group framing), then point (an aimer counts as authored blocking for talk-v1).

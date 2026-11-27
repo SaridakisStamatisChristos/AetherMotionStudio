@@ -1,0 +1,237 @@
+{
+  "version": 1,
+  "id": "dual06-contrast",
+  "topic": "A small bakery's week in numbers (example data)",
+  "seconds": 60,
+  "audience": "curious beginners",
+  "tone": "friendly",
+  "style": "cinematic explainer",
+  "language": "en-us",
+  "voice": "af_bella",
+  "backend": "cpu",
+  "profile": "polished",
+  "seed": 6,
+  "content": "typography-v1",
+  "font": "inter",
+  "script": "This is example data from a small neighbourhood bakery. In its first week it sold 120 loaves on Monday, 95 on Tuesday, 110 on Wednesday, 140 on Thursday and 180 on Friday. Friday was clearly the busiest day. The next week the bakery tried a new sourdough. Sales rose on every day we have records for. On Wednesday the till broke, so there is no record for that day. Across both weeks, half of the takings came from bread, 30 percent from pastries and 20 percent from coffee. Warmer mornings also brought more customers. So the bakery now bakes extra loaves when a warm Friday is forecast.",
+  "visuals": [
+    {
+      "at": "In its first week it sold 120 loaves on Monday, 95 on Tuesday, 110 on Wednesday, 140 on Thursday and 180 on Friday.",
+      "composition": {
+        "version": "compose-v2",
+        "region": "full",
+        "font": "inter",
+        "items": [
+          {
+            "id": "week1",
+            "type": "chart",
+            "kind": "bar",
+            "box": [
+              0,
+              0.04,
+              1,
+              0.8
+            ],
+            "categories": [
+              "Mon",
+              "Tue",
+              "Wed",
+              "Thu",
+              "Fri"
+            ],
+            "series": [
+              {
+                "name": "Week 1",
+                "values": [
+                  120,
+                  95,
+                  110,
+                  140,
+                  180
+                ]
+              }
+            ],
+            "unit": "loaves",
+            "yLabel": "Sold",
+            "valueLabels": true,
+            "steps": [
+              {
+                "highlight": {
+                  "category": "Fri"
+                },
+                "note": "Friday: busiest day"
+              }
+            ],
+            "cues": [
+              "Friday was clearly the busiest day."
+            ]
+          }
+        ],
+        "theme": "contrast-v1"
+      }
+    },
+    {
+      "at": "The next week the bakery tried a new sourdough.",
+      "composition": {
+        "version": "compose-v2",
+        "region": "full",
+        "font": "inter",
+        "items": [
+          {
+            "id": "week2",
+            "type": "chart",
+            "kind": "bar",
+            "box": [
+              0,
+              0.04,
+              1,
+              0.8
+            ],
+            "categories": [
+              "Mon",
+              "Tue",
+              "Wed",
+              "Thu",
+              "Fri"
+            ],
+            "series": [
+              {
+                "name": "Loaves",
+                "values": [
+                  120,
+                  95,
+                  110,
+                  140,
+                  180
+                ]
+              }
+            ],
+            "unit": "loaves",
+            "yLabel": "Sold",
+            "valueLabels": true,
+            "steps": [
+              {
+                "series": [
+                  {
+                    "values": [
+                      130,
+                      100,
+                      null,
+                      150,
+                      210
+                    ]
+                  }
+                ],
+                "note": "Week 2"
+              },
+              {
+                "highlight": {
+                  "category": "Wed"
+                },
+                "note": "Wednesday: no record"
+              }
+            ],
+            "cues": [
+              "Sales rose on every day we have records for.",
+              "On Wednesday the till broke"
+            ]
+          }
+        ],
+        "theme": "contrast-v1"
+      }
+    },
+    {
+      "at": "Across both weeks, half of the takings came from bread, 30 percent from pastries and 20 percent from coffee.",
+      "composition": {
+        "version": "compose-v2",
+        "region": "full",
+        "font": "inter",
+        "items": [
+          {
+            "id": "takings",
+            "type": "chart",
+            "kind": "pie",
+            "box": [
+              0,
+              0.1,
+              1,
+              0.6
+            ],
+            "categories": [
+              "Bread",
+              "Pastries",
+              "Coffee"
+            ],
+            "series": [
+              {
+                "name": "Takings",
+                "values": [
+                  1500,
+                  900,
+                  600
+                ]
+              }
+            ],
+            "unit": "euros"
+          }
+        ],
+        "theme": "contrast-v1"
+      }
+    },
+    {
+      "at": "Warmer mornings also brought more customers.",
+      "composition": {
+        "version": "compose-v2",
+        "region": "full",
+        "font": "inter",
+        "items": [
+          {
+            "id": "warmth",
+            "type": "chart",
+            "kind": "scatter",
+            "box": [
+              0,
+              0.04,
+              1,
+              0.8
+            ],
+            "series": [
+              {
+                "name": "Days",
+                "points": [
+                  [
+                    8,
+                    95
+                  ],
+                  [
+                    10,
+                    110
+                  ],
+                  [
+                    12,
+                    120
+                  ],
+                  [
+                    14,
+                    140
+                  ],
+                  [
+                    17,
+                    180
+                  ]
+                ]
+              }
+            ],
+            "unit": "loaves",
+            "yLabel": "Sold",
+            "xUnit": "°C",
+            "xLabel": "Morning"
+          }
+        ],
+        "theme": "contrast-v1"
+      }
+    }
+  ],
+  "theme": "contrast-v1",
+  "captionStyle": "contrast-v1"
+}

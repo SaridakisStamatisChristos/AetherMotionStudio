@@ -1,4 +1,4 @@
-import {cueAt,speechDrivenShot} from './speech.js';
+import {cueAt,speechDrivenShot,CAPTION_STYLES} from './speech.js';
 import {talkAt} from './talk.js';
 import {dialogueShot} from './dialogue.js';
 import {bodyAt} from './body.js';
@@ -39,15 +39,16 @@ export function drawSpeechCue(ctx,width,height,{cue,active},speech,delivery=null
  // GEN-09 Reels: the caption box ends just above the app's own text and buttons (src/core/reels-layout.js REELS.caption).
  const R=delivery===REELS.version?REELS.caption:null,left=R?R.left:C.left,boxW=R?R.width:C.width,cx=left+boxW/2,maxText=R?R.maxText:C.maxText;
  const size=30,h=cue.lines.length*40+30+(speaker?24:0),top=R?R.bottom-h:C.bottom-h;
- roundedBox(ctx,left,top,boxW,h,14,'rgba(5,15,28,.94)','#567485');
- if(speaker)text(ctx,speaker,cx,top+18,20,'#9bdef3',700,'Arial',600);
+ const S=CAPTION_STYLES[speech.captions?.style??'box-v1'];
+ roundedBox(ctx,left,top,boxW,h,14,S.fill,S.edge);if(S.edgeWidth!==2){ctx.lineWidth=S.edgeWidth;ctx.strokeStyle=S.edge;ctx.stroke();}
+ if(speaker)text(ctx,speaker,cx,top+18,20,S.speaker,700,'Arial',600);
  let index=0;
  for(const [i,line] of cue.lines.entries()){
   const tokens=line.split(' ');ctx.font='700 '+size+'px Arial';
   const measured=ctx.measureText(line).width,scale=Math.min(1,maxText/Math.max(1,measured));
   const y=top+24+(speaker?24:0)+i*40;
   ctx.save();ctx.translate(cx,y);ctx.scale(scale,1);ctx.textAlign='left';ctx.textBaseline='middle';
-  let x=-measured/2;for(const token of tokens){ctx.fillStyle=speech.captions.highlight&&index===active?'#ffd47a':'#f5f9ff';ctx.fillText(token,x,0);x+=ctx.measureText(token+' ').width;index++;}
+  let x=-measured/2;for(const token of tokens){ctx.fillStyle=speech.captions.highlight&&index===active?S.highlight:S.text;ctx.fillText(token,x,0);x+=ctx.measureText(token+' ').width;index++;}
   ctx.restore();
  }
  ctx.restore();

@@ -121,8 +121,12 @@ def compile_speech(scene,out,root,model_dir,kokoro):
         f=min(fade,segments[0]['startSample']);g=min(fade,N-segments[-1]['endSample'])
         if f:mix[:f]*=np.linspace(0,1,f)
         if g:mix[-g:]*=np.linspace(1,0,g)
+    # DUAL-06 explicit silent soundtrack (speech.soundtrack 'silent'): the narration above still set the timing and
+    # captions; the delivered mix is declared digital silence (reported, and checked as silence by verify.py).
+    silent=c.get('soundtrack')=='silent'
+    if silent:mix=np.zeros_like(mix)
     master_report=None
-    if mastered:
+    if mastered and not silent:
         mix,master_report=audio_master.master(mix,R);mix=mix.astype(np.float32)
     raw_peak=float(np.max(np.abs(mix)));gain=min(1,cfg['peak']/max(raw_peak,1e-9));mix*=gain
     if master_report is not None:
@@ -137,7 +141,7 @@ def compile_speech(scene,out,root,model_dir,kokoro):
     if visemes.wanted(scene):timeline['visemes']=visemes.visemes(segments,[kokoro.tokenizer.phonemize(pronunciation(g['text'],c['pronunciations']),g['language']) for g in segments],target,'espeak-ng via kokoro-onnx '+version('kokoro-onnx'))
     (out/'timeline.json').write_text(json.dumps(timeline,indent=2,ensure_ascii=False),encoding='utf-8')
     (out/'voice-report.json').write_text(json.dumps({'backend':'kokoro-onnx','voice':scene['voice'],'sample_rate':R,'segments':segments},indent=2,ensure_ascii=False),encoding='utf-8')
-    report={'version':1,'status':'prepared','targetFrames':requested,'actualFrames':offset,**({'fit':{'mode':fit,'requestedFrames':requested,'actualFrames':offset}} if 'fit' in c else {}),'fixedShots':c['fixedShots'],'allocation':[{'shot':s['id'],'frames':n,'mode':'fixed' if b is not None else 'automatic'} for s,n,b in zip(shots,frames,budgets)],'speechSpeed':speed,**({'pace':{'requested':pace,'kept':speed==pace}} if 'pace' in c else {}),**({'readablePhrases':readable} if readable is not None else {}),'modelFingerprint':fingerprint,'cache':{'hits':cache.hits,'misses':cache.misses,'limitBytes':cache.limit},'alignment':caption_metrics(timeline['captions'],segments,c['captions']['maxCps']),'speechIntervals':speech_metrics,'mix':{'settings':cfg,'samplePeakProtectionGain':gain,'preProtectionPeak':raw_peak,'narration':metrics(speech),'music':metrics(music),'ambience':metrics(ambience),'sfx':metrics(sfx),'final':metrics(mix),'metricDefinition':'linear sample peak and RMS dBFS, not LUFS or true peak'},'cues':cue_report}
+    report={'version':1,'status':'prepared',**({'soundtrack':'silent'} if silent else {}),'targetFrames':requested,'actualFrames':offset,**({'fit':{'mode':fit,'requestedFrames':requested,'actualFrames':offset}} if 'fit' in c else {}),'fixedShots':c['fixedShots'],'allocation':[{'shot':s['id'],'frames':n,'mode':'fixed' if b is not None else 'automatic'} for s,n,b in zip(shots,frames,budgets)],'speechSpeed':speed,**({'pace':{'requested':pace,'kept':speed==pace}} if 'pace' in c else {}),**({'readablePhrases':readable} if readable is not None else {}),'modelFingerprint':fingerprint,'cache':{'hits':cache.hits,'misses':cache.misses,'limitBytes':cache.limit},'alignment':caption_metrics(timeline['captions'],segments,c['captions']['maxCps']),'speechIntervals':speech_metrics,'mix':{'settings':cfg,'samplePeakProtectionGain':gain,'preProtectionPeak':raw_peak,'narration':metrics(speech),'music':metrics(music),'ambience':metrics(ambience),'sfx':metrics(sfx),'final':metrics(mix),'metricDefinition':'linear sample peak and RMS dBFS, not LUFS or true peak'},'cues':cue_report}
     (out/'speech-report.json').write_text(json.dumps(report,indent=2,ensure_ascii=False),encoding='utf-8')
     if 'pace' in c and speed!=pace:print('Speech pace',pace,'not kept: budget needs speed',speed,flush=True)
     print('Speech-first compiled:',offset,'frames;',offset/30,'seconds;',len(timeline['captions']),'caption cues; estimated word timing',flush=True)
