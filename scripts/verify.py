@@ -63,8 +63,13 @@ if scene.get('speech') is not None:
   assert f.getframerate()==48000 and f.getnframes()==frames*1600 and f.getsampwidth()==2
   pcm=np.frombuffer(f.readframes(f.getnframes()),dtype='<i2').astype(float)/32768
  assert np.max(np.abs(pcm))<=cfg['mix']['peak']+1/32768 and sr['mix']['final']['clippedSamples']==0
- for a in report['segments']:assert np.sqrt(np.mean(pcm[a['startSample']:a['endSample']]**2))>.005
- print('PASS: exact speech allocation, caption sidecars, measured phrase coverage, sample peak limit and mixed audio activity')
+ if cfg.get('soundtrack')=='silent':
+  # DUAL-06: a requested silent soundtrack must be exactly silent and reported as such
+  assert sr.get('soundtrack')=='silent' and not np.any(pcm),'requested silent soundtrack is not silent'
+  print('PASS: exact speech allocation, caption sidecars, measured phrase coverage, sample peak limit and requested silent soundtrack (digital silence)')
+ else:
+  for a in report['segments']:assert np.sqrt(np.mean(pcm[a['startSample']:a['endSample']]**2))>.005
+  print('PASS: exact speech allocation, caption sidecars, measured phrase coverage, sample peak limit and mixed audio activity')
 review=[(s['startFrame']+s['endFrame'])/60 for s in timeline['shots']] if timeline else [1,6,10]
 if timeline and any('cameraRig' in shot for shot in scene['shots']):
  review=sorted(set(review+[n/30 for s in timeline['shots'] for n in (s['startFrame'],s['endFrame']-1)]))

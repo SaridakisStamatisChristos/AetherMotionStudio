@@ -46,6 +46,13 @@ export const THEMES=Object.freeze({
   accent:Object.freeze({fill:'#fdf7ea',edge:'#a3401b',text:'#1b2129',sub:'#454b54',mark:'#a3401b'}),
   warm:Object.freeze({fill:'#fbecd3',edge:'#b06a12',text:'#2a1c0e',sub:'#55402a',mark:'#8a4a00'}),
   cool:Object.freeze({fill:'#e8eef8',edge:'#4f67a6',text:'#141c33',sub:'#38435f',mark:'#2f4a96'})
+ }),
+ // DUAL-06 'contrast-v1': black plates, white text, every text/sub/mark colour >= 7:1 (WCAG AAA), white edges.
+ 'contrast-v1':Object.freeze({
+  neutral:Object.freeze({fill:'#000000',edge:'#ffffff',text:'#ffffff',sub:'#e8e8e8',mark:'#ffe14d'}),
+  accent:Object.freeze({fill:'#000000',edge:'#5fe8ff',text:'#ffffff',sub:'#e8e8e8',mark:'#5fe8ff'}),
+  warm:Object.freeze({fill:'#000000',edge:'#ffb347',text:'#ffffff',sub:'#e8e8e8',mark:'#ffb347'}),
+  cool:Object.freeze({fill:'#000000',edge:'#b9c3ff',text:'#ffffff',sub:'#e8e8e8',mark:'#b9c3ff'})
  })
 });
 // Font sizes (logical px) tried from largest to smallest; line height = 1.22 × size; inner padding per type.

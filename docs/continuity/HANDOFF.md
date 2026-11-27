@@ -1,10 +1,11 @@
-# Forward-only handoff: Campaign A, DUAL-06 slice 1 (formats) tested and rendered; PR open (2026-11-27)
+# Forward-only handoff: Campaign A, DUAL-06 slice 2 tested and rendered; PR open; DUAL-07 next (2026-11-27)
 
 Unit: **Campaign A — Universal Dual-Backend Finalization**, owner-authorized.
 - **DUAL-00 … DUAL-04 are COMPLETE and MERGED** (main **e520e4a**; PR #55 merged on "Approved. Merge PR #55", CI run 45889745389, 475/475).
 - **DUAL-05 (local raster media) is MERGED**: PR #57 → **main aacfac6** (owner "merge pr 57 and close pr 56 as superseded"; CI 45961923535 green on 90eed63, 491/491). The owner inspected the dual05 outputs and likes them (2026-11-27).
 - **PR #56** was closed as superseded (its docs were carried into #57).
-- **DUAL-06 is ACTIVE in two slices.** Slice 1 (output formats) is TESTED + RENDERED on `feature/dual-06-formats` (724e905, f304357 + checkpoint); its PR is open, **not merged**. Slice 2 (themes, audio controls, explicit silent mode) starts from main after slice 1 is merged (never stacked). Then DUAL-07, 08 and 09, strictly in order. The plan for each is in CAMPAIGN_A.md, "Remaining work plan".
+- **DUAL-06 is TESTED + RENDERED.** Slice 1 (output formats) is MERGED (PR #59 → main **0072c5a**, owner "now merge"; CI 45966855494 green). Slice 2 (contrast theme, caption styles, explicit silent soundtrack) is on `feature/dual-06-themes-audio` (80e511c + checkpoint); its PR is open, **not merged**.
+- **Next milestone: DUAL-07** (universal Director and Studio integration), after the slice-2 PR is merged.
 
 Date: 2026-11-27. The owner types only **"fod continue"**. Binding facts: CURRENT_STATE.md. Campaign status, evidence and the remaining plan: CAMPAIGN_A.md. Requirements: CAMPAIGN_A_DIRECTIVE.md (verbatim). Contracts: docs/COMPOSITION.md (compose-v1/v2, fonts), docs/MATHS.md, docs/CHARTS.md, docs/MEDIA.md. Scope map: docs/CAMPAIGN_A_AUDIT.md. Evidence rules: CAMPAIGN_A_PROTOCOL.md.
 
@@ -17,14 +18,13 @@ Date: 2026-11-27. The owner types only **"fod continue"**. Binding facts: CURREN
 | DUAL-03 | MERGED #53 | MathJax 4.1.3 equations (Node-only), plots, BFS graphs, Euclid arrays, `request.visuals` | docs/MATHS.md |
 | CI | MERGED #54 | test job runs `npm ci` | CURRENT_STATE.md |
 | DUAL-04 | MERGED #55 | charts, timelines, flowcharts, comparison cards; two audit repair passes | docs/CHARTS.md |
-| DUAL-06 | slice 1 PR open (formats) | vertical / landscape / square, reflowed 2D layers, per-format boxes | docs/FORMATS.md |
 | DUAL-05 | MERGED #57 | local PNG/JPEG/static WebP library, import checks, verified `image` item, pan/zoom | docs/MEDIA.md |
+| DUAL-06 | slice 1 MERGED #59; slice 2 PR open | formats (vertical/landscape/square); contrast theme, caption styles, silent soundtrack | docs/FORMATS.md, docs/THEMES_AUDIO.md |
 
 ## Next action for "fod continue"
-1. Bootstrap (below). If the DUAL-06 slice-1 PR (`feature/dual-06-formats`) is still open, its checkpoint docs are the latest canon; read them from that branch.
-1b. If the DUAL-06 slice-1 PR is open: merge it only on the owner's word after its CI passes; then continue with slice 2.
-2. `git switch main && git pull && npm install`, branch `feature/dual-06-themes-audio` from main (slice 2).
-3. Slice 2 scope (DUAL-06 plan in CAMPAIGN_A.md): versioned themes built on THEMES (aether-v1, paper-v1) incl. caption style and contrast; expose existing audio controls (speech mix, voice, pace, caption mode/highlight) through requests; an explicit silent mode reported as silent, never as a speech failure. Read the DUAL-06 directive section and audit rows too. Owner decision already recorded: new sizes 1920×1080 and 1080×1080 are **opt-in presets**; the default stays 1080×1920 at 30 fps. Promoting any preset or theme to a default needs the owner.
+1. Bootstrap (below). If the DUAL-06 slice-2 PR (`feature/dual-06-themes-audio`) is still open, its checkpoint docs are the latest canon; merge it only on the owner's word after its CI passes.
+2. `git switch main && git pull && npm install`, branch `feature/dual-07-studio` from main.
+3. Read the DUAL-07 directive section, its audit rows and the DUAL-07 plan in CAMPAIGN_A.md. Key work: Director selects content mode, visuals, theme, caption style, soundtrack and format from validated capabilities; Studio simple/advanced controls for them (format chooser and a preview that matches the format; the Studio server must serve public/fonts and public/media read-only so the preview shows real fonts and images); authoring guide per content mode; "clicked through in a headless browser" evidence; at least one render and download per backend.
 4. The media library on this machine (`public/media/`, git-ignored) holds the five dual05 illustrations; `node scripts/media-import.mjs verify` re-checks them. `node scripts/dual05-gallery-media.mjs` recreates them on another machine (it refuses nothing already imported with the same bytes).
 
 ## The FOD loop for every remaining milestone
@@ -54,11 +54,12 @@ Date: 2026-11-27. The owner types only **"fod continue"**. Binding facts: CURREN
 - **Line endings:** working copies are CRLF; normalise `\r\n` before multi-line anchors.
 - **Renders:** never write files while a render runs; the second production in a batch will be marked sourceDirty.
 - **Headless browser probes:** running chrome-headless-shell directly (`--dump-dom`) crashes on this machine (network service and GPU process exit). Use Remotion's `openBrowser('chrome')`, `browser.newPage({context:()=>null,logLevel:'error',indent:false,pageIndex:0,onBrowserLog:null,onLog:()=>{}})` and `page.evaluate(fn,...args)`.
+- **Render stall watchdog:** dual06-contrast-r1 once stalled at frame 90 with idle tabs and no error. Watch long renders with a loop that reports when the log stops growing for 3 minutes; reproduce with single-frame renderStill before blaming code. Never leave a scripts/.tmp-* file while starting a production (it marks the run sourceDirty).
 - **Processes:** the session's permission check refused stopping a stray `chrome-headless-shell`. Don't work around it; tell the owner.
 
 ## Open issues carried into Campaign A
 - OPEN-1 calm word rate (2.15 words/s; refine with more films). OPEN-2 part 2: glass and metal subtle at phone size. OPEN-3: historical CPU one-eye, by the owner's choice. OPEN-4: "bridges" shows no set piece. OPEN-6: old draft PRs #2–#12; ask before closing. PR #43 (old handoff) is superseded by #49; ask before closing it.
-- OPEN-7 disk: out/ holds the agent test jobs, far-forest-r1*, clean-top-r1*/r2*, dual00-baseline-r1*, dual01-*, dual02-*, dual03-*, dual04-* (DUAL-04 superseded attempts r1–r4 included), dual05-gallery-r1*, dual05-media-src/ and dual05-tamper-*.png; public/media/ holds the dual05 library; ask before deleting anything.
+- OPEN-7 disk: out/ holds the agent test jobs, far-forest-r1*, clean-top-r1*/r2*, dual00-baseline-r1*, dual01-*, dual02-*, dual03-*, dual04-* (DUAL-04 superseded attempts r1–r4 included), dual05-gallery-r1*, dual05-media-src/ dual05-tamper-*.png, dual06-harbour-*, dual06-contrast-r1 (stalled, incomplete), dual06-contrast-r2, dual06-silent-r2 and dual06-still-*.png; public/media/ holds the dual05 library. 27 superseded runs were deleted on 2026-11-27 (owner choice); ask before deleting anything else.
 - Not yet run: a GPU benchmark, the full native matrix, a clean-install test (all planned for DUAL-09).
 - Studio preview: fonts (and future media) are not served by the Studio server; the preview shows substitute fonts. Planned for DUAL-07.
 - A stray chrome-headless-shell (PID 343888) from a stopped DUAL-01 render may still be running; harmless.
@@ -68,7 +69,7 @@ Date: 2026-11-27. The owner types only **"fod continue"**. Binding facts: CURREN
 2. Read CLAUDE.md, AGENTS.md, CURRENT_STATE.md, this file and CAMPAIGN_A.md (plus the directive section of the active milestone).
 3. Baseline:
    - `node scripts/fod-digests.mjs . --exclude talk04,talk05,gen01,gen09,gen12,fixa,dual` must print graph 3d33fbaee198acad, geometry 14dec244d171dc56, detail2 e3f80439a292f21a, director 7 requests 2cbf9916e65da935;
-   - `npm test` must give fail 0 (491 tests at aacfac6, 1 Windows skip; CI runs all 491);
+   - `npm test` must give fail 0 (500 tests at 0072c5a, 506 on feature/dual-06-themes-audio; 1 Windows skip). Run the suite once with public/media renamed away: CI has no local media library;
    - `PYTHONPATH=scripts .venv/Scripts/python.exe -m unittest discover -s tests -p "test_*.py"` must give 61 OK.
 
 ## Owner working agreement and taste (binding; see also auto-memory)

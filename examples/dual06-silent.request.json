@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "id": "dual06-silent",
+  "topic": "Εύρηκα! How Archimedes tested the king’s crown",
+  "seconds": 60,
+  "audience": "curious beginners",
+  "tone": "friendly",
+  "style": "cinematic explainer",
+  "language": "en-us",
+  "voice": "af_bella",
+  "backend": "cpu",
+  "profile": "polished",
+  "seed": 2,
+  "content": "typography-v1",
+  "font": "inter",
+  "script": "Around 250 BC, King Hieron of Syracuse gave a goldsmith gold to make a crown. The king suspected that the goldsmith had mixed in cheaper silver. He asked Archimedes to find out without damaging the crown. The story says the answer came to him in the bath. A body placed in water pushes aside its own volume of water. Gold is about 1.8 times denser than silver. So the same weight of silver takes up more space. The method needs only water, a vessel and pure gold. If the crown pushed aside more water than pure gold of equal weight, it held something else. Legend says he ran through the streets shouting Eureka, which means I have found it.",
+  "format": "landscape-v1",
+  "captionStyle": "paper-v1",
+  "soundtrack": "silent",
+  "theme": "paper-v1"
+}
