@@ -2,7 +2,7 @@
 
 Unit: **Campaign A — Universal Dual-Backend Finalization**, owner-authorized.
 - **DUAL-00 … DUAL-04 are COMPLETE and MERGED** (main **e520e4a**; PR #55 merged on "Approved. Merge PR #55", CI run 45889745389, 475/475).
-- **DUAL-05 (local raster media) is MERGED**: PR #57 → **main aacfac6** (owner "merge pr 57 and close pr 56 as superseded"; CI 45961923535 green on 90eed63, 491/491). The film dual05-gallery-r1 has agent checks only; no owner review is recorded.
+- **DUAL-05 (local raster media) is MERGED**: PR #57 → **main aacfac6** (owner "merge pr 57 and close pr 56 as superseded"; CI 45961923535 green on 90eed63, 491/491). The owner inspected the dual05 outputs and likes them (2026-11-27).
 - **PR #56** was closed as superseded (its docs were carried into #57).
 - **Next milestone: DUAL-06** (formats, themes, audio controls). Then DUAL-07, 08 and 09, strictly in order. The plan for each is in CAMPAIGN_A.md, "Remaining work plan".
 
