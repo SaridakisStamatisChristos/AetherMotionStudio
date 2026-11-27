@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "id": "dual09-charts-r1",
+  "outputRoot": "out/batches",
+  "retries": 1,
+  "minFreeGB": 10,
+  "jobs": [
+    {"id": "d09-charts", "request": "examples/dual09-charts.request.json", "backend": "both", "format": "landscape-v1", "concurrency": 8}
+  ]
+}
