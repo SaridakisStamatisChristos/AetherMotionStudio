@@ -12,7 +12,7 @@ import {sceneFontFaces} from '/src/visual/fonts.js';
 import {createPreviewMedia} from '/src/visual/preview-media.js';
 import {webSha256} from '/src/core/media.js';
 import {formatOf} from '/src/core/formats.js';
-import {finishedSummary,reelsSummary,rendererLine,adapterFromLog} from '/src/studio/finished.js';
+import {finishedSummary,reelsSummary,rendererLine} from '/src/studio/finished.js';
 import {SETTINGS_KEY,SETTINGS_DEFAULTS,readSettings,writeSettings} from '/src/studio/settings.js';
 import {jobProgress,formatSeconds} from '/src/studio/progress.js';
 const languageOf=voice=>voice.startsWith('b')?'en-gb':'en-us';
@@ -120,7 +120,7 @@ async function showJob(id){state.job=id;const j=await api('/api/jobs/'+id);$('jo
   $('downloadCaptions').hidden=!j.files.includes('captions.srt');if(j.files.includes('captions.srt')){$('downloadCaptions').href=base+'captions.srt?download=1';$('downloadCaptions').setAttribute('download',j.projectId+'.srt');}
   if(state.finishedFacts!==id){state.finishedFacts=id;$('finishedFacts').textContent='';
    const [q,p,t]=await Promise.all(['quality-report.json','probe.json','render-timing.json'].map(n=>j.files.includes(n)?api(base+n).catch(()=>null):null));
-   if(state.job===id)$('finishedFacts').textContent=finishedSummary(q,p).text+' · '+rendererLine(t,adapterFromLog($('logs').textContent));}
+   if(state.job===id)$('finishedFacts').textContent=finishedSummary(q,p).text+' · '+rendererLine(t);}
   showReels(j,base);
   document.body.classList.add('has-film');
   if($('finished').hidden){$('finished').hidden=false;if(state.scrolledTo!==id){state.scrolledTo=id;$('finished').scrollIntoView({behavior:'smooth',block:'start'});}}

@@ -9,7 +9,7 @@ import {direct} from '../src/director/index.js';
 import {verifyImageBytes,checkDecoded,MEDIA_LIMITS} from '../src/core/media.js';
 import {createPreviewMedia} from '../src/visual/preview-media.js';
 import {registerImage,unregisterImage,registeredImages,registeredBytes,clearImages,loadedImage} from '../src/visual/media-registry.js';
-import {rendererLine,adapterFromLog} from '../src/studio/finished.js';
+import {rendererLine} from '../src/studio/finished.js';
 import {encodePNG,quadrants} from '../scripts/media-fixtures.mjs';
 const sha=b=>createHash('sha256').update(b).digest('hex'),shaAsync=async b=>sha(b);
 const SCRIPT='A lighthouse stands where the sea is dangerous.\nIts lamp turns once every ten seconds.\nSailors count the flashes to know the light.';
@@ -133,11 +133,11 @@ test('F2d. the shared registry closes what it releases and reports its decoded m
 test('F4. backend identity: no hardware assumed; the actual backend, GL route and reported adapter, else unknown',()=>{
  const html=readFileSync(new URL('../studio/index.html',import.meta.url),'utf8');assert.doesNotMatch(html,/RTX/);assert.match(html,/Three\.js \(WebGL\)/);
  assert.equal(rendererLine({backend:'cpu',gl:null}),'rendered with CPU Canvas');
- assert.equal(rendererLine({backend:'three',gl:'vulkan'},{renderer:'ANGLE (NVIDIA, Vulkan 1.3.289 (NVIDIA GeForce RTX 4060 Laptop GPU))'}),'rendered with Three.js (WebGL, GL route vulkan, adapter ANGLE (NVIDIA, Vulkan 1.3.289 (NVIDIA GeForce RTX 4060 Laptop GPU)))');
+ assert.equal(rendererLine({backend:'three',gl:'vulkan',adapter:{renderer:'ANGLE (NVIDIA, Vulkan 1.3.289 (NVIDIA GeForce RTX 4060 Laptop GPU))'}}),'rendered with Three.js (WebGL, GL route vulkan, adapter ANGLE (NVIDIA, Vulkan 1.3.289 (NVIDIA GeForce RTX 4060 Laptop GPU)))');
+ assert.equal(rendererLine({backend:'three',gl:'vulkan',adapter:{renderer:'unknown',error:'probe failed'}}),'rendered with Three.js (WebGL, GL route vulkan, adapter unknown)');
  assert.equal(rendererLine({backend:'three',gl:'swangle'}),'rendered with Three.js (WebGL, GL route swangle, adapter unknown)');
  assert.equal(rendererLine(null),'renderer unknown');assert.equal(rendererLine({backend:'gpu'}),'renderer unknown');
- assert.deepEqual(adapterFromLog('x\n[Tab 0] AETHER_GL_ADAPTER {"renderer":"SwiftShader","vendor":"Google","source":"unmasked"}\ny'),{renderer:'SwiftShader',vendor:'Google',source:'unmasked'});
- for(const bad of ['','no line','AETHER_GL_ADAPTER {broken',null,'AETHER_GL_ADAPTER {"renderer":5}'])assert.equal(adapterFromLog(bad),null);
  const tb=readFileSync(new URL('../src/visual/three-backend.js',import.meta.url),'utf8');assert.match(tb,/UNMASKED_RENDERER_WEBGL/);assert.match(tb,/renderer:'unknown'/);
- assert.match(readFileSync(new URL('../src/index.jsx',import.meta.url),'utf8'),/AETHER_GL_ADAPTER/);
+ const nr=readFileSync(new URL('../scripts/native-render.mjs',import.meta.url),'utf8');assert.match(nr,/gl-probe\.mjs/);assert.match(nr,/never changes or fails the render/);
+ const gp=readFileSync(new URL('../scripts/gl-probe.mjs',import.meta.url),'utf8');assert.match(gp,/chromiumOptions:\{gl\}/);assert.match(gp,/renderer:'unknown'/);
 });

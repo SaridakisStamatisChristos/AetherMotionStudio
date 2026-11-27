@@ -22,7 +22,10 @@ export function renderNative({root,out,scene,timeline,quality=false,python=proce
  // AETHER_HW_ENCODE (default disable). Defaults produce the exact historical CLI arguments.
  const settings=renderSettings(env),{concurrency,gl,hardwareAcceleration}=settings,start=performance.now();
  runChecked(root,process.execPath,[join(root,'node_modules/@remotion/cli',bin),...remotionRenderArgs({film:join(out,'film.mp4'),propsPath,usesThree,...settings})],env);
- const timing={renderSeconds:(performance.now()-start)/1000,backend:usesThree?'three':'cpu',gl:usesThree?gl:null,concurrency,hardwareAcceleration};
+ // DUAL-07 audit repair: the WebGL adapter behind this GL route, measured in Remotion's Chromium with the same gl option
+ // (scripts/gl-probe.mjs); 'unknown' when it cannot be read. Identity only: it never changes or fails the render.
+ let adapter=null;if(usesThree){const p=spawnSync(process.execPath,[join(root,'scripts','gl-probe.mjs'),gl],{cwd:root,env,encoding:'utf8',timeout:120000});try{adapter=JSON.parse(String(p.stdout).trim().split('\n').pop());}catch{adapter={gl,renderer:'unknown',vendor:'unknown',source:'unknown',error:'probe failed'};}}
+ const timing={renderSeconds:(performance.now()-start)/1000,backend:usesThree?'three':'cpu',gl:usesThree?gl:null,...(adapter?{adapter}:{}),concurrency,hardwareAcceleration};
  writeFileSync(join(out,'render-timing.json'),JSON.stringify(timing,null,2));
  runChecked(root,python,['scripts/verify.py',out],env);if(quality)runChecked(root,python,['scripts/quality_media.py',out],env);
  return timing;
