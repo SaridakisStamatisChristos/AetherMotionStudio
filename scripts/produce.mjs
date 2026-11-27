@@ -17,8 +17,11 @@ import {silenceCheck} from '../src/quality/silence.js';
 import {aidsCheck} from '../src/quality/aids.js';
 const timelineFit=prepared=>prepared.some(p=>p.scene.speech?.fit==='speech-v1');
 import {renderNative,runChecked} from './native-render.mjs';
+import {holdRenderLock} from './render-lock.mjs';
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..'),outRoot=join(root,'out');
 const o=parseProduction(process.argv.slice(2)),env={...process.env};
+// DUAL-08: one render at a time on this machine (inherited when a batch runner started this production).
+holdRenderLock(root,'produce '+o.id,env);
 const venv=join(root,'.venv',process.platform==='win32'?'Scripts/python.exe':'bin/python');
 const python=env.PYTHON||(existsSync(venv)?venv:process.platform==='win32'?'python':'python3');env.PYTHON=python;
 const read=p=>JSON.parse(readFileSync(p,'utf8')),sha=p=>createHash('sha256').update(readFileSync(p)).digest('hex');

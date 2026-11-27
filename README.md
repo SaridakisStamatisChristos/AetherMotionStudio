@@ -53,7 +53,7 @@ The feature/main workflow uses Python wheels (including Kokoro's bundled phonemi
 `npm run quality -- examples/quality-cpu-polished.json --repair` performs a read-only geometric inspection and outputs a proposed repaired project. `npm run render -- examples/quality-cpu-polished.json --quality --repair` performs measured-timeline camera repair, one native render, decoded media audit and contact sheet. `npm run director -- --request REQUEST.json --render --quality --repair` enables the same pipeline for Director output. See [Quality](docs/QUALITY.md).
 
 ## Local visual Studio
-After the normal local install, run `npm run studio:local` and open http://127.0.0.1:4173. Projects, offline Director, asset browser, editable shots, silent draft preview, measured audio preparation, native CPU/Three.js render jobs and quality/export reports share existing production contracts. `npm run studio` remains the original Remotion Studio. See [Local Studio](docs/STUDIO.md).
+After the normal local install, run `npm run studio:local` and open http://127.0.0.1:4173. Projects, offline Director, asset browser, editable shots, silent draft preview, measured audio preparation, native CPU/Three.js render jobs and quality/export reports share existing production contracts. `npm run studio` remains the original Remotion Studio. See [Local Studio](docs/STUDIO.md). Several films in a row: `node scripts/batch.mjs create <batch.json>` then `run`, one render at a time with cancel, resume and restart recovery; see [Batch production](docs/BATCH.md).
 
 ## One-click production (v1.0)
 On a clean Linux x86_64 checkout with Node 22 and Python 3.11:

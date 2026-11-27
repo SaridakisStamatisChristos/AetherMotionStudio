@@ -4,6 +4,7 @@ import {resolve,join,dirname} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {spawnSync} from 'node:child_process';
 import {renderNative} from './native-render.mjs';
+import {holdRenderLock} from './render-lock.mjs';
 import {repairProject} from '../src/quality/preflight.js';
 import {validateProject,validateTimeline} from '../src/core/timeline.js';
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
@@ -12,6 +13,8 @@ if(new Set(flags).size!==flags.length||flags.some(f=>!['--director-budget','--qu
 if(!['validate','prepare','render'].includes(cmd))throw Error('Usage: node scripts/cli.mjs validate|prepare|render [scene.json]');
 let scene=validateProject(JSON.parse(readFileSync(resolve(path),'utf8')));
 if(cmd==='validate'){console.log('Valid scene:',scene.id);process.exit(0)}
+// DUAL-08: prepare and render hold the machine render lock (inherited from produce.mjs, the Studio or a batch).
+holdRenderLock(root,'cli '+cmd+' '+scene.id);
 const out=join(root,'out',scene.id);mkdirSync(out,{recursive:true});
 const scenePath=join(out,'scene.json'),propsPath=join(out,'props.json');
 writeFileSync(scenePath,JSON.stringify(scene,null,2));

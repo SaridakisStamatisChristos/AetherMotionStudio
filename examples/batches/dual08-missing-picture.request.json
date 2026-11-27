@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "id": "dual08-missing-picture",
+  "topic": "A picture that is not in the library",
+  "seconds": 20,
+  "voice": "am_michael",
+  "profile": "polished",
+  "content": "typography-v1",
+  "font": "merriweather",
+  "theme": "paper-v1",
+  "script": "This film asks for a picture that was never imported. The production must stop and say so.",
+  "visuals": [
+    {
+      "at": "This film asks for a picture that was never imported.",
+      "composition": {
+        "version": "compose-v2", "region": "full", "font": "merriweather", "theme": "paper-v1",
+        "items": [
+          {"id": "missing", "type": "image", "box": [0.04, 0, 0.92, 1], "media": "dual08-not-in-library", "alt": "A picture that does not exist in the local library", "fit": "contain"}
+        ]
+      }
+    }
+  ]
+}
