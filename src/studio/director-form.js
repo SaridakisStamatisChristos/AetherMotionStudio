@@ -58,7 +58,7 @@ export function directorRequest(form){
  // DUAL-07: content mode, format, look and sound. Impossible combinations are refused here with the fix to make.
  const D=STUDIO_DEFAULTS,content=pick(form.content,STUDIO_CONTENT,'content mode',D.content),format=pick(form.format,STUDIO_FORMATS,'format',D.format),theme=pick(form.theme,STUDIO_THEMES,'theme',D.theme),captionStyle=pick(form.captionStyle,STUDIO_CAPTIONS,'caption style',D.captionStyle),soundtrack=pick(form.soundtrack,STUDIO_SOUND,'sound',D.soundtrack),music=pick(form.music,STUDIO_MUSIC,'music level',D.music),font=pick(form.font,STUDIO_FONTS,'font',D.font);
  if(content!=='none'){
-  if(cast.dialogue&&content!=='mixed-v1')bad(STUDIO_CONTENT[content]+' has no characters: choose the cast "'+STUDIO_CASTS.narrator.label+'", or the content "'+STUDIO_CONTENT['mixed-v1']+'"');
+  if(cast.dialogue&&content!=='mixed-v1')bad('"'+STUDIO_CONTENT[content]+'" cannot use a character cast: choose the cast "'+STUDIO_CASTS.narrator.label+'", or the content "'+STUDIO_CONTENT['mixed-v1']+'"');
   if(form.titles===true)bad('Titles on top cannot be combined with visual aids (the aids take that space): untick Titles on top');
   q.content=content;delete q.titles;
  }
@@ -131,10 +131,14 @@ const CAST_PROMPT=Object.freeze({
  narrator:{who:'a single narrator explaining the topic',order:'One narrator speaks every line.',voices:'Lines 8–18 words.'}
 });
 export function lineRange(seconds){const w=wordRange(seconds);return {min:Math.max(3,Math.round(w.min/8.6)),max:Math.max(3,Math.round(w.max/8.75))};}
-export function scriptPrompt({topic='',seconds=60,cast='interview'}={}){
+// DUAL-07: the prompt names the chosen shape (vertical, landscape or square) and, for content modes, asks for
+// lines that work as on-screen text (the defaults give exactly the earlier prompt).
+const SHAPE={'vertical-v1':'vertical','landscape-v1':'landscape (16:9)','square-v1':'square'};
+export function scriptPrompt({topic='',seconds=60,cast='interview',format='vertical-v1',content='none'}={}){
+ if(!Object.hasOwn(SHAPE,format))bad('Unknown format: '+String(format));if(!Object.hasOwn(STUDIO_CONTENT,content))bad('Unknown content mode: '+String(content));
  if(!Object.hasOwn(CAST_PROMPT,cast))bad('Unknown cast: '+String(cast));
  const s=Number(seconds),w=wordRange(s),l=lineRange(s),c=CAST_PROMPT[cast],t=typeof topic==='string'&&topic.trim()?topic.trim():'<YOUR TOPIC>';
- return ['Write a script for a '+s+'-second vertical educational video: '+c.who+'.','Topic: '+t,'','Rules:',
+ return ['Write a script for a '+s+'-second '+SHAPE[format]+' educational video: '+c.who+'.','Topic: '+t,'','Rules:',...(content==='none'?[]:['- The key words and numbers of each line are shown on screen, so give concrete numbers, short lists and clear steps where they help.']),
   '- Plain text only, one sentence per line, no speaker names, no headings, no numbering.','- '+c.order,
   '- Every line is exactly one sentence ending in . ? or !','- Each line under 140 characters. '+c.voices,
   '- '+l.min+'–'+l.max+' lines, '+w.min+'–'+w.max+' words in total.',

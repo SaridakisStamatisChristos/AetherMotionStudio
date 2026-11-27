@@ -28,8 +28,8 @@ test('1. form choices map to validated Director requests; defaults add nothing',
 
 test('2. impossible combinations are refused with the fix to make',()=>{
  const bad=(o,re)=>assert.throws(()=>directorRequest(form(o)),re);
- bad({cast:'interview',content:'explainer-v1'},/has no characters: choose the cast "Narrator only \(no characters\)", or the content "Characters \+ visual aids"/);
- bad({cast:'trio',content:'typography-v1'},/Typography \(no characters\) has no characters/);
+ bad({cast:'interview',content:'explainer-v1'},/"Explainer \(no characters\)" cannot use a character cast: choose the cast "Narrator only \(no characters\)", or the content "Characters \+ visual aids"/);
+ bad({cast:'trio',content:'typography-v1'},/"Typography \(no characters\)" cannot use a character cast/);
  bad({format:'landscape-v1'},/Landscape and square need a content mode/);
  bad({content:'explainer-v1',format:'square-v1',reels:true},/Instagram Reels is 9:16 only/);
  bad({theme:'contrast-v1'},/Theme and font style the visual aids: choose a content mode first/);
@@ -75,4 +75,13 @@ test('5. server: fonts and library pictures read-only by safe names; picture lib
   for(const p of ['/media/../secret.txt','/media/%2e%2e/secret.txt','/media/card-a.gif','/media/nothere.png','/media/','/media/media.lock.json','/fonts/../secret.txt','/fonts/inter/../../secret.txt','/fonts/evil/x.ttf','/fonts/inter/x.otf','/public/media/card-a.png'])
    assert.equal((await get(p)).status,404,p);
  }finally{await studio.close();await rm(root,{recursive:true,force:true});}
+});
+
+test('6. the Claude-chat prompt names the chosen shape and asks for on-screen-friendly lines in content modes',async()=>{
+ const {scriptPrompt}=await import('../src/studio/director-form.js');
+ assert.equal(scriptPrompt({topic:'x',seconds:60,cast:'narrator'}),scriptPrompt({topic:'x',seconds:60,cast:'narrator',format:'vertical-v1',content:'none'}),'defaults = the earlier prompt');
+ assert.match(scriptPrompt({topic:'x',seconds:60,cast:'narrator',format:'square-v1',content:'explainer-v1'}),/60-second square educational video[\s\S]*shown on screen/);
+ assert.match(scriptPrompt({topic:'x',seconds:30,cast:'narrator',format:'landscape-v1'}),/landscape \(16:9\)/);
+ assert.doesNotMatch(scriptPrompt({topic:'x',seconds:30,cast:'narrator'}),/shown on screen/);
+ assert.throws(()=>scriptPrompt({format:'4:3'}),/Unknown format/);assert.throws(()=>scriptPrompt({content:'x'}),/Unknown content mode/);
 });
