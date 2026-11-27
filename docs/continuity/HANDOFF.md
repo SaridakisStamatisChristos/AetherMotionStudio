@@ -1,33 +1,35 @@
-# Forward-only handoff: Campaign A, DUAL-07 tested, clicked through and audit-repaired; PR #61 open; DUAL-08 next after the merge (2026-11-27)
+# Forward-only handoff: Campaign A, DUAL-00…07 merged; next DUAL-08 (batch production, owner decided "build it now") (2026-11-27)
 
-Unit: **Campaign A — Universal Dual-Backend Finalization**, owner-authorized.
-- **DUAL-00 … DUAL-04 are COMPLETE and MERGED** (main **e520e4a**; PR #55 merged on "Approved. Merge PR #55", CI run 45889745389, 475/475).
-- **DUAL-05 (local raster media) is MERGED**: PR #57 → **main aacfac6** (owner "merge pr 57 and close pr 56 as superseded"; CI 45961923535 green on 90eed63, 491/491). The owner inspected the dual05 outputs and likes them (2026-11-27).
-- **PR #56** was closed as superseded (its docs were carried into #57).
-- **DUAL-06 is COMPLETE and MERGED** (#59 → 0072c5a; #60 → **f062de4**, owner "all good merge"). Renders before DUAL-06 were cleared on the owner's word (standing rule: clear older renders after each merged milestone).
-- **DUAL-07 (Studio integration) is TESTED + RENDERED and audit-repaired** on `feature/dual-07-studio`; PR #61 is open, **not merged** (owner: "Not yet": trying the Studio first). The independent audit's findings 1–4 were reproduced and repaired; finding 5 (DUAL-08 boundary) is an assessment recorded in CAMPAIGN_A.md, which DUAL-08 must follow.
-- **Next: DUAL-08** (bounded local batch production): **owner decided "Build it now"** (2026-11-27). It starts from main after PR #61 is merged; the owner is trying the Studio first ("Not yet" for #61). Then DUAL-09 (qualification and release).
+Unit: **Campaign A — Universal Dual-Backend Finalization**, owner-authorized. This is a **fresh-start handoff**: the owner ends the session here and resumes with "fod continue" in a new one.
+- **DUAL-00 … DUAL-07 are COMPLETE and MERGED.** Main is at **0e83826** (PR #61 merged on the owner's "merge"; CI 45989203443 green on 14a4a9a, 522/522).
+- **DUAL-07** = Studio integration (content mode, format, look, sound, visuals JSON, picture library; real fonts and pictures in the preview), the **independent audit repair** (findings 1–4 reproduced and repaired; finding 5 = DUAL-08 boundary requirements, recorded) and a tidier "Make a film" form (owner request). The owner inspected the Studio before the merge.
+- **Next milestone: DUAL-08** (bounded local batch production). The owner decided **"Build it now"** (2026-11-27), before DUAL-09. Its binding requirements are the **"DUAL-08 boundary assessment"** in CAMPAIGN_A.md (eight items) plus the DUAL-08 plan there.
+- **After DUAL-08: DUAL-09** (final qualification and release, proposed tag `v1.2-dual-backend-final`, tag only on the owner's word), including the recorded hardening item: bound in-flight preview picture loads (concurrent decode limit, cancelled obsolete fetches, measured peak process memory).
+- This handoff is on `chore/fod-handoff-dual08` (docs only, no CI by design). **If its PR is still open at bootstrap, its content is the latest canon:** read it from that branch and ask the owner to merge it.
 
-Date: 2026-11-27. The owner types only **"fod continue"**. Binding facts: CURRENT_STATE.md. Campaign status, evidence and the remaining plan: CAMPAIGN_A.md. Requirements: CAMPAIGN_A_DIRECTIVE.md (verbatim). Contracts: docs/COMPOSITION.md (compose-v1/v2, fonts), docs/MATHS.md, docs/CHARTS.md, docs/MEDIA.md. Scope map: docs/CAMPAIGN_A_AUDIT.md. Evidence rules: CAMPAIGN_A_PROTOCOL.md.
+Date: 2026-11-27. The owner types only **"fod continue"**. Binding facts: CURRENT_STATE.md. Campaign status, evidence and the remaining plan: CAMPAIGN_A.md. Requirements: CAMPAIGN_A_DIRECTIVE.md (verbatim). Contracts: docs/COMPOSITION.md (compose-v1/v2, fonts), docs/MATHS.md, docs/CHARTS.md, docs/MEDIA.md, docs/FORMATS.md, docs/THEMES_AUDIO.md, docs/AUTHORING.md (authoring guide), docs/STUDIO.md. Scope map: docs/CAMPAIGN_A_AUDIT.md. Evidence rules: CAMPAIGN_A_PROTOCOL.md.
 
 ## Where things stand (one table)
 | Milestone | State | Main capability (all opt-in) | Contract |
 |---|---|---|---|
 | DUAL-00 | MERGED #50 | baseline, capability audit, fixture IDs `dual<NN>-<slug>-r<n>` | CAMPAIGN_A_AUDIT.md, CAMPAIGN_A_PROTOCOL.md |
 | DUAL-01 | MERGED #51 | `compose-v1` aids; `content` explainer-v1 / mixed-v1; check aids-v1 | docs/COMPOSITION.md |
-| DUAL-02 | MERGED #52 | bundled OFL fonts; `compose-v2` typography; typography-v1; zero-asset shots | docs/COMPOSITION.md "Typography" |
-| DUAL-03 | MERGED #53 | MathJax 4.1.3 equations (Node-only), plots, BFS graphs, Euclid arrays, `request.visuals` | docs/MATHS.md |
+| DUAL-02 | MERGED #52 | bundled OFL fonts; `compose-v2` typography; typography-v1 | docs/COMPOSITION.md "Typography" |
+| DUAL-03 | MERGED #53 | MathJax 4.1.3 (Node-only) equations, plots, graphs, arrays, `request.visuals` | docs/MATHS.md |
 | CI | MERGED #54 | test job runs `npm ci` | CURRENT_STATE.md |
-| DUAL-04 | MERGED #55 | charts, timelines, flowcharts, comparison cards; two audit repair passes | docs/CHARTS.md |
-| DUAL-05 | MERGED #57 | local PNG/JPEG/static WebP library, import checks, verified `image` item, pan/zoom | docs/MEDIA.md |
-| DUAL-06 | MERGED #59, #60 | formats (vertical/landscape/square); contrast theme, caption styles, silent soundtrack | docs/FORMATS.md, docs/THEMES_AUDIO.md |
-| DUAL-07 | PR open | Studio: content mode, format, look, sound, visuals JSON, picture library; real fonts/pictures in the preview | docs/AUTHORING.md, docs/STUDIO.md |
+| DUAL-04 | MERGED #55 | charts, timelines, flowcharts, comparison cards (two audit repair passes) | docs/CHARTS.md |
+| DUAL-05 | MERGED #57 | local PNG/JPEG/static WebP library, verified `image` item, pan/zoom | docs/MEDIA.md |
+| DUAL-06 | MERGED #59, #60 | vertical/landscape/square formats; contrast theme, caption styles, silent soundtrack | docs/FORMATS.md, docs/THEMES_AUDIO.md |
+| DUAL-07 | MERGED #61 | Studio: content mode, format, look, sound, visuals JSON, picture library, verified preview pictures, GL adapter identity; audit repaired | docs/AUTHORING.md, docs/STUDIO.md |
+| DUAL-08 | **NEXT** (owner: build it now) | bounded local batch queue | CAMPAIGN_A.md "DUAL-08 boundary assessment" |
+| DUAL-09 | planned | qualification and release v1.2 | CAMPAIGN_A.md plan |
 
-## Next action for "fod continue"
-1. Bootstrap (below). If the DUAL-07 PR (`feature/dual-07-studio`) is still open, its checkpoint docs are the latest canon; merge it only on the owner's word after its CI passes, then clear renders older than DUAL-07 (owner rule).
-2. After #61 is merged: clear renders older than DUAL-07, then `git switch main && git pull && npm install`, branch `feature/dual-08-batch` from main. Scope (CAMPAIGN_A.md plan): a local queue of validated requests/projects with explicit backend, preset and output root, unique IDs, per-job manifests; sequential or measured bounded concurrency; persistent minimal job state; cancel and resume; restart recovery; per-job failures; never re-render accepted outputs or retry forever; no SaaS, scheduling or posting. Exit: mixed success/failure/cancel fixtures, restart recovery, no lost outputs, bounded resources.
-3. Read the DUAL-08 (or DUAL-09) directive section, audit rows and plan in CAMPAIGN_A.md.
-4. The media library on this machine (`public/media/`, git-ignored) holds the five dual05 illustrations; `node scripts/media-import.mjs verify` re-checks them. `node scripts/dual05-gallery-media.mjs` recreates them on another machine (it refuses nothing already imported with the same bytes).
+## Next action for "fod continue": DUAL-08
+1. Bootstrap (below). If `chore/fod-handoff-dual08` is still an open PR, read this file from it and ask the owner to merge it.
+2. `git switch main && git pull && npm install`; branch `feature/dual-08-batch` from main (never stacked).
+3. Read the DUAL-08 directive section (CAMPAIGN_A_DIRECTIVE.md), the DUAL-08 audit rows (CAMPAIGN_A_AUDIT.md), the DUAL-08 plan and the **"DUAL-08 boundary assessment"** in CAMPAIGN_A.md; the relevant source is scripts/studio-server.mjs (job registry, `atomic`, `nativeRunner`), scripts/cli.mjs, scripts/produce.mjs and scripts/native-render.mjs.
+4. Build a bounded local batch (CLI first; Studio list later only if cheap): a queue of validated requests/projects with explicit backend, format and output root; unique IDs; per-batch and per-job manifests written atomically before each side effect; one render at a time by default; cross-process lock shared with the Studio and produce.mjs; process-tree cancel (Windows `taskkill /T /F`); restart recovery marking interrupted jobs; idempotent resume that skips verified outputs and never re-renders them; bounded retries; per-job failure reports; no SaaS, scheduling or posting. Ask the owner before any new dependency.
+5. Exit (CAMPAIGN_A.md): mixed success / failure / cancel fixtures, restart recovery, no lost outputs, bounded resources; tests incl. negative and race cases; fresh `dual08-…` films on both backends from a small batch; FOD checkpoint; PR; merge only on the owner's word; then clear renders older than DUAL-08 (owner rule).
 
 ## The FOD loop for every remaining milestone
 1. **Branch:** one branch per unit, from main.
@@ -59,20 +61,22 @@ Date: 2026-11-27. The owner types only **"fod continue"**. Binding facts: CURREN
 - **Render stall watchdog:** dual06-contrast-r1 once stalled at frame 90 with idle tabs and no error. Watch long renders with a loop that reports when the log stops growing for 3 minutes; reproduce with single-frame renderStill before blaming code. Never leave a scripts/.tmp-* file while starting a production (it marks the run sourceDirty).
 - **Processes:** the session's permission check refused stopping a stray `chrome-headless-shell`. Don't work around it; tell the owner.
 
-## Open issues carried into Campaign A
-- OPEN-1 calm word rate (2.15 words/s; refine with more films). OPEN-2 part 2: glass and metal subtle at phone size. OPEN-3: historical CPU one-eye, by the owner's choice. OPEN-4: "bridges" shows no set piece. OPEN-6: old draft PRs #2–#12; ask before closing. PR #43 (old handoff) is superseded by #49; ask before closing it.
-- OPEN-7 disk: after the 2026-11-27 cleanup out/ holds only the DUAL-06 films (dual06-harbour-v/l/s, dual06-contrast-r2, dual06-silent-r2), the DUAL-07 Studio click-through jobs (studio-fcb6176ba0e5c88c1263 CPU, studio-00fedfc4005adff48104 Three), out/speech-cache and the polish0x fixture folders; public/media holds the dual05 picture library; public/audio is empty. Owner rule: clear older renders after each merged milestone.
-- Not yet run: a GPU benchmark, the full native matrix, a clean-install test (all planned for DUAL-09).
-- Studio preview: fonts (and future media) are not served by the Studio server; the preview shows substitute fonts. Planned for DUAL-07.
-- A stray chrome-headless-shell (PID 343888) from a stopped DUAL-01 render may still be running; harmless.
+## Open issues
+- OPEN-1 calm word rate (2.15 words/s; refine with more films). OPEN-2 part 2: glass and metal subtle at phone size. OPEN-3: historical CPU one-eye, by the owner's choice. OPEN-4: "bridges" shows no set piece. OPEN-6: old draft PRs #2–#12 and PR #43; ask before closing.
+- OPEN-7 disk (after the 2026-11-27 cleanup, owner rule "clear older renders after each merged milestone"): out/ holds only the DUAL-07 evidence (dual07-harbour-v-r1, dual07-narrator-r2, Studio jobs studio-e7dd725ee4f43709ef0f CPU and studio-6c066c099db672cd73ee Three), out/speech-cache and the polish0x fixture folders; public/audio is empty; public/media holds the five dual05 illustrations (local library, git-ignored; `node scripts/media-import.mjs verify`).
+- Not yet run: a GPU benchmark, the full native matrix, a clean-install test (DUAL-09).
+- DUAL-09 hardening item: in-flight preview picture loads are not yet bounded (see CAMPAIGN_A.md, DUAL-09 plan).
+- A render once stalled with idle tabs (dual06-contrast-r1); use the stall watchdog (Tooling lessons).
+- The owner's Studio may still be running from this session (port 4173, started with the launcher); stop it by closing its window or by the PID on port 4173.
 
 ## Bootstrap for "fod continue"
-1. `git status --short --branch`, `git rev-parse HEAD`, `git fetch`, `gh pr list --state open`, `git tag --list`. Expect main aacfac6 or later.
-2. Read CLAUDE.md, AGENTS.md, CURRENT_STATE.md, this file and CAMPAIGN_A.md (plus the directive section of the active milestone).
+1. `git status --short --branch`, `git rev-parse HEAD`, `git fetch`, `gh pr list --state open`, `git tag --list`. Expect main **0e83826** (or later if this handoff PR was merged); only `v0.4-render-baseline` tagged.
+2. Read CLAUDE.md, AGENTS.md, CURRENT_STATE.md, this file and CAMPAIGN_A.md (plus the DUAL-08 directive section).
 3. Baseline:
    - `node scripts/fod-digests.mjs . --exclude talk04,talk05,gen01,gen09,gen12,fixa,dual` must print graph 3d33fbaee198acad, geometry 14dec244d171dc56, detail2 e3f80439a292f21a, director 7 requests 2cbf9916e65da935;
-   - `npm test` must give fail 0 (506 tests at f062de4, 513 on feature/dual-07-studio; 1 Windows skip). Run the suite once with public/media renamed away: CI has no local media library;
-   - `PYTHONPATH=scripts .venv/Scripts/python.exe -m unittest discover -s tests -p "test_*.py"` must give 61 OK.
+   - `npm test` must give fail 0 (522 tests at 0e83826, 1 Windows skip; CI runs all 522). Also run it once with public/media renamed away: CI has no local media library;
+   - `PYTHONPATH=scripts .venv/Scripts/python.exe -m unittest discover -s tests -p "test_*.py"` must give 63 OK;
+   - `node scripts/font-metrics.mjs --check` must say up to date.
 
 ## Owner working agreement and taste (binding; see also auto-memory)
 - **Delegation:**
@@ -84,6 +88,7 @@ Date: 2026-11-27. The owner types only **"fod continue"**. Binding facts: CURREN
   - **merge only on the owner's explicit word, after PR CI passes**;
   - docs-only records go on `chore/…` branches, which get no CI by design.
 - **Choices over silent changes:** the owner prefers being offered choices in the UI over silent rule changes ("give a list of advice … so whoever uses it could be able to choose"). When a threshold is uncertain, offer options and say what the measurement shows.
+- **Render cleanup (owner 2026-11-27, standing):** "no need to accumulate videos all the time". After each merged milestone, delete renders older than it in out/ and the temporary soundtracks in public/audio; keep the latest milestone's films, out/speech-cache and public/media. List what was removed in CAMPAIGN_A.md.
 - **Old films:** "for old videos there is no problem if they remain as they are. the last videos are those that count". New behaviour goes on the Director/Studio path as an opt-in default; accepted films stay unchanged.
 - **Generalize:** every fix must work for every video automatically. Prove it with a fresh Director or Studio request and no hand edits.
 - **Vertical video:**
