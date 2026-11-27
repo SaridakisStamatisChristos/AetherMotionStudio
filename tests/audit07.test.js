@@ -141,3 +141,9 @@ test('F4. backend identity: no hardware assumed; the actual backend, GL route an
  const nr=readFileSync(new URL('../scripts/native-render.mjs',import.meta.url),'utf8');assert.match(nr,/gl-probe\.mjs/);assert.match(nr,/never changes or fails the render/);
  const gp=readFileSync(new URL('../scripts/gl-probe.mjs',import.meta.url),'utf8');assert.match(gp,/chromiumOptions:\{gl\}/);assert.match(gp,/renderer:'unknown'/);
 });
+
+test('F4b. render timing excludes the GL probe (measured before it runs)',()=>{
+ const nr=readFileSync(new URL('../scripts/native-render.mjs',import.meta.url),'utf8');
+ assert.ok(nr.indexOf('const renderSeconds=(performance.now()-start)/1000')<nr.indexOf("'gl-probe.mjs'"),'timing taken before the probe call');
+ assert.match(nr,/const timing=\{renderSeconds,/);
+});

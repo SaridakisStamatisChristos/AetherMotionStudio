@@ -80,7 +80,7 @@ async function previewAssets(scene){
  const [fonts,media]=await Promise.all([previewFontsFor(scene),previewMedia.sync(scene)]);
  if(!media.current)return media;// a newer film owns the label
  const notes=[...fonts,...media.diagnostics];
- $('previewLabel').textContent=notes.length?'Preview could not load '+notes.join('; ')+'. Placeholders are shown; the native render checks every picture again and stops on any failure.':(state.preview?.mode?state.preview.mode+' · ':'')+(state.previewGl?'preview graphics: '+state.previewGl+' · ':'')+'reduced-resolution shared renderer; final export is native Remotion';
+ $('previewLabel').textContent=notes.length?'Preview could not load '+notes.join('; ')+'. Placeholders are shown; the native render checks every picture again and stops on any failure.':(state.preview?.mode?state.preview.mode+' · ':'')+(state.previewGl&&scene.version===2&&scene.shots.some(x=>x.backend==='three')?'preview graphics: '+state.previewGl+' · ':'')+'reduced-resolution shared renderer; final export is native Remotion';
  return media;
 }
 async function paint(){

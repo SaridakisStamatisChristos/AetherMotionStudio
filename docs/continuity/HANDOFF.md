@@ -1,11 +1,11 @@
-# Forward-only handoff: Campaign A, DUAL-07 tested and clicked through; PR open; DUAL-08 decision next (2026-11-27)
+# Forward-only handoff: Campaign A, DUAL-07 tested, clicked through and audit-repaired; PR #61 open; DUAL-08 next after the merge (2026-11-27)
 
 Unit: **Campaign A — Universal Dual-Backend Finalization**, owner-authorized.
 - **DUAL-00 … DUAL-04 are COMPLETE and MERGED** (main **e520e4a**; PR #55 merged on "Approved. Merge PR #55", CI run 45889745389, 475/475).
 - **DUAL-05 (local raster media) is MERGED**: PR #57 → **main aacfac6** (owner "merge pr 57 and close pr 56 as superseded"; CI 45961923535 green on 90eed63, 491/491). The owner inspected the dual05 outputs and likes them (2026-11-27).
 - **PR #56** was closed as superseded (its docs were carried into #57).
 - **DUAL-06 is COMPLETE and MERGED** (#59 → 0072c5a; #60 → **f062de4**, owner "all good merge"). Renders before DUAL-06 were cleared on the owner's word (standing rule: clear older renders after each merged milestone).
-- **DUAL-07 (Studio integration) is TESTED + RENDERED** on `feature/dual-07-studio` (d9f8d8f, e38b33f, dc618e3 + checkpoint); its PR is open, **not merged**.
+- **DUAL-07 (Studio integration) is TESTED + RENDERED and audit-repaired** on `feature/dual-07-studio`; PR #61 is open, **not merged** (owner: "Not yet": trying the Studio first). The independent audit's findings 1–4 were reproduced and repaired; finding 5 (DUAL-08 boundary) is an assessment recorded in CAMPAIGN_A.md, which DUAL-08 must follow.
 - **Next: DUAL-08** (bounded local batch production): **owner decided "Build it now"** (2026-11-27). It starts from main after PR #61 is merged; the owner is trying the Studio first ("Not yet" for #61). Then DUAL-09 (qualification and release).
 
 Date: 2026-11-27. The owner types only **"fod continue"**. Binding facts: CURRENT_STATE.md. Campaign status, evidence and the remaining plan: CAMPAIGN_A.md. Requirements: CAMPAIGN_A_DIRECTIVE.md (verbatim). Contracts: docs/COMPOSITION.md (compose-v1/v2, fonts), docs/MATHS.md, docs/CHARTS.md, docs/MEDIA.md. Scope map: docs/CAMPAIGN_A_AUDIT.md. Evidence rules: CAMPAIGN_A_PROTOCOL.md.
