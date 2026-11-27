@@ -1,7 +1,7 @@
 // STUDIO-01 "script to film": the Studio Director form as pure data. `directorRequest` maps the form fields to a
 // Director request (the server validates it again with src/director/schema.js `request`); `scriptHelp` gives the live
 // word count and the owner script rules (docs/SCRIPT_FORMAT.md). Browser-safe: no Node or director imports.
-import {defaultSpeech} from './production.js';
+import {requestSpeech} from './production.js';
 const bad=m=>{throw Error(m)};
 // Casts offered by the form. `interview` is the same cast and voices as examples/gen01-interview.request.json (and the
 // owner's forest script example); `trio` is the TALK-04 three-person cast the form offered before (round-robin turns);
@@ -14,7 +14,16 @@ export const STUDIO_CASTS=Object.freeze({
  narrator:Object.freeze({label:'Narrator only (no characters)',fields:{},dialogue:null})
 });
 // Owner 2026-11-26: roles in captions "Off by default" and "No titles at all" for new films (both are checkboxes).
-export const STUDIO_DEFAULTS=Object.freeze({cast:'interview',backend:'three',profile:'polished',seconds:60,reels:false,speakerNames:false,titles:false});
+export const STUDIO_DEFAULTS=Object.freeze({cast:'interview',backend:'three',profile:'polished',seconds:60,reels:false,speakerNames:false,titles:false,content:'none',format:'vertical-v1',theme:'aether-v1',captionStyle:'box-v1',soundtrack:'mix',music:'soft',font:'auto'});
+// DUAL-07 choices (labels shown in the Studio; IDs are the validated Director capabilities). Defaults = earlier films.
+export const STUDIO_CONTENT=Object.freeze({none:'Characters only (classic)','mixed-v1':'Characters + visual aids','explainer-v1':'Explainer (no characters)','typography-v1':'Typography (no characters)'});
+export const STUDIO_FORMATS=Object.freeze({'vertical-v1':'Vertical 9:16 (1080×1920)','landscape-v1':'Landscape 16:9 (1920×1080)','square-v1':'Square 1:1 (1080×1080)'});
+export const STUDIO_THEMES=Object.freeze({'aether-v1':'Dark','paper-v1':'Paper (light)','contrast-v1':'High contrast'});
+export const STUDIO_CAPTIONS=Object.freeze({'box-v1':'Dark box','paper-v1':'Paper','contrast-v1':'High contrast'});
+export const STUDIO_SOUND=Object.freeze({mix:'Narration and music','silent':'Silent (captions only)'});
+export const STUDIO_MUSIC=Object.freeze({soft:'Soft (default)',off:'Off',louder:'Louder'});
+export const STUDIO_FONTS=Object.freeze({auto:'Automatic',inter:'Inter',merriweather:'Merriweather','jetbrains-mono':'JetBrains Mono','noto-sans':'Noto Sans'});
+const pick=(v,table,what,dflt)=>{const x=v??dflt;if(!Object.hasOwn(table,x))bad('Unknown '+what+': '+String(x));return x;};
 // About 2.2 spoken words per second (docs/SCRIPT_FORMAT.md): 60 s → 120–140 words, 30 s → 60–70.
 export const WORDS_PER_SECOND=Object.freeze({min:2,max:7/3});
 // Spoken words per second at which the calm dialogue pace (0.92) was kept in measured films (see scriptHelp).
@@ -46,7 +55,29 @@ export function directorRequest(form){
  // owner's checkbox "Titles on top": unticked (the default) = a clean top
  q.titles=form.titles===true?'shots':'none';
  // names only ever show with two or more speakers, so the narrator request is left unchanged
- if(form.speakerNames===false&&cast.dialogue){q.speech=defaultSpeech(seconds);q.speech.captions.speakerNames=false;}
+ // DUAL-07: content mode, format, look and sound. Impossible combinations are refused here with the fix to make.
+ const D=STUDIO_DEFAULTS,content=pick(form.content,STUDIO_CONTENT,'content mode',D.content),format=pick(form.format,STUDIO_FORMATS,'format',D.format),theme=pick(form.theme,STUDIO_THEMES,'theme',D.theme),captionStyle=pick(form.captionStyle,STUDIO_CAPTIONS,'caption style',D.captionStyle),soundtrack=pick(form.soundtrack,STUDIO_SOUND,'sound',D.soundtrack),music=pick(form.music,STUDIO_MUSIC,'music level',D.music),font=pick(form.font,STUDIO_FONTS,'font',D.font);
+ if(content!=='none'){
+  if(cast.dialogue&&content!=='mixed-v1')bad(STUDIO_CONTENT[content]+' has no characters: choose the cast "'+STUDIO_CASTS.narrator.label+'", or the content "'+STUDIO_CONTENT['mixed-v1']+'"');
+  if(form.titles===true)bad('Titles on top cannot be combined with visual aids (the aids take that space): untick Titles on top');
+  q.content=content;delete q.titles;
+ }
+ if(format!=='vertical-v1'){
+  if(content==='none')bad('Landscape and square need a content mode (Characters + visual aids, Explainer or Typography): choose one, or keep Vertical');
+  if(form.reels===true)bad('Instagram Reels is 9:16 only: untick Reels, or keep Vertical');
+  q.format=format;
+ }
+ if(theme!=='aether-v1'||font!=='auto'){if(content==='none')bad('Theme and font style the visual aids: choose a content mode first');if(theme!=='aether-v1')q.theme=theme;if(font!=='auto')q.font=font;}
+ if(captionStyle!=='box-v1')q.captionStyle=captionStyle;
+ if(soundtrack!=='mix')q.soundtrack=soundtrack;
+ if(music!=='soft')q.music=music;
+ // Advanced: authored visuals (data, equations, images) as JSON; the Director validates every field.
+ const visuals=typeof form.visuals==='string'?form.visuals.trim():'';
+ if(visuals){if(content==='none')bad('Visuals need a content mode: choose one first');if(!script)bad('Visuals attach to sentences of the script: add the script');
+  let v;try{v=JSON.parse(visuals);}catch(e){bad('Visuals: not valid JSON ('+String(e.message).slice(0,120)+')');}
+  if(!Array.isArray(v))bad('Visuals: a JSON list [ {"at": "…", "composition": {…}} ] is required');q.visuals=v;}
+ // speech defaults: names hidden for dialogue unless ticked; content modes fitted and mastered (same rule as produce.mjs)
+ if((cast.dialogue&&form.speakerNames===false)||q.content)q.speech=requestSpeech(q,{speakerNames:form.speakerNames===true});
  return q;
 }
 // Live help under the Script box. Counts what will be spoken (the cleaned script), flags lines the Director would

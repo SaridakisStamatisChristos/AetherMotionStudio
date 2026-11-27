@@ -9,6 +9,7 @@ import {randomBytes,createHash} from 'node:crypto';
 import {spawn} from 'node:child_process';
 import {validateProject,validateTimeline} from '../src/core/timeline.js';
 import {direct} from '../src/director/index.js';
+import {safeMediaPath,readLock} from '../src/director/media-loader.js';
 import {directorCatalog} from '../src/director/catalog.js';
 import {VOICES} from '../src/core/contract.js';
 import {CAMERA_RIGS,ACTIONS} from '../src/core/cinematography.js';
@@ -25,7 +26,7 @@ const MAX_BODY=1024*1024,MAX_LOG=40000,MAX_JOBS=40;
 const FILES=new Set(['film.mp4','scene.json','timeline.json','props.json','voice-report.json','speech-report.json','captions.srt','captions.vtt','quality-report.json','quality-preflight.json','quality-original-project.json','quality-contact-sheet.jpg','probe.json','render-timing.json','kokoro-narration.wav','mix.wav','preview-audio.wav','reels-cover.jpg','reels-report.json']);
 // Owner choice 3 (Reels cover button): the export lives in <job>/reels/ (the CLI layout) and is served under flat names.
 const REELS_FILES=Object.freeze({'reels-cover.jpg':['reels','cover.jpg'],'reels-report.json':['reels','reels-report.json']});
-const mime={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json; charset=utf-8','.mp4':'video/mp4','.wav':'audio/wav','.jpg':'image/jpeg','.srt':'text/plain; charset=utf-8','.vtt':'text/vtt; charset=utf-8'};
+const mime={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json; charset=utf-8','.mp4':'video/mp4','.wav':'audio/wav','.jpg':'image/jpeg','.png':'image/png','.webp':'image/webp','.ttf':'font/ttf','.srt':'text/plain; charset=utf-8','.vtt':'text/vtt; charset=utf-8'};
 const hash=x=>createHash('sha256').update(x).digest('hex');
 const status=(n,m)=>Object.assign(Error(m),{status:n});
 function safeId(id){if(typeof id!=='string'||!/^[a-z0-9][a-z0-9-]{0,47}$/.test(id)||/^(con|prn|aux|nul|com[1-9]|lpt[1-9]|constructor|prototype)$/.test(id))throw status(400,'Invalid project ID');return id;}
@@ -154,6 +155,8 @@ export async function createStudio({root=ROOT,dataDir=join(root,'studio-data'),r
     const lod=Number(u.searchParams.get('lod')??0),view=u.searchParams.get('view')??'three-quarter',lighting=u.searchParams.get('lighting')??'studio';
     const {raster,...info}=previewAsset(entry,{lod,view,lighting});return send(res,200,{entry,info,preview:'data:image/bmp;base64,'+Buffer.from(bmp(raster)).toString('base64')});
    }
+   // DUAL-07 picture library (public/media/media.lock.json): IDs, sizes and licences for the Advanced view
+   if(method==='GET'&&path==='/api/media'){let lock;try{lock=readLock(root);}catch(e){throw status(500,String(e.message??e).slice(0,300));}return send(res,200,{media:Object.entries(lock.media).map(([id,e])=>({id,file:e.file,format:e.format,width:e.displayWidth,height:e.displayHeight,licence:e.licence,attribution:e.attribution,source:e.source}))});}
    if(method==='GET'&&path==='/api/catalog')return send(res,200,{catalog:directorCatalog(),voices:VOICES,cameras:Object.keys(CAMERA_RIGS),actions:Object.keys(ACTIONS),motions:Object.keys(MOTION_PRESETS),effects:Object.keys(EFFECT_PRESETS)});
    if(method==='GET'&&path==='/api/projects'){
     const files=(await readdir(projectsDir)).filter(x=>/^[a-z0-9][a-z0-9-]{0,47}\.json$/.test(x)).sort().slice(0,500),items=[];
@@ -190,6 +193,9 @@ export async function createStudio({root=ROOT,dataDir=join(root,'studio-data'),r
    if(['GET','HEAD'].includes(method)&&match){const j=jobs.get(match[1]);if(!j||!j.files.includes(match[2])||!FILES.has(match[2]))throw status(404,'Artifact not available');return await serveFile(req,res,outputDir,join(outputDir,j.id,...(REELS_FILES[match[2]]??[match[2]])),{download:u.searchParams.get('download')==='1'&&downloadName(j.projectId,match[2])});}
    if(!['GET','HEAD'].includes(method))throw status(404,'Unknown API route');
    if(path==='/'||['/app.js','/style.css'].includes(path))return await serveFile(req,res,join(root,'studio'),join(root,'studio',path==='/'?'index.html':path.slice(1)));
+   // DUAL-07: the preview's fonts and library pictures, read-only, by safe names only (no listing, no other files)
+   if(/^\/fonts\/(?:inter|merriweather|jetbrains-mono|noto-sans)\/[A-Za-z0-9-]+\.ttf$/.test(path))return await serveFile(req,res,join(root,'public','fonts'),join(root,'public',path.slice(1)));
+   if(/^\/media\/[a-z0-9][a-z0-9-]{0,47}\.(?:png|jpg|webp)$/.test(path)){let file;try{file=safeMediaPath(root,path.slice('/media/'.length));}catch{throw status(404,'File not found');}return await serveFile(req,res,join(root,'public','media'),file);}
    if(/^\/src\/(?:core|visual|templates|studio|foundry)\/[a-z0-9-]+\.js$/.test(path))return await serveFile(req,res,join(root,'src'),join(root,path.slice(1)));
    if(/^\/vendor\/three\/(?:build|examples\/jsm)\/(?:[A-Za-z0-9_-]+\/)*[A-Za-z0-9_.-]+\.js$/.test(path))return await serveFile(req,res,join(root,'node_modules','three'),join(root,'node_modules','three',path.slice('/vendor/three/'.length)));
    throw status(404,'Not found');

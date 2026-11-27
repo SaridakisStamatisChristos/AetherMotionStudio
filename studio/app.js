@@ -7,7 +7,11 @@ import {defaultSpeech} from '/src/studio/production.js';
 import {calmTurns} from '/src/core/calm.js';
 import {editProject,applyShotEdit,reorderShot,setBackend,setProfile,setStaging,addAsset,removeAsset,previewState,addFoundryAsset,setSpeakers,setLineSpeaker,bindSpeaker} from '/src/studio/model.js';
 // STUDIO-01: the Director form maps to a request in src/studio/director-form.js (casts, Reels, script help; tested).
-import {STUDIO_CASTS,STUDIO_DEFAULTS,directorRequest,scriptHelp,scriptPrompt,cleanScript} from '/src/studio/director-form.js';
+import {STUDIO_CASTS,STUDIO_DEFAULTS,STUDIO_CONTENT,STUDIO_FORMATS,STUDIO_THEMES,STUDIO_CAPTIONS,STUDIO_SOUND,STUDIO_MUSIC,STUDIO_FONTS,directorRequest,scriptHelp,scriptPrompt,cleanScript} from '/src/studio/director-form.js';
+import {sceneFontFaces} from '/src/visual/fonts.js';
+import {sceneImages} from '/src/core/media.js';
+import {registerImage} from '/src/visual/media-registry.js';
+import {formatOf} from '/src/core/formats.js';
 import {finishedSummary,reelsSummary} from '/src/studio/finished.js';
 import {SETTINGS_KEY,SETTINGS_DEFAULTS,readSettings,writeSettings} from '/src/studio/settings.js';
 import {jobProgress,formatSeconds} from '/src/studio/progress.js';
@@ -63,6 +67,14 @@ function renderSpeakers(){
  s.narration.forEach((t,i)=>{const row=document.createElement('label');row.textContent='Line '+(i+1)+': '+t.slice(0,40);row.append(select([['','Narrator (default)'],...ids.map(id=>[id,speech.speakers[id].name])],speech.shotSpeakers[s.id]?.[i]??'',v=>{if(!v)throw Error('Choose a speaker');commit(setLineSpeaker(requireProject(),state.shot,i,v));status('Line speaker set.');}));$('lineSpeakers').append(row);});
  if(s.template==='cinematic-graph')for(const id of ids){const row=document.createElement('label');row.textContent=speech.speakers[id].name+' appears as';row.append(select([['','(not shown)'],...s.assets.map(a=>[a.id,a.id+' · '+a.asset])],s.speakerAssets?.[id]??'',v=>{commit(bindSpeaker(requireProject(),state.shot,id,v||null));status('Speaker binding updated.');}));$('lineSpeakers').append(row);}
 }
+// DUAL-07: the preview loads the film's own fonts and library pictures (served read-only by the Studio server), so it
+// shows what the render draws. Anything that cannot load stays a labelled placeholder here only (the render checks again).
+const previewLoads=new WeakMap();
+function previewAssets(scene){let job=previewLoads.get(scene);if(job)return job;job=(async()=>{const notes=[];
+ await Promise.all(sceneFontFaces(scene).map(f=>new FontFace(f.css,'url(/'+f.path+')',{weight:String(f.weight)}).load().then(x=>{document.fonts.add(x);}).catch(()=>{notes.push('font '+f.font);})));
+ let list=[];try{list=sceneImages(scene);}catch(e){notes.push(e.message);}
+ await Promise.all(list.map(async s=>{try{const r=await fetch('/media/'+s.file);if(!r.ok)throw Error('HTTP '+r.status);registerImage(s.sha256,await createImageBitmap(await r.blob()));}catch{notes.push('picture '+s.media);}}));
+ if(notes.length)$('previewLabel').textContent='Preview could not load '+notes.join(', ')+'; placeholders are shown (the render checks them again).';})();previewLoads.set(scene,job);return job;}
 async function paint(){
  const p=state.preview;if(!p)return;const epoch=++state.drawEpoch,frame=state.frame;
  const active=p.scene.version===2?p.scene.shots[p.timeline.shots.findIndex(s=>frame<s.endFrame)]:null;
@@ -71,7 +83,10 @@ async function paint(){
    const {createThreeBackend}=await import('/src/visual/three-backend.js');if(epoch!==state.drawEpoch)return;state.three=createThreeBackend();
   }
   if(epoch!==state.drawEpoch)return;
-  const ctx=$('canvas').getContext('2d');ctx.clearRect(0,0,360,640);drawFilm(ctx,p.scene,p.timeline,frame,360,640,state.three);
+  await previewAssets(p.scene);if(epoch!==state.drawEpoch)return;
+  // DUAL-07: the preview canvas takes the film's format (half the logical size: 360×640, 640×360 or 360×360)
+  const F=p.scene.version===2?formatOf(p.scene):null,W=F?F.logical.w/2:360,H=F?F.logical.h/2:640,cv=$('canvas');if(cv.width!==W||cv.height!==H){cv.width=W;cv.height=H;}
+  const ctx=cv.getContext('2d');ctx.clearRect(0,0,W,H);drawFilm(ctx,p.scene,p.timeline,frame,W,H,state.three);
   $('scrub').value=frame;$('clock').textContent=time(frame)+' / '+time(duration());
  }catch(e){stop();$('previewLabel').textContent='Preview failed (no automatic backend substitution): '+e.message;status('Preview: '+e.message,true);}
 }
@@ -130,7 +145,7 @@ $('save').onclick=action(save);$('export').onclick=action(downloadJSON);$('play'
 $('projects').onchange=action(async()=>{if(!$('projects').value)return;const x=await api('/api/projects/'+$('projects').value);install(x.project,x.revision,x.project.id);status('Loaded '+x.project.id);});
 $('examples').onchange=action(async()=>{if(!$('examples').value)return;const x=await api('/api/examples/'+$('examples').value);install(x.project);status('Example imported; choose a project ID and save.');});
 $('import').onchange=action(async()=>{const f=$('import').files[0];if(!f)return;if(f.size>1024*1024)throw Error('Project JSON too large');install(JSON.parse(await f.text()));status('Imported project; save to persist.');});
-function directorForm(){return {id:'film-'+Date.now().toString(36),topic:$('topic').value,script:$('script').value,seconds:Number($('seconds').value),cast:$('directCast').value,backend:$('directBackend').value,profile:$('directProfile').value,voice:$('directVoice').value,staging:$('directStaging').checked,reels:$('directReels').checked,speakerNames:$('directNames').checked,titles:$('directTitles').checked};}
+function directorForm(){return {id:'film-'+Date.now().toString(36),topic:$('topic').value,script:$('script').value,seconds:Number($('seconds').value),cast:$('directCast').value,backend:$('directBackend').value,profile:$('directProfile').value,voice:$('directVoice').value,staging:$('directStaging').checked,reels:$('directReels').checked,speakerNames:$('directNames').checked,titles:$('directTitles').checked,content:$('directContent').value,format:$('directFormat').value,theme:$('directTheme').value,captionStyle:$('directCaptions').value,soundtrack:$('directSound').value,music:$('directMusic').value,font:$('directFont').value,visuals:$('directVisuals').value};}
 // Owner: "give a list of advice … so whoever uses it could be able to choose": length choices under the count. "Use N s"
 // sets Seconds; "Keep" closes the choice for this script and length; "Shorten" is a hint (the script is the owner's).
 let keptLength=null;
@@ -141,6 +156,10 @@ function lengthChoices(h){const box=$('lengthChoices'),key=h.words+'/'+$('second
 function scriptInfo(){rememberSettings();const cast=$('directCast').value,h=scriptHelp($('script').value,$('seconds').value,cast);$('scriptCount').textContent=h.summary;$('scriptCount').className=h.verdict==='ok'||h.verdict==='empty'?'muted':'warn';lengthChoices(h);$('scriptTurns').textContent=h.turns;const narrator=cast==='narrator';$('directVoice').disabled=$('directStaging').disabled=!narrator;for(const el of document.querySelectorAll('.narrator-only'))el.hidden=!narrator;
  try{$('scriptPrompt').value=scriptPrompt({topic:$('topic').value,seconds:Number($('seconds').value),cast});}catch(e){$('scriptPrompt').value='Set the seconds (6–300) to get the prompt. '+e.message;}}
 fill($('directCast'),Object.entries(STUDIO_CASTS).map(([id,c])=>[id,c.label]));$('directCast').value=STUDIO_DEFAULTS.cast;
+// DUAL-07 choices (labels from src/studio/director-form.js; remembered like the other choices)
+for(const [k,table] of [['content',STUDIO_CONTENT],['format',STUDIO_FORMATS],['theme',STUDIO_THEMES],['captionStyle',STUDIO_CAPTIONS],['soundtrack',STUDIO_SOUND],['music',STUDIO_MUSIC],['font',STUDIO_FONTS]]){const el=$({content:'directContent',format:'directFormat',theme:'directTheme',captionStyle:'directCaptions',soundtrack:'directSound',music:'directMusic',font:'directFont'}[k]);fill(el,Object.entries(table));el.value=STUDIO_DEFAULTS[k];el.onchange=rememberSettings;}
+async function mediaLibrary(){const box=$('mediaLibrary');try{const r=await fetch('/api/media'),x=await r.json();if(!r.ok)throw Error(x.error??'HTTP '+r.status);box.replaceChildren(...(x.media.length?x.media.map(m=>Object.assign(document.createElement('div'),{textContent:m.id+' · '+m.format+' '+m.width+'×'+m.height+' · '+m.licence+(m.attribution?' · '+m.attribution:''),title:m.source})):[Object.assign(document.createElement('span'),{textContent:'No pictures yet.'})]));}catch(e){box.textContent='Picture library unavailable: '+e.message;}}
+void mediaLibrary();
 // Studio UI refinement (owner: "Simple 'Make a film' view"): the page opens in the simple view (film form, preview,
 // production result); Advanced shows the full editor (workspace, library, Foundry, timeline, inspector, speakers, JSON).
 function setMode(advanced){document.body.classList.toggle('simple',!advanced);$('mode').setAttribute('aria-pressed',String(advanced));$('mode').textContent=advanced?'Simple view':'Advanced';}
@@ -149,9 +168,9 @@ $('mode').onclick=()=>{setMode(document.body.classList.contains('simple'));remem
 // kept in this browser's localStorage only (never the topic or script). Restored after the catalog fills the voices;
 // nothing is written before that, so the defaults shown at load never overwrite what was kept.
 let settingsReady=false;
-function currentSettings(){return {cast:$('directCast').value,seconds:Number($('seconds').value),backend:$('directBackend').value,profile:$('directProfile').value,voice:$('directVoice').value,staging:$('directStaging').checked,reels:$('directReels').checked,speakerNames:$('directNames').checked,titles:$('directTitles').checked,advanced:!document.body.classList.contains('simple')};}
+function currentSettings(){return {cast:$('directCast').value,seconds:Number($('seconds').value),backend:$('directBackend').value,profile:$('directProfile').value,voice:$('directVoice').value,staging:$('directStaging').checked,reels:$('directReels').checked,speakerNames:$('directNames').checked,titles:$('directTitles').checked,content:$('directContent').value,format:$('directFormat').value,theme:$('directTheme').value,captionStyle:$('directCaptions').value,soundtrack:$('directSound').value,music:$('directMusic').value,font:$('directFont').value,advanced:!document.body.classList.contains('simple')};}
 function rememberSettings(){if(!settingsReady)return;try{localStorage.setItem(SETTINGS_KEY,writeSettings(currentSettings(),state.catalog?.voices??[]));}catch{}}
-function applySettings(s){$('directCast').value=s.cast;$('seconds').value=String(s.seconds);$('directBackend').value=s.backend;$('directProfile').value=s.profile;if(s.voice)$('directVoice').value=s.voice;else $('directVoice').selectedIndex=0;$('directStaging').checked=s.staging;$('directReels').checked=s.reels;$('directNames').checked=s.speakerNames;$('directTitles').checked=s.titles;setMode(s.advanced);scriptInfo();}
+function applySettings(s){$('directCast').value=s.cast;$('seconds').value=String(s.seconds);$('directBackend').value=s.backend;$('directProfile').value=s.profile;if(s.voice)$('directVoice').value=s.voice;else $('directVoice').selectedIndex=0;$('directStaging').checked=s.staging;$('directReels').checked=s.reels;$('directNames').checked=s.speakerNames;$('directTitles').checked=s.titles;$('directContent').value=s.content;$('directFormat').value=s.format;$('directTheme').value=s.theme;$('directCaptions').value=s.captionStyle;$('directSound').value=s.soundtrack;$('directMusic').value=s.music;$('directFont').value=s.font;setMode(s.advanced);scriptInfo();}
 function restoreSettings(){let text=null;try{text=localStorage.getItem(SETTINGS_KEY);}catch{}const s=readSettings(text,state.catalog?.voices??[]);applySettings(s);settingsReady=true;return text!==null;}
 $('director').addEventListener('change',rememberSettings);
 $('resetSettings').onclick=action(()=>{try{localStorage.removeItem(SETTINGS_KEY);}catch{}settingsReady=false;applySettings(SETTINGS_DEFAULTS);settingsReady=true;status('Choices reset to the defaults.');});

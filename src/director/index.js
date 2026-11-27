@@ -39,9 +39,11 @@ export function allocateFrames(shots,total){
 // DUAL-06 request shortcuts applied to whatever speech settings the request ends up with (its own or the defaults):
 // captionStyle → speech.captions.style, soundtrack → speech.soundtrack. They need speech (narrated films).
 export function withSoundOptions(q,speech){
- if(q.captionStyle===undefined&&q.soundtrack===undefined)return speech;
- if(!speech)throw Error('request.'+(q.captionStyle!==undefined?'captionStyle':'soundtrack')+': needs speech settings (narrated films)');
- return {...speech,...(q.soundtrack!==undefined?{soundtrack:q.soundtrack}:{}),...(q.captionStyle!==undefined?{captions:{...speech.captions,style:q.captionStyle}}:{})};
+ if(q.captionStyle===undefined&&q.soundtrack===undefined&&q.music===undefined)return speech;
+ if(!speech)throw Error('request.'+(q.captionStyle!==undefined?'captionStyle':q.soundtrack!==undefined?'soundtrack':'music')+': needs speech settings (narrated films)');
+ // DUAL-07 music level: off = 0, louder = 1.5× the film's own music gain (at most 1); soft = unchanged
+ const music=q.music===undefined||q.music==='soft'?{}:{mix:{...speech.mix,music:q.music==='off'?0:Math.min(1,Math.round(speech.mix.music*1.5*1000)/1000)}};
+ return {...speech,...music,...(q.soundtrack!==undefined?{soundtrack:q.soundtrack}:{}),...(q.captionStyle!==undefined?{captions:{...speech.captions,style:q.captionStyle}}:{})};
 }
 export function compile(q,ir,selection,{mediaRoot}={}){
  validateIR(ir,q,selection);
