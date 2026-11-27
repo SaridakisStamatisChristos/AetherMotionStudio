@@ -1,10 +1,10 @@
-# Forward-only handoff: Campaign A, DUAL-05 tested and rendered (PR #57); DUAL-06 next (2026-11-27)
+# Forward-only handoff: Campaign A, DUAL-05 merged; DUAL-06 next (2026-11-27)
 
 Unit: **Campaign A — Universal Dual-Backend Finalization**, owner-authorized.
 - **DUAL-00 … DUAL-04 are COMPLETE and MERGED** (main **e520e4a**; PR #55 merged on "Approved. Merge PR #55", CI run 45889745389, 475/475).
-- **DUAL-05 (local raster media) is TESTED + RENDERED** on `feature/dual-05-media` (10d9cb1 implementation, c960694 planner hint and contract doc, plus this checkpoint). **PR #57 is open, not merged.** It needs the owner's review and merge word, after its CI test job passes on the current head.
-- **PR #56** (docs-only handoff on `chore/fod-handoff-dual05-09`) is still open. Its three continuity files were carried into this branch as the base of this checkpoint. Ask the owner: merge #56 first (then merge main into #57; conflicts are trivial, keep #57's text) or close #56 as superseded.
-- **Next milestone: DUAL-06** (formats, themes, audio controls), only after #57 is merged. Then DUAL-07, 08 and 09, strictly in order. The plan for each is in CAMPAIGN_A.md, "Remaining work plan".
+- **DUAL-05 (local raster media) is MERGED**: PR #57 → **main aacfac6** (owner "merge pr 57 and close pr 56 as superseded"; CI 45961923535 green on 90eed63, 491/491). The owner inspected the dual05 outputs and likes them (2026-11-27).
+- **PR #56** was closed as superseded (its docs were carried into #57).
+- **Next milestone: DUAL-06** (formats, themes, audio controls). Then DUAL-07, 08 and 09, strictly in order. The plan for each is in CAMPAIGN_A.md, "Remaining work plan".
 
 Date: 2026-11-27. The owner types only **"fod continue"**. Binding facts: CURRENT_STATE.md. Campaign status, evidence and the remaining plan: CAMPAIGN_A.md. Requirements: CAMPAIGN_A_DIRECTIVE.md (verbatim). Contracts: docs/COMPOSITION.md (compose-v1/v2, fonts), docs/MATHS.md, docs/CHARTS.md, docs/MEDIA.md. Scope map: docs/CAMPAIGN_A_AUDIT.md. Evidence rules: CAMPAIGN_A_PROTOCOL.md.
 
@@ -17,11 +17,11 @@ Date: 2026-11-27. The owner types only **"fod continue"**. Binding facts: CURREN
 | DUAL-03 | MERGED #53 | MathJax 4.1.3 equations (Node-only), plots, BFS graphs, Euclid arrays, `request.visuals` | docs/MATHS.md |
 | CI | MERGED #54 | test job runs `npm ci` | CURRENT_STATE.md |
 | DUAL-04 | MERGED #55 | charts, timelines, flowcharts, comparison cards; two audit repair passes | docs/CHARTS.md |
-| DUAL-05 | **PR #57 open** (tested + rendered) | local PNG/JPEG/static WebP library, import checks, verified `image` item, pan/zoom | docs/MEDIA.md |
+| DUAL-05 | MERGED #57 | local PNG/JPEG/static WebP library, import checks, verified `image` item, pan/zoom | docs/MEDIA.md |
 
 ## Next action for "fod continue"
-1. Bootstrap (below). Check PR #57: if the owner has given the merge word and CI is green on its head, merge it; otherwise report its state and wait (do not start DUAL-06 on top of an unmerged #57: branches are never stacked). Ask about #56 if it is still open.
-2. After #57 is merged: `git switch main && git pull && npm install`, branch `feature/dual-06-formats` from main.
+1. Bootstrap (below). If this docs record (`chore/fod-dual05-merged`) is still an open PR, ask the owner to merge it; its content is the latest canon.
+2. `git switch main && git pull && npm install`, branch `feature/dual-06-formats` from main.
 3. Read the DUAL-06 directive section, the DUAL-06 rows of docs/CAMPAIGN_A_AUDIT.md and the DUAL-06 plan in CAMPAIGN_A.md. Owner decision already recorded: new sizes 1920×1080 and 1080×1080 are **opt-in presets**; the default stays 1080×1920 at 30 fps. Promoting any preset or theme to a default needs the owner.
 4. The media library on this machine (`public/media/`, git-ignored) holds the five dual05 illustrations; `node scripts/media-import.mjs verify` re-checks them. `node scripts/dual05-gallery-media.mjs` recreates them on another machine (it refuses nothing already imported with the same bytes).
 
@@ -62,11 +62,11 @@ Date: 2026-11-27. The owner types only **"fod continue"**. Binding facts: CURREN
 - A stray chrome-headless-shell (PID 343888) from a stopped DUAL-01 render may still be running; harmless.
 
 ## Bootstrap for "fod continue"
-1. `git status --short --branch`, `git rev-parse HEAD`, `git fetch`, `gh pr list --state open`, `git tag --list`. Expect main e520e4a, or later if the handoff PR (chore/fod-handoff-dual05-09) was merged.
+1. `git status --short --branch`, `git rev-parse HEAD`, `git fetch`, `gh pr list --state open`, `git tag --list`. Expect main aacfac6 or later.
 2. Read CLAUDE.md, AGENTS.md, CURRENT_STATE.md, this file and CAMPAIGN_A.md (plus the directive section of the active milestone).
 3. Baseline:
    - `node scripts/fod-digests.mjs . --exclude talk04,talk05,gen01,gen09,gen12,fixa,dual` must print graph 3d33fbaee198acad, geometry 14dec244d171dc56, detail2 e3f80439a292f21a, director 7 requests 2cbf9916e65da935;
-   - `npm test` must give fail 0 (475 tests at e520e4a, 491 on feature/dual-05-media; 1 Windows skip);
+   - `npm test` must give fail 0 (491 tests at aacfac6, 1 Windows skip; CI runs all 491);
    - `PYTHONPATH=scripts .venv/Scripts/python.exe -m unittest discover -s tests -p "test_*.py"` must give 61 OK.
 
 ## Owner working agreement and taste (binding; see also auto-memory)
