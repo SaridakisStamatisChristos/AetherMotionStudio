@@ -6,7 +6,7 @@ Unit: **Campaign A — Universal Dual-Backend Finalization**, owner-authorized.
 - **PR #56** was closed as superseded (its docs were carried into #57).
 - **DUAL-06 is COMPLETE and MERGED** (#59 → 0072c5a; #60 → **f062de4**, owner "all good merge"). Renders before DUAL-06 were cleared on the owner's word (standing rule: clear older renders after each merged milestone).
 - **DUAL-07 (Studio integration) is TESTED + RENDERED** on `feature/dual-07-studio` (d9f8d8f, e38b33f, dc618e3 + checkpoint); its PR is open, **not merged**.
-- **Next: DUAL-08** (optional bounded batch production). The plan says the **owner decides first**: build it before the freeze, or defer it (documented as a future shared service). Then DUAL-09 (qualification and release).
+- **Next: DUAL-08** (bounded local batch production): **owner decided "Build it now"** (2026-11-27). It starts from main after PR #61 is merged; the owner is trying the Studio first ("Not yet" for #61). Then DUAL-09 (qualification and release).
 
 Date: 2026-11-27. The owner types only **"fod continue"**. Binding facts: CURRENT_STATE.md. Campaign status, evidence and the remaining plan: CAMPAIGN_A.md. Requirements: CAMPAIGN_A_DIRECTIVE.md (verbatim). Contracts: docs/COMPOSITION.md (compose-v1/v2, fonts), docs/MATHS.md, docs/CHARTS.md, docs/MEDIA.md. Scope map: docs/CAMPAIGN_A_AUDIT.md. Evidence rules: CAMPAIGN_A_PROTOCOL.md.
 
@@ -25,7 +25,7 @@ Date: 2026-11-27. The owner types only **"fod continue"**. Binding facts: CURREN
 
 ## Next action for "fod continue"
 1. Bootstrap (below). If the DUAL-07 PR (`feature/dual-07-studio`) is still open, its checkpoint docs are the latest canon; merge it only on the owner's word after its CI passes, then clear renders older than DUAL-07 (owner rule).
-2. Ask the owner the DUAL-08 question (batch now or deferred) with the options in the UI. If now: `git switch main && git pull && npm install`, branch `feature/dual-08-batch` from main. If deferred: record it and go to DUAL-09.
+2. After #61 is merged: clear renders older than DUAL-07, then `git switch main && git pull && npm install`, branch `feature/dual-08-batch` from main. Scope (CAMPAIGN_A.md plan): a local queue of validated requests/projects with explicit backend, preset and output root, unique IDs, per-job manifests; sequential or measured bounded concurrency; persistent minimal job state; cancel and resume; restart recovery; per-job failures; never re-render accepted outputs or retry forever; no SaaS, scheduling or posting. Exit: mixed success/failure/cancel fixtures, restart recovery, no lost outputs, bounded resources.
 3. Read the DUAL-08 (or DUAL-09) directive section, audit rows and plan in CAMPAIGN_A.md.
 4. The media library on this machine (`public/media/`, git-ignored) holds the five dual05 illustrations; `node scripts/media-import.mjs verify` re-checks them. `node scripts/dual05-gallery-media.mjs` recreates them on another machine (it refuses nothing already imported with the same bytes).
 
