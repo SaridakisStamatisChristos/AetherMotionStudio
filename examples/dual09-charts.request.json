@@ -58,8 +58,8 @@
           {
             "id": "crops", "type": "chart", "kind": "pie", "box": [0.05, 0.04, 0.9, 0.86],
             "categories": ["Tomatoes", "Beans", "Squash", "Lettuce"],
-            "series": [{"name": "Share", "values": [45, 25, 18, 12]}],
-            "unit": "%"
+            "series": [{"name": "Harvest", "values": [270, 150, 108, 72]}],
+            "unit": "kg"
           }
         ]
       }
