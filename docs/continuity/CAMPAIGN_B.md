@@ -17,8 +17,8 @@ Status words: PLANNED · NEXT · ACTIVE · IMPLEMENTED · TESTED · RENDERED · 
 
 | ID | Milestone | Status | Branch / PR | Evidence |
 |---|---|---|---|---|
-| GPU-00 | Architecture transition (ADR) and measurable budget | **NEXT** | — | — |
-| GPU-01 | PBR materials and colour management | PLANNED | — | — |
+| GPU-00 | Architecture transition (ADR) and measurable budget | **TESTED + MEASURED** (ADR-001 Accepted; budget delegated → protocol-v1 frozen) | `feature/gpu-00-architecture` / PR #67 (open) | ADR-001, CAMPAIGN_B_AUDIT.md, CAMPAIGN_B_PROTOCOL.md, tests/gpu00-profiles.test.js, out/bench/gpu00-*-r1-bench |
+| GPU-01 | PBR materials and colour management | NEXT (after the GPU-00 merge) | — | — |
 | GPU-02 | Lighting, shadows and environment illumination | PLANNED | — | — |
 | GPU-03 | Procedural texture and material library | PLANNED | — | — |
 | GPU-04 | External 3D assets (GLB) and high-detail geometry | PLANNED | — | — |
@@ -88,7 +88,7 @@ Known Campaign A facts that bound this campaign:
 - On the same fixture, CPU ran 28.5 fps and swangle 3.4 fps.
 - A field-name collision exists: `profile` already means the fidelity profile (`original`/`polished`). The Cinematic profile needs a distinct, versioned name, decided in the ADR (for example `renderProfile: 'cinematic-v1'`).
 
-## Proposed protocol (frozen at GPU-00 as `campaign-b-protocol-v1` in CAMPAIGN_B_PROTOCOL.md)
+## Protocol (FROZEN 2026-11-27 as `campaign-b-protocol-v1`: CAMPAIGN_B_PROTOCOL.md governs; the text below is the setup proposal)
 - Fixture and film IDs: `gpu<NN>-<slug>-r<n>` (never reused; a failed attempt keeps its ID). Request fixtures: `examples/gpu<NN>-<slug>.request.json`.
 - Matched comparisons use one shared preparation (speech, timeline, captions hashed) and render Standard vs Cinematic, or CPU vs Standard for regressions.
 - Per-milestone exit evidence:
@@ -221,6 +221,10 @@ It merges only on the owner's word, then the render cleanup follows.
 - **Evidence:** two fresh character-free films (scientific; mathematical/technical) with readable labels and numeric checks.
 
 ### GPU-10: performance and adaptive quality profiles
+- **FIRST STEP, MANDATORY (owner 2026-11-27: "please put in the roadmap to ask me in the gpu-10 for configuration in order to be sure we dont forget it"):**
+  - Before building the RP-06 pre-render budget check, ask the owner to configure it (UI choice, every option explained in plain words).
+  - Topics: the GPU-memory share (75 % proposed), the wall-time ratio (3 × Standard), the RAM rule (free − 1 GB, ≤ 3 GB at reference settings), whether over-budget warns or refuses, whether the limits are user-adjustable (Studio setting or env var), and how unmeasurable devices are treated.
+  - The current values are only the GPU-00 proposal in CAMPAIGN_B_PROTOCOL.md.
 - **Build:**
   - instrument graph evaluation, uploads, capture, encode, wall time, RAM and GPU memory;
   - leak tests across repeated jobs and long projects; deterministic disposal and cache ownership;
@@ -263,9 +267,10 @@ It merges only on the owner's word, then the render cleanup follows.
 - GPU-04: GLB support scope and the use of `three/examples` loaders and decoders (DRACO/meshopt/KTX2); any external asset licence.
 - GPU-05: character art direction; the first 2–3 hero characters.
 - GPU-06: any local alignment dependency for visemes (otherwise estimated cues, labelled).
-- GPU-10: quality tier defaults.
+- GPU-10: **configuration of the pre-render budget check (RP-06), asked first, before building it** (owner 2026-11-27); quality tier defaults.
 - GPU-11: Studio default profile.
 - GPU-12: artistic acceptance, merge, the `v2.0-gpu-cinematic` tag.
 
 ## Ledger (append one line per verified transition)
 - 2026-11-27: Campaign A complete (tag `v1.2-dual-backend-final` → 2cb82ef). Owner supplied the Campaign B master directive and asked for the FOD setup ("so i will start in a new session"). Directive stored verbatim; tracker, CLAUDE.md, AGENTS.md and continuity updated on `chore/campaign-b-setup`. Next: GPU-00 (ADR first; no GPU-exclusive capability before the owner approves it).
+- 2026-11-27: PR #66 merged (owner "merge pr 66 and start gpu-00") → main 69a3a5e. GPU-00 on `feature/gpu-00-architecture`: baseline green (560 tests, digests = v1.2); inventory → docs/CAMPAIGN_B_AUDIT.md; **ADR-001 Accepted by the owner** ("Approve as written"); DUAL_BACKEND_POLICY pointer section added (earlier sections unchanged); profile skeleton (`renderProfile: 'cinematic-v1'`, capability table `shared`, RP-01…RP-06) TESTED (572 tests, 0 fail, digests unchanged); 4 GPU Standard reference films + 12 bench runs on vulkan; budget delegated by the owner ("this is not the only computer that will use the program") → device-relative budget frozen in CAMPAIGN_B_PROTOCOL.md (campaign-b-protocol-v1). PR #67 open, not merged.

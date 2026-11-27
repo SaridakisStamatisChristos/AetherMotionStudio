@@ -1,5 +1,5 @@
 # Current state — AetherMotion Studio
-Updated 2026-11-27 (Campaign B setup). **Campaign A COMPLETE: DUAL-00…09 merged (last #64 → 79f76d7, record #65 → 2cb82ef), tagged `v1.2-dual-backend-final` → 2cb82ef on the owner's word "tag"; release notes docs/RELEASE_1_2.md. Active: Campaign B — GPU-First Cinematic Expansion (directive supplied 2026-11-27; docs/continuity/CAMPAIGN_B_DIRECTIVE.md, tracker CAMPAIGN_B.md); next GPU-00, whose first gate is the owner-approved ADR-001 (no GPU-exclusive capability before it).** Campaign A history: started 2026-11-26 at main 6c71875 (PRs #44–#48); per-milestone record below and in CAMPAIGN_A.md. Authoritative rolling checkpoint for new coding sessions; update at verified transitions. Baseline product merge: `04e3491bb21b4ebc3d54755a2a211b1a7affb3fa` (PR #13). No release publication implied.
+Updated 2026-11-27 (GPU-00 checkpoint: **ADR-001 Accepted by the owner**; render-profile skeleton TESTED; GPU Standard reference baseline measured; budget frozen in CAMPAIGN_B_PROTOCOL.md; PR #67 open, not merged). Earlier: Campaign B setup PR #66 merged → main 69a3a5e on the owner's "merge pr 66 and start gpu-00". **Campaign A COMPLETE: DUAL-00…09 merged (last #64 → 79f76d7, record #65 → 2cb82ef), tagged `v1.2-dual-backend-final` → 2cb82ef on the owner's word "tag"; release notes docs/RELEASE_1_2.md. Active: Campaign B — GPU-First Cinematic Expansion (directive supplied 2026-11-27; docs/continuity/CAMPAIGN_B_DIRECTIVE.md, tracker CAMPAIGN_B.md); next GPU-00, whose first gate is the owner-approved ADR-001 (no GPU-exclusive capability before it).** Campaign A history: started 2026-11-26 at main 6c71875 (PRs #44–#48); per-milestone record below and in CAMPAIGN_A.md. Authoritative rolling checkpoint for new coding sessions; update at verified transitions. Baseline product merge: `04e3491bb21b4ebc3d54755a2a211b1a7affb3fa` (PR #13). No release publication implied.
 
 ## Current status and authority
 - v1.0 core pipeline and Asset Foundry AF01–AF09 implementation merged; do not reimplement.
@@ -21,8 +21,22 @@ Updated 2026-11-27 (Campaign B setup). **Campaign A COMPLETE: DUAL-00…09 merge
 ## Active unit
 **Campaign B — GPU-First Cinematic Expansion** (owner supplied the master directive 2026-11-27: "this is the plan … make the plan with fod principles so i will start in a new session").
 - Requirements: docs/continuity/CAMPAIGN_B_DIRECTIVE.md (verbatim, sha256 91772ac7…). Status, binding rules, reuse map, FOD plan per milestone and owner decisions: docs/continuity/CAMPAIGN_B.md. Order GPU-00 … GPU-12.
-- **Next: GPU-00.** Baseline (tag, tests, digests, perf-bench); read-only inventory → docs/CAMPAIGN_B_AUDIT.md; draft docs/adr/ADR-001-render-profiles.md and **ask the owner to approve it**. Only after approval: the profile skeleton (versioned field, capability table, preflight refusals, report fields; no visual change); reference scenes and the budget table; freeze `campaign-b-protocol-v1`.
-- Binding until ADR-001 is approved: DUAL_BACKEND_POLICY.md unchanged; no GPU-exclusive scene capability; only inventory, measurement and drafting.
+- **GPU-00 status (2026-11-27): TESTED + MEASURED, PR #67 open, not merged.**
+  - **ADR-001 Accepted** (owner: "Approve as written"). DUAL_BACKEND_POLICY.md has the new section "Campaign B render profiles (ADR-001)"; its earlier sections stay binding.
+  - **Binding contract (src/core/render-profiles.js):**
+    - profiles `cpu-classic` / `gpu-standard` / `cinematic-v1`; the film-level optional field `renderProfile` (absent = v1.2 exactly);
+    - capabilities are derived from the film's fields, never declared, and the table holds only `shared`;
+    - diagnostics RP-01 unknown-profile, RP-02 backend-mismatch, RP-03 capability-unsupported, RP-04 matched-pair-mismatch, RP-05 software-gl (warning), RP-06 over-budget (reserved for GPU-10);
+    - refusals happen in `validateProject`, the Director request and production options (also batch), before speech preparation;
+    - `cinematic-v1` draws GPU Standard pixels until GPU-01;
+    - render-timing.json gains `renderProfile`, `profile`, `profileTable`, `capabilities` and `three`.
+  - **Budget (CAMPAIGN_B_PROTOCOL.md, campaign-b-protocol-v1):**
+    - the owner delegated it ("what you propose since this is not the only computer that will use the program"), so the limits are relative to the rendering machine;
+    - Cinematic GPU memory ≤ 75 % of the device's (6 GiB on the 8 GB reference); wall time ≤ 3 × the GPU Standard median on the same machine; RAM growth ≤ free RAM − 1 GB and ≤ 3 GB at reference settings;
+    - over budget is reported, never silently reduced; unmeasurable devices get "unverified device" warnings.
+  - **GPU Standard reference baseline (vulkan, concurrency 8, commit 7e8945c):** four references, gpu00-portrait / product / environment / science. Bench medians 41.9–54.2 s, 33.3–37.7 fps, peak GPU memory 1365–1436 MiB, RAM growth 2.19–2.47 GB.
+- **Next: GPU-00 merge (owner's word), then GPU-01** (PBR materials and colour management; the first visible Cinematic difference and the Standard-vs-Cinematic matched mode). The GPU-00 plan as written at setup (kept for history): Baseline (tag, tests, digests, perf-bench); read-only inventory → docs/CAMPAIGN_B_AUDIT.md; draft docs/adr/ADR-001-render-profiles.md and **ask the owner to approve it**. Only after approval: the profile skeleton (versioned field, capability table, preflight refusals, report fields; no visual change); reference scenes and the budget table; freeze `campaign-b-protocol-v1`.
+- (Superseded on 2026-11-27 by the ADR-001 approval; GPU-exclusive capabilities may now be built in `cinematic-v1` only, from GPU-01 on.) Was binding until ADR-001 was approved: DUAL_BACKEND_POLICY.md unchanged; no GPU-exclusive scene capability; only inventory, measurement and drafting.
 - Binding facts carried in:
   - GPU pixels on the RTX route are visually but not byte-stable (3 runs, 3 hashes, ≥ 51.5 dB); CPU and swangle are byte-stable;
   - reference throughput (reg-harbour06, 1273 frames, concurrency 8): CPU 28.5 fps, vulkan 44.3 fps with 1.59 GB peak GPU memory, swangle 3.4 fps;

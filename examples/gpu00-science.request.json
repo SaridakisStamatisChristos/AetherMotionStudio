@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "id": "gpu00-science",
+  "seconds": 60,
+  "language": "en-us",
+  "backend": "three",
+  "profile": "polished",
+  "topic": "How a vaccine trains the immune system",
+  "audience": "curious beginners",
+  "tone": "clear",
+  "style": "cinematic explainer",
+  "voice": "af_bella",
+  "seed": 14,
+  "content": "explainer-v1",
+  "font": "inter",
+  "script": "Your immune system learns from experience. When a germ gets in, special cells read the shapes on its surface. These shapes are called antigens. The first time, the response is slow, and you may feel ill for days. But the body keeps memory cells that remember each shape. A vaccine shows the immune system a harmless copy of those shapes. No real infection is needed. The body builds antibodies and memory cells anyway. Later, if the real germ arrives, the response is fast and strong. Often the germ is gone before you notice anything. That is how a small, safe lesson can protect you for years."
+}

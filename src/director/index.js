@@ -56,7 +56,7 @@ export function compile(q,ir,selection,{mediaRoot}={}){
  const set=setVersion?topicSetFor(setVersion,q,ir):null;
  if(set&&q.dialogue)ir=fitPiecesFor(setVersion,q,ir,set).ir;
  const budgets=allocateFrames(ir.shots,q.seconds*FPS),speech=withSoundOptions(q,q.dialogue?dialogueSpeech(q,ir):q.speech);
- const project={version:2,id:q.id,title:ir.title,voice:q.voice,...(speech?{speech}:{}),...(q.identityLibrary?{identityLibrary:restoreLibrary(q.identityLibrary)}:{}),shots:ir.shots.map((s,i)=>{
+ const project={version:2,id:q.id,title:ir.title,voice:q.voice,...(q.renderProfile?{renderProfile:q.renderProfile}:{}),...(speech?{speech}:{}),...(q.identityLibrary?{identityLibrary:restoreLibrary(q.identityLibrary)}:{}),shots:ir.shots.map((s,i)=>{
   // TALK-04: speakers staged as characters + one set piece; camera frames the whole line (no single subject).
   // GEN-02: stage first (line, set piece, group framing), then point (an aimer counts as authored blocking for talk-v1).
   if(q.dialogue){const assets=stageDialogueAssets(q,s.assets[0]);
