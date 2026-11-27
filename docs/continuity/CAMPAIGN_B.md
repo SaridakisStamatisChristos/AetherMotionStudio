@@ -221,6 +221,10 @@ It merges only on the owner's word, then the render cleanup follows.
 - **Evidence:** two fresh character-free films (scientific; mathematical/technical) with readable labels and numeric checks.
 
 ### GPU-10: performance and adaptive quality profiles
+- **FIRST STEP, MANDATORY (owner 2026-11-27: "please put in the roadmap to ask me in the gpu-10 for configuration in order to be sure we dont forget it"):**
+  - Before building the RP-06 pre-render budget check, ask the owner to configure it (UI choice, every option explained in plain words).
+  - Topics: the GPU-memory share (75 % proposed), the wall-time ratio (3 × Standard), the RAM rule (free − 1 GB, ≤ 3 GB at reference settings), whether over-budget warns or refuses, whether the limits are user-adjustable (Studio setting or env var), and how unmeasurable devices are treated.
+  - The current values are only the GPU-00 proposal in CAMPAIGN_B_PROTOCOL.md.
 - **Build:**
   - instrument graph evaluation, uploads, capture, encode, wall time, RAM and GPU memory;
   - leak tests across repeated jobs and long projects; deterministic disposal and cache ownership;
@@ -263,7 +267,7 @@ It merges only on the owner's word, then the render cleanup follows.
 - GPU-04: GLB support scope and the use of `three/examples` loaders and decoders (DRACO/meshopt/KTX2); any external asset licence.
 - GPU-05: character art direction; the first 2–3 hero characters.
 - GPU-06: any local alignment dependency for visemes (otherwise estimated cues, labelled).
-- GPU-10: quality tier defaults.
+- GPU-10: **configuration of the pre-render budget check (RP-06), asked first, before building it** (owner 2026-11-27); quality tier defaults.
 - GPU-11: Studio default profile.
 - GPU-12: artistic acceptance, merge, the `v2.0-gpu-cinematic` tag.
 

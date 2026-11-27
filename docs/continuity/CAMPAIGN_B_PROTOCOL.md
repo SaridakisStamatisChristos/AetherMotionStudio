@@ -33,7 +33,7 @@ The owner asked for a budget that is not tied to one laptop. So every limit is *
 - **Never silent:** a film over budget is reported, never quietly cut down. The owner decides: keep it, make the feature optional, or revise the budget.
 - **Lower concurrency** (fewer parallel tabs) is the only allowed way to fit RAM. It is chosen explicitly, declared in the report and measured.
 - **Machines that cannot be measured:** no `nvidia-smi` (AMD, Intel, Apple) or software GL means GPU memory is unknown. That gives an "unverified device" warning, not a refusal, and the report says so.
-- **Enforcement:** the automatic preflight estimate and the RP-06 check (device memory and free RAM before rendering) are GPU-10 work. Until then, budgets are checked from perf-bench measurements at each milestone.
+- **Enforcement:** the automatic preflight estimate and the RP-06 check (device memory and free RAM before rendering) are GPU-10 work. **GPU-10 must first ask the owner to configure it** (owner 2026-11-27; see CAMPAIGN_B.md GPU-10). Until then, budgets are checked from perf-bench measurements at each milestone.
 
 ## Reference workloads and the GPU Standard baseline (GPU-00)
 - Source commit 7e8945c, `sourceDirty false`. GL `vulkan` → "ANGLE (NVIDIA, Vulkan 1.3.289, NVIDIA GeForce RTX 4060 Laptop GPU)", three.js 0.180.0, concurrency 8, software encode (h264), profile `gpu-standard`.
