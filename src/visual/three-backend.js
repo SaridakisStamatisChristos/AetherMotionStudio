@@ -44,15 +44,19 @@ export function createThreeBackend(options={}){
  const pbrMaterials=new Map();let pmrem=null,roomTexture=null;
  if(pbr){pmrem=new THREE.PMREMGenerator(renderer);const room=new RoomEnvironment();roomTexture=pmrem.fromScene(room,PBR_LIGHT.roomBlur).texture;room.traverse(o=>{o.geometry?.dispose?.();if(o.material)for(const m of [o.material].flat())m.dispose();});}
  function pbrMaterial(color,surface){const k=color+':'+surface;let m=pbrMaterials.get(k);if(m)return m;
-  const {envMapIntensity,...p}=pbrParameters(surface,color);m=new THREE.MeshPhysicalMaterial(p);m.envMapIntensity=envMapIntensity;pbrMaterials.set(k,m);return m;}
+  const {envMapIntensity,...p}=pbrParameters(surface,color);m=new THREE.MeshPhysicalMaterial(p);
+  // The room light is attached per material, never as scene.environment: with scene.environment three ignores each
+  // material's envMapIntensity and uses scene.environmentIntensity for all (WebGLRenderer.js, three 0.180), which left
+  // metals as faint as paint. Per material, each preset keeps its own share; the floor and glowing parts get none.
+  m.envMap=roomTexture;m.envMapIntensity=envMapIntensity*PBR_LIGHT.environmentIntensity;pbrMaterials.set(k,m);return m;}
  let width=0,height=0;
  function render(state,W,H){
   if(width!==W||height!==H){renderer.setSize(W,H,false);width=W;height=H;}
   const {camera:c,environment:env}=state;camera.aspect=W/H;camera.fov=2*Math.atan(640/c.zoom)*180/Math.PI;camera.position.set(...c.position);camera.lookAt(...c.target);camera.updateProjectionMatrix();
   scene.background=new THREE.Color(env.background);scene.fog=new THREE.Fog(env.background,14,32);floorMat.color.set(env.floor);key.color.set(env.key);rim.color.set(env.rim);
   const f=state.fidelity,detail=f?.surfaceDetail??0;ambient.intensity=f?2-.55*f.contactShadow:2;key.intensity=f?3.2+.65*f.atmosphere:3.2;rim.intensity=f?2.2+.8*f.atmosphere:2.2;floorMat.roughness=f?.surfaceDetail>0?.61:.72;renderer.toneMappingExposure=f?1.25+.06*f.grade:1.25;if(isCrafted(state.look)){ambient.intensity*=CRAFTED.three.ambient;renderer.toneMappingExposure*=CRAFTED.three.exposure;}
-  if(pbr){ambient.intensity*=PBR_LIGHT.ambientScale;floorMat.envMapIntensity=PBR_LIGHT.floorEnvironment;renderer.toneMappingExposure*=PBR_LIGHT.exposure;}
-  scene.environment=premium.begin(state.materialProfile)??(pbr&&!state.geometryProfile?roomTexture:null);scene.environmentIntensity=scene.environment===roomTexture&&pbr?PBR_LIGHT.environmentIntensity:1;if(state.materialProfile){key.position.set(...materialLight(state.materialProfile.lighting,state.progress).map(x=>x*8));}else key.position.set(-3,6,5);
+  if(pbr){ambient.intensity*=PBR_LIGHT.ambientScale;renderer.toneMappingExposure*=PBR_LIGHT.exposure;}
+  scene.environment=premium.begin(state.materialProfile);if(state.materialProfile){key.position.set(...materialLight(state.materialProfile.lighting,state.progress).map(x=>x*8));}else key.position.set(-3,6,5);
   let i=0;if(state.geometryProfile){const commands=meshCommands(state);if(state.geometryProfile==='foundry-af05'){const needed=new Set(commands.map(c=>c.meshKey));for(const [k,g] of foundryGeometry)if(!needed.has(k)){g.dispose();foundryGeometry.delete(k)}}for(const cmd of commands){if(!foundryGeometry.has(cmd.meshKey))foundryGeometry.set(cmd.meshKey,toBufferGeometry(cmd.mesh));let mesh=pool[i++];if(!mesh){mesh=new THREE.Mesh();mesh.matrixAutoUpdate=false;scene.add(mesh);pool.push(mesh);}mesh.geometry=foundryGeometry.get(cmd.meshKey);mesh.material=cmd.surface?premium.get(cmd.surface,cmd.importTexture):material(cmd.color,cmd.emissive,detail);mesh.castShadow=!cmd.emissive&&cmd.surface?.alphaMode!=='blend';mesh.receiveShadow=true;mesh.visible=true;mesh.matrix.makeBasis(...cmd.axes.map(a=>new THREE.Vector3(...a)));mesh.matrix.setPosition(...cmd.origin);mesh.matrixWorldNeedsUpdate=true;}}else emitGraph(state,(center,size,color,tf=p=>p,emissive=false,bias=0,role=null,faceDetail=false,surface=null)=>{
    let mesh=pool[i++];if(!mesh){mesh=new THREE.Mesh(geometry,material(color,emissive,detail));mesh.matrixAutoUpdate=false;scene.add(mesh);pool.push(mesh);}
    const look=isCrafted(state.look);mesh.geometry=look?crafted(size):geometry;

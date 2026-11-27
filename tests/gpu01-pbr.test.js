@@ -4,7 +4,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import * as THREE from 'three';
-import {PBR_PRESETS,PRESET_RANGES,SURFACES,FAMILY_SURFACE,PBR_LIGHT,surfaceKey,surfaceFor,validatePreset,pbrParameters} from '../src/visual/pbr.js';
+import {PBR_PRESETS,PRESET_RANGES,SURFACES,FAMILY_SURFACE,PBR_LIGHT,METAL_TINT,surfaceKey,surfaceFor,validatePreset,pbrParameters} from '../src/visual/pbr.js';
+import {mixColor} from '../src/visual/crafted.js';
 import {emitRecipe,OBJECT_CATALOG} from '../src/visual/catalog.js';
 import {validateProject} from '../src/core/timeline.js';
 import {validateCinematic,requiredCapabilities,threeOptions,negotiate,CAPABILITIES,CINEMATIC_DEFAULTS,RenderProfileError} from '../src/core/render-profiles.js';
@@ -59,8 +60,13 @@ test('colour contract: sRGB hex in, linear for shading, the same sRGB hex back (
  const grey=new THREE.Color('#808080');assert.ok(Math.abs(grey.r-0.2158605)<1e-6,'sRGB 0.502 → linear 0.2159');
  const swatch=['#000000','#ffffff','#808080','#e9ddd0','#162333','#8a6650','#7ebdd0','#c0392b','#2e86de','#f1c40f'];
  for(const surface of SURFACES)for(const c of swatch){
+  // metals: brushed steel tinted by the part colour (METAL_TINT), every other surface keeps the colour exactly
+  const want=surface==='metal'?mixColor(c,METAL_TINT.steel,METAL_TINT.share):c;
   const p=pbrParameters(surface,c),m=new THREE.MeshPhysicalMaterial((({envMapIntensity,...x})=>x)(p));
-  assert.equal('#'+m.color.getHexString(THREE.SRGBColorSpace),c,surface+' '+c);assert.equal(p.color,c);m.dispose();}
+  assert.equal('#'+m.color.getHexString(THREE.SRGBColorSpace),want,surface+' '+c);assert.equal(p.color,want);m.dispose();}
+ // a dark painted metal part becomes light enough to reflect (the gpu01-swatches-r1 black-metal defect)
+ const dark=new THREE.Color(pbrParameters('metal','#253344').color);assert.ok(dark.r>.2&&dark.g>.2&&dark.b>.2&&new THREE.Color('#253344').r<.02,'steel reflectance (linear): about 0.23 vs 0.018 for the paint');
+ assert.ok(pbrParameters('metal','#253344').color!==pbrParameters('metal','#c0392b').color,'the part colour still tints the metal');
  for(const bad of ['red','#fff','#gggggg','<script>',null,0x808080])assert.throws(()=>pbrParameters('plastic',bad),/#rrggbb/);
  assert.throws(()=>pbrParameters('gold','#808080'),/unknown pbr-v1 surface/);
 });
