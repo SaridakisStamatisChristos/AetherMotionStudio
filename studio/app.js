@@ -9,10 +9,10 @@ import {editProject,applyShotEdit,reorderShot,setBackend,setProfile,setStaging,a
 // STUDIO-01: the Director form maps to a request in src/studio/director-form.js (casts, Reels, script help; tested).
 import {STUDIO_CASTS,STUDIO_DEFAULTS,STUDIO_CONTENT,STUDIO_FORMATS,STUDIO_THEMES,STUDIO_CAPTIONS,STUDIO_SOUND,STUDIO_MUSIC,STUDIO_FONTS,directorRequest,scriptHelp,scriptPrompt,cleanScript} from '/src/studio/director-form.js';
 import {sceneFontFaces} from '/src/visual/fonts.js';
-import {sceneImages} from '/src/core/media.js';
-import {registerImage} from '/src/visual/media-registry.js';
+import {createPreviewMedia} from '/src/visual/preview-media.js';
+import {webSha256} from '/src/core/media.js';
 import {formatOf} from '/src/core/formats.js';
-import {finishedSummary,reelsSummary} from '/src/studio/finished.js';
+import {finishedSummary,reelsSummary,rendererLine,adapterFromLog} from '/src/studio/finished.js';
 import {SETTINGS_KEY,SETTINGS_DEFAULTS,readSettings,writeSettings} from '/src/studio/settings.js';
 import {jobProgress,formatSeconds} from '/src/studio/progress.js';
 const languageOf=voice=>voice.startsWith('b')?'en-gb':'en-us';
@@ -69,18 +69,28 @@ function renderSpeakers(){
 }
 // DUAL-07: the preview loads the film's own fonts and library pictures (served read-only by the Studio server), so it
 // shows what the render draws. Anything that cannot load stays a labelled placeholder here only (the render checks again).
-const previewLoads=new WeakMap();
-function previewAssets(scene){let job=previewLoads.get(scene);if(job)return job;job=(async()=>{const notes=[];
- await Promise.all(sceneFontFaces(scene).map(f=>new FontFace(f.css,'url(/'+f.path+')',{weight:String(f.weight)}).load().then(x=>{document.fonts.add(x);}).catch(()=>{notes.push('font '+f.font);})));
- let list=[];try{list=sceneImages(scene);}catch(e){notes.push(e.message);}
- await Promise.all(list.map(async s=>{try{const r=await fetch('/media/'+s.file);if(!r.ok)throw Error('HTTP '+r.status);registerImage(s.sha256,await createImageBitmap(await r.blob()));}catch{notes.push('picture '+s.media);}}));
- if(notes.length)$('previewLabel').textContent='Preview could not load '+notes.join(', ')+'; placeholders are shown (the render checks them again).';})();previewLoads.set(scene,job);return job;}
+// DUAL-07 (audit repair): fonts load once per film; pictures go through the preview media manager, which verifies the
+// actual bytes like the native renderer, keeps only the current film's pictures (closing the rest), merges concurrent
+// loads and ignores loads and diagnostics from films that were replaced.
+const previewFonts=new WeakMap();
+function previewFontsFor(scene){let job=previewFonts.get(scene);if(job)return job;job=(async()=>{const notes=[];
+ await Promise.all(sceneFontFaces(scene).map(f=>new FontFace(f.css,'url(/'+f.path+')',{weight:String(f.weight)}).load().then(x=>{document.fonts.add(x);}).catch(()=>{notes.push('font '+f.font);})));return notes;})();previewFonts.set(scene,job);return job;}
+const previewMedia=createPreviewMedia({fetchBytes:async file=>{const r=await fetch('/media/'+file);if(!r.ok)throw Error('missing public/media/'+file+' (HTTP '+r.status+')');return new Uint8Array(await r.arrayBuffer());},decode:(bytes,type)=>createImageBitmap(new Blob([bytes],{type})),sha256Hex:webSha256});
+async function previewAssets(scene){
+ const [fonts,media]=await Promise.all([previewFontsFor(scene),previewMedia.sync(scene)]);
+ if(!media.current)return media;// a newer film owns the label
+ const notes=[...fonts,...media.diagnostics];
+ $('previewLabel').textContent=notes.length?'Preview could not load '+notes.join('; ')+'. Placeholders are shown; the native render checks every picture again and stops on any failure.':(state.preview?.mode?state.preview.mode+' · ':'')+(state.previewGl?'preview graphics: '+state.previewGl+' · ':'')+'reduced-resolution shared renderer; final export is native Remotion';
+ return media;
+}
 async function paint(){
  const p=state.preview;if(!p)return;const epoch=++state.drawEpoch,frame=state.frame;
  const active=p.scene.version===2?p.scene.shots[p.timeline.shots.findIndex(s=>frame<s.endFrame)]:null;
  try{
   if(active?.backend==='three'&&!state.three){
    const {createThreeBackend}=await import('/src/visual/three-backend.js');if(epoch!==state.drawEpoch)return;state.three=createThreeBackend();
+   // DUAL-07 audit repair: name the preview's own WebGL adapter (it may differ from the native render's)
+   const ad=state.three.adapter();state.previewGl=ad.renderer+(ad.source==='masked'?' (masked by the browser)':'');
   }
   if(epoch!==state.drawEpoch)return;
   await previewAssets(p.scene);if(epoch!==state.drawEpoch)return;
@@ -109,8 +119,8 @@ async function showJob(id){state.job=id;const j=await api('/api/jobs/'+id);$('jo
   $('downloadFilm').href=base+'film.mp4?download=1';$('downloadFilm').setAttribute('download',j.projectId+'.mp4');
   $('downloadCaptions').hidden=!j.files.includes('captions.srt');if(j.files.includes('captions.srt')){$('downloadCaptions').href=base+'captions.srt?download=1';$('downloadCaptions').setAttribute('download',j.projectId+'.srt');}
   if(state.finishedFacts!==id){state.finishedFacts=id;$('finishedFacts').textContent='';
-   const [q,p]=await Promise.all(['quality-report.json','probe.json'].map(n=>j.files.includes(n)?api(base+n).catch(()=>null):null));
-   if(state.job===id)$('finishedFacts').textContent=finishedSummary(q,p).text;}
+   const [q,p,t]=await Promise.all(['quality-report.json','probe.json','render-timing.json'].map(n=>j.files.includes(n)?api(base+n).catch(()=>null):null));
+   if(state.job===id)$('finishedFacts').textContent=finishedSummary(q,p).text+' · '+rendererLine(t,adapterFromLog($('logs').textContent));}
   showReels(j,base);
   document.body.classList.add('has-film');
   if($('finished').hidden){$('finished').hidden=false;if(state.scrolledTo!==id){state.scrolledTo=id;$('finished').scrollIntoView({behavior:'smooth',block:'start'});}}

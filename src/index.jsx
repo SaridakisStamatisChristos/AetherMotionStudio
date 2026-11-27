@@ -1,17 +1,16 @@
 import React,{useEffect,useLayoutEffect,useMemo,useRef,useState} from 'react';
 import {AbsoluteFill,Composition,cancelRender,continueRender,delayRender,registerRoot,staticFile,useCurrentFrame,useVideoConfig} from 'remotion';
 import {sceneFontFaces} from './visual/fonts.js';
-import {sceneImages,inspectImage,MEDIA_FORMATS} from './core/media.js';
+import {sceneImages,verifyImageBytes,checkDecoded,webSha256,MEDIA_FORMATS} from './core/media.js';
 import {registerImage} from './visual/media-registry.js';
 // DUAL-05: one verified image from public/media: same bytes as the production boundary verified (SHA-256), same
 // structure rules, decoded by Chromium and checked to be upright at the verified size. Any failure stops the render.
 async function loadImage(s){
  const r=await fetch(staticFile('media/'+s.file));if(!r.ok)throw Error('missing public/media/'+s.file+' (HTTP '+r.status+')');
- const bytes=new Uint8Array(await r.arrayBuffer()),hex=[...new Uint8Array(await crypto.subtle.digest('SHA-256',bytes))].map(b=>b.toString(16).padStart(2,'0')).join('');
- if(hex!==s.sha256)throw Error('public/media/'+s.file+' differs from its verified SHA-256');
- const info=inspectImage(bytes,s.format);if(info.displayWidth!==s.displayWidth||info.displayHeight!==s.displayHeight)throw Error('public/media/'+s.file+' structure differs from its verified source');
+ const bytes=new Uint8Array(await r.arrayBuffer());
+ await verifyImageBytes(bytes,s,webSha256);// SHA-256 of the actual bytes, structure, size and orientation (shared with the Studio preview)
  const bm=await createImageBitmap(new Blob([bytes],{type:MEDIA_FORMATS[s.format].mime}));
- if(bm.width!==s.displayWidth||bm.height!==s.displayHeight)throw Error('public/media/'+s.file+' decoded to '+bm.width+'×'+bm.height+', expected '+s.displayWidth+'×'+s.displayHeight+' upright');
+ checkDecoded(bm,s);
  registerImage(s.sha256,bm);
 }
 import {Audio} from '@remotion/media';
@@ -28,7 +27,9 @@ function Film({scene,timeline=null}){useMemo(()=>{validateProject(scene);filmFra
  const images=useMemo(()=>sceneImages(scene),[scene]),[mediaHandle]=useState(()=>images.length?delayRender('local media'):null),[mediaReady,setMediaReady]=useState(!images.length);
  useEffect(()=>{if(!images.length)return;Promise.all(images.map(loadImage)).then(()=>{setMediaReady(true);continueRender(mediaHandle);}).catch(e=>cancelRender(new Error('media load failed: '+(e?.message??e))));},[images,mediaHandle]);
  useEffect(()=>{if(!faces.length)return;Promise.all(faces.map(f=>new FontFace(f.css,'url('+staticFile(f.path)+')',{weight:String(f.weight)}).load().then(x=>{document.fonts.add(x);}))).then(()=>{setFontsReady(true);continueRender(fontHandle);}).catch(e=>cancelRender(new Error('font load failed: '+(e?.message??e))));},[faces,fontHandle]);
- useLayoutEffect(()=>{const ctx=ref.current.getContext('2d');ctx.clearRect(0,0,width,height);if(scene.version===2&&scene.shots.some(s=>s.template==='cinematic-graph'&&s.backend==='three')&&!three.current)three.current=createThreeBackend();if(fontsReady&&mediaReady)drawFilm(ctx,scene,timeline,frame,width,height,three.current)},[frame,width,height,scene,timeline,fontsReady,mediaReady]);
+ useLayoutEffect(()=>{const ctx=ref.current.getContext('2d');ctx.clearRect(0,0,width,height);if(scene.version===2&&scene.shots.some(s=>s.template==='cinematic-graph'&&s.backend==='three')&&!three.current){three.current=createThreeBackend();
+  // DUAL-07 audit repair: the native renderer's actual WebGL adapter, once per tab, into the render log
+  console.log('AETHER_GL_ADAPTER '+JSON.stringify(three.current.adapter()));}if(fontsReady&&mediaReady)drawFilm(ctx,scene,timeline,frame,width,height,three.current)},[frame,width,height,scene,timeline,fontsReady,mediaReady]);
  return <AbsoluteFill><canvas ref={ref} width={width} height={height}/><Audio src={staticFile('audio/'+scene.id+'.wav')}/></AbsoluteFill>;
 }
 // DUAL-06: output size from the project's format (absent = 1080×1920, as before).

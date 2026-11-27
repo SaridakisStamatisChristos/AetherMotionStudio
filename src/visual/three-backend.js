@@ -52,5 +52,9 @@ export function createThreeBackend(){
   renderer.render(scene,camera);return renderer.domElement;
  }
  function dispose(){premium.dispose();roughnessMap.dispose();geometry.dispose();for(const g of foundryGeometry.values())g.dispose();floorGeo.dispose();floorMat.dispose();grid.geometry.dispose();grid.material.dispose();for(const m of materialCache.values())m.dispose();for(const g of craftedGeometry.values())g.dispose();for(const m of craftedMaterials.values())m.dispose();key.shadow.map?.dispose();renderer.dispose();renderer.forceContextLoss();}
- return {render,dispose};
+ // DUAL-07 audit repair: the actual WebGL adapter (unmasked when the browser allows it), never a guess.
+ function adapter(){try{const gl=renderer.getContext(),ext=gl.getExtension('WEBGL_debug_renderer_info');
+  if(ext)return {renderer:String(gl.getParameter(ext.UNMASKED_RENDERER_WEBGL)),vendor:String(gl.getParameter(ext.UNMASKED_VENDOR_WEBGL)),source:'unmasked'};
+  return {renderer:String(gl.getParameter(gl.RENDERER)),vendor:String(gl.getParameter(gl.VENDOR)),source:'masked'};}catch{return {renderer:'unknown',vendor:'unknown',source:'unknown'};}}
+ return {render,dispose,adapter};
 }

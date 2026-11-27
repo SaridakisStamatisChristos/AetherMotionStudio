@@ -78,6 +78,10 @@ export function directorRequest(form){
   if(!Array.isArray(v))bad('Visuals: a JSON list [ {"at": "…", "composition": {…}} ] is required');q.visuals=v;}
  // speech defaults: names hidden for dialogue unless ticked; content modes fitted and mastered (same rule as produce.mjs)
  if((cast.dialogue&&form.speakerNames===false)||q.content)q.speech=requestSpeech(q,{speakerNames:form.speakerNames===true});
+ // DUAL-07 audit repair (finding 1): a classic narrator film that asks for a caption style, a silent soundtrack or a music
+ // level needs speech settings for them. It gets the default narrator speech (exact length, no fitting: the same speech
+ // the render button always added), so its duration semantics do not change. Dialogue casts get theirs from the Director.
+ else if(!cast.dialogue&&(q.captionStyle!==undefined||q.soundtrack!==undefined||q.music!==undefined))q.speech=requestSpeech(q);
  return q;
 }
 // Live help under the Script box. Counts what will be spoken (the cleaned script), flags lines the Director would
