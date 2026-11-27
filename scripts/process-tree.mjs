@@ -44,10 +44,13 @@ export async function killTree(pid,{timeoutMs=20000,graceMs=3000}={}){
   }
  }
  const group=()=>{try{process.kill(-pid,0);return true;}catch(e){return e.code==='EPERM';}};
+ // The group's members, for the report (pgrep -g matches the process group ID); the leader alone if unavailable.
+ const members=()=>{const r=spawnSync('pgrep',['-g',String(pid)],{encoding:'utf8',timeout:5000});const m=String(r.stdout??'').split(/\s+/).map(Number).filter(n=>Number.isSafeInteger(n)&&n>0);return m.length?m:[pid];};
+ const pids=members();
  try{process.kill(-pid,'SIGTERM');}catch{}
  const kill9=Date.now()+graceMs;
  while(group()&&Date.now()<kill9)await sleep(100);
  if(group())try{process.kill(-pid,'SIGKILL');}catch{}
  while(group()&&Date.now()<deadline)await sleep(100);
- return group()?{gone:false,remaining:[pid]}:{gone:true,pids:[pid]};
+ return group()?{gone:false,remaining:members()}:{gone:true,pids};
 }
