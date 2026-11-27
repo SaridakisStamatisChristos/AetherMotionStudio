@@ -1,0 +1,115 @@
+{
+  "version": 1,
+  "id": "dual09-charts",
+  "topic": "A community garden's year (example data)",
+  "seconds": 90,
+  "audience": "curious beginners",
+  "tone": "friendly",
+  "style": "cinematic explainer",
+  "language": "en-us",
+  "voice": "am_michael",
+  "backend": "cpu",
+  "profile": "polished",
+  "seed": 9,
+  "format": "landscape-v1",
+  "content": "typography-v1",
+  "font": "inter",
+  "theme": "paper-v1",
+  "script": "This is example data from an imagined community garden. In spring the volunteers planted tomatoes, beans, lettuce and squash. The harvest grew every month from June to September. June gave 40 kilograms, July 85, August 120 and September 95. August was the best month of the year. The second year they added a rain barrel, and the harvest rose again. There is no record for July of that year, because the scales were lost. Most of the harvest was tomatoes, then beans, then squash and lettuce. The garden followed a simple yearly rhythm. Seeds in March, planting in May, the first harvest in June and compost in October. Every season the work followed the same few steps. Water the beds, pull the weeds, pick what is ripe, and share it. Some gardeners compared raised beds with planting in the ground. Raised beds warmed up earlier and were easier on the back. Ground beds held water longer and cost nothing to build. In the end the garden kept both kinds, and fed forty families. Next spring the volunteers plan to add a second rain barrel and a small greenhouse, so the first seedlings can start even earlier in the year."
+  ,
+  "visuals": [
+    {
+      "at": "June gave 40 kilograms, July 85, August 120 and September 95.",
+      "composition": {
+        "version": "compose-v2", "region": "full", "font": "inter", "theme": "paper-v1",
+        "items": [
+          {
+            "id": "year1", "type": "chart", "kind": "bar", "box": [0.05, 0.04, 0.9, 0.86],
+            "categories": ["Jun", "Jul", "Aug", "Sep"],
+            "series": [{"name": "Year 1", "values": [40, 85, 120, 95]}],
+            "unit": "kg", "yLabel": "Harvest (kg)", "valueLabels": true,
+            "steps": [{"highlight": {"category": "Aug"}, "note": "August: best month"}],
+            "cues": ["August was the best month of the year."]
+          }
+        ]
+      }
+    },
+    {
+      "at": "The second year they added a rain barrel, and the harvest rose again.",
+      "composition": {
+        "version": "compose-v2", "region": "full", "font": "inter", "theme": "paper-v1",
+        "items": [
+          {
+            "id": "years", "type": "chart", "kind": "line", "box": [0.05, 0.04, 0.9, 0.86],
+            "categories": ["Jun", "Jul", "Aug", "Sep"],
+            "series": [{"name": "Year 1", "values": [40, 85, 120, 95]}, {"name": "Year 2", "values": [55, null, 140, 110]}],
+            "unit": "kg", "yLabel": "Harvest (kg)", "y": [0, 150],
+            "steps": [{"highlight": {"category": "Jul"}, "note": "Year 2 July: no record"}],
+            "cues": ["There is no record for July of that year, because the scales were lost."]
+          }
+        ]
+      }
+    },
+    {
+      "at": "Most of the harvest was tomatoes, then beans, then squash and lettuce.",
+      "composition": {
+        "version": "compose-v2", "region": "full", "font": "inter", "theme": "paper-v1",
+        "items": [
+          {
+            "id": "crops", "type": "chart", "kind": "pie", "box": [0.05, 0.04, 0.9, 0.86],
+            "categories": ["Tomatoes", "Beans", "Squash", "Lettuce"],
+            "series": [{"name": "Share", "values": [45, 25, 18, 12]}],
+            "unit": "%"
+          }
+        ]
+      }
+    },
+    {
+      "at": "Seeds in March, planting in May, the first harvest in June and compost in October.",
+      "composition": {
+        "version": "compose-v2", "region": "full", "font": "inter", "theme": "paper-v1",
+        "items": [
+          {
+            "id": "rhythm", "type": "timeline", "box": [0.04, 0.1, 0.92, 0.7],
+            "events": [
+              {"when": "March", "label": "Seeds"},
+              {"when": "May", "label": "Planting"},
+              {"when": "June", "label": "First harvest"},
+              {"when": "October", "label": "Compost"}
+            ],
+            "cues": ["Seeds in March", "planting in May", "the first harvest in June", "compost in October"]
+          }
+        ]
+      }
+    },
+    {
+      "at": "Water the beds, pull the weeds, pick what is ripe, and share it.",
+      "composition": {
+        "version": "compose-v2", "region": "full", "font": "inter", "theme": "paper-v1",
+        "items": [
+          {
+            "id": "steps", "type": "flow", "box": [0.04, 0.1, 0.92, 0.7], "direction": "row",
+            "nodes": ["Water the beds", "Pull the weeds", "Pick what is ripe", "Share it"],
+            "cues": ["Water the beds", "pull the weeds", "pick what is ripe", "and share it"]
+          }
+        ]
+      }
+    },
+    {
+      "at": "Raised beds warmed up earlier and were easier on the back.",
+      "composition": {
+        "version": "compose-v2", "region": "full", "font": "inter", "theme": "paper-v1",
+        "items": [
+          {
+            "id": "beds", "type": "compare", "box": [0.04, 0.06, 0.92, 0.84],
+            "cards": [
+              {"title": "Raised beds", "points": ["Warm up earlier", "Easier on the back"]},
+              {"title": "Ground beds", "points": ["Hold water longer", "Cost nothing to build"]}
+            ],
+            "cues": ["Raised beds warmed up earlier and were easier on the back.", "Ground beds held water longer and cost nothing to build."]
+          }
+        ]
+      }
+    }
+  ]
+}

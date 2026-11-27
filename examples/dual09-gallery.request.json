@@ -1,0 +1,69 @@
+{
+  "version": 1,
+  "id": "dual09-gallery",
+  "topic": "A night at sea, told in five pictures",
+  "seconds": 60,
+  "audience": "curious beginners",
+  "tone": "calm",
+  "style": "illustrated history",
+  "language": "en-gb",
+  "voice": "bm_george",
+  "backend": "cpu",
+  "profile": "polished",
+  "seed": 9,
+  "content": "typography-v1",
+  "font": "merriweather",
+  "theme": "paper-v1",
+  "script": "Long ago, a small fishing boat left the harbour just before dusk. The crew trusted an old brass compass to hold their course. Out past the reefs, the wind began to rise, and the sky turned the colour of slate. The fishermen pulled in their nets and turned for home. By midnight a storm was throwing waves across the deck. Then, far away, a steady light appeared through the rain. It came from the lighthouse on the rocks above the harbour. Its great glass lens turned a small flame into one strong beam. The crew steered toward the light and found the safe channel. At dawn the boat was back in harbour, and everyone was home. That night the crew walked up the hill to thank the keeper, who had stayed awake beside the lamp until morning."
+  ,
+  "visuals": [
+    {
+      "at": "Long ago, a small fishing boat left the harbour just before dusk.",
+      "composition": {
+        "version": "compose-v2", "region": "full", "font": "merriweather", "theme": "paper-v1",
+        "items": [
+          {"id": "harbour", "type": "image", "box": [0.04, 0, 0.92, 1], "media": "dual05-harbour", "alt": "Illustrated map of a small harbour with reefs outside its mouth", "caption": "The harbour (illustration)", "fit": "contain",
+           "move": {"from": {"x": 0.5, "y": 0.5, "zoom": 1}, "to": {"x": 0.55, "y": 0.5, "zoom": 1.15}}}
+        ]
+      }
+    },
+    {
+      "at": "The crew trusted an old brass compass to hold their course.",
+      "composition": {
+        "version": "compose-v2", "region": "full", "font": "merriweather", "theme": "paper-v1",
+        "items": [
+          {"id": "compass", "type": "image", "box": [0.1, 0.05, 0.8, 0.9], "media": "dual05-compass", "alt": "Illustration of a brass compass rose", "caption": "The compass (illustration)", "fit": "contain"}
+        ]
+      }
+    },
+    {
+      "at": "By midnight a storm was throwing waves across the deck.",
+      "composition": {
+        "version": "compose-v2", "region": "full", "font": "merriweather", "theme": "paper-v1",
+        "items": [
+          {"id": "storm", "type": "image", "box": [0.04, 0, 0.92, 1], "media": "dual05-storm", "alt": "Illustration of dark storm waves under heavy clouds", "caption": "The storm (illustration)", "fit": "cover", "focus": [0.5, 0.5],
+           "move": {"from": {"x": 0.4, "y": 0.5, "zoom": 1.1}, "to": {"x": 0.6, "y": 0.5, "zoom": 1.3}}}
+        ]
+      }
+    },
+    {
+      "at": "It came from the lighthouse on the rocks above the harbour.",
+      "composition": {
+        "version": "compose-v2", "region": "full", "font": "merriweather", "theme": "paper-v1",
+        "items": [
+          {"id": "tower", "type": "image", "box": [0.04, 0, 0.92, 1], "media": "dual05-lighthouse", "alt": "Illustration of a red and white lighthouse on dark rocks at dusk, its beam crossing the sky", "caption": "The lighthouse (illustration)", "fit": "cover", "focus": [0.6, 0.4],
+           "move": {"from": {"x": 0.5, "y": 0.55, "zoom": 1}, "to": {"x": 0.58, "y": 0.4, "zoom": 1.2}}}
+        ]
+      }
+    },
+    {
+      "at": "Its great glass lens turned a small flame into one strong beam.",
+      "composition": {
+        "version": "compose-v2", "region": "full", "font": "merriweather", "theme": "paper-v1",
+        "items": [
+          {"id": "lens", "type": "image", "box": [0.04, 0.05, 0.92, 0.9], "media": "dual05-lens", "alt": "Illustration of a large lighthouse lens with glass rings around a flame", "caption": "The lens (illustration)", "fit": "contain"}
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "id": "dual09-dialogue",
+  "topic": "How honeybees make honey",
+  "seconds": 60,
+  "audience": "curious beginners",
+  "tone": "warm",
+  "style": "interview",
+  "language": "en-us",
+  "voice": "af_bella",
+  "backend": "cpu",
+  "profile": "polished",
+  "seed": 9,
+  "dialogue": {
+    "style": "interview",
+    "speakers": [
+      {"id": "host", "name": "Student", "voice": "af_bella", "language": "en-us", "character": "student"},
+      {"id": "guest", "name": "Scientist", "voice": "bm_george", "language": "en-gb", "character": "scientist"}
+    ]
+  },
+  "script": "How do honeybees actually make honey? It starts with nectar, a sweet liquid inside flowers. So the bees just collect it and store it? Not quite. A forager sips the nectar and carries it home in a special honey stomach. What happens when she gets back to the hive? She passes it to younger bees, who add enzymes that break the sugar down. Is that when it turns into honey? Almost. The bees spread it in wax cells and fan it with their wings. Why do they fan it? To dry it out, until most of the water is gone. Then they seal each cell with a lid of wax. So honey is really dried nectar? Exactly, and one jar takes the work of thousands of bees."
+}
