@@ -16,8 +16,8 @@ Status words: PLANNED · ACTIVE · IMPLEMENTED · TESTED · RENDERED · OWNER-RE
 | DUAL-02 | Typography and motion graphics | **MERGED** (PR #52 → 17ebecd, owner: "Yes, merge #52") | `feature/dual-02-typography` | docs/COMPOSITION.md "Typography", "DUAL-02 evidence" below |
 | DUAL-03 | Mathematics, geometry and algorithm visualization | **TESTED + RENDERED** (PR open, not merged) | `feature/dual-03-maths` | [docs/MATHS.md](../MATHS.md), "DUAL-03 evidence" below |
 | DUAL-04 | Charts, diagrams and data storytelling | **COMPLETE: MERGED** (PR #55 → e520e4a, owner: "Approved. Merge PR #55"; two repair passes; third independent audit verified the repairs) | `feature/dual-04-charts` | [docs/CHARTS.md](../CHARTS.md), "DUAL-04 evidence" below |
-| DUAL-05 | Local media and illustration integration | **TESTED + RENDERED** (PR #57 open, not merged; owner review pending) | `feature/dual-05-media` | [docs/MEDIA.md](../MEDIA.md), "DUAL-05 evidence" below |
-| DUAL-06 | Formats, themes and audio controls | **NEXT** (after #57 is merged) | — | — |
+| DUAL-05 | Local media and illustration integration | **MERGED** (PR #57 → main aacfac6, owner "merge pr 57 and close pr 56 as superseded"; CI 45961923535 green on 90eed63, 491/491) | `feature/dual-05-media` | [docs/MEDIA.md](../MEDIA.md), "DUAL-05 evidence" below |
+| DUAL-06 | Formats, themes and audio controls | **NEXT** | — | — |
 | DUAL-07 | Universal Director and Studio integration | PLANNED | — | — |
 | DUAL-08 | Optional bounded batch production | PLANNED (**owner decides** whether before the freeze) | — | — |
 | DUAL-09 | Final qualification and release (proposed tag v1.2-dual-backend-final) | PLANNED | — | — |
@@ -175,7 +175,7 @@ Owner: "The independent second audit confirms that the original counterexamples 
 ## Remaining work plan (DUAL-05 … DUAL-09)
 Written at the DUAL-04 close (main e520e4a). Each milestone follows the FOD loop in HANDOFF.md: one branch from main, tests including adversarial ones, fresh `dual<NN>-…` matched films, a checkpoint, a PR, and a merge only on the owner's word. Reuse first: extend the existing seams named here; no duplicate engines.
 
-### DUAL-05: local media and illustration (TESTED + RENDERED on PR #57; the plan below was followed, see "DUAL-05 evidence")
+### DUAL-05: local media and illustration (MERGED #57; the plan below was followed, see "DUAL-05 evidence")
 - **Owner rules (binding):**
   - raster only: PNG, JPEG and **static** WebP;
   - no external SVG, no remote fetching, no animated formats, no new dependencies without approval;
@@ -283,3 +283,4 @@ Written at the DUAL-04 close (main e520e4a). Each milestone follows the FOD loop
 - 2026-11-26: Owner (second audit): one more targeted repair pass before merging #55. Done in 5a786a3: TeX superscript semantics, BigInt isqrt, tick containment, adaptive formatter, six pie colours; 475 tests (474 pass, 1 skip); bakery-r5 byte-identical to r4, euclid-r5 PASS. Merge approval requested again.
 - 2026-11-26: Owner: "Approved. Merge PR #55 after confirming that CI is green on the current head 9959720. The third independent audit successfully verified the targeted arithmetic, numerical range, formatting and palette repairs. Record DUAL-04 and both repair passes as complete." CI confirmed green on 9959720 (run 45889745389, 475/475, 0 skipped); PR #55 MERGED → main e520e4a. **DUAL-04 and both repair passes COMPLETE.** Handoff for DUAL-05…09 written (chore/fod-handoff-dual05-09). DUAL-05 next.
 - 2026-11-27: Owner: "fod continue". DUAL-05 implemented, tested and rendered on `feature/dual-05-media` (10d9cb1, c960694; PR #57 open, not merged): local PNG/JPEG/static WebP library with import checks, boundary and render-time verification, compose-v2 `image` item; dual05-gallery-r1 PASS on both backends. Continuity docs of PR #56 (still open, docs only) carried into this branch as the base. Next: owner review and merge word for #57, then DUAL-06.
+- 2026-11-27: Owner: "merge pr 57 and close pr 56 as superseded". CI confirmed green on 90eed63 (run 45961923535, 491/491, 0 skipped); PR #57 MERGED → main aacfac6. PR #56 closed as superseded. **DUAL-05 MERGED.** Next: DUAL-06.
