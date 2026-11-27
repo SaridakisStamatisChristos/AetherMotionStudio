@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "id": "dual09-matrix-r1",
+  "id": "dual09-matrix-r2",
   "outputRoot": "out/batches",
   "retries": 1,
   "minFreeGB": 10,
