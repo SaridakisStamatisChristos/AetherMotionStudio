@@ -9,7 +9,7 @@ Binding for every Campaign B milestone. Tracker: [CAMPAIGN_B.md](CAMPAIGN_B.md).
 ## Per-milestone exit evidence
 1. Clean committed source (`sourceDirty false`).
 2. `npm test` fail 0 and Python OK, with new positive, negative and adversarial tests.
-3. Legacy digests unchanged (graph 3d33fbaee198acad, geometry 14dec244d171dc56, detail2 e3f80439a292f21a, director 8a0ad025b6c9f6d6), unless a versioned opt-in change records its new digest and the reason.
+3. Legacy digests unchanged, measured with `node scripts/fod-digests.mjs . --exclude talk04,talk05,gen01,gen09,gen12,fixa,dual,gpu`. **Correction (GPU-01):** `gpu` must be excluded like `dual`, because the script also hashes new example fixtures; without it, the gpu00 requests and the gpu01 swatch film change the graph and director lines. Values: (graph 3d33fbaee198acad, geometry 14dec244d171dc56, detail2 e3f80439a292f21a, director 8a0ad025b6c9f6d6), unless a versioned opt-in change records its new digest and the reason.
 4. CPU Classic and GPU Standard regressions: byte-identical where they were (CPU, `swangle`), visually identical on `vulkan`.
 5. Fresh `gpu<NN>` films with GL route, WebGL renderer string, profile, GPU memory, wall time and fps.
 6. Agent stills from named frames on every profile; the owner's review is recorded separately.
@@ -54,3 +54,19 @@ The owner asked for a budget that is not tied to one laptop. So every limit is *
 - **Not byte-stable:** GPU frames on `vulkan` differ run to run (known since DUAL-04), so Cinematic comparisons are visual and structural.
 - **Not run on these reference films:** `frame_glitch.py`, ebur128 loudness, and CPU or `swangle` runs.
 - **Evidence (git-ignored, local):** `out/gpu00-*-r1-three-polished`, `out/gpu00-*-r1-production`, `out/bench/gpu00-*-r1-bench/results.json`.
+
+## GPU-01 measurements (pbr-v1 vs GPU Standard, same prepared film)
+- gpu01-portrait-r2 (1800 frames, 60 s; one shared preparation via `--compare standard`; commit b6dad1a, sourceDirty false; vulkan; concurrency 8). Three runs each.
+
+| Side | Wall time median (runs) | fps median | Peak GPU memory (runs) | RAM growth (runs) |
+|---|---|---|---|---|
+| GPU Standard | 56.9 s (56.9, 56.9, 53.5) | 33.0 | 1389–1445 MiB | 2.06–2.79 GB |
+| GPU Cinematic (pbr-v1) | 53.3 s (53.3, 51.9, 54.1) | 35.3 | 1503–1519 MiB | 2.00–3.23 GB |
+
+- **Against the budget:**
+  - wall time 0.94 × Standard (limit 3 ×; the difference is run-to-run noise);
+  - GPU memory about +100 MiB, 1.5 GB of the 6 GiB limit;
+  - RAM: median 2.49 GB, but one Cinematic run reached 3.23 GB, over the 3 GB reference cap. The Standard side ranges up to 2.79 GB on the same film, so this looks like system noise, not a pbr-v1 cost. Reported, not hidden; GPU-10 re-measures with the device-relative rule.
+- **Brightness (tuning stills, mean luma of the picture band):** Cinematic 3–5 % below Standard with slightly higher contrast (portrait 69.4 vs 71.5; product 56.9 vs 59.8).
+- **Regression:** GPU Standard stills on swangle are byte-identical between main and this branch (3 frames, 2 films). CPU is covered by the unchanged digests and tests.
+- **Glitch scan:** gpu01-portrait-r2 Standard and Cinematic clean; gpu01-swatches-r2 both flag frame 480 (pre-existing cut flash, FIX-RS).

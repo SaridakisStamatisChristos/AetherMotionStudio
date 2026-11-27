@@ -1,6 +1,40 @@
-# Forward-only handoff: Campaign B GPU-00 TESTED + MEASURED, PR #67 open (2026-11-27)
+# Forward-only handoff: Campaign B GPU-01 TESTED + RENDERED, PR open; next FIX-RS (2026-11-27)
 
-**Latest checkpoint (GPU-00):** `feature/gpu-00-architecture` from main 69a3a5e (PR #66 merged on the owner's "merge pr 66 and start gpu-00"). **PR #67 is open, not merged.**
+**Latest checkpoint (GPU-01):** `feature/gpu-01-pbr` from main dac8f8d. GPU-00 is merged as PR #67 on the owner's "now merge and move to gpu-01", after CI passed on d5eed73. **The GPU-01 PR is open, not merged.**
+- **Owner decisions this session:**
+  - GPU-10 must first ask the owner to configure the pre-render budget check (in the roadmap);
+  - the pre-existing render defects get a separate unit, FIX-RS, before GPU-02 ("Separate unit next").
+- **Built:**
+  - `src/visual/pbr.js` (new);
+  - `src/visual/three-backend.js` (options, pbr materials, per-material room light);
+  - `src/visual/catalog.js` (surface keys);
+  - `src/core/render-profiles.js` (pbr-v1, cinematic block, threeOptions);
+  - `src/core/timeline.js`, `src/director/{schema,index,foundry}.js`, `src/index.jsx`;
+  - `src/studio/production.js` (ids, standardVariant, normalizedScene);
+  - `scripts/production-options.mjs` (`--compare standard`), `scripts/produce.mjs`, `scripts/compare_release.py` and `scripts/matched_inventory.py` (`--profiles`);
+  - tests `tests/gpu01-pbr.test.js` and `tests/test_profile_pair.py`; `tests/gpu00-profiles.test.js` updated for pbr-v1 and the defaults;
+  - fixtures `examples/gpu01-swatches-cinematic.json` and `examples/gpu01-portrait.request.json`.
+- **Results:**
+  - `npm test` 584 (583 pass, 0 fail, 1 skip); Python 70 OK; fonts current;
+  - digests unchanged with `--exclude …,dual,gpu` (the `gpu` exclusion is new, see the protocol);
+  - GPU Standard swangle stills byte-identical to main;
+  - films gpu01-swatches-r2 and gpu01-portrait-r2, both `--compare standard`, PASS, sourceDirty false, b6dad1a;
+  - bench: Cinematic 0.94 × Standard wall time, +100 MiB GPU memory; one Cinematic run had 3.23 GB RAM growth, over the 3 GB reference cap (reported).
+- **Tuning history (agent stills, not owner review):**
+  - first attempt +35–45 % brighter and washed out;
+  - then metals read black, because three ignores material.envMapIntensity when scene.environment is set;
+  - final version: per-material room light and steel-tinted metals, luma −3 to −5 % vs Standard.
+- **Superseded films:** gpu01-*-r1 (the metal defect).
+- **Unresolved:**
+  - FIX-RS defects (stripes; flash at frame 480 in gpu01-swatches);
+  - the backpack straps read as metal (crafted-v2 role rule for the "case" family);
+  - the PR CI result to confirm before the merge.
+- **Next action for "fod continue":**
+  1. If the GPU-01 PR is open, report it, confirm CI on its head, and wait for the owner's merge word.
+  2. After the merge, clear renders older than GPU-01: keep the GPU-00 references, gpu01-*-r2, out/bench/gpu00-* and gpu01-portrait-r2-*, out/speech-cache, public/media and the v1.2 final batches.
+  3. Then FIX-RS on `fix/render-stability` from main (plan in CAMPAIGN_B.md "FIX-RS"). Then GPU-02.
+
+**Previous checkpoint (GPU-00):** `feature/gpu-00-architecture` from main 69a3a5e (PR #66 merged on the owner's "merge pr 66 and start gpu-00"). **PR #67 is open, not merged.**
 - **Owner decisions this session:**
   - **ADR-001 Accepted** ("Approve as written", UI choice);
   - **budget delegated** ("what you propose since this is not the only computer that will use the program"), so the proposal recorded is relative to the rendering machine. The owner asked for every option to be explained; do that in plain words whenever offering choices.

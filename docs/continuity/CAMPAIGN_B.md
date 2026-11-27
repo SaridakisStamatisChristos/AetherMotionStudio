@@ -18,8 +18,9 @@ Status words: PLANNED · NEXT · ACTIVE · IMPLEMENTED · TESTED · RENDERED · 
 | ID | Milestone | Status | Branch / PR | Evidence |
 |---|---|---|---|---|
 | GPU-00 | Architecture transition (ADR) and measurable budget | **TESTED + MEASURED** (ADR-001 Accepted; budget delegated → protocol-v1 frozen) | `feature/gpu-00-architecture` / PR #67 (open) | ADR-001, CAMPAIGN_B_AUDIT.md, CAMPAIGN_B_PROTOCOL.md, tests/gpu00-profiles.test.js, out/bench/gpu00-*-r1-bench |
-| GPU-01 | PBR materials and colour management | NEXT (after the GPU-00 merge) | — | — |
-| GPU-02 | Lighting, shadows and environment illumination | PLANNED | — | — |
+| GPU-01 | PBR materials and colour management | **TESTED + RENDERED** (PR open, not merged) | `feature/gpu-01-pbr` | src/visual/pbr.js, tests/gpu01-pbr.test.js, tests/test_profile_pair.py, out/gpu01-{swatches,portrait}-r2-*, out/bench/gpu01-portrait-r2-* |
+| FIX-RS | Render stability: random striped frames and the one-frame flash at cuts with parallel tabs (pre-existing, GPU Standard too) | **NEXT** (owner 2026-11-27: "Separate unit next") | `fix/render-stability` (planned) | GPU-01 findings below |
+| GPU-02 | Lighting, shadows and environment illumination | PLANNED (after FIX-RS) | — | — |
 | GPU-03 | Procedural texture and material library | PLANNED | — | — |
 | GPU-04 | External 3D assets (GLB) and high-detail geometry | PLANNED | — | — |
 | GPU-05 | High-fidelity character system | PLANNED | — | — |
@@ -150,6 +151,21 @@ It merges only on the owner's word, then the render cleanup follows.
 - **Tests:** range validation (non-finite and out-of-range refused); colour-space numeric checks (known swatch values through the pipeline); Standard/CPU unchanged.
 - **Evidence:** a reference swatch scene (fixed lights and camera), stills and a short film; budget measured.
 
+### FIX-RS: render stability (owner-authorized 2026-11-27, option 1 "Separate unit next"; before GPU-02)
+Found during GPU-01 on the Three.js route (vulkan). Both defects appear in GPU Standard, whose code is byte-identical to main, so they are pre-existing in the shared pipeline.
+- **Striped frames:** vertical stripes and dark patches on the floor and background (shadow-map-like) over contiguous blocks of frames.
+  - They come and go between renders of the same film: gpu01-swatches-r1 had them in Standard about 3–8 s and in Cinematic about 2–4.5 s; an 8-tab re-render had none; a 1-tab re-render had them on every frame (out/bench/gpu01-swatch-c8, -c1).
+  - Single stills (one page per frame) showed none. Suspect uninitialised or stale GPU state per tab, most likely the shadow map.
+- **One-frame flash at a cut:** gpu01-swatches (fade from shot 2 to shot 3).
+  - Render frame 480 shows shot 2 without the fade's dark overlay, although shotAt/transitionAlpha give alpha 1 there.
+  - Reproduced with 8 tabs (r1 both films, r2 both films, c8 re-render); absent with 1 tab (c1). `frame_glitch.py` flags it.
+  - The GPU-00 references and the gpu01-portrait films are clean.
+- **Plan:**
+  1. Reproduce both deterministically (fixed tab count, repeated renders, frame hashes per tab).
+  2. Find the cause in the shared pipeline (index.jsx draw timing, three-backend shadow map and render state, Remotion tab chunking).
+  3. Fix minimally; prove the fix with repeated multi-tab renders on CPU, swangle and vulkan, plus frame_glitch on every film.
+  4. Re-render the swatch film as gpu01-swatches-r3 to show it clean.
+
 ### GPU-02: lighting, shadows and environment illumination
 - **Audit:** the current light rig, shadowMap, lighting-parity, fog.
 - **Build:**
@@ -262,6 +278,7 @@ It merges only on the owner's word, then the render cleanup follows.
   - approve ADR-001 (render profiles, capability negotiation, policy revision);
   - the profile field name;
   - the budget table (or revised targets).
+- FIX-RS: none beyond the authorization (owner chose the separate unit).
 - GPU-01/02: Cinematic look references, if the owner wants to steer (otherwise the agent proposes a before/after for review).
 - GPU-03: approval for importing local textures carrying third-party licences.
 - GPU-04: GLB support scope and the use of `three/examples` loaders and decoders (DRACO/meshopt/KTX2); any external asset licence.
@@ -274,3 +291,5 @@ It merges only on the owner's word, then the render cleanup follows.
 ## Ledger (append one line per verified transition)
 - 2026-11-27: Campaign A complete (tag `v1.2-dual-backend-final` → 2cb82ef). Owner supplied the Campaign B master directive and asked for the FOD setup ("so i will start in a new session"). Directive stored verbatim; tracker, CLAUDE.md, AGENTS.md and continuity updated on `chore/campaign-b-setup`. Next: GPU-00 (ADR first; no GPU-exclusive capability before the owner approves it).
 - 2026-11-27: PR #66 merged (owner "merge pr 66 and start gpu-00") → main 69a3a5e. GPU-00 on `feature/gpu-00-architecture`: baseline green (560 tests, digests = v1.2); inventory → docs/CAMPAIGN_B_AUDIT.md; **ADR-001 Accepted by the owner** ("Approve as written"); DUAL_BACKEND_POLICY pointer section added (earlier sections unchanged); profile skeleton (`renderProfile: 'cinematic-v1'`, capability table `shared`, RP-01…RP-06) TESTED (572 tests, 0 fail, digests unchanged); 4 GPU Standard reference films + 12 bench runs on vulkan; budget delegated by the owner ("this is not the only computer that will use the program") → device-relative budget frozen in CAMPAIGN_B_PROTOCOL.md (campaign-b-protocol-v1). PR #67 open, not merged.
+- 2026-11-27: PR #67 merged (owner "now merge and move to gpu-01") → main dac8f8d (CI green on d5eed73); GPU-10 "ask the owner to configure the budget check first" added to the roadmap (owner). Renders older than GPU-00 cleared (out/bench/d09-*, 236 MB).
+- 2026-11-27: GPU-01 on `feature/gpu-01-pbr` — capability pbr-v1 (cinematic block), MeshPhysicalMaterial presets chosen per part, room light per material, steel-tinted metals, Standard-vs-Cinematic matched mode (`--compare standard`, compare_release --profiles). Tests 584 (0 fail), Python 70 OK, legacy digests unchanged (with `,gpu` excluded), GPU Standard stills byte-identical to main (swangle). Films gpu01-swatches-r2 and gpu01-portrait-r2 (PASS, sourceDirty false, b6dad1a). Defects found and recorded → owner chose a separate unit FIX-RS next.
