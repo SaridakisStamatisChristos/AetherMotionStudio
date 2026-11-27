@@ -14,6 +14,7 @@
 import {FONT_METRICS} from './font-metrics.js';
 import {layoutEquation,layoutPlot,layoutGraph,layoutArray} from './diagrams.js';
 import {layoutChart,layoutTimeline,layoutFlow,layoutCompare,parseCsv,chartNumber} from './charts.js';
+import {MEDIA_ID,MEDIA_FORMATS,validateSource} from './media.js';
 export const COMPOSE_VERSION='compose-v1',COMPOSE_V2='compose-v2',COMPOSE_VERSIONS=Object.freeze([COMPOSE_VERSION,COMPOSE_V2]);
 export const REGIONS=Object.freeze({
  // the clean top of a 9:16 frame: above characters' heads at the medium framings the Director uses
@@ -22,7 +23,7 @@ export const REGIONS=Object.freeze({
  full:Object.freeze({x:48,y:150,w:584,h:700})
 });
 export const TYPES=Object.freeze(['background','title','card','label','callout','arrow','shape']);
-export const TYPES_V2=Object.freeze([...TYPES,'quote','bullets','counter','kinetic','equation','plot','graph','array','chart','timeline','flow','compare']);
+export const TYPES_V2=Object.freeze([...TYPES,'quote','bullets','counter','kinetic','equation','plot','graph','array','chart','timeline','flow','compare','image']);
 export const DIAGRAMS=Object.freeze(['equation','plot','graph','array','chart','timeline','flow','compare']);
 // decimals needed to show v exactly (at most 3)
 const decimalsOf=v=>{for(let d=0;d<3;d++)if(Math.abs(v*10**d-Math.round(v*10**d))<1e-9)return d;return 3;};
@@ -62,8 +63,47 @@ export const TEXT=Object.freeze({
  bullet:Object.freeze({sizes:[46,42,40,38,36,34,32,30,28,26,24,22,20,18],pad:20,max:90}),
  number:Object.freeze({sizes:[104,96,88,80,72,64,56,48,40],pad:16,max:0}),
  numberLabel:Object.freeze({sizes:[36,34,32,30,28,26,24,22,20,18],pad:16,max:48}),
- kinetic:Object.freeze({sizes:[60,56,52,48,44,40,36,32,28],pad:20,max:140})
+ kinetic:Object.freeze({sizes:[60,56,52,48,44,40,36,32,28],pad:20,max:140}),
+ // DUAL-05 image captions (a strip under the picture, at most 35 % of the box)
+ caption:Object.freeze({sizes:[26,24,22,20,18],pad:12,max:80})
 });
+// ---- DUAL-05 images (compose-v2 item `image`) ----
+// {id, type:'image', box, media:'<library id>', source (written by the production boundary from the media lock and
+// the verified file; never trusted from authors), fit 'cover'|'contain', crop [x,y,w,h] (0–1 of the upright
+// picture), focus [x,y] (cover: which part stays when the overflow is cut), move {from:{x,y,zoom}, to:{x,y,zoom}}
+// (a slow pan/zoom over the item's time on screen; zoom 1–4), alt (required description), caption (optional strip),
+// plate (default true: tone plate and edge; false for transparent overlays), under (default false: true makes it a
+// lower layer that other items may sit on, like a background)}.
+export const IMAGE_FITS=Object.freeze(['cover','contain']),IMAGE_ZOOM=Object.freeze([1,4]),IMAGE_MIN_CROP_PX=16,ALT_MAX=160;
+function layoutImage(x,b,q,m){
+ if(typeof x.media!=='string'||!MEDIA_ID.test(x.media))fail(q+'.media','a media library ID (lowercase letters, digits and hyphens, at most 48) required');
+ const source=validateSource(x.source,q+'.source');
+ if(source.file!==x.media+'.'+MEDIA_FORMATS[source.format].ext)fail(q+'.source.file','does not belong to media '+x.media);
+ const fit=x.fit??'cover';if(!IMAGE_FITS.includes(fit))fail(q+'.fit','cover or contain required');
+ const crop=x.crop??[0,0,1,1];
+ if(!Array.isArray(crop)||crop.length!==4||crop.some(v=>typeof v!=='number'||!Number.isFinite(v)))fail(q+'.crop','[x,y,w,h] (0–1 of the picture) required');
+ if(crop[0]<0||crop[1]<0||crop[2]<=0||crop[3]<=0||crop[0]+crop[2]>1+1e-9||crop[1]+crop[3]>1+1e-9)fail(q+'.crop','must lie inside the picture (0–1)');
+ if(crop[2]*source.displayWidth<IMAGE_MIN_CROP_PX||crop[3]*source.displayHeight<IMAGE_MIN_CROP_PX)fail(q+'.crop','at least '+IMAGE_MIN_CROP_PX+'×'+IMAGE_MIN_CROP_PX+' picture pixels required');
+ const focus=x.focus??[.5,.5];point(focus,q+'.focus');
+ let move=null;
+ if(x.move!==undefined){
+  if(!x.move||typeof x.move!=='object'||Array.isArray(x.move))fail(q+'.move','{from, to} required');
+  for(const k of Object.keys(x.move))if(!['from','to'].includes(k))fail(q+'.move.'+k,'unknown field');
+  const view=(v,qq)=>{if(!v||typeof v!=='object'||Array.isArray(v))fail(qq,'{x, y, zoom} required');for(const k of Object.keys(v))if(!['x','y','zoom'].includes(k))fail(qq+'.'+k,'unknown field');
+   for(const k of ['x','y'])if(typeof v[k]!=='number'||!Number.isFinite(v[k])||v[k]<0||v[k]>1)fail(qq+'.'+k,'0–1 required');
+   if(typeof v.zoom!=='number'||!Number.isFinite(v.zoom)||v.zoom<IMAGE_ZOOM[0]||v.zoom>IMAGE_ZOOM[1])fail(qq+'.zoom',IMAGE_ZOOM[0]+'–'+IMAGE_ZOOM[1]+' required');return {x:v.x,y:v.y,zoom:v.zoom};};
+  move={from:view(x.move.from,q+'.move.from'),to:view(x.move.to,q+'.move.to')};
+  if(['x','y','zoom'].every(k=>move.from[k]===move.to[k]))fail(q+'.move','from and to are the same; remove the move');
+ }
+ for(const k of ['plate','under'])if(x[k]!==undefined&&typeof x[k]!=='boolean')fail(q+'.'+k,'true or false required');
+ bad(x.alt,q+'.alt');if(x.alt.length>ALT_MAX)fail(q+'.alt','at most '+ALT_MAX+' characters');
+ let caption=null,picture={...b};
+ if(x.caption!==undefined){const C=TEXT.caption,r=fitText(x.caption,C,b.w-2*C.pad,b.h*.35-2*C.pad,m);
+  if(!r)fail(q+'.caption','text overflow: caption "'+x.caption.slice(0,40)+'" does not fit a '+Math.round(b.w)+' px wide strip at '+C.sizes.at(-1)+' px; shorten it or enlarge the box');
+  const strip=r.height+2*C.pad;caption={text:r,strip};picture={x:b.x,y:b.y,w:b.w,h:b.h-strip};}
+ if(picture.h<24)fail(q+'.box','the picture above the caption must be at least 24 px high');
+ return {image:{media:x.media,source:{...source},fit,crop:[...crop],focus:[...focus],move,plate:x.plate??true,under:x.under??false,alt:norm(x.alt)},picture,caption};
+}
 export const LINE=1.22,GAP=8,FONT='Arial',WEIGHT=700;
 export const MAX_ITEMS=6,MAX_ITEMS_V2=8,REVEAL_SECONDS=.5,COUNT_SECONDS=1.5;
 // Arial Bold advance widths per 1000 em (metric-compatible with Helvetica-Bold); unknown characters use the widest
@@ -151,6 +191,7 @@ function layoutItem(x,b,q,m,opts={}){
    const label=fitText(x.text,L,w,inner-hh-GAP,m);if(label)return {number:{size,height:hh,template:tmpl},text:label};}
   over('counter '+formatNumber(x.to,x));
  }
+ if(x.type==='image')return layoutImage(x,b,q,m);
  return null;
 }
 // Character ranges [a,b) of each emphasis phrase in the normalized text (first occurrence; must exist).
@@ -177,10 +218,10 @@ export function layoutComposition(c,p='composition',opts={}){
   const q=p+'.items['+i+']';
   if(!x||typeof x!=='object'||Array.isArray(x))fail(q,'object required');
   const allowed={background:['tone'],title:['text','tone'],card:['text','body','tone'],label:['text','tone'],callout:['text','to','tone'],arrow:['from','to','tone'],shape:['shape','tone'],
-   ...(v2?{quote:['text','cite','tone'],bullets:['lines','phrases','tone'],counter:['from','to','decimals','group','prefix','suffix','text','tone'],kinetic:['text','tone'],equation:['tex','compiled','check','tone'],plot:['x','y','equal','grid','axes','xLabel','yLabel','shapes','clip','phrases','tone'],graph:['nodes','edges','directed','steps','algorithm','phrases','tone'],array:['values','steps','algorithm','phrases','tone'],chart:['kind','categories','series','csv','x','y','unit','xUnit','yLabel','xLabel','valueLabels','highlight','annotations','steps','phrases','tone'],timeline:['events','phrases','tone'],flow:['nodes','direction','phrases','tone'],compare:['cards','phrases','tone']}:{})}[x.type];
+   ...(v2?{quote:['text','cite','tone'],bullets:['lines','phrases','tone'],counter:['from','to','decimals','group','prefix','suffix','text','tone'],kinetic:['text','tone'],equation:['tex','compiled','check','tone'],plot:['x','y','equal','grid','axes','xLabel','yLabel','shapes','clip','phrases','tone'],graph:['nodes','edges','directed','steps','algorithm','phrases','tone'],array:['values','steps','algorithm','phrases','tone'],chart:['kind','categories','series','csv','x','y','unit','xUnit','yLabel','xLabel','valueLabels','highlight','annotations','steps','phrases','tone'],timeline:['events','phrases','tone'],flow:['nodes','direction','phrases','tone'],compare:['cards','phrases','tone'],image:['media','source','fit','crop','focus','move','alt','caption','plate','under','tone']}:{})}[x.type];
   if(!allowed)fail(q+'.type','one of '+(v2?TYPES_V2:TYPES).join(', ')+' required');
-  const textual=!['background','arrow','shape'].includes(x.type);
-  const extra=v2?['phrase',...(textual?['font','weight','align','emphasis']:[])]:[];
+  const textual=!['background','arrow','shape','image'].includes(x.type);
+  const extra=v2?['phrase',...(textual?['font','weight','align','emphasis']:x.type==='image'?['font','weight']:[])]:[];
   for(const k of Object.keys(x))if(!['id','type','box','start','end','reveal',...allowed,...extra].includes(k))fail(q+'.'+k,'unknown field for '+x.type);
   if(typeof x.id!=='string'||!/^[a-z0-9][a-z0-9-]{0,23}$/.test(x.id)||ids.has(x.id))fail(q+'.id','unique safe ID required');
   const start=x.start??0,end=x.end??1;
@@ -212,8 +253,9 @@ export function layoutComposition(c,p='composition',opts={}){
   const b=box?px(region,box):null;
   if(b&&x.type!=='background'&&(b.w<24||b.h<24))fail(q+'.box','at least 24×24 px');
   // fonts: compose-v1 is Arial Bold (no coverage check, as accepted in DUAL-01); compose-v2 checks every character
-  const font=x.font??c.font??'arial',weight=x.weight??(['quote','bullets'].includes(x.type)||(x.type==='card'&&x.text===undefined)?400:700),m=v2?measurer(font,weight):ARIAL;
-  const fields={};for(const k of ['text','body','cite'])if(typeof x[k]==='string')fields[k]=norm(x[k]);if(x.type==='bullets')x.lines.forEach((s,k)=>{fields['line'+k]=norm(s);});
+  const font=x.font??c.font??'arial',weight=x.weight??(['quote','bullets','image'].includes(x.type)||(x.type==='card'&&x.text===undefined)?400:700),m=v2?measurer(font,weight):ARIAL;
+  if(x.type==='image'&&x.caption!==undefined){bad(x.caption,q+'.caption');if(x.caption.length>TEXT.caption.max)fail(q+'.caption','at most '+TEXT.caption.max+' characters');}
+  const fields={};for(const k of ['text','body','cite','caption'])if(typeof x[k]==='string')fields[k]=norm(x[k]);if(x.type==='bullets')x.lines.forEach((s,k)=>{fields['line'+k]=norm(s);});
   if(x.type==='counter'){fields.fromValue=formatNumber(x.from,x);fields.toValue=formatNumber(x.to,x);}
   if(v2)for(const [k,s] of Object.entries(fields)){const miss=missingGlyphs(s,m);if(miss.length)fail(q+'.'+k,'missing glyphs in '+fontChain(font).join(' → ')+': '+miss.slice(0,8).join(', ')+(font==='arial'?' (Arial accepts ASCII only in compose-v2; choose a bundled font)':''));}
   const quoted=x.type==='quote'?(m.covers('“')&&m.covers('”')?'“'+fields.text+'”':'"'+fields.text+'"'):null;
@@ -242,7 +284,8 @@ export function layoutComposition(c,p='composition',opts={}){
  }
  // boxed items visible at the same time must not overlap (backgrounds and shapes may sit under text items); a
  // phrase-anchored item may start at any time, so it is treated as on screen from the start of the shot
- const solid=out.filter(x=>x.box&&!['background','shape','arrow'].includes(x.type)),win=x=>x.phrase!==undefined||x.phrases?{start:0,end:x.end}:x;
+ // DUAL-05: an image with under:true is a lower layer (like a background), so images and text may be layered on it
+ const solid=out.filter(x=>x.box&&!['background','shape','arrow'].includes(x.type)&&!(x.type==='image'&&x.image.under)),win=x=>x.phrase!==undefined||x.phrases?{start:0,end:x.end}:x;
  for(let i=0;i<solid.length;i++)for(let j=i+1;j<solid.length;j++)if(windowsMeet(win(solid[i]),win(solid[j]))&&overlap(solid[i].box,solid[j].box))fail(p,'items '+solid[i].id+' and '+solid[j].id+' overlap while both are on screen');
  return {version:c.version,region:c.region,rect:region,items:out};
 }

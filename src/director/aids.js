@@ -49,7 +49,7 @@ const GENERIC=new Set(['introduction','context','key idea','how it works','conne
 const keySentence=(narration,max)=>narration.flatMap(sentences).find(x=>!x.endsWith('?')&&x.length<=max&&x.split(/\s+/).length>=4)??null;
 // The planner never invents data or formulas. Charts (DUAL-04) and maths (DUAL-03) exist as authored visuals
 // (request.visuals); images arrive in DUAL-05. The note says which.
-const HINTS=[[/\b(?:chart|graph|percent|percentage|statistics|data)\b|%/i,'chart or data (DUAL-04)','AUTHORED_VISUAL_SUGGESTED','add a chart with your data in request.visuals'],[/\b(?:equation|formula|theorem|proof|algebra)\b/i,'mathematics (DUAL-03)','AUTHORED_VISUAL_SUGGESTED','add the formula in request.visuals'],[/\b(?:photo|photograph|picture|painting|portrait|map)\b/i,'image (DUAL-05)','VISUAL_AID_NOT_YET_SUPPORTED',null]];
+const HINTS=[[/\b(?:chart|graph|percent|percentage|statistics|data)\b|%/i,'chart or data (DUAL-04)','AUTHORED_VISUAL_SUGGESTED','add a chart with your data in request.visuals'],[/\b(?:equation|formula|theorem|proof|algebra)\b/i,'mathematics (DUAL-03)','AUTHORED_VISUAL_SUGGESTED','add the formula in request.visuals'],[/\b(?:photo|photograph|picture|painting|portrait|map)\b/i,'image (DUAL-05)','AUTHORED_VISUAL_SUGGESTED','import your own image (node scripts/media-import.mjs add …) and add it in request.visuals; images are never invented']];
 // DUAL-02: a number in the text, verbatim: "$3.5 billion tons of carbon" → {value:3.5, decimals:1, prefix:'$',
 // suffix:' billion', label:'tons of carbon'}. Scale words are shown, never multiplied out. Bare years (1000–2100
 // without a unit) are not counted.

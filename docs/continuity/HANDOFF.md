@@ -1,39 +1,73 @@
-# Forward-only handoff: Campaign A, DUAL-04 repaired after two independent audits (2026-11-26)
+# Forward-only handoff: Campaign A, DUAL-05 tested and rendered (PR #57); DUAL-06 next (2026-11-27)
 
 Unit: **Campaign A — Universal Dual-Backend Finalization**, owner-authorized.
-- DUAL-00…03 and the CI `npm ci` step are **MERGED**; main is at 5145f50. PR #54 was merged on "Merge PR #54".
-- DUAL-04 (charts, timelines, flowcharts, comparison cards) + **repair pass** after an independent adversarial audit: on `feature/dual-04-charts` (head after this checkpoint; product code ab693a3). **PR #55 open — owner: "Do not merge PR #55 yet."** Merge approval requested with the evidence below.
-- **Next milestone: DUAL-05** (local raster media), only after #55 is merged (never stacked).
+- **DUAL-00 … DUAL-04 are COMPLETE and MERGED** (main **e520e4a**; PR #55 merged on "Approved. Merge PR #55", CI run 45889745389, 475/475).
+- **DUAL-05 (local raster media) is TESTED + RENDERED** on `feature/dual-05-media` (10d9cb1 implementation, c960694 planner hint and contract doc, plus this checkpoint). **PR #57 is open, not merged.** It needs the owner's review and merge word, after its CI test job passes on the current head.
+- **PR #56** (docs-only handoff on `chore/fod-handoff-dual05-09`) is still open. Its three continuity files were carried into this branch as the base of this checkpoint. Ask the owner: merge #56 first (then merge main into #57; conflicts are trivial, keep #57's text) or close #56 as superseded.
+- **Next milestone: DUAL-06** (formats, themes, audio controls), only after #57 is merged. Then DUAL-07, 08 and 09, strictly in order. The plan for each is in CAMPAIGN_A.md, "Remaining work plan".
 
-Date: 2026-11-26. The owner types only **"fod continue"**. Binding facts: CURRENT_STATE.md. Evidence: CAMPAIGN_A.md ("DUAL-04 evidence" and "Repair pass after the independent audit"). Contracts: docs/COMPOSITION.md, docs/MATHS.md, docs/CHARTS.md. Scope map: docs/CAMPAIGN_A_AUDIT.md. Evidence rules: CAMPAIGN_A_PROTOCOL.md.
+Date: 2026-11-27. The owner types only **"fod continue"**. Binding facts: CURRENT_STATE.md. Campaign status, evidence and the remaining plan: CAMPAIGN_A.md. Requirements: CAMPAIGN_A_DIRECTIVE.md (verbatim). Contracts: docs/COMPOSITION.md (compose-v1/v2, fonts), docs/MATHS.md, docs/CHARTS.md, docs/MEDIA.md. Scope map: docs/CAMPAIGN_A_AUDIT.md. Evidence rules: CAMPAIGN_A_PROTOCOL.md.
 
-## Repair pass in one table
-| Item | Result |
-|---|---|
-| Defects | first audit: 9 items + 1 found in validation stills; second audit: 5 items (TeX superscripts, BigInt isqrt, tick containment, formatter, pie colours); each reproduced before fixing; see CAMPAIGN_A.md |
-| Tests | 475 JS (474 pass, 1 Windows skip) with installed dependencies; Python 61 OK; tests/repair.test.js (10) and tests/repair2.test.js (5), drawing tests on intermediate and final frames |
-| Films | dual04-bakery-r5 (byte-identical to r4) and dual03-euclid-r5 (5a786a3); dual04-bread-r3, dual03-pythagoras-r3 (886e702): all PASS both backends, −16.0 LUFS; agent checks only, **no owner review** |
+## Where things stand (one table)
+| Milestone | State | Main capability (all opt-in) | Contract |
+|---|---|---|---|
+| DUAL-00 | MERGED #50 | baseline, capability audit, fixture IDs `dual<NN>-<slug>-r<n>` | CAMPAIGN_A_AUDIT.md, CAMPAIGN_A_PROTOCOL.md |
+| DUAL-01 | MERGED #51 | `compose-v1` aids; `content` explainer-v1 / mixed-v1; check aids-v1 | docs/COMPOSITION.md |
+| DUAL-02 | MERGED #52 | bundled OFL fonts; `compose-v2` typography; typography-v1; zero-asset shots | docs/COMPOSITION.md "Typography" |
+| DUAL-03 | MERGED #53 | MathJax 4.1.3 equations (Node-only), plots, BFS graphs, Euclid arrays, `request.visuals` | docs/MATHS.md |
+| CI | MERGED #54 | test job runs `npm ci` | CURRENT_STATE.md |
+| DUAL-04 | MERGED #55 | charts, timelines, flowcharts, comparison cards; two audit repair passes | docs/CHARTS.md |
+| DUAL-05 | **PR #57 open** (tested + rendered) | local PNG/JPEG/static WebP library, import checks, verified `image` item, pan/zoom | docs/MEDIA.md |
 
 ## Next action for "fod continue"
-1. Bootstrap. If PR #55 is open: report its CI result and ask the owner for merge approval (owner said not yet; never merge without the word).
-2. After #55 is merged: branch `feature/dual-05-media` from main, `npm install`, then DUAL-05 under the owner's rules: raster-only local images (PNG, JPEG, static WebP); no SVG, remote fetching, animated formats (reject APNG acTL, animated WebP ANIM/ANMF, multi-frame) or new dependencies; file signature verification; bounded dimensions and decoded memory; safe project-relative paths (no traversal, no symlink escapes); content hashing; provenance/licence/attribution metadata; correct EXIF orientation applied deterministically; deterministic fit/crop/pan/zoom; missing/corrupt/hostile files fail clearly. Reuse the import quarantine (src/foundry/import-bundle.js, scripts/import-png.mjs) and the font loader pattern (load before frame 0, fail the render on error). Create our own licensed test images.
-3. Exit: a narrated illustration film with the same image identity, crop and timing on both backends; corrupt, missing and hostile imports fail clearly.
+1. Bootstrap (below). Check PR #57: if the owner has given the merge word and CI is green on its head, merge it; otherwise report its state and wait (do not start DUAL-06 on top of an unmerged #57: branches are never stacked). Ask about #56 if it is still open.
+2. After #57 is merged: `git switch main && git pull && npm install`, branch `feature/dual-06-formats` from main.
+3. Read the DUAL-06 directive section, the DUAL-06 rows of docs/CAMPAIGN_A_AUDIT.md and the DUAL-06 plan in CAMPAIGN_A.md. Owner decision already recorded: new sizes 1920×1080 and 1080×1080 are **opt-in presets**; the default stays 1080×1920 at 30 fps. Promoting any preset or theme to a default needs the owner.
+4. The media library on this machine (`public/media/`, git-ignored) holds the five dual05 illustrations; `node scripts/media-import.mjs verify` re-checks them. `node scripts/dual05-gallery-media.mjs` recreates them on another machine (it refuses nothing already imported with the same bytes).
 
-## Known issue from this session
-- A headless-browser process (chrome-headless-shell, PID 343888) from a stopped DUAL-01 render may still be running; the agent was not permitted to stop it. Harmless; Task Manager or a reboot ends it.
+## The FOD loop for every remaining milestone
+1. **Branch:** one branch per unit, from main.
+2. **Read:** the directive section, the audit rows, the plan rows and the relevant source only.
+3. **Implement and test:**
+   - reproduce any reported defect before fixing it;
+   - make minimal opt-in, versioned changes;
+   - validate every untrusted input with explicit messages;
+   - add positive, negative and adversarial tests (drawing tests check intermediate and final frames).
+4. **Check the baseline:** `npm test` (fail 0), the Python tests, the legacy digests (`--exclude talk04,talk05,gen01,gen09,gen12,fixa,dual`) and `node scripts/font-metrics.mjs --check`.
+5. **Render:**
+   - commit first (`sourceDirty false`), and do not touch the working tree while a render runs;
+   - produce fresh `dual<NN>-…` films with `node scripts/produce.mjs --request … --backend both --id …` on vulkan;
+   - record PASS lines, CHECKS, QUALITY, frame_glitch, ebur128 loudness and hashes;
+   - inspect stills from the timeline's phrase frames on both backends, and fix what the stills show.
+6. **Checkpoint:** update CURRENT_STATE.md, this file and the CAMPAIGN_A.md row, evidence and ledger, plus the milestone's contract doc.
+7. **Hand over:** push, open the PR and wait for the PR CI test job, then report in plain language with short tables. **Merge only on the owner's word**, after confirming CI is green on the PR's current head.
+8. **Be honest in reports:** keep automated checks, agent stills and owner review separate. GPU (vulkan) Three.js renders are not bit-reproducible across runs (PSNR ≈ 64 dB between identical scenes); CPU renders are.
+
+## Tooling lessons (cost real time this session)
+- **Bash heredocs and `node -e`:**
+  - they strip regex backslashes (`\s` became `s`; `\b` became a backspace character);
+  - double-quoted `node -e` also runs backtick substitution.
+  - Write edit scripts to the scratchpad with the Write tool, or use the Edit tool.
+- **Write tool and `\uXXXX`:** it turns `\uXXXX` escapes inside regex or string literals into literal characters (U+2028 broke a regex). Afterwards run a small "re-escape invisible characters" script (e.g. scratchpad `unesc.cjs`: replace U+2028/2029/200B–200F/202A–202E/FEFF with `\u` escapes). `tests/typography.test.js` guards source files against control characters.
+- **Line endings:** working copies are CRLF; normalise `\r\n` before multi-line anchors.
+- **Renders:** never write files while a render runs; the second production in a batch will be marked sourceDirty.
+- **Headless browser probes:** running chrome-headless-shell directly (`--dump-dom`) crashes on this machine (network service and GPU process exit). Use Remotion's `openBrowser('chrome')`, `browser.newPage({context:()=>null,logLevel:'error',indent:false,pageIndex:0,onBrowserLog:null,onLog:()=>{}})` and `page.evaluate(fn,...args)`.
+- **Processes:** the session's permission check refused stopping a stray `chrome-headless-shell`. Don't work around it; tell the owner.
 
 ## Open issues carried into Campaign A
 - OPEN-1 calm word rate (2.15 words/s; refine with more films). OPEN-2 part 2: glass and metal subtle at phone size. OPEN-3: historical CPU one-eye, by the owner's choice. OPEN-4: "bridges" shows no set piece. OPEN-6: old draft PRs #2–#12; ask before closing. PR #43 (old handoff) is superseded by #49; ask before closing it.
-- OPEN-7 disk: out/ holds the agent test jobs, far-forest-r1*, clean-top-r1*/r2*, dual00-baseline-r1*, dual01-*, dual02-*, dual03-* and dual04-*; ask before deleting anything.
-- Not yet run: a GPU benchmark, the full native matrix, a clean-install test.
+- OPEN-7 disk: out/ holds the agent test jobs, far-forest-r1*, clean-top-r1*/r2*, dual00-baseline-r1*, dual01-*, dual02-*, dual03-*, dual04-* (DUAL-04 superseded attempts r1–r4 included), dual05-gallery-r1*, dual05-media-src/ and dual05-tamper-*.png; public/media/ holds the dual05 library; ask before deleting anything.
+- Not yet run: a GPU benchmark, the full native matrix, a clean-install test (all planned for DUAL-09).
+- Studio preview: fonts (and future media) are not served by the Studio server; the preview shows substitute fonts. Planned for DUAL-07.
+- A stray chrome-headless-shell (PID 343888) from a stopped DUAL-01 render may still be running; harmless.
 
 ## Bootstrap for "fod continue"
-1. `git status --short --branch`, `git rev-parse HEAD`, `git fetch`, `gh pr list --state open`, `git tag --list`. Expect main 5145f50, or later if PR #55 was merged.
+1. `git status --short --branch`, `git rev-parse HEAD`, `git fetch`, `gh pr list --state open`, `git tag --list`. Expect main e520e4a, or later if the handoff PR (chore/fod-handoff-dual05-09) was merged.
 2. Read CLAUDE.md, AGENTS.md, CURRENT_STATE.md, this file and CAMPAIGN_A.md (plus the directive section of the active milestone).
 3. Baseline:
    - `node scripts/fod-digests.mjs . --exclude talk04,talk05,gen01,gen09,gen12,fixa,dual` must print graph 3d33fbaee198acad, geometry 14dec244d171dc56, detail2 e3f80439a292f21a, director 7 requests 2cbf9916e65da935;
-   - `npm test` must give fail 0 (475 tests with both DUAL-04 repair passes, 1 Windows skip);
-   - `PYTHONPATH=scripts .venv/Scripts/python.exe -m unittest discover -s tests -p "test_*.py"` must give 59 OK.
+   - `npm test` must give fail 0 (475 tests at e520e4a, 491 on feature/dual-05-media; 1 Windows skip);
+   - `PYTHONPATH=scripts .venv/Scripts/python.exe -m unittest discover -s tests -p "test_*.py"` must give 61 OK.
 
 ## Owner working agreement and taste (binding; see also auto-memory)
 - **Delegation:**

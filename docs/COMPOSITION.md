@@ -97,6 +97,7 @@ Opt-in. `compose-v1` compositions draw exactly as in DUAL-01; `compose-v2` adds 
   - `bullets` (2–6 lines ≤ 90; optional `phrases`, one per line, never going backwards; otherwise revealed one after another over the first 60 % of the window);
   - `counter` (`from`/`to` finite within ±1e12, `decimals` 0–3, `group`, `prefix`/`suffix` ≤ 12, optional label `text`). It counts for 1.5 s and ends on the exact value. Formatting is locale-free, and the box reserves the width of the widest value on the way;
   - `kinetic` (≤ 140 chars, words appear one by one over 80 % of its phrase or window).
+  - `image` (DUAL-05): a verified local raster image (PNG, JPEG, static WebP) from the media library, with fit, crop, focus, a slow pan/zoom, alt text, an optional caption, plate and layering. Contract: [docs/MEDIA.md](MEDIA.md).
 - **Timing honesty:** phrase windows are **measured** when the timeline has one segment per narration phrase; otherwise they are an even split, flagged `estimated`. Word timing inside kinetic text is always estimated (an even spread), never forced alignment.
 - **Rejected text:** control, zero-width and bidirectional-override characters, alongside the DUAL-01 rules (overflow, overlap, box bounds).
 

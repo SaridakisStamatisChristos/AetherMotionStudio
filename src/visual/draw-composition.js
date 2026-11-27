@@ -9,6 +9,29 @@ import {drawDiagram} from './draw-diagrams.js';
 const DIAGRAM_TYPES=new Set(['equation','plot','graph','array']);
 import {drawChartItem} from './draw-charts.js';
 const CHART_TYPES=new Set(['chart','timeline','flow','compare']);
+import {imageRects} from '../core/media.js';
+import {loadedImage,mediaPreview} from './media-registry.js';
+// DUAL-05: the view (pan/zoom) of an image at shot progress p: from → to over the item's time on screen, eased;
+// zoom is interpolated geometrically (even perceived speed). Pure: the same p gives the same view on both backends.
+export function imageView(x,p,start){
+ const mv=x.image.move;if(!mv)return {x:.5,y:.5,zoom:1};
+ const u=smooth(clamp((p-start)/Math.max(1e-6,x.end-start)));
+ return {x:mv.from.x+(mv.to.x-mv.from.x)*u,y:mv.from.y+(mv.to.y-mv.from.y)*u,zoom:mv.from.zoom*(mv.to.zoom/mv.from.zoom)**u};
+}
+function drawImageItem(ctx,x,t,p,start,font){
+ const I=x.image,P=x.picture,b=x.box,r=I.plate?14:0;
+ if(I.plate)roundedBox(ctx,b.x,b.y,b.w,b.h,r,t.fill+'f2',null);
+ const bm=loadedImage(I.source.sha256);
+ ctx.save();ctx.beginPath();ctx.roundRect(P.x,P.y,P.w,P.h,x.caption?[r,r,0,0]:r);ctx.clip();
+ if(bm){const {src,dst}=imageRects({width:I.source.displayWidth,height:I.source.displayHeight},P,{fit:I.fit,crop:I.crop,focus:I.focus,view:imageView(x,p,start)});
+  ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';ctx.drawImage(bm,src[0],src[1],src[2],src[3],dst[0],dst[1],dst[2],dst[3]);}
+ else if(mediaPreview()){ctx.fillStyle=t.fill;ctx.fillRect(P.x,P.y,P.w,P.h);ctx.font=cssFont('inter',700,22);ctx.fillStyle=t.sub;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('image '+I.media+' (not loaded in the preview)',P.x+P.w/2,P.y+P.h/2,P.w-24);}
+ else throw Error('media: image '+I.media+' ('+I.source.file+') was not loaded before drawing; the render is stopped');
+ ctx.restore();
+ if(I.plate){ctx.beginPath();ctx.roundRect(b.x,b.y,b.w,b.h,r);ctx.strokeStyle=t.edge;ctx.lineWidth=2;ctx.stroke();}
+ if(x.caption){const C=TEXT.caption,cy=b.y+b.h-x.caption.strip;if(!I.plate){ctx.fillStyle=t.fill+'f2';ctx.fillRect(b.x,cy,b.w,x.caption.strip);}
+  lines(ctx,x.caption.text,b.x+b.w/2,cy+C.pad,t.text,'center',b.w-2*C.pad,{font});}
+}
 const cache=new WeakMap();
 const layoutOf=c=>{let l=cache.get(c);if(!l){l=layoutComposition(c);cache.set(c,l);}return l;};
 const v1Font=size=>WEIGHT+' '+size+'px '+FONT;
@@ -52,6 +75,7 @@ export function drawComposition(ctx,composition,p,frames=360,phrases=null){
   else if(x.type==='shape'){ctx.fillStyle=t.mark;ctx.strokeStyle=t.mark;ctx.lineWidth=5;
    if(x.shape==='rect')roundedBox(ctx,b.x,b.y,b.w,b.h,12,t.mark+'cc',t.mark);
    else{ctx.beginPath();ctx.ellipse(b.x+b.w/2,b.y+b.h/2,b.w/2-3,b.h/2-3,0,0,Math.PI*2);if(x.shape==='circle'){ctx.globalAlpha*=.85;ctx.fill();}else ctx.stroke();}}
+  else if(x.type==='image')drawImageItem(ctx,x,t,p,start,font);
   else if(CHART_TYPES.has(x.type))drawChartItem(ctx,x,t,p,start,rv,phrases,x.font);
   else if(DIAGRAM_TYPES.has(x.type))drawDiagram(ctx,x,t,p,start,rv,phrases,x.font);
   else if(x.type==='arrow'){const [s,e]=x.line,k=x.reveal==='none'?1:a;head(ctx,s,[s[0]+(e[0]-s[0])*k,s[1]+(e[1]-s[1])*k],t.mark,5);}

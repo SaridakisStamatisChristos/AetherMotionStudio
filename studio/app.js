@@ -1,5 +1,8 @@
 import {validateProject} from '/src/core/timeline.js';
 import {drawFilm} from '/src/core/draw-film.js';
+// DUAL-05: the preview does not load local media yet (DUAL-07); images show as labelled placeholders here only.
+import {setMediaPreview} from '/src/visual/media-registry.js';
+setMediaPreview(true);
 import {defaultSpeech} from '/src/studio/production.js';
 import {calmTurns} from '/src/core/calm.js';
 import {editProject,applyShotEdit,reorderShot,setBackend,setProfile,setStaging,addAsset,removeAsset,previewState,addFoundryAsset,setSpeakers,setLineSpeaker,bindSpeaker} from '/src/studio/model.js';
