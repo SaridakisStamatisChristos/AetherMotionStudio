@@ -33,7 +33,8 @@ function drawImageItem(ctx,x,t,p,start,font){
   lines(ctx,x.caption.text,b.x+b.w/2,cy+C.pad,t.text,'center',b.w-2*C.pad,{font});}
 }
 const cache=new WeakMap();
-const layoutOf=c=>{let l=cache.get(c);if(!l){l=layoutComposition(c);cache.set(c,l);}return l;};
+// layouts per composition and output format (DUAL-06)
+const layoutOf=(c,format)=>{let m=cache.get(c);if(!m){m=new Map();cache.set(c,m);}const k=format??'vertical-v1';let l=m.get(k);if(!l){l=layoutComposition(c,'composition',format?{format}:{});m.set(k,l);}return l;};
 const v1Font=size=>WEIGHT+' '+size+'px '+FONT;
 // Draw wrapped lines. Emphasis ranges (character offsets in the joined text) are drawn in the mark colour; `upto`
 // (kinetic text) limits how many words are visible, the last one fading in by `fade`.
@@ -59,9 +60,9 @@ function head(ctx,a,b,color,width){const ang=Math.atan2(b[1]-a[1],b[0]-a[0]);ctx
 const anchorX=(b,pad,align)=>align==='left'?b.x+pad:align==='right'?b.x+b.w-pad:b.x+b.w/2;
 // p = shot progress 0–1; frames = shot length (reveals last REVEAL_SECONDS of real time at 30 fps); phrases = the
 // shot's phrase windows (src/core/composition.js phraseWindows) for phrase-anchored items, or null.
-export function drawComposition(ctx,composition,p,frames=360,phrases=null){
+export function drawComposition(ctx,composition,p,frames=360,phrases=null,format=null){
  if(!composition)return;
- const L=layoutOf(composition),F=Math.max(1,frames),rv=Math.max(1e-6,REVEAL_SECONDS*30/F),out=Math.max(1e-6,.3*30/F),v2=L.version==='compose-v2';
+ const L=layoutOf(composition,format),F=Math.max(1,frames),rv=Math.max(1e-6,REVEAL_SECONDS*30/F),out=Math.max(1e-6,.3*30/F),v2=L.version==='compose-v2';
  for(const x of L.items){
   const start=appearAt(x,phrases);
   if(p<start||p>x.end)continue;

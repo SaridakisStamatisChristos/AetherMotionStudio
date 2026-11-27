@@ -16,6 +16,7 @@ async function loadImage(s){
 }
 import {Audio} from '@remotion/media';
 import {FORMAT} from './core/contract.js';
+import {formatOf} from './core/formats.js';
 import {validateProject,filmFrames} from './core/timeline.js';
 import {createThreeBackend} from './visual/three-backend.js';
 import {drawFilm} from './core/draw-film.js';
@@ -30,5 +31,6 @@ function Film({scene,timeline=null}){useMemo(()=>{validateProject(scene);filmFra
  useLayoutEffect(()=>{const ctx=ref.current.getContext('2d');ctx.clearRect(0,0,width,height);if(scene.version===2&&scene.shots.some(s=>s.template==='cinematic-graph'&&s.backend==='three')&&!three.current)three.current=createThreeBackend();if(fontsReady&&mediaReady)drawFilm(ctx,scene,timeline,frame,width,height,three.current)},[frame,width,height,scene,timeline,fontsReady,mediaReady]);
  return <AbsoluteFill><canvas ref={ref} width={width} height={height}/><Audio src={staticFile('audio/'+scene.id+'.wav')}/></AbsoluteFill>;
 }
-function metadata({props}){validateProject(props.scene);return {durationInFrames:filmFrames(props.scene,props.timeline)};}
+// DUAL-06: output size from the project's format (absent = 1080×1920, as before).
+function metadata({props}){validateProject(props.scene);const f=props.scene?.version===2?formatOf(props.scene):null;return {durationInFrames:filmFrames(props.scene,props.timeline),...(f?{width:f.width,height:f.height}:{})};}
 function Root(){return <Composition id="AetherFilm" component={Film} defaultProps={{scene:baseline,timeline:null}} calculateMetadata={metadata} fps={FORMAT.fps} durationInFrames={FORMAT.frames} width={FORMAT.width} height={FORMAT.height}/>};registerRoot(Root);

@@ -2,6 +2,7 @@
 import os,sys,json,math,hashlib,subprocess,wave
 from pathlib import Path
 import numpy as np
+from formats import analysis_size
 from quality_metrics import consecutive_runs,interior,parse_subtitles,expected_subtitles
 R=48000;STEP=5;W=180;H=320
 def read_json(p):return json.loads(p.read_text(encoding='utf-8'))
@@ -15,12 +16,13 @@ def emit(out):
     ff=os.environ.get('AETHER_FFMPEG','ffmpeg')
     scene=read_json(out/'scene.json');pre=read_json(out/'quality-preflight.json');probe=read_json(out/'probe.json')
     timeline=read_json(out/'timeline.json') if scene['version']==2 else None
+    global W,H;W,H=analysis_size(scene)
     film=out/'film.mp4';total=timeline['durationFrames'] if timeline else 360
     shots=timeline['shots'] if timeline else [{'id':scene['id'],'startFrame':0,'endFrame':360,'transitionFrames':0,'segments':[]}]
     issues=[]
     def issue(code,severity,detail,shot=None):issues.append({'code':code,'severity':severity,'shot':shot,'detail':detail})
     for x in pre['after']['issues']:issues.append(x)
-    cmd=[ff,'-v','error','-i',str(film),'-an','-vf',r'select=not(mod(n\,5)),scale=180:320','-vsync','0','-pix_fmt','rgb24','-f','rawvideo','-']
+    cmd=[ff,'-v','error','-i',str(film),'-an','-vf',r'select=not(mod(n\,5)),scale='+f'{W}:{H}','-vsync','0','-pix_fmt','rgb24','-f','rawvideo','-']
     rows=[{'shot':s['id'],'samples':[],'black':[],'flat':[],'frozen':[],'highlights':[],'thumb':None,'distance':float('inf')} for s in shots]
     previous=None;idx=0;count=0;frame_bytes=W*H*3
     with subprocess.Popen(cmd,stdout=subprocess.PIPE,stderr=subprocess.PIPE) as p:

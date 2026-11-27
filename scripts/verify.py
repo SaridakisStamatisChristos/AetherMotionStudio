@@ -1,6 +1,7 @@
 import json, os, subprocess, sys, wave
 from pathlib import Path
 import numpy as np
+from formats import dims
 out=Path(sys.argv[1]); film=out/'film.mp4'
 ffmpeg=os.environ.get('AETHER_FFMPEG','ffmpeg')
 ffprobe=os.environ.get('AETHER_FFPROBE','ffprobe')
@@ -12,7 +13,7 @@ seconds=frames/30
 d=json.loads(run([ffprobe,'-v','error','-show_streams','-show_format','-of','json',str(film)]).stdout)
 v=[s for s in d['streams'] if s['codec_type']=='video']; a=[s for s in d['streams'] if s['codec_type']=='audio']
 assert len(v)==len(a)==1
-assert (v[0]['width'],v[0]['height'])==(1080,1920)
+assert (v[0]['width'],v[0]['height'])==dims(scene)
 assert v[0]['codec_name']=='h264' and a[0]['codec_name']=='aac'
 assert v[0]['r_frame_rate']=='30/1' and int(v[0]['nb_frames'])==frames
 assert abs(float(d['format']['duration'])-seconds)<.08

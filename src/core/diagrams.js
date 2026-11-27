@@ -36,7 +36,7 @@ export function tickStep(span){const raw=span/5,k=10**Math.floor(Math.log10(raw)
 // Ticks lie inside [a, b] up to a millionth of the step (second repair pass).
 function ticks(a,b){const s=tickStep(b-a),tol=s*1e-6,out=[];for(let k=Math.ceil(a/s-1e-6);out.length<12;k++){const v=Math.round(k)*s;if(v>b+tol)break;if(v>=a-tol)out.push(v);}return {step:s,values:out};}
 export function layoutPlot(x,b,p,{measure,phraseOk}){
- only(x,['id','type','box','start','end','reveal','phrase','phrases','x','y','equal','grid','axes','xLabel','yLabel','shapes','tone','font','weight','align','emphasis','clip'],p);
+ only(x,['id','type','box','formats','start','end','reveal','phrase','phrases','x','y','equal','grid','axes','xLabel','yLabel','shapes','tone','font','weight','align','emphasis','clip'],p);
  const X=pair(x.x,p+'.x'),Y=pair(x.y,p+'.y');if(X[0]>=X[1]||Y[0]>=Y[1])fail(p,'ranges must increase');plotSpan(X,p+'.x');plotSpan(Y,p+'.y');
  for(const k of ['equal','grid','axes','clip'])if(x[k]!==undefined&&typeof x[k]!=='boolean')fail(p+'.'+k,'true or false required');
  const lx=x.xLabel!==undefined?text(x.xLabel,p+'.xLabel',12):null,ly=x.yLabel!==undefined?text(x.yLabel,p+'.yLabel',12):null;
@@ -75,7 +75,7 @@ export function layoutPlot(x,b,p,{measure,phraseOk}){
 export function bfsOrder(nodes,edges,directed,start){const adj=new Map(nodes.map(n=>[n,[]]));for(const [a,c] of edges){adj.get(a).push(c);if(!directed)adj.get(c).push(a);}
  const seen=new Set([start]),order=[start],queue=[start];while(queue.length){const u=queue.shift();for(const v of adj.get(u))if(!seen.has(v)){seen.add(v);order.push(v);queue.push(v);}}return order;}
 export function layoutGraph(x,b,p,{measure,phraseOk}){
- only(x,['id','type','box','start','end','reveal','phrase','phrases','nodes','edges','directed','steps','algorithm','tone','font','weight','align','emphasis'],p);
+ only(x,['id','type','box','formats','start','end','reveal','phrase','phrases','nodes','edges','directed','steps','algorithm','tone','font','weight','align','emphasis'],p);
  if(!Array.isArray(x.nodes)||x.nodes.length<2||x.nodes.length>12)fail(p+'.nodes','2–12 nodes required');
  const notes=Array.isArray(x.steps)&&x.steps.some(s=>s?.note!==undefined),pad=20,area={x:b.x+pad,y:b.y+pad,w:b.w-2*pad,h:b.h-2*pad-(notes?44:0)};
  const r=Math.max(18,Math.min(44,Math.min(area.w,area.h)*.075)),ids=new Map();
@@ -102,7 +102,7 @@ export function layoutGraph(x,b,p,{measure,phraseOk}){
  return {graph:{r,nodes,edges:edges.map(([a,c])=>({a:ids.get(a).c,c:ids.get(c).c,key:key(a,c)})),directed:!!x.directed,steps,area,algorithm,phrases:stepPhrases(x,steps.length,p,phraseOk)}};
 }
 export function layoutArray(x,b,p,{measure,format,phraseOk}){
- only(x,['id','type','box','start','end','reveal','phrase','phrases','values','steps','algorithm','tone','font','weight','align','emphasis'],p);
+ only(x,['id','type','box','formats','start','end','reveal','phrase','phrases','values','steps','algorithm','tone','font','weight','align','emphasis'],p);
  if(!Array.isArray(x.values)||x.values.length<2||x.values.length>10)fail(p+'.values','2–10 values required');
  const first=x.values.map((v,i)=>num(v,p+'.values['+i+']'));
  if(!Array.isArray(x.steps)||x.steps.length<1||x.steps.length>16)fail(p+'.steps','1–16 steps required');

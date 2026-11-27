@@ -72,7 +72,7 @@ function series(x,p,kind,cats){
   return {name,values};});
 }
 export function layoutChart(x,b,p,{measure,format,phraseOk,theme}){
- only(x,['id','type','box','start','end','reveal','phrase','phrases','kind','categories','series','csv','x','y','unit','xUnit','yLabel','xLabel','valueLabels','highlight','annotations','steps','tone','font','weight','align','emphasis'],p);
+ only(x,['id','type','box','formats','start','end','reveal','phrase','phrases','kind','categories','series','csv','x','y','unit','xUnit','yLabel','xLabel','valueLabels','highlight','annotations','steps','tone','font','weight','align','emphasis'],p);
  if(!CHART_KINDS.includes(x.kind))fail(p+'.kind','one of '+CHART_KINDS.join(', ')+' required');const kind=x.kind;
  let cats=null,data;
  if(x.csv!==undefined){if(x.series!==undefined||x.categories!==undefined)fail(p+'.csv','use csv or categories/series, not both');const t=parseCsv(x.csv,p+'.csv');
@@ -144,7 +144,7 @@ export function percents(values){const t=values.reduce((a,v)=>a+v,0),raw=values.
 function stepPhrases(x,count,p,phraseOk){if(x.phrases===undefined)return null;if(!Array.isArray(x.phrases)||x.phrases.length!==count)fail(p+'.phrases','one phrase index per step ('+count+') required');x.phrases.forEach((k,j)=>{phraseOk(k,p+'.phrases['+j+']');if(j&&k<x.phrases[j-1])fail(p+'.phrases','must not go backwards');});return [...x.phrases];}
 // timeline: events on a horizontal line, labels alternating above and below.
 export function layoutTimeline(x,b,p,{measure,phraseOk}){
- only(x,['id','type','box','start','end','reveal','phrase','phrases','events','tone','font','weight','align','emphasis'],p);
+ only(x,['id','type','box','formats','start','end','reveal','phrase','phrases','events','tone','font','weight','align','emphasis'],p);
  if(!Array.isArray(x.events)||x.events.length<2||x.events.length>8)fail(p+'.events','2–8 events required');
  const events=x.events.map((e,i)=>{const q=p+'.events['+i+']';if(!e||typeof e!=='object')fail(q,'object required');only(e,['when','label'],q);return {when:text(e.when,q+'.when',12),label:text(e.label,q+'.label',24)};});
  const pad=24,y=b.y+b.h/2,slot=(b.w-2*pad)/events.length,size=fitSize([32,30,28,26,24,22,20,18,16],s=>events.every(e=>Math.max(measure(e.when,s),measure(e.label,s))<=slot*1.9-8)&&2*s*1.25+20<=b.h/2-pad);
@@ -153,7 +153,7 @@ export function layoutTimeline(x,b,p,{measure,phraseOk}){
 }
 // flow: 2–6 boxes joined by arrows, top to bottom (or left to right with direction:'row').
 export function layoutFlow(x,b,p,{measure,phraseOk}){
- only(x,['id','type','box','start','end','reveal','phrase','phrases','nodes','direction','tone','font','weight','align','emphasis'],p);
+ only(x,['id','type','box','formats','start','end','reveal','phrase','phrases','nodes','direction','tone','font','weight','align','emphasis'],p);
  if(!Array.isArray(x.nodes)||x.nodes.length<2||x.nodes.length>6)fail(p+'.nodes','2–6 boxes required');if(x.direction!==undefined&&!['column','row'].includes(x.direction))fail(p+'.direction','column or row required');
  const nodes=x.nodes.map((n,i)=>text(n,p+'.nodes['+i+']',40)),row=x.direction==='row',n=nodes.length,gap=row?36:26,pad=16;
  const bw=row?(b.w-2*pad-gap*(n-1))/n:b.w-2*pad,bh=row?Math.min(140,b.h-2*pad):(b.h-2*pad-gap*(n-1))/n;
@@ -166,7 +166,7 @@ export function layoutFlow(x,b,p,{measure,phraseOk}){
 }
 // compare: two cards, each a title and 1–5 points.
 export function layoutCompare(x,b,p,{measure,phraseOk}){
- only(x,['id','type','box','start','end','reveal','phrase','phrases','cards','tone','font','weight','align','emphasis'],p);
+ only(x,['id','type','box','formats','start','end','reveal','phrase','phrases','cards','tone','font','weight','align','emphasis'],p);
  if(!Array.isArray(x.cards)||x.cards.length!==2)fail(p+'.cards','exactly 2 cards required');
  const gap=20,cw=(b.w-gap)/2,cards=x.cards.map((c,i)=>{const q=p+'.cards['+i+']';if(!c||typeof c!=='object')fail(q,'object required');only(c,['title','points'],q);const title=text(c.title,q+'.title',24);if(!Array.isArray(c.points)||c.points.length<1||c.points.length>5)fail(q+'.points','1–5 points required');return {title,points:c.points.map((t,j)=>text(t,q+'.points['+j+']',48)),x:b.x+i*(cw+gap),y:b.y,w:cw,h:b.h};});
  const wrap=(s,size,w)=>{const out=[];let line='';for(const t of s.split(/\s+/)){const n=line?line+' '+t:t;if(line&&measure(n,size)>w){out.push(line);line=t;}else line=n;}if(line)out.push(line);return out;};

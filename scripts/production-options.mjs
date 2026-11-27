@@ -8,7 +8,7 @@ import {defaultSpeech,productionId,matchedTargetFrames,projectProfile,normalized
 import {compileProjectMath} from '../src/director/math-loader.js';
 import {resolveProjectMedia} from '../src/director/media-loader.js';
 export function parseProduction(args,{read=p=>readFileSync(resolve(p),'utf8'),newId=()=> 'film-'+randomBytes(6).toString('hex')}={}){
- const o={},flags=new Set(['repair']),values=new Set(['request','topic','project','pair','script','script-file','seconds','backend','profile','voice','language','id','seed','import']);
+ const o={},flags=new Set(['repair']),values=new Set(['request','topic','project','pair','script','script-file','seconds','backend','profile','voice','language','id','seed','import','format']);
  const queue=[...args];while(queue.length){
   const raw=queue.shift();if(!raw.startsWith('--'))throw Error('Expected --option');const k=raw.slice(2);
   if(Object.hasOwn(o,k))throw Error('Duplicate option: '+k);
@@ -22,7 +22,8 @@ export function parseProduction(args,{read=p=>readFileSync(resolve(p),'utf8'),ne
  if(o.pair!==undefined)throw Error('--pair is only valid with --project');
  if(o.script&&o['script-file'])throw Error('Choose --script or --script-file');
  const input=o.request?safeJson(read(o.request)):{version:1,topic:o.topic,seconds:30,id:newId()};
- const patch={};for(const k of ['id','profile','voice','language','script'])if(o[k]!==undefined)patch[k]=o[k];
+ // DUAL-06: --format overrides the request's output format (validated with the request).
+ const patch={};for(const k of ['id','profile','voice','language','script','format'])if(o[k]!==undefined)patch[k]=o[k];
  for(const k of ['seconds','seed'])if(o[k]!==undefined)patch[k]=Number(o[k]);
  if(o['script-file'])patch.script=read(o['script-file']);
  const directorBackends=choose(o.backend??input.backend??'cpu');
@@ -41,7 +42,7 @@ export function parseProduction(args,{read=p=>readFileSync(resolve(p),'utf8'),ne
 }
 // LOCAL-02 authored mode: an existing validated v2 project is the single scene definition for every backend.
 function authored(o,backends,read,newId){
- for(const k of ['script','script-file','seconds','profile','voice','language','seed','import'])if(o[k]!==undefined)throw Error('--'+k+' cannot modify an authored --project; edit the project file instead');
+ for(const k of ['script','script-file','seconds','profile','voice','language','seed','import','format'])if(o[k]!==undefined)throw Error('--'+k+' cannot modify an authored --project; edit the project file instead');
  // DUAL-03: equations in authored projects are compiled to outlines (Node, MathJax) before validation.
  // DUAL-05: image items are resolved from the local media library (hash and structure verified) at the same boundary.
  const load=p=>validateProject(resolveProjectMedia(compileProjectMath(safeJson(read(p)))));

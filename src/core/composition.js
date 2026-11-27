@@ -15,6 +15,7 @@ import {FONT_METRICS} from './font-metrics.js';
 import {layoutEquation,layoutPlot,layoutGraph,layoutArray} from './diagrams.js';
 import {layoutChart,layoutTimeline,layoutFlow,layoutCompare,parseCsv,chartNumber} from './charts.js';
 import {MEDIA_ID,MEDIA_FORMATS,validateSource} from './media.js';
+import {FORMATS,FORMAT_IDS,DEFAULT_FORMAT} from './formats.js';
 export const COMPOSE_VERSION='compose-v1',COMPOSE_V2='compose-v2',COMPOSE_VERSIONS=Object.freeze([COMPOSE_VERSION,COMPOSE_V2]);
 export const REGIONS=Object.freeze({
  // the clean top of a 9:16 frame: above characters' heads at the medium framings the Director uses
@@ -208,11 +209,13 @@ export function layoutComposition(c,p='composition',opts={}){
  for(const k of Object.keys(c))if(![...['version','region','items'],...(v2?['theme','font']:[])].includes(k))fail(p+'.'+k,'unknown field');
  if(!COMPOSE_VERSIONS.includes(c.version))fail(p+'.version',COMPOSE_VERSIONS.join(' or ')+' required');
  if(!Object.hasOwn(REGIONS,c.region))fail(p+'.region','upper or full required');
+ // DUAL-06: regions per output format (opts.format; absent = vertical-v1, the historical REGIONS).
+ const fmt=opts.format??DEFAULT_FORMAT;if(!Object.hasOwn(FORMATS,fmt))fail(p,'unknown format '+fmt);
  const maxItems=v2?MAX_ITEMS_V2:MAX_ITEMS;
  if(!Array.isArray(c.items)||c.items.length<1||c.items.length>maxItems)fail(p+'.items','1–'+maxItems+' items required');
  if(v2&&c.theme!==undefined&&!Object.hasOwn(THEMES,c.theme))fail(p+'.theme','one of '+Object.keys(THEMES).join(', ')+' required');
  if(v2&&c.font!==undefined&&!FONTS.includes(c.font))fail(p+'.font','one of '+FONTS.join(', ')+' required');
- const region=REGIONS[c.region],ids=new Map(),out=[],tones=THEMES[c.theme??'aether-v1'];
+ const region=fmt===DEFAULT_FORMAT?REGIONS[c.region]:FORMATS[fmt].regions[c.region],ids=new Map(),out=[],tones=THEMES[c.theme??'aether-v1'];
  const phraseOk=(k,qq)=>{if(!Number.isSafeInteger(k)||k<0||k>=(opts.phrases??64))fail(qq,'a narration phrase index of this shot (0–'+((opts.phrases??64)-1)+') required');};
  for(const [i,x] of c.items.entries()){
   const q=p+'.items['+i+']';
@@ -222,7 +225,10 @@ export function layoutComposition(c,p='composition',opts={}){
   if(!allowed)fail(q+'.type','one of '+(v2?TYPES_V2:TYPES).join(', ')+' required');
   const textual=!['background','arrow','shape','image'].includes(x.type);
   const extra=v2?['phrase',...(textual?['font','weight','align','emphasis']:x.type==='image'?['font','weight']:[])]:[];
-  for(const k of Object.keys(x))if(!['id','type','box','start','end','reveal',...allowed,...extra].includes(k))fail(q+'.'+k,'unknown field for '+x.type);
+  for(const k of Object.keys(x))if(!['id','type','box','start','end','reveal',...allowed,...extra,...(v2?['formats']:[])].includes(k))fail(q+'.'+k,'unknown field for '+x.type);
+  // DUAL-06 per-format reflow by the author: formats:{'landscape-v1':{box:[…]}, …} replaces the box in that format only.
+  if(x.formats!==undefined){if(!x.formats||typeof x.formats!=='object'||Array.isArray(x.formats))fail(q+'.formats','{"<format>":{box:[x,y,w,h]}} required');for(const [k,o] of Object.entries(x.formats)){if(!FORMAT_IDS.includes(k))fail(q+'.formats.'+k,'unknown format ('+FORMAT_IDS.join(', ')+')');if(!o||typeof o!=='object'||Array.isArray(o)||Object.keys(o).length!==1||!Object.hasOwn(o,'box'))fail(q+'.formats.'+k,'{box:[x,y,w,h]} required');if(x.type==='arrow')fail(q+'.formats','arrows use from and to');}}
+  const boxOf=x.formats?.[fmt]?.box??x.box;
   if(typeof x.id!=='string'||!/^[a-z0-9][a-z0-9-]{0,23}$/.test(x.id)||ids.has(x.id))fail(q+'.id','unique safe ID required');
   const start=x.start??0,end=x.end??1;
   for(const [k,v] of [['start',start],['end',end]])if(typeof v!=='number'||!Number.isFinite(v)||v<0||v>1)fail(q+'.'+k,'0–1 required');
@@ -236,8 +242,8 @@ export function layoutComposition(c,p='composition',opts={}){
   if(x.type==='background'&&i!==0)fail(q,'a background must be the first item');
   let box=null;
   if(x.type!=='arrow'){
-   if(x.type==='background'&&x.box===undefined)box=[0,0,1,1];
-   else{if(!Array.isArray(x.box)||x.box.length!==4||x.box.some(v=>typeof v!=='number'||!Number.isFinite(v)))fail(q+'.box','[x,y,w,h] required');box=x.box;
+   if(x.type==='background'&&boxOf===undefined)box=[0,0,1,1];
+   else{const bq=x.formats?.[fmt]?q+'.formats.'+fmt+'.box':q+'.box';if(!Array.isArray(boxOf)||boxOf.length!==4||boxOf.some(v=>typeof v!=='number'||!Number.isFinite(v)))fail(bq,'[x,y,w,h] required');box=boxOf;
     if(box[0]<0||box[1]<0||box[2]<=0||box[3]<=0||box[0]+box[2]>1+1e-9||box[1]+box[3]>1+1e-9)fail(q+'.box','must lie inside the '+c.region+' region (0–1)');}
   }else if(x.box!==undefined)fail(q+'.box','arrows use from and to');
   if(x.type==='card'&&x.text===undefined&&x.body===undefined)fail(q,'a card needs text, body or both');
@@ -287,7 +293,7 @@ export function layoutComposition(c,p='composition',opts={}){
  // DUAL-05: an image with under:true is a lower layer (like a background), so images and text may be layered on it
  const solid=out.filter(x=>x.box&&!['background','shape','arrow'].includes(x.type)&&!(x.type==='image'&&x.image.under)),win=x=>x.phrase!==undefined||x.phrases?{start:0,end:x.end}:x;
  for(let i=0;i<solid.length;i++)for(let j=i+1;j<solid.length;j++)if(windowsMeet(win(solid[i]),win(solid[j]))&&overlap(solid[i].box,solid[j].box))fail(p,'items '+solid[i].id+' and '+solid[j].id+' overlap while both are on screen');
- return {version:c.version,region:c.region,rect:region,items:out};
+ return {version:c.version,region:c.region,...(fmt!==DEFAULT_FORMAT?{format:fmt}:{}),rect:region,items:out};
 }
 export const validateComposition=(c,p,opts)=>{layoutComposition(c,p,opts);};
 // Phrase windows of a shot as progress [start,end] pairs. Measured when the timeline shot has one segment per
