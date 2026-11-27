@@ -1,4 +1,8 @@
-# Forward-only handoff: Campaign A, DUAL-00…08 merged; DUAL-09 TESTED + RENDERED, PR open (2026-11-27)
+# Forward-only handoff: Campaign A complete — DUAL-00…09 merged; v1.2 tag pending the owner (2026-11-27)
+
+**Latest checkpoint (merge):** PR #64 (DUAL-09) merged on the owner's "merge and finilize" → main 79f76d7 (CI 46033308643 green on 7cabbf6, 560 tests). Renders older than DUAL-09 cleared (1,465 MB); kept out/batches/dual09-matrix-r2 and dual09-final-r1 (both verify), out/bench/d09-*, out/dual09-preview-mem/result.json, the speech cache and public/media.
+- **Next action for "fod continue":** ask the owner for the tag word. On "tag": tag `v1.2-dual-backend-final` on the exact accepted main commit (79f76d7 or the commit of this record's merge, as the owner says), push the tag, no release publication. **Campaign B (GPU-only graphics) only with the owner's separate authorization after the tag** (it revises docs/DUAL_BACKEND_POLICY.md).
+- Deferred by the owner: CPU-only detail polish ("we can fix anything in cpu in later stages"), generalized, not per film.
 
 **Latest checkpoint (DUAL-09):** `feature/dual-09-qualification` from main 527df34 (DUAL-08 merged as PR #63 on the owner's "merge and continue"; renders older than DUAL-08 cleared). PR open, **not merged, not tagged**.
 - **Built and fixed:**
