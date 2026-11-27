@@ -1,6 +1,10 @@
 # Forward-only handoff: Campaign A, DUAL-00…07 merged; DUAL-08 TESTED + RENDERED, PR open (2026-11-27)
 
-**Latest checkpoint (DUAL-08):** `feature/dual-08-batch` (code e2f4831, plus the checkpoint commit), PR open, **not merged**; merge only on the owner's word after the PR CI test job passes.
+**Latest checkpoint (DUAL-08 + repair pass):** `feature/dual-08-batch` (code e2f4831; POSIX fix d5b099f; owner-requested repair pass 724727e, R1–R13 in CAMPAIGN_A.md "DUAL-08 repair pass"), PR #63 open, **not merged**; merge only on the owner's word after the PR CI test job passes on the current head.
+- **Repair pass (owner: "do a repair pass on dual -08 code before merging"):**
+  - 13 defects found in an adversarial review: 10 reproduced by failing tests, 3 by reading the code. All are repaired with tests (tests/batch-repair.test.js).
+  - The most important: manifests are now validated before any path is built from them, and orphan identity uses the measured start time.
+  - 546 tests (0 fail). A real smoke batch (dual08-repair-r1) again gives a byte-identical CPU narrator film.
 - **Built:** batch-v1 (`node scripts/batch.mjs create|run|resume|status|stop|cancel|verify`, docs/BATCH.md); machine render lock `out/.render.lock` shared by produce.mjs, cli.mjs, Studio jobs and batches; whole-tree cancel; restart recovery.
 - **Tests:** 534 JS (0 fail, 1 Windows skip; also with public/media hidden), Python 63 OK, digests unchanged, fonts current.
 - **Real batch `dual08-small-r1`** (vulkan, out/batches/dual08-small-r1):
@@ -10,7 +14,7 @@
   - a real runner kill, then resume: square pair interrupted, re-run and PASS on both backends.
   - Agent stills only; **no owner review**.
 - **Changed files:** scripts/batch.mjs, batch-lib.mjs, render-lock.mjs, process-tree.mjs (new); produce.mjs, cli.mjs, studio-server.mjs (lock); tests/batch.test.js and tests/fixtures/ (new); examples/batches/ (new); docs/BATCH.md, README.md and the continuity docs.
-- **Next action for "fod continue":** if the DUAL-08 PR is still open, report it and wait for the owner's merge word (confirm CI green on its head). After the merge: clear the renders older than DUAL-08 (owner rule: keep out/batches/dual08-small-r1, out/speech-cache and public/media), then start **DUAL-09** (plan in CAMPAIGN_A.md, including the preview in-flight hardening item).
+- **Next action for "fod continue":** if the DUAL-08 PR is still open, report it and wait for the owner's merge word (confirm CI green on its head). After the merge: clear the renders older than DUAL-08 (owner rule: keep out/batches/dual08-small-r1 and dual08-repair-r1, out/speech-cache and public/media), then start **DUAL-09** (plan in CAMPAIGN_A.md, including the preview in-flight hardening item).
 
 Unit: **Campaign A — Universal Dual-Backend Finalization**, owner-authorized. The text below is the earlier fresh-start handoff for DUAL-08, kept as written; the checkpoint above supersedes its "Next action".
 - **DUAL-00 … DUAL-07 are COMPLETE and MERGED.** Main is at **0e83826** (PR #61 merged on the owner's "merge"; CI 45989203443 green on 14a4a9a, 522/522).

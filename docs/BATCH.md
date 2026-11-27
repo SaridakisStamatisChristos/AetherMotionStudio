@@ -70,6 +70,12 @@ The temporary soundtracks that `produce.mjs` writes to `public/audio` are left t
   - A stop left behind for an earlier runner never stops a new run.
   - A cancel for a job a dead runner left in flight waits for the next run's recovery.
 
+- **Manifests are checked when loaded (repair pass):**
+  - `batch.json` and every job manifest must hold exactly what this code writes: the input `inputs/<job>.json`, output suffixes derived from the backend, attempt IDs `<job>-a<n>-<4 hex>`, folders derived from the attempt ID, logs `logs/<attempt>.log`, and outputs in `films/<job>`;
+  - a tampered or corrupt manifest is refused with "Corrupt batch manifest" or "Corrupt job manifest", and nothing is moved.
+- **Orphan identity:** each production's PID is saved as soon as it is spawned, followed by its measured start time. Recovery ends a live PID only when its start time matches (±2 s). Older manifests without a start time use a 10-minute window.
+- **Fail closed:** if free disk space cannot be measured, the batch stops with that reason. On Windows, a process tree that cannot be listed is never reported as gone.
+
 ## The render lock (shared with the Studio and the CLI)
 `out/.render.lock` is held by any process that prepares speech or renders. That covers `produce.mjs`, `cli.mjs prepare|render`, each Studio job and the batch runner. A second one is refused with a message naming the holder (label, PID and start time).
 - Children inherit their parent's lock through `AETHER_RENDER_LOCK_TOKEN`; the token must match the live lock.

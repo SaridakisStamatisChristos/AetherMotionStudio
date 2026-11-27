@@ -289,6 +289,31 @@ Requirements for DUAL-08:
 - **Limits (recorded):** one render at a time (no parallel mode); a cancelled or stopped pair re-renders both backends; the Studio honours the lock but does not list batches and is not restart-recovered (CLI-first); PID-reuse detection needs PowerShell (Windows) or `ps -o etimes` (Linux); the runner's own kill count (7) differs from the independent snapshot (17) because Chromium tabs come and go. The proof is the snapshot: 0 alive.
 - **Changed after the films (printout only):** `verify` says "no film (failed|cancelled)" instead of "not finished".
 
+## DUAL-08 repair pass (owner 2026-11-27: "do a repair pass on dual -08 code before merging")
+Adversarial review of the DUAL-08 code at d5b099f. Each defect has a test in tests/batch-repair.test.js. Ten of those tests failed on d5b099f. R10 and R11 were found by reading the code and need a test hook to show; their tests were added with the fixes. R13 changes no behaviour.
+| # | Defect | Reproduced | Repair |
+|---|---|---|---|
+| R1 | batch.json fields (input path, output suffixes, backend, format) trusted on load | yes: tampered values loaded | every field checked against what the code writes; "Corrupt batch manifest" |
+| R2 | job manifests trusted: recovery renamed whatever folder an attempt named | yes: an out/ folder outside the batch was accepted for moving | attempt IDs, folders, logs and outputs checked; "Corrupt job manifest"; nothing moved |
+| R3 | after a cancel that could not stop the tree, late child output crashed the runner | yes: EBADF uncaught | the log ignores writes after close |
+| R4 | orphan identity used a 2 s window around the attempt time; a slow spawn hid a live orphan | yes: the orphan survived recovery | start time measured at spawn; the PID is saved first, then the start time (the first version saved both after the ~1 s measurement, which widened the window with no PID; found by the test and corrected) |
+| R5 | requests were read only while a job ran: a stop between jobs was lost, or killed the next job | yes: the next job ran | requests read before every attempt |
+| R6 | reserved names and node_modules/.git compared case-sensitively | yes: NODE_MODULES, CON.json accepted | compared in lower case |
+| R7 | disk space that could not be measured crashed the runner and left the batch "running" | yes | the batch stops with the reason (fail closed) |
+| R8 | at the history limit the entry was added before the error | yes | checked first |
+| R9 | a half-created batch folder was reported as "already exists" | yes | named as incomplete |
+| R10 | an attempt ID whose folders already existed became a production failure | by reading (produce.mjs refuses existing outputs) | a new tag is drawn (at most 20 draws) |
+| R11 | Windows tree kill reported "gone" when the process table could not be read | by reading | fail closed: "unknown descendants" |
+| R12 | a takeover guard still being written was treated as stale and deleted | yes | respected while fresh (10 s), as for the lock |
+| R13 | films hashed by reading the whole file | by reading | 1 MB chunks |
+- **Tests:** 546 JS (545 pass, 0 fail, 1 Windows skip; run with public/media hidden), Python 63 OK, digests unchanged. The batch tests passed three times in a row; no test process was left running.
+- **Pre-repair evidence still valid:** dual08-small-r1 loads under the new manifest checks; `verify` OK.
+- **Real smoke run `dual08-repair-r1`** (examples/batches/dual08-repair.batch.json; source 724727e, clean):
+  - the CPU narrator film is PASS and **byte-identical to dual07-narrator** (189f01d09043ce31…), QUALITY pass 0/0, with PID and start time recorded;
+  - the missing-picture job failed once (retries 0) with the library message;
+  - verify OK, lock released.
+- **Not changed:** product rendering code; produce.mjs, cli.mjs and Studio behaviour (lock only, as before).
+
 ## Remaining work plan (DUAL-05 … DUAL-09)
 Written at the DUAL-04 close (main e520e4a). Each milestone follows the FOD loop in HANDOFF.md: one branch from main, tests including adversarial ones, fresh `dual<NN>-…` matched films, a checkpoint, a PR, and a merge only on the owner's word. Reuse first: extend the existing seams named here; no duplicate engines.
 
@@ -411,3 +436,4 @@ Written at the DUAL-04 close (main e520e4a). Each milestone follows the FOD loop
 - 2026-11-27: Owner review of the audit repair: the 256 MB budget bounds registered pictures, not outstanding fetch/decode work; transient memory under very rapid switching between many large-image projects is not hard-bounded, and the tests used few small pictures. Recorded as a DUAL-09 hardening item (bounded concurrent decoding, cancellation of obsolete fetches, measured peak process memory); the repair campaign is not reopened.
 - 2026-11-27: Owner asked for a better-formatted "Make a film" panel (done on PR #61, 14a4a9a: four sections, no overflow, sticky actions), then: "merge and also give a new fod continue handoff … i want to start fresh". PR #61 MERGED → 0e83826 (CI green on 14a4a9a). Renders older than DUAL-07 cleared (32 entries, 14 temporary soundtracks; out/ 634 → 266 MB). **DUAL-07 COMPLETE.** Fresh handoff written for DUAL-08 (chore/fod-handoff-dual08).
 - 2026-11-27: Owner: "fod continue" (handoff PR #62 already merged, main 79e4396). DUAL-08 implemented and tested on `feature/dual-08-batch` (e2f4831): batch-v1 CLI, machine render lock (produce, cli, Studio, batch), tree cancel, restart recovery; 534 JS tests (0 fail). Real batch dual08-small-r1 on vulkan: success (byte-identical to DUAL-07), real failure with bounded retry, real mid-render cancel (17-process tree, 0 left), real runner kill then resume (interrupted, re-run, PASS). PR open, not merged. Next: owner merge word, then DUAL-09.
+- 2026-11-27: PR #63 CI first failed on Linux (532/534: POSIX kill counts) → fixed (d5b099f), CI 45996579348 green 534/534. Owner: "do a repair pass on dual -08 code before merging". Repair pass R1–R13 on `feature/dual-08-batch` (724727e): reproduced, repaired, 546 tests (0 fail); real smoke batch dual08-repair-r1 byte-identical CPU narrator. PR #63 updated, not merged.
