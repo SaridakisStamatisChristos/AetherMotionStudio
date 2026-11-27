@@ -86,7 +86,8 @@ export function directorRequest(form){
 // script makes a shorter film. Narrator films keep the exact length, so they keep the old advice.
 // Owner's first Studio film: Claude's "Topic: …" line was spoken and shifted every turn (the Student explained, the
 // Explorer asked), so pasted extras are flagged here and removed automatically on Generate (studio/app.js).
-export function scriptHelp(script,seconds,cast='interview'){
+// DUAL-07: content-mode films are fitted to their speech too (requestSpeech), so they get the fitted-length advice.
+export function scriptHelp(script,seconds,cast='interview',content='none'){
  const raw=typeof script==='string'?script.trim():'',cleaned=raw?cleanScript(raw):{script:'',topic:null,lines:0},text=cleaned.script;
  let range=null;try{range=wordRange(Number(seconds));}catch{}
  const words=text?text.split(/\s+/).length:0;
@@ -104,7 +105,7 @@ export function scriptHelp(script,seconds,cast='interview'){
  // long (over the range max), short. Each zone offers choices; the page applies a "seconds" choice to the form.
  let verdict='empty';
  if(words&&range)verdict=words<range.min?'short':words>range.max?'long':words>Math.floor(Number(seconds)*CALM_WORDS_PER_SECOND)?'tight':'ok';
- const fits=cast!=='narrator',sec=Number(seconds);
+ const fits=cast!=='narrator'||content!=='none',sec=Number(seconds);
  const calmSeconds=Math.min(300,Math.max(6,Math.ceil(words/CALM_WORDS_PER_SECOND)));
  const suggestedSeconds=['long','tight'].includes(verdict)?calmSeconds:null;
  const estimate=Math.max(6,Math.round(words/2.2)),trim=Math.max(0,words-Math.floor(sec*CALM_WORDS_PER_SECOND));

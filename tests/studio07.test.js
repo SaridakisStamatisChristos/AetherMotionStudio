@@ -85,3 +85,11 @@ test('6. the Claude-chat prompt names the chosen shape and asks for on-screen-fr
  assert.doesNotMatch(scriptPrompt({topic:'x',seconds:30,cast:'narrator'}),/shown on screen/);
  assert.throws(()=>scriptPrompt({format:'4:3'}),/Unknown format/);assert.throws(()=>scriptPrompt({content:'x'}),/Unknown content mode/);
 });
+
+test('7. length advice: content-mode films are fitted to their speech, so a short script gives a shorter film, not silences',async()=>{
+ const {scriptHelp}=await import('../src/studio/director-form.js');
+ const short=['A lighthouse stands where the sea is dangerous.','Its lamp turns once every ten seconds.','Sailors count the flashes.','The beam reaches twenty miles.'].join(String.fromCharCode(10));
+ assert.match(scriptHelp(short,20,'narrator').summary,/long silences/,'classic narrator keeps the exact length');
+ const fitted=scriptHelp(short,20,'narrator','typography-v1');assert.doesNotMatch(fitted.summary,/expect long silences/);assert.match(fitted.summary,/without long silences/);
+ assert.equal(scriptHelp(short,20,'narrator','none').summary,scriptHelp(short,20,'narrator').summary,'default = earlier advice');
+});
