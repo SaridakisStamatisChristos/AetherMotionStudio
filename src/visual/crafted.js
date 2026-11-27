@@ -17,6 +17,13 @@ export const CRAFTED=Object.freeze({version:'crafted-v1',bevel:Object.freeze({ma
  // lost the far eye's front face to the head block and face panel on turned heads (gen15b-sky-r3 frame 1620); 0.16 is
  // the smallest value that keeps every eye front visible for head turns up to ±0.9 rad and side cameras; 0.18 adds margin.
  litBias:.18,
+ // DUAL-09 (owner: "the turning person in some frames with one eye visible and one invisible", CPU only): a person's
+ // dark eyes, brows, nose and mouth are not glowing, so the litBias repair did not cover them; on a turned head (or a
+ // side camera) the far eye sorted behind the head block's front face. Face details sort this much nearer (CPU only).
+ // 0.04 still lost a detail (student, yaw -0.9, nod and tilt); 0.08 is the smallest tested value that keeps every eye,
+ // brow, nose and mouth visible for yaw ±0.9, nod/tilt and side or low cameras (tests/dual09-human-eyes.test.js);
+ // 0.10 adds a small margin (smaller than litBias, so a hand in front of the face is less likely to be overdrawn).
+ detailBias:.1,
  // Owner-requested tune (2026-11-25, "tune three js"): Three already has ambient light and tone mapping, so the CPU
  // palette lift and fully matte materials washed it out. Three uses a lighter palette touch, a little less ambient
  // light and exposure, and slightly less matte materials. CPU is unchanged.

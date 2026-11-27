@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "id": "dual09-long-r1",
+  "outputRoot": "out/batches",
+  "retries": 1,
+  "minFreeGB": 10,
+  "jobs": [
+    {"id": "d09-long", "request": "examples/dual09-long.request.json", "backend": "both", "format": "vertical-v1", "concurrency": 8}
+  ]
+}

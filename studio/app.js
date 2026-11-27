@@ -71,11 +71,12 @@ function renderSpeakers(){
 // shows what the render draws. Anything that cannot load stays a labelled placeholder here only (the render checks again).
 // DUAL-07 (audit repair): fonts load once per film; pictures go through the preview media manager, which verifies the
 // actual bytes like the native renderer, keeps only the current film's pictures (closing the rest), merges concurrent
-// loads and ignores loads and diagnostics from films that were replaced.
+// loads and ignores loads and diagnostics from films that were replaced. DUAL-09: at most two pictures load at once,
+// and switching films aborts the fetches the new film does not need.
 const previewFonts=new WeakMap();
 function previewFontsFor(scene){let job=previewFonts.get(scene);if(job)return job;job=(async()=>{const notes=[];
  await Promise.all(sceneFontFaces(scene).map(f=>new FontFace(f.css,'url(/'+f.path+')',{weight:String(f.weight)}).load().then(x=>{document.fonts.add(x);}).catch(()=>{notes.push('font '+f.font);})));return notes;})();previewFonts.set(scene,job);return job;}
-const previewMedia=createPreviewMedia({fetchBytes:async file=>{const r=await fetch('/media/'+file);if(!r.ok)throw Error('missing public/media/'+file+' (HTTP '+r.status+')');return new Uint8Array(await r.arrayBuffer());},decode:(bytes,type)=>createImageBitmap(new Blob([bytes],{type})),sha256Hex:webSha256});
+const previewMedia=createPreviewMedia({fetchBytes:async(file,signal)=>{const r=await fetch('/media/'+file,{signal});if(!r.ok)throw Error('missing public/media/'+file+' (HTTP '+r.status+')');return new Uint8Array(await r.arrayBuffer());},decode:(bytes,type)=>createImageBitmap(new Blob([bytes],{type})),sha256Hex:webSha256});
 async function previewAssets(scene){
  const [fonts,media]=await Promise.all([previewFontsFor(scene),previewMedia.sync(scene)]);
  if(!media.current)return media;// a newer film owns the label

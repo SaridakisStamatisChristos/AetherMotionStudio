@@ -37,6 +37,16 @@ const sleepSync=ms=>Atomics.wait(new Int32Array(new SharedArrayBuffer(4)),0,0,ms
 function retrying(fn){for(let i=0;;i++){try{return fn();}catch(e){if(i>=40||!['EPERM','EBUSY','EACCES'].includes(e.code))throw e;sleepSync(250);}}}
 export function writeJsonAtomic(p,value){const tmp=p+'.'+randomBytes(4).toString('hex')+'.tmp';writeFileSync(tmp,JSON.stringify(value,null,2)+'\n',{flag:'wx'});try{retrying(()=>renameSync(tmp,p));}catch(e){try{unlinkSync(tmp);}catch{}throw e;}}
 const readJson=p=>safeJson(readFileSync(p,'utf8'));
+// DUAL-09 (found by the qualification matrix): reports a production writes (production.json, probe, quality report)
+// grow with the film; a 235 s film's quality report is 504 KB, over the 256 KB request limit of safeJson, so a passing
+// production failed verification and was re-rendered. They get their own bound (32 MB) and still refuse prototype keys.
+export const REPORT_BYTES=32*1024*1024;
+const UNSAFE_KEYS=new Set(['__proto__','constructor','prototype']);
+function readReport(p){
+ const name=p.split(/[\\/]/).pop();
+ if(statSync(p).size>REPORT_BYTES)throw Error(name+' is larger than '+REPORT_BYTES/1048576+' MB');
+ return JSON.parse(readFileSync(p,'utf8'),(k,v)=>{if(UNSAFE_KEYS.has(k))throw Error(name+': unsafe JSON key "'+k+'"');return v;});
+}
 // A repository-relative input path: plain segments, no traversal, no links, inside the repository, a small JSON file.
 export function safeInputPath(root,rel,what='input'){
  if(typeof rel!=='string'||rel.length>240||!/^[A-Za-z0-9_][A-Za-z0-9_./-]*\.json$/.test(rel))throw Error(what+': path must be repository-relative, using letters, digits, _ . - / and ending in .json');
@@ -168,7 +178,7 @@ const folderNames=(attemptId,suffixes)=>({production:attemptId+'-production',pre
 const allFolders=f=>[f.production,f.prepared,...f.outputs];
 // Verify a finished production in base/: manifest, film SHA-256, probe, quality report and (pairs) the comparison.
 export function verifyOutputs(base,attemptId,folders){
- const prod=join(base,folders.production),pm=readJson(join(prod,'production.json'));
+ const prod=join(base,folders.production),pm=readReport(join(prod,'production.json'));
  if(pm.id!==attemptId)throw Error('production manifest names '+pm.id+', expected '+attemptId);
  if(pm.status!=='succeeded')throw Error('production status is '+pm.status+(pm.error?': '+String(pm.error).slice(0,300):''));
  if(JSON.stringify(pm.outputIds)!==JSON.stringify(folders.outputs))throw Error('production outputs '+JSON.stringify(pm.outputIds)+' differ from the expected '+JSON.stringify(folders.outputs));
@@ -178,7 +188,7 @@ export function verifyOutputs(base,attemptId,folders){
   const r=pm.results?.[i];if(!r||r.id!==f||r.status!=='succeeded'||typeof r.filmSha256!=='string')throw Error('no succeeded result for '+f);
   const film=join(base,f,'film.mp4');if(!existsSync(film))throw Error('film missing: '+f);
   const got=hashFile(film);if(got!==r.filmSha256)throw Error('film SHA-256 of '+f+' is '+got.slice(0,16)+'…, the production recorded '+r.filmSha256.slice(0,16)+'…');
-  readJson(join(base,f,'probe.json'));const q=readJson(join(base,f,'quality-report.json'));if(q.errors!==0)throw Error('quality report of '+f+' has errors');
+  readReport(join(base,f,'probe.json'));const q=readReport(join(base,f,'quality-report.json'));if(q.errors!==0)throw Error('quality report of '+f+' has errors');
   return {folder:f,backend:r.backend,sha256:got,bytes:statSync(film).size,frames:r.frames,renderSeconds:r.renderSeconds,gl:r.gl??null,qualityStatus:r.qualityStatus,warnings:r.warnings};
  });
  return {films,sourceCommit:pm.sourceCommit??null,sourceDirty:pm.sourceDirty??null,targetFrames:pm.targetFrames};
@@ -322,7 +332,7 @@ export async function runBatch(dir,{root,env=process.env,execute=spawnProduce,ki
       if(!k.gone){out.close();attempt.error='process tree did not stop: PIDs '+k.remaining.join(', ');saveJob(dir,job);throw Error(spec.id+': '+attempt.error+'; stop them in Task Manager, then run the batch again');}
       attempt.killed=k.pids.length;await done;break;
      }
-     if(job.state==='preparing'){try{if(readJson(join(root,'out',folders.production,'production.json')).status==='rendering')transition(dir,job,'rendering');}catch{}}
+     if(job.state==='preparing'){try{if(readReport(join(root,'out',folders.production,'production.json')).status==='rendering')transition(dir,job,'rendering');}catch{}}
     }
     out.close();attempt.exit=ended;attempt.endedAt=new Date().toISOString();if(out.truncated)attempt.logTruncated=true;
     if(action){
@@ -342,7 +352,7 @@ export async function runBatch(dir,{root,env=process.env,execute=spawnProduce,ki
       saveBatch(dir,batch,jobs);break;
      }
     }else{
-     let pm=null;try{pm=readJson(join(root,'out',folders.production,'production.json'));}catch{}
+     let pm=null;try{pm=readReport(join(root,'out',folders.production,'production.json'));}catch{}
      failure=(pm?.error?String(pm.error):'production exited '+(ended.code??ended.signal))+(out.tail?' | log tail: '+out.tail.trim().split(/\r?\n/).slice(-3).join(' / '):'');
     }
     attempt.outcome='failed';attempt.error=failure.slice(0,1200);setAside(root,dir,attempt);job.failures++;

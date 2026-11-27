@@ -6,6 +6,7 @@ Opt-in `fidelity` object on cinematic-graph shots. Every control is a finite [0,
 |---|---|
 | bloom | Downsampled luminance-threshold soft-knee highlight mask, blurred additive/screen glow |
 | atmosphere | Procedural screen-space light shafts and drifting dust (not physical volumetric scattering) |
+| lightShafts (optional, DUAL-09) | Strength of atmosphere's light shafts, 0–1; absent = 1 (unchanged). Owner 2026-11-27: "those lights should be removed": every Director film writes 0 (no beams; dust and lighting unchanged); authored projects keep their beams unless they set it |
 | contactShadow | CPU projected contact shadow approximation; Three.js stronger directional/hemisphere contrast with existing shadow maps (not SSAO) |
 | surfaceDetail | CPU clipped face gradients and edge highlights; Three.js procedural roughness map and PBR parameter variations |
 | depthOfField | Low-resolution peripheral defocus with protected central subject region (not depth-buffer/physical bokeh) |

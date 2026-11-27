@@ -26,9 +26,11 @@ function primitive(box,pose,palette,params={},family=null){
  const [primary,secondary,accent]=palette;
  const col=[params.primary??primary,params.secondary??secondary,params.accent??accent,'#e9ddd0','#162333','#8a6650','#7ebdd0'];
  // bias: CPU painter-sort depth bias only (Three ignores it); 0 for every legacy box.
- const b=(x,y,z,w,h,d,c=0,angle=0,axis='z',lit=false,bias=0)=>{
+ // detail (DUAL-09): a small part mounted on a face (a person's eyes, brows, nose, mouth). Only the crafted CPU painter
+ // uses it (CRAFTED.detailBias); the legacy painter, Three and every checker ignore it, so geometry is unchanged.
+ const b=(x,y,z,w,h,d,c=0,angle=0,axis='z',lit=false,bias=0,detail=false)=>{
   const local=p=>tf(add((axis==='x'?rx:axis==='y'?ry:rz)(p,angle),[x,y,z]));
-  box([0,0,0],[w,h,d],col[c],local,lit,bias,partRole(family,c,[w,h,d],lit));
+  box([0,0,0],[w,h,d],col[c],local,lit,bias,partRole(family,c,[w,h,d],lit),detail);
  };
  const rod=(a,c,width,color=1,depth=width,lit=false)=>{
   const dx=c[0]-a[0],dy=c[1]-a[1],dz=c[2]-a[2],len=Math.hypot(dx,dy,dz);
@@ -39,7 +41,7 @@ function primitive(box,pose,palette,params={},family=null){
  const ring=(x,y,z,r,w,d,n=12,c=0,axis='z',phase=0)=>{for(let i=0;i<n;i++){const a=phase+(i+.5)*TAU/n,k=2*r*Math.tan(Math.PI/n)*1.03;if(axis==='y')b(x+r*Math.cos(a),y,z+r*Math.sin(a),k,d,w,c,-a-Math.PI/2,'y');else b(x+r*Math.cos(a),y+r*Math.sin(a),z,w,k,d,c,a,'z');}};
  // TALK-03 opt-in: the same builders with a local-space pre-transform (used to rotate the head about the neck).
  const headed=pre=>({
-  b:(x,y,z,w,h,d,c=0,angle=0,axis='z',lit=false,bias=0)=>box([0,0,0],[w,h,d],col[c],p=>tf(pre(add((axis==='x'?rx:axis==='y'?ry:rz)(p,angle),[x,y,z]))),lit,bias,partRole(family,c,[w,h,d],lit)),
+  b:(x,y,z,w,h,d,c=0,angle=0,axis='z',lit=false,bias=0,detail=false)=>box([0,0,0],[w,h,d],col[c],p=>tf(pre(add((axis==='x'?rx:axis==='y'?ry:rz)(p,angle),[x,y,z]))),lit,bias,partRole(family,c,[w,h,d],lit),detail),
   rod:(a,c,width,color=1,depth=width,lit=false)=>{const dx=c[0]-a[0],dy=c[1]-a[1],dz=c[2]-a[2],len=Math.hypot(dx,dy,dz);if(len<1e-7)return;const u=[dx/len,dy/len,dz/len],ref=Math.abs(u[1])>.95?[1,0,0]:[0,1,0],right=norm(cross(ref,u)),forward=cross(right,u),mid=a.map((v,i)=>(v+c[i])/2);box([0,0,0],[width,len,depth],col[color],p=>tf(pre(mid.map((v,i)=>v+right[i]*p[0]+u[i]*p[1]+forward[i]*p[2]))),lit,0,partRole(family,color,[width,len,depth],lit));}
  });
  return {b,rod,ring,headed};
@@ -116,18 +118,20 @@ const F={
   else{
    for(const s of [-1,1]){
     // TALK-03: human blink (pose.blink 0.1..1 scales the eye height; absent = unchanged).
-    if(p.blink===undefined){b(s*w*.12,h*.905,z0+.012,w*.085,h*.032,.03,4);b(s*w*.12+w*.02,h*.912,z0+.03,w*.025,h*.011,.012,6,0,'z',true);}
-    else{b(s*w*.12,h*.905,z0+.012,w*.085,h*.032*p.blink,.03,4);if(p.blink>.5)b(s*w*.12+w*.02,h*.912,z0+.03,w*.025,h*.011,.012,6,0,'z',true);}
-    b(s*w*.12,h*.935,z0+.012,w*.11,h*.012,.028,1,p.params.detail===3?s*(BROW[k]??0):0);
+    // DUAL-09 (owner: "the turning person in some frames with one eye visible and one invisible"): eyes, brows, nose
+    // and mouth are face details (last argument), kept in front of the head on the crafted CPU painter.
+    if(p.blink===undefined){b(s*w*.12,h*.905,z0+.012,w*.085,h*.032,.03,4,0,'z',false,0,true);b(s*w*.12+w*.02,h*.912,z0+.03,w*.025,h*.011,.012,6,0,'z',true);}
+    else{b(s*w*.12,h*.905,z0+.012,w*.085,h*.032*p.blink,.03,4,0,'z',false,0,true);if(p.blink>.5)b(s*w*.12+w*.02,h*.912,z0+.03,w*.025,h*.011,.012,6,0,'z',true);}
+    b(s*w*.12,h*.935,z0+.012,w*.11,h*.012,.028,1,p.params.detail===3?s*(BROW[k]??0):0,'z',false,0,true);
     b(s*(w*.285+.015),h*.89,0,.05,h*.06,d*.14,3);
    }
-   b(0,h*.885,z0+.03,w*.06,h*.035,.07,3);
+   b(0,h*.885,z0+.03,w*.06,h*.035,.07,3,0,'z',false,0,true);
    // TALK-01: the lip line stays; while speaking a dark inner mouth opens below it with pose.mouth (closed or absent =
    // unchanged geometry).
    // GEN-10 opt-in pose.mouthWidth: rounded lips draw a narrower lip line and inner mouth, wide ones a broader one.
    const mw=p.mouthWidth;
-   b(0,h*.852,z0+.012,mw===undefined?w*.15:w*.15*mw,h*.012,.028,5);
-   if(p.mouth>0)b(0,h*(.846-.0225*p.mouth),z0+.016,mw===undefined?w*.12:w*.12*mw,h*.045*p.mouth,.024,4);
+   b(0,h*.852,z0+.012,mw===undefined?w*.15:w*.15*mw,h*.012,.028,5,0,'z',false,0,true);
+   if(p.mouth>0)b(0,h*(.846-.0225*p.mouth),z0+.016,mw===undefined?w*.12:w*.12*mw,h*.045*p.mouth,.024,4,0,'z',false,0,true);
   }
   b(0,h*.805,d*.505,w*.34,h*.03,.025,k===4?1:3);
   if([2,5,6].includes(k))for(let i=0;i<3;i++)b(0,h*(.75-.06*i),d*.51,w*.05,w*.05,.02,4);

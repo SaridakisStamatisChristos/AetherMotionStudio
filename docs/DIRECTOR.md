@@ -45,7 +45,7 @@ Predecessor scoped CI 45355048931 passed and user accepted current motion qualit
   - the voice and language must match (`b*` voices are en-gb);
   - `character` is a catalog human or robot with a mouth (humans get `params.detail: 2` automatically).
   - The field cannot be combined with `identityLibrary`, `story`/`cast` or `staging`. A supplied `speech` may set captions, mix, pronunciations and fixed shots, but its `speakers`/`shotSpeakers` must be empty because the dialogue derives them.
-  - Absent `dialogue`: nothing changes. Director outputs are digest-identical (2cbf9916e65da935), and the v1.1/v1.2 prompts are byte-identical (test-pinned digest 5570443b9a8ebe03).
+  - Absent `dialogue`: nothing changes. Director outputs are digest-identical (2cbf9916e65da935 until DUAL-09; 8a0ad025b6c9f6d6 since every plan carries `fidelity.lightShafts: 0`), and the v1.1/v1.2 prompts are byte-identical (test-pinned digest 5570443b9a8ebe03).
 - IR: each shot carries `speakers: [speakerId]`, one per narration line. In dialogue mode a shot takes exactly one set-piece object, and its camera is one of `medium, dolly-in, push-in, pull-back, establishing`. `speakers` without `request.dialogue` is rejected.
 - Offline director: it writes no new lines. It splits its normal offline narration into sentences (only at whitespace after `. ! ?`, so the words are unchanged; at most 8 per shot) and hands them out in turns:
   - conversation: round-robin across the whole film;

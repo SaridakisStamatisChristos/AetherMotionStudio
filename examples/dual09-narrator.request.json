@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "id": "dual09-narrator",
+  "topic": "Why the sky turns red at sunset",
+  "seconds": 30,
+  "audience": "curious beginners",
+  "tone": "calm",
+  "style": "cinematic explainer",
+  "language": "en-us",
+  "voice": "am_michael",
+  "backend": "cpu",
+  "profile": "polished",
+  "seed": 9,
+  "script": "Sunlight looks white, but it holds every colour. Air scatters blue light far more than red light. At noon the light reaches us by a short path, so the sky looks blue. At sunset it crosses much more air. Most of the blue is scattered away. The reds and oranges are what is left for us to see."
+}

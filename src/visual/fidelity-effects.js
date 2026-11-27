@@ -28,7 +28,9 @@ export function atmosphere(ctx,state,project,f){
  if(f.atmosphere<=0)return;
  const env=state.environment,p=state.progress;ctx.save();ctx.globalCompositeOperation='screen';ctx.globalAlpha=f.atmosphere;
  const source=project([-2.5,3.1,-.6]);
- for(let i=0;i<5;i++){const x=source[0]+i*38,y=source[1]-55,g=ctx.createLinearGradient(x,y,x+220,y+780);g.addColorStop(0,env.key+'20');g.addColorStop(.45,env.key+'09');g.addColorStop(1,'transparent');ctx.fillStyle=g;ctx.beginPath();ctx.moveTo(x-15,y);ctx.lineTo(x+17,y);ctx.lineTo(x+260+i*25,y+820);ctx.lineTo(x+100+i*20,y+820);ctx.closePath();ctx.fill();}
+ // light shafts: drawn only while lightShafts > 0 (absent = 1, the historical beams); dust and lighting are unaffected
+ const shafts=f.lightShafts??1;if(shafts>0){if(shafts<1)ctx.globalAlpha=f.atmosphere*shafts;
+ for(let i=0;i<5;i++){const x=source[0]+i*38,y=source[1]-55,g=ctx.createLinearGradient(x,y,x+220,y+780);g.addColorStop(0,env.key+'20');g.addColorStop(.45,env.key+'09');g.addColorStop(1,'transparent');ctx.fillStyle=g;ctx.beginPath();ctx.moveTo(x-15,y);ctx.lineTo(x+17,y);ctx.lineTo(x+260+i*25,y+820);ctx.lineTo(x+100+i*20,y+820);ctx.closePath();ctx.fill();}}
  for(let i=0;i<36;i++){const x=(r(i+132)*740+p*(10+i%7))%740,y=390+(r(i+300)*600+p*15)%600;ctx.fillStyle=env.accent+'40';ctx.globalAlpha=f.atmosphere*(.2+.5*r(i+71));ctx.beginPath();ctx.arc(x,y,.7+r(i+47)*1.5,0,Math.PI*2);ctx.fill();}
  ctx.restore();
 }

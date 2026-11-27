@@ -28,12 +28,17 @@ export function findList(text){
   // Walk back from "and" while the parts are short items. The list must be shown whole: when the walk reaches the
   // sentence start with a short part, its first item must be unambiguous (one word, or the words after an introducing
   // verb or preposition); otherwise, or with more than four items, no list is drawn.
-  const parts=m[1].split(/,\s*/),items=[];let complete=false;
+  // DUAL-09 (found in the qualification film d09-charts: "In spring the volunteers planted tomatoes, beans, lettuce and
+  // squash" drew Beans, Lettuce, Squash): a long part ends the walk, but it may itself end with the first item. The list
+  // starts after it only when the first collected item opens a new phrase ("…, in trunks, roots and soil"); otherwise
+  // the first item is ambiguous and no list is drawn, never a list with an item missing.
+  const parts=m[1].split(/,\s*/),items=[];let complete=false,firstRaw='';
+  const opensPhrase=()=>/^\s*(?:in|on|at|of|from|like|such as|including|into|through|with|by|for)\s+/i.test(firstRaw);
   for(let i=parts.length-1;i>=0;i--){const x=clean(parts[i]);
-   if(i>0){if(!short(x)){complete=true;break;}items.unshift(x);continue;}
+   if(i>0){if(!short(x)){complete=opensPhrase();break;}items.unshift(x);firstRaw=parts[i];continue;}
    const intro=parts[0].match(/\b(?:like|such as|including|include|includes|need|needs|has|have|are|is|of|in|on|at|from)\s+((?:\S+\s?){1,2})$/i);
    if(intro&&short(clean(intro[1]))&&!clean(intro[1]).split(/\s+/).some(w=>FUNCTION_WORDS.has(w.toLowerCase()))){items.unshift(clean(intro[1]));complete=true;}
-   else if(!short(x))complete=true;// the list starts after the first comma
+   else if(!short(x))complete=opensPhrase();// the list starts after the first comma only when that comma opens a phrase
    else if(x.split(/\s+/).length===1){items.unshift(x);complete=true;}
   }
   const last=clean(m[2].split(/\s+(?:sometimes|which|that|because|so|but)\b/i)[0]);

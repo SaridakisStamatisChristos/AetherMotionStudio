@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "id": "dual09-mixed",
+  "topic": "How a bicycle stays upright",
+  "seconds": 60,
+  "audience": "curious beginners",
+  "tone": "friendly",
+  "style": "interview",
+  "language": "en-us",
+  "voice": "af_bella",
+  "backend": "cpu",
+  "profile": "polished",
+  "seed": 9,
+  "format": "landscape-v1",
+  "content": "mixed-v1",
+  "dialogue": {
+    "style": "interview",
+    "speakers": [
+      {"id": "host", "name": "Student", "voice": "af_bella", "language": "en-us", "character": "student"},
+      {"id": "guest", "name": "Engineer", "voice": "am_michael", "language": "en-us", "character": "engineer"}
+    ]
+  },
+  "script": "Why does a moving bicycle stay upright? Mostly because the rider keeps steering it back under its own weight. So it is not just the spinning wheels? The wheels help a little, but steering does most of the work. How does the steering know what to do? The front wheel touches the road behind the line of the steering axis. That means a lean makes the front wheel turn into the fall by itself. And that catches the bike? Yes, the turn swings the wheels back under the rider. Does speed matter? Above about 15 kilometres per hour, a bicycle can even steady itself for a while. So riding slowly is harder? Exactly, at walking pace the rider has to make every correction."
+}

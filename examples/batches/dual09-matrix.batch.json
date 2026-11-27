@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "id": "dual09-matrix-r2",
+  "outputRoot": "out/batches",
+  "retries": 1,
+  "minFreeGB": 10,
+  "jobs": [
+    {"id": "d09-dialogue", "request": "examples/dual09-dialogue.request.json", "backend": "both", "format": "vertical-v1", "concurrency": 8},
+    {"id": "d09-narrator", "request": "examples/dual09-narrator.request.json", "backend": "both", "format": "vertical-v1", "concurrency": 8},
+    {"id": "d09-mixed", "request": "examples/dual09-mixed.request.json", "backend": "both", "format": "landscape-v1", "concurrency": 8},
+    {"id": "d09-typography", "request": "examples/dual09-typography.request.json", "backend": "both", "format": "square-v1", "concurrency": 8},
+    {"id": "d09-maths", "request": "examples/dual09-maths.request.json", "backend": "both", "format": "square-v1", "concurrency": 8},
+    {"id": "d09-charts", "request": "examples/dual09-charts.request.json", "backend": "both", "format": "landscape-v1", "concurrency": 8},
+    {"id": "d09-gallery", "request": "examples/dual09-gallery.request.json", "backend": "both", "format": "vertical-v1", "concurrency": 8},
+    {"id": "d09-long", "request": "examples/dual09-long.request.json", "backend": "both", "format": "vertical-v1", "concurrency": 8},
+    {"id": "reg-narrator07", "request": "examples/dual07-narrator.request.json", "backend": "both", "format": "vertical-v1", "concurrency": 8},
+    {"id": "reg-harbour06", "request": "examples/dual06-harbour.request.json", "backend": "both", "format": "vertical-v1", "concurrency": 8}
+  ]
+}

@@ -102,7 +102,8 @@ test('F2b. concurrent requests share one load; a load finishing after its film w
  const slow=pm2.sync(sceneOf(a.source)),fast=await pm2.sync(sceneOf(b.source)),old=await slow;
  assert.equal(old.current,false,'the old result is marked stale (the caller ignores its diagnostics)');assert.equal(fast.current,true);
  assert.deepEqual(g.registry.keys(),[b.source.sha256],'the stale load did not repopulate the registry');
- assert.equal(g.created.find(x=>x.width===8).closed,true,'the stale bitmap was closed');
+ // DUAL-09 hardening: the stale load is now not even decoded (stricter than "decoded, then closed")
+ const stale=g.created.find(x=>x.width===8);assert.ok(!stale||stale.closed,'the stale bitmap was never decoded, or was closed');
 });
 
 test('F2c. stress: 300 rapid switches across six pictures with random delays stay within the per-film memory bound',async()=>{
