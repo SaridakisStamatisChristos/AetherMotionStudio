@@ -17,7 +17,7 @@ Status words: PLANNED · ACTIVE · IMPLEMENTED · TESTED · RENDERED · OWNER-RE
 | DUAL-03 | Mathematics, geometry and algorithm visualization | **TESTED + RENDERED** (PR open, not merged) | `feature/dual-03-maths` | [docs/MATHS.md](../MATHS.md), "DUAL-03 evidence" below |
 | DUAL-04 | Charts, diagrams and data storytelling | **COMPLETE: MERGED** (PR #55 → e520e4a, owner: "Approved. Merge PR #55"; two repair passes; third independent audit verified the repairs) | `feature/dual-04-charts` | [docs/CHARTS.md](../CHARTS.md), "DUAL-04 evidence" below |
 | DUAL-05 | Local media and illustration integration | **MERGED** (PR #57 → main aacfac6, owner "merge pr 57 and close pr 56 as superseded"; CI 45961923535 green on 90eed63, 491/491) | `feature/dual-05-media` | [docs/MEDIA.md](../MEDIA.md), "DUAL-05 evidence" below |
-| DUAL-06 | Formats, themes and audio controls | **NEXT** | — | — |
+| DUAL-06 | Formats, themes and audio controls | **ACTIVE**: slice 1 (formats) TESTED + RENDERED, PR open, not merged; slice 2 (themes, audio, silent mode) next | `feature/dual-06-formats` | [docs/FORMATS.md](../FORMATS.md), "DUAL-06 evidence" below | — | — |
 | DUAL-07 | Universal Director and Studio integration | PLANNED | — | — |
 | DUAL-08 | Optional bounded batch production | PLANNED (**owner decides** whether before the freeze) | — | — |
 | DUAL-09 | Final qualification and release (proposed tag v1.2-dual-backend-final) | PLANNED | — | — |
@@ -173,6 +173,23 @@ Owner: "The independent second audit confirms that the original counterexamples 
 - c960694 (after the film) changes only the planner's diagnostic for picture words; Director project digests are unchanged.
 - **Not done (recorded):** SVG, animated and remote images (owner rules); WebP with orientation metadata (refused); images in the Studio preview (placeholder until DUAL-07).
 
+## DUAL-06 evidence, slice 1: formats (2026-11-27)
+- **Split (agent decision, recorded):** DUAL-06 is done in two slices, one PR each: (1) output formats; (2) themes, audio controls and an explicit silent mode. Slice 2 starts from main after slice 1 is merged.
+- **What (slice 1):** opt-in project/request field `format`: `vertical-v1` (default, absent = unchanged), `landscape-v1` 1920×1080, `square-v1` 1080×1080, all 30 fps (src/core/formats.js, docs/FORMATS.md). The 3D world is drawn in vertical-equivalent coordinates through one transform that keeps the vertical field of view (wider formats see more at the sides; nothing visible in 9:16 is cut; the Three.js camera already behaved this way). Composition regions, caption box and progress bar reflow per format; text re-wraps, never stretched. Per-format item boxes `formats:{<id>:{box}}`. Only tested combinations: cinematic-graph shots with titles "none", no overlays, no Foundry geometry, no Reels delivery; Director requests need a content mode. `produce.mjs --format`. Remotion output size per format; verify.py, compare_release.py, quality_media.py per format (scripts/formats.py mirrors the JS table, tested). aids-v1 maps plates into vertical-equivalent space; the other frame checks keep the vertical frame (stricter for wider formats).
+- **Tests:** 500 JS (499 pass, 0 fail, 1 Windows skip), Python 63 OK, legacy and Director digests unchanged, font metrics current. tests/formats.test.js (9): table and Python mirror; layout safety in every format; the world transform (identity for 9:16; the whole vertical frame inside every format); vertical drawing identical with absent and explicit vertical-v1 (recorded canvas calls); landscape/square transform, caption and progress positions; refused combinations; per-format boxes and bad overrides; a too-tall authored graph refused in landscape/square and fixed by a per-format box; --format.
+- **Director dry run:** every DUAL-01…05 example request plans in all three formats except two honest refusals (dual04-bread graph node labels and the dual05-gallery counter do not fit the shorter panels; explicit messages; per-format boxes fix them, tested).
+- **Films** (examples/dual06-harbour.request.json = the DUAL-05 gallery content plus per-format boxes; vulkan; concurrency 8). All PASS on both backends, shared hashes exact, CHECKS 0 incl. aids-v1, QUALITY 0/0, glitch clean, −16.0 LUFS, 1273 frames:
+  | ID | Format, size | Source | CPU / Three |
+  |---|---|---|---|
+  | dual06-harbour-v-r1 | vertical 1080×1920 | 724e905 | 03388c511e7e90d6… / 0f83bf762747b6da… |
+  | dual06-harbour-l-r1 | landscape 1920×1080 | 724e905 | b3e7af0fbe47fe8f… / 413e1b828968e35d… |
+  | dual06-harbour-s-r2 | square 1080×1080 | f304357 | 00c9a3289ce089ac… / c5b567e16ad9b59a… |
+  - **The vertical CPU film is byte-identical to dual05-gallery-r1** (03388c511e7e90d6…): the vertical path is unchanged.
+  - **Audio and captions are identical across the three formats** (mix.wav 2b1a46fd843a58b2…, timeline.json ce5b897b293c5ec1…, captions.srt 9c9806d7699af7fe…).
+  - dual06-harbour-s-r1 (724e905) passed the same gates; its stills showed the square counter covering the lighthouse lamp → square box moved (f304357), r2.
+- **Agent stills (both backends; no owner review yet):** landscape puts the pictures in a left panel with counters and labels beside them; square stacks them; captions re-wrap in their own boxes; pictures, crops and timing identical on CPU and Three.js (only the 3D backdrop differs).
+- **Not done (recorded):** Studio format chooser and a matching preview (DUAL-07); characters read smaller in landscape/square (vertical field of view kept, no automatic re-framing).
+
 ## Remaining work plan (DUAL-05 … DUAL-09)
 Written at the DUAL-04 close (main e520e4a). Each milestone follows the FOD loop in HANDOFF.md: one branch from main, tests including adversarial ones, fresh `dual<NN>-…` matched films, a checkpoint, a PR, and a merge only on the owner's word. Reuse first: extend the existing seams named here; no duplicate engines.
 
@@ -286,3 +303,4 @@ Written at the DUAL-04 close (main e520e4a). Each milestone follows the FOD loop
 - 2026-11-27: Owner: "fod continue". DUAL-05 implemented, tested and rendered on `feature/dual-05-media` (10d9cb1, c960694; PR #57 open, not merged): local PNG/JPEG/static WebP library with import checks, boundary and render-time verification, compose-v2 `image` item; dual05-gallery-r1 PASS on both backends. Continuity docs of PR #56 (still open, docs only) carried into this branch as the base. Next: owner review and merge word for #57, then DUAL-06.
 - 2026-11-27: Owner: "merge pr 57 and close pr 56 as superseded". CI confirmed green on 90eed63 (run 45961923535, 491/491, 0 skipped); PR #57 MERGED → main aacfac6. PR #56 closed as superseded. **DUAL-05 MERGED.** Next: DUAL-06.
 - 2026-11-27: owner review 2026-11-27: "i inpsected the files produced by dual05 and i like them". Owner: "merge" (PR #58, docs record). DUAL-05 OWNER-REVIEWED.
+- 2026-11-27: Owner: "fod continue". DUAL-06 slice 1 (formats) implemented, tested and rendered on `feature/dual-06-formats` (724e905, f304357): dual06-harbour in vertical, landscape and square PASS on both backends; vertical byte-identical to dual05-gallery-r1. PR open, not merged. Next: owner merge word, then slice 2 (themes, audio, silent mode).

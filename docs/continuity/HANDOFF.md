@@ -1,10 +1,10 @@
-# Forward-only handoff: Campaign A, DUAL-05 merged; DUAL-06 next (2026-11-27)
+# Forward-only handoff: Campaign A, DUAL-06 slice 1 (formats) tested and rendered; PR open (2026-11-27)
 
 Unit: **Campaign A — Universal Dual-Backend Finalization**, owner-authorized.
 - **DUAL-00 … DUAL-04 are COMPLETE and MERGED** (main **e520e4a**; PR #55 merged on "Approved. Merge PR #55", CI run 45889745389, 475/475).
 - **DUAL-05 (local raster media) is MERGED**: PR #57 → **main aacfac6** (owner "merge pr 57 and close pr 56 as superseded"; CI 45961923535 green on 90eed63, 491/491). The owner inspected the dual05 outputs and likes them (2026-11-27).
 - **PR #56** was closed as superseded (its docs were carried into #57).
-- **Next milestone: DUAL-06** (formats, themes, audio controls). Then DUAL-07, 08 and 09, strictly in order. The plan for each is in CAMPAIGN_A.md, "Remaining work plan".
+- **DUAL-06 is ACTIVE in two slices.** Slice 1 (output formats) is TESTED + RENDERED on `feature/dual-06-formats` (724e905, f304357 + checkpoint); its PR is open, **not merged**. Slice 2 (themes, audio controls, explicit silent mode) starts from main after slice 1 is merged (never stacked). Then DUAL-07, 08 and 09, strictly in order. The plan for each is in CAMPAIGN_A.md, "Remaining work plan".
 
 Date: 2026-11-27. The owner types only **"fod continue"**. Binding facts: CURRENT_STATE.md. Campaign status, evidence and the remaining plan: CAMPAIGN_A.md. Requirements: CAMPAIGN_A_DIRECTIVE.md (verbatim). Contracts: docs/COMPOSITION.md (compose-v1/v2, fonts), docs/MATHS.md, docs/CHARTS.md, docs/MEDIA.md. Scope map: docs/CAMPAIGN_A_AUDIT.md. Evidence rules: CAMPAIGN_A_PROTOCOL.md.
 
@@ -17,12 +17,14 @@ Date: 2026-11-27. The owner types only **"fod continue"**. Binding facts: CURREN
 | DUAL-03 | MERGED #53 | MathJax 4.1.3 equations (Node-only), plots, BFS graphs, Euclid arrays, `request.visuals` | docs/MATHS.md |
 | CI | MERGED #54 | test job runs `npm ci` | CURRENT_STATE.md |
 | DUAL-04 | MERGED #55 | charts, timelines, flowcharts, comparison cards; two audit repair passes | docs/CHARTS.md |
+| DUAL-06 | slice 1 PR open (formats) | vertical / landscape / square, reflowed 2D layers, per-format boxes | docs/FORMATS.md |
 | DUAL-05 | MERGED #57 | local PNG/JPEG/static WebP library, import checks, verified `image` item, pan/zoom | docs/MEDIA.md |
 
 ## Next action for "fod continue"
-1. Bootstrap (below). If this docs record (`chore/fod-dual05-merged`) is still an open PR, ask the owner to merge it; its content is the latest canon.
-2. `git switch main && git pull && npm install`, branch `feature/dual-06-formats` from main.
-3. Read the DUAL-06 directive section, the DUAL-06 rows of docs/CAMPAIGN_A_AUDIT.md and the DUAL-06 plan in CAMPAIGN_A.md. Owner decision already recorded: new sizes 1920×1080 and 1080×1080 are **opt-in presets**; the default stays 1080×1920 at 30 fps. Promoting any preset or theme to a default needs the owner.
+1. Bootstrap (below). If the DUAL-06 slice-1 PR (`feature/dual-06-formats`) is still open, its checkpoint docs are the latest canon; read them from that branch.
+1b. If the DUAL-06 slice-1 PR is open: merge it only on the owner's word after its CI passes; then continue with slice 2.
+2. `git switch main && git pull && npm install`, branch `feature/dual-06-themes-audio` from main (slice 2).
+3. Slice 2 scope (DUAL-06 plan in CAMPAIGN_A.md): versioned themes built on THEMES (aether-v1, paper-v1) incl. caption style and contrast; expose existing audio controls (speech mix, voice, pace, caption mode/highlight) through requests; an explicit silent mode reported as silent, never as a speech failure. Read the DUAL-06 directive section and audit rows too. Owner decision already recorded: new sizes 1920×1080 and 1080×1080 are **opt-in presets**; the default stays 1080×1920 at 30 fps. Promoting any preset or theme to a default needs the owner.
 4. The media library on this machine (`public/media/`, git-ignored) holds the five dual05 illustrations; `node scripts/media-import.mjs verify` re-checks them. `node scripts/dual05-gallery-media.mjs` recreates them on another machine (it refuses nothing already imported with the same bytes).
 
 ## The FOD loop for every remaining milestone
