@@ -1,21 +1,31 @@
-# Forward-only handoff: Campaign A, DUAL-00…07 merged; DUAL-08 TESTED + RENDERED, PR open (2026-11-27)
+# Forward-only handoff: Campaign A, DUAL-00…08 merged; DUAL-09 TESTED + RENDERED, PR open (2026-11-27)
 
-**Latest checkpoint (DUAL-08 + repair pass):** `feature/dual-08-batch` (code e2f4831; POSIX fix d5b099f; owner-requested repair pass 724727e, R1–R13 in CAMPAIGN_A.md "DUAL-08 repair pass"), PR #63 open, **not merged**; merge only on the owner's word after the PR CI test job passes on the current head.
-- **Repair pass (owner: "do a repair pass on dual -08 code before merging"):**
-  - 13 defects found in an adversarial review: 10 reproduced by failing tests, 3 by reading the code. All are repaired with tests (tests/batch-repair.test.js).
-  - The most important: manifests are now validated before any path is built from them, and orphan identity uses the measured start time.
-  - 546 tests (0 fail). A real smoke batch (dual08-repair-r1) again gives a byte-identical CPU narrator film.
-- **Built:** batch-v1 (`node scripts/batch.mjs create|run|resume|status|stop|cancel|verify`, docs/BATCH.md); machine render lock `out/.render.lock` shared by produce.mjs, cli.mjs, Studio jobs and batches; whole-tree cancel; restart recovery.
-- **Tests:** 534 JS (0 fail, 1 Windows skip; also with public/media hidden), Python 63 OK, digests unchanged, fonts current.
-- **Real batch `dual08-small-r1`** (vulkan, out/batches/dual08-small-r1):
-  - narrator pair PASS, byte-identical to DUAL-07;
-  - a real failure (picture missing), bounded to 2 attempts;
-  - a real mid-render cancel: 17-process tree, 0 left;
-  - a real runner kill, then resume: square pair interrupted, re-run and PASS on both backends.
-  - Agent stills only; **no owner review**.
-- **Changed files:** scripts/batch.mjs, batch-lib.mjs, render-lock.mjs, process-tree.mjs (new); produce.mjs, cli.mjs, studio-server.mjs (lock); tests/batch.test.js and tests/fixtures/ (new); examples/batches/ (new); docs/BATCH.md, README.md and the continuity docs.
-- **Next action for "fod continue":** if the DUAL-08 PR is still open, report it and wait for the owner's merge word (confirm CI green on its head). After the merge: clear the renders older than DUAL-08 (owner rule: keep out/batches/dual08-small-r1 and dual08-repair-r1, out/speech-cache and public/media), then start **DUAL-09** (plan in CAMPAIGN_A.md, including the preview in-flight hardening item).
-
+**Latest checkpoint (DUAL-09):** `feature/dual-09-qualification` from main 527df34 (DUAL-08 merged as PR #63 on the owner's "merge and continue"; renders older than DUAL-08 cleared). PR open, **not merged, not tagged**.
+- **Built and fixed:**
+  - preview in-flight hardening (6705c84): 2 concurrent picture loads, obsolete fetches aborted and never decoded; real-Chromium bench scripts/preview-memory-bench.mjs: peak +1221/+1372 MB before → +676/+596 MB after;
+  - batch production reports read with a 32 MB bound (0aa339b): a passing 235.7 s film had been refused (504 KB report) and re-rendered;
+  - lists never drawn with their first item missing (fee87d8); 77 example plans compared, only the two new fixtures change; legacy Director digest unchanged.
+- **Qualification:**
+  - 8 new fixtures (examples/dual09-*.request.json) across all content modes, the three formats, 30/60/90 s and a 235.7 s film, on both backends, plus DUAL-07 narrator and DUAL-06 harbour regressions;
+  - final films: out/batches/dual09-matrix-r2 (dialogue, narrator, mixed, typography, maths, gallery, 2 regressions) and out/batches/dual09-final-r1 (charts, long); `batch.mjs verify` ok on all;
+  - superseded batches: dual09-matrix-r1 (environment not set), dual09-long-r1 and dual09-charts-r1 (list defect).
+- **Tests:** 554 JS (0 fail, 1 Windows skip), Python 63 OK, digests = DUAL-00, fonts current. Clean install from a fresh clone: same results.
+- **Measured:** CPU 28.5 fps byte-stable; Three vulkan 44.3 fps, 1.59 GB GPU memory, **not byte-stable** (visually identical, ≥ 51.5 dB; known since DUAL-04); Three swangle 3.4 fps, byte-stable.
+- **Changed files:**
+  - code: src/visual/preview-media.js, studio/app.js, scripts/batch-lib.mjs, src/director/aids.js;
+  - tests: tests/dual09-preview.test.js (new), tests/batch.test.js, tests/audit07.test.js, tests/composition.test.js, tests/fixtures/fake-produce.mjs;
+  - bench and fixtures: scripts/preview-memory-bench.mjs (new), examples/dual09-*.request.json, examples/batches/dual09-*.batch.json;
+  - docs: docs/RELEASE_1_2.md (new), docs/MEDIA.md, docs/BATCH.md, docs/COMPOSITION.md, README.md and the continuity docs.
+- **Unresolved, for the owner:**
+  - review representative films;
+  - accept the known limitations or make the GPU byte-stability a gate;
+  - the licence situation (GPL parts, Remotion terms, no project licence);
+  - merge, then tag `v1.2-dual-backend-final` on the exact accepted commit (no publication).
+- **Next action for "fod continue":**
+  - if the DUAL-09 PR is open, report it and wait for the owner's review, merge word and tag word (confirm CI green on its head);
+  - after the merge: clear renders older than DUAL-09 (keep out/batches/dual09-matrix-r2 and dual09-final-r1, out/bench/d09-*, out/dual09-preview-mem, the speech cache and public/media);
+  - tag only on the owner's word;
+  - Campaign B only with separate authorization after the tag.
 Unit: **Campaign A — Universal Dual-Backend Finalization**, owner-authorized. The text below is the earlier fresh-start handoff for DUAL-08, kept as written; the checkpoint above supersedes its "Next action".
 - **DUAL-00 … DUAL-07 are COMPLETE and MERGED.** Main is at **0e83826** (PR #61 merged on the owner's "merge"; CI 45989203443 green on 14a4a9a, 522/522).
 - **DUAL-07** = Studio integration (content mode, format, look, sound, visuals JSON, picture library; real fonts and pictures in the preview), the **independent audit repair** (findings 1–4 reproduced and repaired; finding 5 = DUAL-08 boundary requirements, recorded) and a tidier "Make a film" form (owner request). The owner inspected the Studio before the merge.

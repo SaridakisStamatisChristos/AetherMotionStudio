@@ -55,6 +55,8 @@ The feature/main workflow uses Python wheels (including Kokoro's bundled phonemi
 ## Local visual Studio
 After the normal local install, run `npm run studio:local` and open http://127.0.0.1:4173. Projects, offline Director, asset browser, editable shots, silent draft preview, measured audio preparation, native CPU/Three.js render jobs and quality/export reports share existing production contracts. `npm run studio` remains the original Remotion Studio. See [Local Studio](docs/STUDIO.md). Several films in a row: `node scripts/batch.mjs create <batch.json>` then `run`, one render at a time with cancel, resume and restart recovery; see [Batch production](docs/BATCH.md).
 
+**v1.2 (Campaign A, release candidate):** what the dual-backend release can do, how it was qualified, its known limitations and its licence inventory: [docs/RELEASE_1_2.md](docs/RELEASE_1_2.md).
+
 ## One-click production (v1.0)
 On a clean Linux x86_64 checkout with Node 22 and Python 3.11:
 ```bash

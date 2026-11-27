@@ -15,7 +15,7 @@ With a content mode, shot titles default to none (the aid takes that space), `ti
 From each shot's own text only; it never invents facts, numbers or labels:
 1. first shot: the film title;
 2. a flow "X turns **A into B**" → two labels and an arrow;
-3. a list "**A, B and C**" (3–4 short items, shown whole or not at all) → a row of labels under the shot heading;
+3. a list "**A, B and C**" (3–4 short items, shown whole or not at all) → a row of labels under the shot heading. DUAL-09: after a long opening clause the list starts at the comma only when the next part opens a phrase ("…, in trunks, roots and soil"); "they planted tomatoes, beans and squash" draws no list, because its first item cannot be separated reliably;
 4. otherwise a card: the shot heading plus the first plain sentence of the narration. Generic outline roles ("Context", "Key idea") are not shown; the card then quotes the narration alone.
 
 Each candidate must pass layout validation; the first that fits is used.
