@@ -7,7 +7,9 @@ import {SETTINGS_KEY,SETTINGS_DEFAULTS,checkedSettings,readSettings,writeSetting
 import {STUDIO_DEFAULTS,directorRequest} from '../src/studio/director-form.js';
 import {VOICES} from '../src/core/contract.js';
 const voices=[...VOICES];
-const mine={cast:'trio',seconds:45,backend:'cpu',profile:'original',voice:'bm_george',staging:false,reels:true,speakerNames:true,titles:true,advanced:true};
+const mine={cast:'trio',seconds:45,backend:'cpu',profile:'original',voice:'bm_george',staging:false,reels:true,speakerNames:true,titles:true,advanced:true,
+ // DUAL-07 choices (non-default values, so the round trip proves they are kept)
+ content:'mixed-v1',format:'square-v1',theme:'paper-v1',captionStyle:'contrast-v1',soundtrack:'silent',music:'off',font:'merriweather'};
 
 test('the choices come back exactly as they were kept',()=>{
  assert.deepEqual(readSettings(writeSettings(mine,voices),voices),mine);

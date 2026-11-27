@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "id": "dual07-narrator",
+  "topic": "How a lighthouse guides ships",
+  "seconds": 30,
+  "backend": "cpu",
+  "profile": "polished",
+  "voice": "am_michael",
+  "staging": "art-v1",
+  "script": "A lighthouse stands where the sea is most dangerous.\nEvery night its lamp turns once every ten seconds.\nSailors count the flashes to know which light they are seeing.\nEach lighthouse has its own pattern, like a name written in light.\nOn a clear night the beam can be seen twenty miles away.\nThat is how a small light keeps big ships safe.",
+  "titles": "none",
+  "captionStyle": "paper-v1",
+  "music": "off",
+  "speech": {
+    "version": 1,
+    "targetFrames": 900,
+    "fixedShots": {},
+    "speakers": {},
+    "shotSpeakers": {},
+    "pronunciations": {},
+    "captions": {
+      "mode": "both",
+      "highlight": true,
+      "maxChars": 32,
+      "maxLines": 2,
+      "maxCps": 18,
+      "readable": true
+    },
+    "mouths": "visemes-v1",
+    "mix": {
+      "narration": 1,
+      "music": 0.55,
+      "ambience": 0.35,
+      "sfx": 0.45,
+      "duck": 0.35,
+      "fadeSeconds": 0.25,
+      "peak": 0.92
+    },
+    "cues": [],
+    "syncActions": true
+  }
+}

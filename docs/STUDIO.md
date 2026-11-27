@@ -1,5 +1,7 @@
 # v0.9 Local visual production Studio (candidate)
 
+**DUAL-07 (2026-11-27):** "Make a film" also chooses the content mode, format, theme, caption style, sound and music level; Advanced adds the font, authored visuals (data, equations, pictures) and the picture library. The preview loads the film's own fonts and library pictures and takes its format. How to write each kind of film: [AUTHORING.md](AUTHORING.md).
+
 ## Start
 Install the existing pinned Node and Python dependencies, local media tools and Kokoro weights as README describes. Run npm run studio:local and open http://127.0.0.1:4173 (optional port: npm run studio:local -- 4180). Keep the terminal open. No cloud, account, external service, new model or paid API. The existing npm run studio still starts Remotion's own Studio.
 

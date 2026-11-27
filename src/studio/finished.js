@@ -1,6 +1,13 @@
 // Owner: "add the finished film with download button". The plain-words line under a finished Studio film, from the
 // job's quality report and ffprobe output (both optional: a job without the quality audit still gets length and size).
 // Browser-safe; pure.
+// DUAL-07 audit repair: which renderer actually made the film, from the job's render-timing.json: the backend, the GL
+// route passed to the native renderer and the adapter measured for that route (scripts/gl-probe.mjs). Never a guess.
+export function rendererLine(timing,adapter=timing?.adapter??null){
+ if(!timing||!['cpu','three'].includes(timing.backend))return 'renderer unknown';
+ if(timing.backend==='cpu')return 'rendered with CPU Canvas';
+ return 'rendered with Three.js (WebGL, GL route '+(typeof timing.gl==='string'&&timing.gl?timing.gl:'unknown')+', adapter '+(adapter&&typeof adapter.renderer==='string'&&adapter.renderer?adapter.renderer:'unknown')+')';
+}
 export function finishedSummary(quality,probe){
  const video=probe?.streams?.find(s=>s.codec_type==='video');
  const seconds=Number.isFinite(quality?.video?.frames)?quality.video.frames/30:Number(probe?.format?.duration);

@@ -26,7 +26,7 @@ export function safeJson(raw){
 }
 export const normalize=s=>s.trim().replace(/\s+/g,' ');
 export function request(input){
- fields(input,['version','id','topic','script','seconds','audience','tone','style','language','voice','backend','profile','seed','identityLibrary','cast','story','speech','staging','promptVersion','dialogue','delivery','sets','look','titles','content','font','theme','visuals','format','captionStyle','soundtrack'], 'request',['version','id','topic','seconds']);
+ fields(input,['version','id','topic','script','seconds','audience','tone','style','language','voice','backend','profile','seed','identityLibrary','cast','story','speech','staging','promptVersion','dialogue','delivery','sets','look','titles','content','font','theme','visuals','format','captionStyle','soundtrack','music'], 'request',['version','id','topic','seconds']);
  // GEN-09 opt-in delivery mode (Instagram Reels layout and framing); absent = unchanged output.
  if(input.delivery!==undefined&&input.delivery!=='reels-v1')bad('request.delivery','reels-v1 or absent');
  // GEN-12 topic-fitting sets: 'topic-v1' or 'none'; absent = topic-v1 for dialogue films, unchanged output otherwise.
@@ -56,6 +56,8 @@ export function request(input){
  // DUAL-06 opt-in caption style and explicit silent soundtrack (shortcuts into the speech settings).
  if(input.captionStyle!==undefined&&!Object.hasOwn(CAPTION_STYLES,input.captionStyle))bad('request.captionStyle',Object.keys(CAPTION_STYLES).join(', ')+' or absent');
  if(input.soundtrack!==undefined&&!SOUNDTRACKS.includes(input.soundtrack))bad('request.soundtrack',SOUNDTRACKS.join(' or ')+' or absent');
+ // DUAL-07 music level shortcut (speech.mix.music): off, soft (unchanged) or louder
+ if(input.music!==undefined&&!['off','soft','louder'].includes(input.music))bad('request.music','off, soft, louder or absent');
  // DUAL-03 authored visuals (compositions attached to script sentences); only with a content mode and a script.
  if(input.visuals!==undefined){if(input.content===undefined)bad('request.visuals','visuals need request.content');validateVisualsRequest(input.visuals);}
  if(input.look!==undefined&&!['crafted-v1','crafted-v2','none'].includes(input.look))bad('request.look','crafted-v1, crafted-v2, none or absent');

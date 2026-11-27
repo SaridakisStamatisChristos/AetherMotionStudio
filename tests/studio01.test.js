@@ -24,7 +24,10 @@ test('interview cast: the form gives the same request as the forest script examp
  // Defaults the form starts with: interview cast, Three, polished, 60 s, Reels off.
  // speakerNames: the owner's checkbox "Speaker names in captions"; titles: "Titles on top". Both off by default since the
  // owner's 2026-11-26 choice (roles "Off by default", titles "No titles at all").
- assert.deepEqual(STUDIO_DEFAULTS,{cast:'interview',backend:'three',profile:'polished',seconds:60,reels:false,speakerNames:false,titles:false});
+ const {content,format,theme,captionStyle,soundtrack,music,font,...earlier}=STUDIO_DEFAULTS;
+ assert.deepEqual(earlier,{cast:'interview',backend:'three',profile:'polished',seconds:60,reels:false,speakerNames:false,titles:false});
+ // DUAL-07 choices default to the earlier films: no content mode, vertical, dark theme and captions, normal sound
+ assert.deepEqual({content,format,theme,captionStyle,soundtrack,music,font},{content:'none',format:'vertical-v1',theme:'aether-v1',captionStyle:'box-v1',soundtrack:'mix',music:'soft',font:'auto'});
  assert.equal(directorRequest(form({titles:true})).titles,'shots');assert.throws(()=>directorRequest(form({titles:'yes'})),/Titles must be on or off/);
  assert.equal(directorRequest(form({backend:'three'})).backend,'three');
 });

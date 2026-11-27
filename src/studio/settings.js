@@ -3,7 +3,7 @@
 // are kept in this browser's localStorage, never on the server. Topic and script are not kept (every film is new).
 // Every value is checked when read back; anything unknown, damaged or from another version falls back to
 // STUDIO_DEFAULTS field by field, so a stored value can never produce a request the form could not. Pure, browser-safe.
-import {STUDIO_CASTS,STUDIO_DEFAULTS} from './director-form.js';
+import {STUDIO_CASTS,STUDIO_DEFAULTS,STUDIO_CONTENT,STUDIO_FORMATS,STUDIO_THEMES,STUDIO_CAPTIONS,STUDIO_SOUND,STUDIO_MUSIC,STUDIO_FONTS} from './director-form.js';
 export const SETTINGS_KEY='aethermotion.studio.settings.v1';
 export const SETTINGS_DEFAULTS=Object.freeze({...STUDIO_DEFAULTS,voice:null,staging:true,advanced:false});
 const isBool=x=>typeof x==='boolean';
@@ -16,6 +16,8 @@ export function checkedSettings(x,voices=[]){
  if(Number.isSafeInteger(o.seconds)&&o.seconds>=6&&o.seconds<=300)s.seconds=o.seconds;
  if(typeof o.voice==='string'&&voices.includes(o.voice))s.voice=o.voice;
  for(const k of ['reels','speakerNames','titles','staging','advanced'])if(isBool(o[k]))s[k]=o[k];
+ // DUAL-07 choices: content mode, format, theme, caption style, sound, music, font (unknown values → defaults)
+ for(const [k,table] of [['content',STUDIO_CONTENT],['format',STUDIO_FORMATS],['theme',STUDIO_THEMES],['captionStyle',STUDIO_CAPTIONS],['soundtrack',STUDIO_SOUND],['music',STUDIO_MUSIC],['font',STUDIO_FONTS]])if(typeof o[k]==='string'&&Object.hasOwn(table,o[k]))s[k]=o[k];
  return s;
 }
 // Read from storage text (JSON). Damaged text, a wrong shape or a newer/older version gives the defaults.

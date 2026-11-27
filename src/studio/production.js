@@ -3,6 +3,15 @@ export function defaultSpeech(seconds){
  if(!Number.isSafeInteger(seconds)||seconds<6||seconds>300)throw Error('Production duration must be an integer from 6 to 300 seconds');
  return {version:1,targetFrames:seconds*30,fixedShots:{},speakers:{},shotSpeakers:{},pronunciations:{},captions:{mode:'both',highlight:true,maxChars:32,maxLines:2,maxCps:18,readable:true},mouths:'visemes-v1',mix:{narration:1,music:.55,ambience:.35,sfx:.45,duck:.35,fadeSeconds:.25,peak:.92},cues:[],syncActions:true};
 }
+// DUAL-07: the speech settings a Director request gets when it brings none. One rule for produce.mjs and the Studio:
+// dialogue films hide speaker names unless asked (owner 2026-11-26); content-mode films are fitted to their speech and
+// mastered with mix-v2 (DUAL-01). Requests that bring their own speech keep it unchanged.
+export function requestSpeech(q,{speakerNames=false}={}){
+ let s=defaultSpeech(q.seconds);
+ if(q.dialogue&&!speakerNames)s={...s,captions:{...s.captions,speakerNames:false}};
+ if(q.content)s={...s,fit:'speech-v1',mix:{...s.mix,master:'mix-v2'}};
+ return s;
+}
 export function productionId(id,backend,profile){
  if(typeof id!=='string'||!/^[a-z0-9][a-z0-9-]{0,31}$/.test(id)||/^(con|prn|aux|nul|com[1-9]|lpt[1-9]|constructor|prototype)$/.test(id))throw Error('Production ID must be a safe lowercase slug (max 32 characters)');
  if(!['cpu','three'].includes(backend)||!['original','polished'].includes(profile))throw Error('Invalid production backend/profile');

@@ -202,3 +202,19 @@ export function sceneImages(scene){
  if(total>MEDIA_LIMITS.filmDecodedBytes)fail('the film\'s images decode to '+Math.round(total/1048576)+' MB together (limit '+MEDIA_LIMITS.filmDecodedBytes/1048576+' MB)');
  return list;
 }
+// DUAL-07 audit repair: one verification for every consumer of a resolved image source (the native renderer and the
+// Studio preview): file-size bound, SHA-256 of the actual bytes, structure (format, size, orientation). Throws
+// 'media: …'. `sha256Hex` is injected (Web Crypto in the browser, node:crypto in tests).
+export async function verifyImageBytes(bytes,source,sha256Hex){
+ if(!(bytes instanceof Uint8Array))fail('bytes required');
+ if(bytes.length>MEDIA_LIMITS.fileBytes)fail(source.file+' is larger than '+MEDIA_LIMITS.fileBytes/1048576+' MB');
+ if(await sha256Hex(bytes)!==source.sha256)fail(source.file+' differs from its verified SHA-256');
+ const info=inspectImage(bytes,source.format);
+ for(const k of ['width','height','orientation','displayWidth','displayHeight'])if(info[k]!==source[k])fail(source.file+' '+k+' '+info[k]+' differs from its verified source ('+source[k]+')');
+ return info;
+}
+// The decoded picture must have the verified upright size (orientation applied as measured).
+export function checkDecoded(bitmap,source){
+ if(bitmap?.width!==source.displayWidth||bitmap?.height!==source.displayHeight)fail(source.file+' decoded to '+bitmap?.width+'×'+bitmap?.height+', expected '+source.displayWidth+'×'+source.displayHeight+' upright');
+}
+export const webSha256=async bytes=>[...new Uint8Array(await crypto.subtle.digest('SHA-256',bytes))].map(b=>b.toString(16).padStart(2,'0')).join('');

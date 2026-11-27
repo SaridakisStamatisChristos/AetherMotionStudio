@@ -1,11 +1,12 @@
-# Forward-only handoff: Campaign A, DUAL-06 slice 2 tested and rendered; PR open; DUAL-07 next (2026-11-27)
+# Forward-only handoff: Campaign A, DUAL-07 tested, clicked through and audit-repaired; PR #61 open; DUAL-08 next after the merge (2026-11-27)
 
 Unit: **Campaign A — Universal Dual-Backend Finalization**, owner-authorized.
 - **DUAL-00 … DUAL-04 are COMPLETE and MERGED** (main **e520e4a**; PR #55 merged on "Approved. Merge PR #55", CI run 45889745389, 475/475).
 - **DUAL-05 (local raster media) is MERGED**: PR #57 → **main aacfac6** (owner "merge pr 57 and close pr 56 as superseded"; CI 45961923535 green on 90eed63, 491/491). The owner inspected the dual05 outputs and likes them (2026-11-27).
 - **PR #56** was closed as superseded (its docs were carried into #57).
-- **DUAL-06 is TESTED + RENDERED.** Slice 1 (output formats) is MERGED (PR #59 → main **0072c5a**, owner "now merge"; CI 45966855494 green). Slice 2 (contrast theme, caption styles, explicit silent soundtrack) is on `feature/dual-06-themes-audio` (80e511c + checkpoint); its PR is open, **not merged**.
-- **Next milestone: DUAL-07** (universal Director and Studio integration), after the slice-2 PR is merged.
+- **DUAL-06 is COMPLETE and MERGED** (#59 → 0072c5a; #60 → **f062de4**, owner "all good merge"). Renders before DUAL-06 were cleared on the owner's word (standing rule: clear older renders after each merged milestone).
+- **DUAL-07 (Studio integration) is TESTED + RENDERED and audit-repaired** on `feature/dual-07-studio`; PR #61 is open, **not merged** (owner: "Not yet": trying the Studio first). The independent audit's findings 1–4 were reproduced and repaired; finding 5 (DUAL-08 boundary) is an assessment recorded in CAMPAIGN_A.md, which DUAL-08 must follow.
+- **Next: DUAL-08** (bounded local batch production): **owner decided "Build it now"** (2026-11-27). It starts from main after PR #61 is merged; the owner is trying the Studio first ("Not yet" for #61). Then DUAL-09 (qualification and release).
 
 Date: 2026-11-27. The owner types only **"fod continue"**. Binding facts: CURRENT_STATE.md. Campaign status, evidence and the remaining plan: CAMPAIGN_A.md. Requirements: CAMPAIGN_A_DIRECTIVE.md (verbatim). Contracts: docs/COMPOSITION.md (compose-v1/v2, fonts), docs/MATHS.md, docs/CHARTS.md, docs/MEDIA.md. Scope map: docs/CAMPAIGN_A_AUDIT.md. Evidence rules: CAMPAIGN_A_PROTOCOL.md.
 
@@ -19,12 +20,13 @@ Date: 2026-11-27. The owner types only **"fod continue"**. Binding facts: CURREN
 | CI | MERGED #54 | test job runs `npm ci` | CURRENT_STATE.md |
 | DUAL-04 | MERGED #55 | charts, timelines, flowcharts, comparison cards; two audit repair passes | docs/CHARTS.md |
 | DUAL-05 | MERGED #57 | local PNG/JPEG/static WebP library, import checks, verified `image` item, pan/zoom | docs/MEDIA.md |
-| DUAL-06 | slice 1 MERGED #59; slice 2 PR open | formats (vertical/landscape/square); contrast theme, caption styles, silent soundtrack | docs/FORMATS.md, docs/THEMES_AUDIO.md |
+| DUAL-06 | MERGED #59, #60 | formats (vertical/landscape/square); contrast theme, caption styles, silent soundtrack | docs/FORMATS.md, docs/THEMES_AUDIO.md |
+| DUAL-07 | PR open | Studio: content mode, format, look, sound, visuals JSON, picture library; real fonts/pictures in the preview | docs/AUTHORING.md, docs/STUDIO.md |
 
 ## Next action for "fod continue"
-1. Bootstrap (below). If the DUAL-06 slice-2 PR (`feature/dual-06-themes-audio`) is still open, its checkpoint docs are the latest canon; merge it only on the owner's word after its CI passes.
-2. `git switch main && git pull && npm install`, branch `feature/dual-07-studio` from main.
-3. Read the DUAL-07 directive section, its audit rows and the DUAL-07 plan in CAMPAIGN_A.md. Key work: Director selects content mode, visuals, theme, caption style, soundtrack and format from validated capabilities; Studio simple/advanced controls for them (format chooser and a preview that matches the format; the Studio server must serve public/fonts and public/media read-only so the preview shows real fonts and images); authoring guide per content mode; "clicked through in a headless browser" evidence; at least one render and download per backend.
+1. Bootstrap (below). If the DUAL-07 PR (`feature/dual-07-studio`) is still open, its checkpoint docs are the latest canon; merge it only on the owner's word after its CI passes, then clear renders older than DUAL-07 (owner rule).
+2. After #61 is merged: clear renders older than DUAL-07, then `git switch main && git pull && npm install`, branch `feature/dual-08-batch` from main. Scope (CAMPAIGN_A.md plan): a local queue of validated requests/projects with explicit backend, preset and output root, unique IDs, per-job manifests; sequential or measured bounded concurrency; persistent minimal job state; cancel and resume; restart recovery; per-job failures; never re-render accepted outputs or retry forever; no SaaS, scheduling or posting. Exit: mixed success/failure/cancel fixtures, restart recovery, no lost outputs, bounded resources.
+3. Read the DUAL-08 (or DUAL-09) directive section, audit rows and plan in CAMPAIGN_A.md.
 4. The media library on this machine (`public/media/`, git-ignored) holds the five dual05 illustrations; `node scripts/media-import.mjs verify` re-checks them. `node scripts/dual05-gallery-media.mjs` recreates them on another machine (it refuses nothing already imported with the same bytes).
 
 ## The FOD loop for every remaining milestone
@@ -59,7 +61,7 @@ Date: 2026-11-27. The owner types only **"fod continue"**. Binding facts: CURREN
 
 ## Open issues carried into Campaign A
 - OPEN-1 calm word rate (2.15 words/s; refine with more films). OPEN-2 part 2: glass and metal subtle at phone size. OPEN-3: historical CPU one-eye, by the owner's choice. OPEN-4: "bridges" shows no set piece. OPEN-6: old draft PRs #2–#12; ask before closing. PR #43 (old handoff) is superseded by #49; ask before closing it.
-- OPEN-7 disk: out/ holds the agent test jobs, far-forest-r1*, clean-top-r1*/r2*, dual00-baseline-r1*, dual01-*, dual02-*, dual03-*, dual04-* (DUAL-04 superseded attempts r1–r4 included), dual05-gallery-r1*, dual05-media-src/ dual05-tamper-*.png, dual06-harbour-*, dual06-contrast-r1 (stalled, incomplete), dual06-contrast-r2, dual06-silent-r2 and dual06-still-*.png; public/media/ holds the dual05 library. 27 superseded runs were deleted on 2026-11-27 (owner choice); ask before deleting anything else.
+- OPEN-7 disk: after the 2026-11-27 cleanup out/ holds only the DUAL-06 films (dual06-harbour-v/l/s, dual06-contrast-r2, dual06-silent-r2), the DUAL-07 Studio click-through jobs (studio-fcb6176ba0e5c88c1263 CPU, studio-00fedfc4005adff48104 Three), out/speech-cache and the polish0x fixture folders; public/media holds the dual05 picture library; public/audio is empty. Owner rule: clear older renders after each merged milestone.
 - Not yet run: a GPU benchmark, the full native matrix, a clean-install test (all planned for DUAL-09).
 - Studio preview: fonts (and future media) are not served by the Studio server; the preview shows substitute fonts. Planned for DUAL-07.
 - A stray chrome-headless-shell (PID 343888) from a stopped DUAL-01 render may still be running; harmless.
@@ -69,7 +71,7 @@ Date: 2026-11-27. The owner types only **"fod continue"**. Binding facts: CURREN
 2. Read CLAUDE.md, AGENTS.md, CURRENT_STATE.md, this file and CAMPAIGN_A.md (plus the directive section of the active milestone).
 3. Baseline:
    - `node scripts/fod-digests.mjs . --exclude talk04,talk05,gen01,gen09,gen12,fixa,dual` must print graph 3d33fbaee198acad, geometry 14dec244d171dc56, detail2 e3f80439a292f21a, director 7 requests 2cbf9916e65da935;
-   - `npm test` must give fail 0 (500 tests at 0072c5a, 506 on feature/dual-06-themes-audio; 1 Windows skip). Run the suite once with public/media renamed away: CI has no local media library;
+   - `npm test` must give fail 0 (506 tests at f062de4, 513 on feature/dual-07-studio; 1 Windows skip). Run the suite once with public/media renamed away: CI has no local media library;
    - `PYTHONPATH=scripts .venv/Scripts/python.exe -m unittest discover -s tests -p "test_*.py"` must give 61 OK.
 
 ## Owner working agreement and taste (binding; see also auto-memory)
@@ -110,7 +112,8 @@ Date: 2026-11-27. The owner types only **"fod continue"**. Binding facts: CURREN
   - `python scripts/frame_glitch.py <film>`, which **needs `AETHER_FFMPEG` set**;
   - ebur128 loudness (about −16 LUFS);
   - speech-report.json `pace`, `fit` and `alignment.maxCps`.
-- **Agent UI tests:**
+- **Agent UI tests:** (DUAL-07 harness: wait for a *new* download link before reading a render result; keep the harness outside the repo during renders so the tree stays clean)
+- **Agent UI tests (setup):**
   - start a temporary Studio from the working tree with `createStudio()` on a spare port (4190+), in a temporary `scripts/.tmp-*.mjs` file;
   - drive it with `openBrowser` from `@remotion/renderer` (`page._client().send('Page.captureScreenshot',…)`, response `r.data ?? r.value.data`);
   - delete the temporary script before committing.

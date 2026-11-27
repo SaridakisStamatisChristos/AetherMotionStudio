@@ -7,8 +7,12 @@ import {defaultSpeech} from '/src/studio/production.js';
 import {calmTurns} from '/src/core/calm.js';
 import {editProject,applyShotEdit,reorderShot,setBackend,setProfile,setStaging,addAsset,removeAsset,previewState,addFoundryAsset,setSpeakers,setLineSpeaker,bindSpeaker} from '/src/studio/model.js';
 // STUDIO-01: the Director form maps to a request in src/studio/director-form.js (casts, Reels, script help; tested).
-import {STUDIO_CASTS,STUDIO_DEFAULTS,directorRequest,scriptHelp,scriptPrompt,cleanScript} from '/src/studio/director-form.js';
-import {finishedSummary,reelsSummary} from '/src/studio/finished.js';
+import {STUDIO_CASTS,STUDIO_DEFAULTS,STUDIO_CONTENT,STUDIO_FORMATS,STUDIO_THEMES,STUDIO_CAPTIONS,STUDIO_SOUND,STUDIO_MUSIC,STUDIO_FONTS,directorRequest,scriptHelp,scriptPrompt,cleanScript} from '/src/studio/director-form.js';
+import {sceneFontFaces} from '/src/visual/fonts.js';
+import {createPreviewMedia} from '/src/visual/preview-media.js';
+import {webSha256} from '/src/core/media.js';
+import {formatOf} from '/src/core/formats.js';
+import {finishedSummary,reelsSummary,rendererLine} from '/src/studio/finished.js';
 import {SETTINGS_KEY,SETTINGS_DEFAULTS,readSettings,writeSettings} from '/src/studio/settings.js';
 import {jobProgress,formatSeconds} from '/src/studio/progress.js';
 const languageOf=voice=>voice.startsWith('b')?'en-gb':'en-us';
@@ -63,15 +67,36 @@ function renderSpeakers(){
  s.narration.forEach((t,i)=>{const row=document.createElement('label');row.textContent='Line '+(i+1)+': '+t.slice(0,40);row.append(select([['','Narrator (default)'],...ids.map(id=>[id,speech.speakers[id].name])],speech.shotSpeakers[s.id]?.[i]??'',v=>{if(!v)throw Error('Choose a speaker');commit(setLineSpeaker(requireProject(),state.shot,i,v));status('Line speaker set.');}));$('lineSpeakers').append(row);});
  if(s.template==='cinematic-graph')for(const id of ids){const row=document.createElement('label');row.textContent=speech.speakers[id].name+' appears as';row.append(select([['','(not shown)'],...s.assets.map(a=>[a.id,a.id+' · '+a.asset])],s.speakerAssets?.[id]??'',v=>{commit(bindSpeaker(requireProject(),state.shot,id,v||null));status('Speaker binding updated.');}));$('lineSpeakers').append(row);}
 }
+// DUAL-07: the preview loads the film's own fonts and library pictures (served read-only by the Studio server), so it
+// shows what the render draws. Anything that cannot load stays a labelled placeholder here only (the render checks again).
+// DUAL-07 (audit repair): fonts load once per film; pictures go through the preview media manager, which verifies the
+// actual bytes like the native renderer, keeps only the current film's pictures (closing the rest), merges concurrent
+// loads and ignores loads and diagnostics from films that were replaced.
+const previewFonts=new WeakMap();
+function previewFontsFor(scene){let job=previewFonts.get(scene);if(job)return job;job=(async()=>{const notes=[];
+ await Promise.all(sceneFontFaces(scene).map(f=>new FontFace(f.css,'url(/'+f.path+')',{weight:String(f.weight)}).load().then(x=>{document.fonts.add(x);}).catch(()=>{notes.push('font '+f.font);})));return notes;})();previewFonts.set(scene,job);return job;}
+const previewMedia=createPreviewMedia({fetchBytes:async file=>{const r=await fetch('/media/'+file);if(!r.ok)throw Error('missing public/media/'+file+' (HTTP '+r.status+')');return new Uint8Array(await r.arrayBuffer());},decode:(bytes,type)=>createImageBitmap(new Blob([bytes],{type})),sha256Hex:webSha256});
+async function previewAssets(scene){
+ const [fonts,media]=await Promise.all([previewFontsFor(scene),previewMedia.sync(scene)]);
+ if(!media.current)return media;// a newer film owns the label
+ const notes=[...fonts,...media.diagnostics];
+ $('previewLabel').textContent=notes.length?'Preview could not load '+notes.join('; ')+'. Placeholders are shown; the native render checks every picture again and stops on any failure.':(state.preview?.mode?state.preview.mode+' · ':'')+(state.previewGl&&scene.version===2&&scene.shots.some(x=>x.backend==='three')?'preview graphics: '+state.previewGl+' · ':'')+'reduced-resolution shared renderer; final export is native Remotion';
+ return media;
+}
 async function paint(){
  const p=state.preview;if(!p)return;const epoch=++state.drawEpoch,frame=state.frame;
  const active=p.scene.version===2?p.scene.shots[p.timeline.shots.findIndex(s=>frame<s.endFrame)]:null;
  try{
   if(active?.backend==='three'&&!state.three){
    const {createThreeBackend}=await import('/src/visual/three-backend.js');if(epoch!==state.drawEpoch)return;state.three=createThreeBackend();
+   // DUAL-07 audit repair: name the preview's own WebGL adapter (it may differ from the native render's)
+   const ad=state.three.adapter();state.previewGl=ad.renderer+(ad.source==='masked'?' (masked by the browser)':'');
   }
   if(epoch!==state.drawEpoch)return;
-  const ctx=$('canvas').getContext('2d');ctx.clearRect(0,0,360,640);drawFilm(ctx,p.scene,p.timeline,frame,360,640,state.three);
+  await previewAssets(p.scene);if(epoch!==state.drawEpoch)return;
+  // DUAL-07: the preview canvas takes the film's format (half the logical size: 360×640, 640×360 or 360×360)
+  const F=p.scene.version===2?formatOf(p.scene):null,W=F?F.logical.w/2:360,H=F?F.logical.h/2:640,cv=$('canvas');if(cv.width!==W||cv.height!==H){cv.width=W;cv.height=H;}
+  const ctx=cv.getContext('2d');ctx.clearRect(0,0,W,H);drawFilm(ctx,p.scene,p.timeline,frame,W,H,state.three);
   $('scrub').value=frame;$('clock').textContent=time(frame)+' / '+time(duration());
  }catch(e){stop();$('previewLabel').textContent='Preview failed (no automatic backend substitution): '+e.message;status('Preview: '+e.message,true);}
 }
@@ -94,8 +119,8 @@ async function showJob(id){state.job=id;const j=await api('/api/jobs/'+id);$('jo
   $('downloadFilm').href=base+'film.mp4?download=1';$('downloadFilm').setAttribute('download',j.projectId+'.mp4');
   $('downloadCaptions').hidden=!j.files.includes('captions.srt');if(j.files.includes('captions.srt')){$('downloadCaptions').href=base+'captions.srt?download=1';$('downloadCaptions').setAttribute('download',j.projectId+'.srt');}
   if(state.finishedFacts!==id){state.finishedFacts=id;$('finishedFacts').textContent='';
-   const [q,p]=await Promise.all(['quality-report.json','probe.json'].map(n=>j.files.includes(n)?api(base+n).catch(()=>null):null));
-   if(state.job===id)$('finishedFacts').textContent=finishedSummary(q,p).text;}
+   const [q,p,t]=await Promise.all(['quality-report.json','probe.json','render-timing.json'].map(n=>j.files.includes(n)?api(base+n).catch(()=>null):null));
+   if(state.job===id)$('finishedFacts').textContent=finishedSummary(q,p).text+' · '+rendererLine(t);}
   showReels(j,base);
   document.body.classList.add('has-film');
   if($('finished').hidden){$('finished').hidden=false;if(state.scrolledTo!==id){state.scrolledTo=id;$('finished').scrollIntoView({behavior:'smooth',block:'start'});}}
@@ -130,7 +155,7 @@ $('save').onclick=action(save);$('export').onclick=action(downloadJSON);$('play'
 $('projects').onchange=action(async()=>{if(!$('projects').value)return;const x=await api('/api/projects/'+$('projects').value);install(x.project,x.revision,x.project.id);status('Loaded '+x.project.id);});
 $('examples').onchange=action(async()=>{if(!$('examples').value)return;const x=await api('/api/examples/'+$('examples').value);install(x.project);status('Example imported; choose a project ID and save.');});
 $('import').onchange=action(async()=>{const f=$('import').files[0];if(!f)return;if(f.size>1024*1024)throw Error('Project JSON too large');install(JSON.parse(await f.text()));status('Imported project; save to persist.');});
-function directorForm(){return {id:'film-'+Date.now().toString(36),topic:$('topic').value,script:$('script').value,seconds:Number($('seconds').value),cast:$('directCast').value,backend:$('directBackend').value,profile:$('directProfile').value,voice:$('directVoice').value,staging:$('directStaging').checked,reels:$('directReels').checked,speakerNames:$('directNames').checked,titles:$('directTitles').checked};}
+function directorForm(){return {id:'film-'+Date.now().toString(36),topic:$('topic').value,script:$('script').value,seconds:Number($('seconds').value),cast:$('directCast').value,backend:$('directBackend').value,profile:$('directProfile').value,voice:$('directVoice').value,staging:$('directStaging').checked,reels:$('directReels').checked,speakerNames:$('directNames').checked,titles:$('directTitles').checked,content:$('directContent').value,format:$('directFormat').value,theme:$('directTheme').value,captionStyle:$('directCaptions').value,soundtrack:$('directSound').value,music:$('directMusic').value,font:$('directFont').value,visuals:$('directVisuals').value};}
 // Owner: "give a list of advice … so whoever uses it could be able to choose": length choices under the count. "Use N s"
 // sets Seconds; "Keep" closes the choice for this script and length; "Shorten" is a hint (the script is the owner's).
 let keptLength=null;
@@ -138,9 +163,13 @@ function lengthChoices(h){const box=$('lengthChoices'),key=h.words+'/'+$('second
  for(const c of h.choices){if(c.hint){const t=document.createElement('small');t.textContent=c.label+': '+c.detail+'.';box.append(t);continue;}
   const b=document.createElement('button');b.type='button';b.dataset.choice=c.id;b.textContent=c.label;b.title=c.detail;const d=document.createElement('small');d.textContent=c.detail;b.append(d);
   b.onclick=()=>{if(c.id==='seconds'){$('seconds').value=String(c.seconds);keptLength=null;status('Seconds set to '+c.seconds+'.');}else{keptLength=key;status('Keeping '+$('seconds').value+' s.');}scriptInfo();};box.append(b);}}
-function scriptInfo(){rememberSettings();const cast=$('directCast').value,h=scriptHelp($('script').value,$('seconds').value,cast);$('scriptCount').textContent=h.summary;$('scriptCount').className=h.verdict==='ok'||h.verdict==='empty'?'muted':'warn';lengthChoices(h);$('scriptTurns').textContent=h.turns;const narrator=cast==='narrator';$('directVoice').disabled=$('directStaging').disabled=!narrator;for(const el of document.querySelectorAll('.narrator-only'))el.hidden=!narrator;
- try{$('scriptPrompt').value=scriptPrompt({topic:$('topic').value,seconds:Number($('seconds').value),cast});}catch(e){$('scriptPrompt').value='Set the seconds (6–300) to get the prompt. '+e.message;}}
+function scriptInfo(){rememberSettings();const cast=$('directCast').value,h=scriptHelp($('script').value,$('seconds').value,cast,$('directContent').value);$('scriptCount').textContent=h.summary;$('scriptCount').className=h.verdict==='ok'||h.verdict==='empty'?'muted':'warn';lengthChoices(h);$('scriptTurns').textContent=h.turns;const narrator=cast==='narrator';$('directVoice').disabled=$('directStaging').disabled=!narrator;for(const el of document.querySelectorAll('.narrator-only'))el.hidden=!narrator;
+ try{$('scriptPrompt').value=scriptPrompt({topic:$('topic').value,seconds:Number($('seconds').value),cast,format:$('directFormat').value,content:$('directContent').value});}catch(e){$('scriptPrompt').value='Set the seconds (6–300) to get the prompt. '+e.message;}}
 fill($('directCast'),Object.entries(STUDIO_CASTS).map(([id,c])=>[id,c.label]));$('directCast').value=STUDIO_DEFAULTS.cast;
+// DUAL-07 choices (labels from src/studio/director-form.js; remembered like the other choices)
+for(const [k,table] of [['content',STUDIO_CONTENT],['format',STUDIO_FORMATS],['theme',STUDIO_THEMES],['captionStyle',STUDIO_CAPTIONS],['soundtrack',STUDIO_SOUND],['music',STUDIO_MUSIC],['font',STUDIO_FONTS]]){const el=$({content:'directContent',format:'directFormat',theme:'directTheme',captionStyle:'directCaptions',soundtrack:'directSound',music:'directMusic',font:'directFont'}[k]);fill(el,Object.entries(table));el.value=STUDIO_DEFAULTS[k];el.onchange=k==='content'||k==='format'?scriptInfo:rememberSettings;}
+async function mediaLibrary(){const box=$('mediaLibrary');try{const r=await fetch('/api/media'),x=await r.json();if(!r.ok)throw Error(x.error??'HTTP '+r.status);box.replaceChildren(...(x.media.length?x.media.map(m=>Object.assign(document.createElement('div'),{textContent:m.id+' · '+m.format+' '+m.width+'×'+m.height+' · '+m.licence+(m.attribution?' · '+m.attribution:''),title:m.source})):[Object.assign(document.createElement('span'),{textContent:'No pictures yet.'})]));}catch(e){box.textContent='Picture library unavailable: '+e.message;}}
+void mediaLibrary();
 // Studio UI refinement (owner: "Simple 'Make a film' view"): the page opens in the simple view (film form, preview,
 // production result); Advanced shows the full editor (workspace, library, Foundry, timeline, inspector, speakers, JSON).
 function setMode(advanced){document.body.classList.toggle('simple',!advanced);$('mode').setAttribute('aria-pressed',String(advanced));$('mode').textContent=advanced?'Simple view':'Advanced';}
@@ -149,9 +178,9 @@ $('mode').onclick=()=>{setMode(document.body.classList.contains('simple'));remem
 // kept in this browser's localStorage only (never the topic or script). Restored after the catalog fills the voices;
 // nothing is written before that, so the defaults shown at load never overwrite what was kept.
 let settingsReady=false;
-function currentSettings(){return {cast:$('directCast').value,seconds:Number($('seconds').value),backend:$('directBackend').value,profile:$('directProfile').value,voice:$('directVoice').value,staging:$('directStaging').checked,reels:$('directReels').checked,speakerNames:$('directNames').checked,titles:$('directTitles').checked,advanced:!document.body.classList.contains('simple')};}
+function currentSettings(){return {cast:$('directCast').value,seconds:Number($('seconds').value),backend:$('directBackend').value,profile:$('directProfile').value,voice:$('directVoice').value,staging:$('directStaging').checked,reels:$('directReels').checked,speakerNames:$('directNames').checked,titles:$('directTitles').checked,content:$('directContent').value,format:$('directFormat').value,theme:$('directTheme').value,captionStyle:$('directCaptions').value,soundtrack:$('directSound').value,music:$('directMusic').value,font:$('directFont').value,advanced:!document.body.classList.contains('simple')};}
 function rememberSettings(){if(!settingsReady)return;try{localStorage.setItem(SETTINGS_KEY,writeSettings(currentSettings(),state.catalog?.voices??[]));}catch{}}
-function applySettings(s){$('directCast').value=s.cast;$('seconds').value=String(s.seconds);$('directBackend').value=s.backend;$('directProfile').value=s.profile;if(s.voice)$('directVoice').value=s.voice;else $('directVoice').selectedIndex=0;$('directStaging').checked=s.staging;$('directReels').checked=s.reels;$('directNames').checked=s.speakerNames;$('directTitles').checked=s.titles;setMode(s.advanced);scriptInfo();}
+function applySettings(s){$('directCast').value=s.cast;$('seconds').value=String(s.seconds);$('directBackend').value=s.backend;$('directProfile').value=s.profile;if(s.voice)$('directVoice').value=s.voice;else $('directVoice').selectedIndex=0;$('directStaging').checked=s.staging;$('directReels').checked=s.reels;$('directNames').checked=s.speakerNames;$('directTitles').checked=s.titles;$('directContent').value=s.content;$('directFormat').value=s.format;$('directTheme').value=s.theme;$('directCaptions').value=s.captionStyle;$('directSound').value=s.soundtrack;$('directMusic').value=s.music;$('directFont').value=s.font;setMode(s.advanced);scriptInfo();}
 function restoreSettings(){let text=null;try{text=localStorage.getItem(SETTINGS_KEY);}catch{}const s=readSettings(text,state.catalog?.voices??[]);applySettings(s);settingsReady=true;return text!==null;}
 $('director').addEventListener('change',rememberSettings);
 $('resetSettings').onclick=action(()=>{try{localStorage.removeItem(SETTINGS_KEY);}catch{}settingsReady=false;applySettings(SETTINGS_DEFAULTS);settingsReady=true;status('Choices reset to the defaults.');});

@@ -1,17 +1,16 @@
 import React,{useEffect,useLayoutEffect,useMemo,useRef,useState} from 'react';
 import {AbsoluteFill,Composition,cancelRender,continueRender,delayRender,registerRoot,staticFile,useCurrentFrame,useVideoConfig} from 'remotion';
 import {sceneFontFaces} from './visual/fonts.js';
-import {sceneImages,inspectImage,MEDIA_FORMATS} from './core/media.js';
+import {sceneImages,verifyImageBytes,checkDecoded,webSha256,MEDIA_FORMATS} from './core/media.js';
 import {registerImage} from './visual/media-registry.js';
 // DUAL-05: one verified image from public/media: same bytes as the production boundary verified (SHA-256), same
 // structure rules, decoded by Chromium and checked to be upright at the verified size. Any failure stops the render.
 async function loadImage(s){
  const r=await fetch(staticFile('media/'+s.file));if(!r.ok)throw Error('missing public/media/'+s.file+' (HTTP '+r.status+')');
- const bytes=new Uint8Array(await r.arrayBuffer()),hex=[...new Uint8Array(await crypto.subtle.digest('SHA-256',bytes))].map(b=>b.toString(16).padStart(2,'0')).join('');
- if(hex!==s.sha256)throw Error('public/media/'+s.file+' differs from its verified SHA-256');
- const info=inspectImage(bytes,s.format);if(info.displayWidth!==s.displayWidth||info.displayHeight!==s.displayHeight)throw Error('public/media/'+s.file+' structure differs from its verified source');
+ const bytes=new Uint8Array(await r.arrayBuffer());
+ await verifyImageBytes(bytes,s,webSha256);// SHA-256 of the actual bytes, structure, size and orientation (shared with the Studio preview)
  const bm=await createImageBitmap(new Blob([bytes],{type:MEDIA_FORMATS[s.format].mime}));
- if(bm.width!==s.displayWidth||bm.height!==s.displayHeight)throw Error('public/media/'+s.file+' decoded to '+bm.width+'×'+bm.height+', expected '+s.displayWidth+'×'+s.displayHeight+' upright');
+ checkDecoded(bm,s);
  registerImage(s.sha256,bm);
 }
 import {Audio} from '@remotion/media';
