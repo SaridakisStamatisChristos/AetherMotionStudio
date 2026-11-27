@@ -21,6 +21,7 @@ import {visibility2Check} from '../src/quality/visibility.js';
 import {reelsCheck} from '../src/core/reels.js';
 import {plannedTimeline} from '../src/studio/model.js';
 import {exportReels} from './reels-export.mjs';
+import {acquireRenderLock} from './render-lock.mjs';
 const ROOT=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const MAX_BODY=1024*1024,MAX_LOG=40000,MAX_JOBS=40;
 const FILES=new Set(['film.mp4','scene.json','timeline.json','props.json','voice-report.json','speech-report.json','captions.srt','captions.vtt','quality-report.json','quality-preflight.json','quality-original-project.json','quality-contact-sheet.jpg','probe.json','render-timing.json','kokoro-narration.wav','mix.wav','preview-audio.wav','reels-cover.jpg','reels-report.json']);
@@ -63,9 +64,10 @@ async function serveFile(req,res,base,p,{download=false}={}){
  if(req.method==='HEAD'||!info.size){res.end();return;}
  const stream=createReadStream(file,{start,end});stream.on('error',()=>res.destroy());res.on('close',()=>stream.destroy());stream.pipe(res);
 }
-export function nativeRunner({root,job,snapshot,flags,log}){
+export function nativeRunner({root,job,snapshot,flags,log,lockToken}){
  return new Promise((resolve,reject)=>{
-  const child=spawn(process.execPath,[join(root,'scripts','cli.mjs'),job.mode,snapshot,...flags],{cwd:root,env:process.env,stdio:['ignore','pipe','pipe'],shell:false});
+  // DUAL-08: the CLI inherits the Studio's render lock for this job.
+  const child=spawn(process.execPath,[join(root,'scripts','cli.mjs'),job.mode,snapshot,...flags],{cwd:root,env:{...process.env,...(lockToken?{AETHER_RENDER_LOCK_TOKEN:lockToken}:{})},stdio:['ignore','pipe','pipe'],shell:false});
   child.stdout.on('data',b=>log(b.toString()));child.stderr.on('data',b=>log(b.toString()));child.on('error',reject);
   child.on('close',(code,signal)=>code===0?resolve():reject(Error('Native CLI exited '+(code??signal))));
  });
@@ -97,8 +99,10 @@ export async function createStudio({root=ROOT,dataDir=join(root,'studio-data'),r
   if(active)throw status(409,'One local render/preparation job is already active');
   if(!['render','prepare'].includes(input.mode)||typeof input.quality!=='boolean'||typeof input.repair!=='boolean')throw status(400,'Invalid job settings');
   // Reserve before asynchronous reads; concurrent submissions cannot both start.
-  active='reserving';
+  active='reserving';let lock=null;
   try{
+   // DUAL-08: another Studio, a CLI production or a batch on this machine holds the render lock → refused, named.
+   try{lock=acquireRenderLock(root,{holder:'Studio job (port '+(origin?new URL(origin).port:'?')+')'});}catch(e){if(e.code==='ELOCKED')throw status(409,e.message);throw e;}
    const saved=await getProject(input.id);if(saved.revision!==input.revision)throw status(409,'Project revision conflict');
    const id='studio-'+randomBytes(10).toString('hex'),project={...saved.project,id};
    validateProject(project);const snapshot=join(snapshots,id+'.json');await atomic(snapshot,JSON.stringify(project,null,2)+'\n');
@@ -111,7 +115,7 @@ export async function createStudio({root=ROOT,dataDir=join(root,'studio-data'),r
    const work=async()=>{
     let outcome='failed';
     try{
-     await runner({root,job:publicJob(job),snapshot,flags,log:s=>update(job,s)});
+     await runner({root,job:publicJob(job),snapshot,flags,log:s=>update(job,s),lockToken:lock.token});
      const dir=join(outputDir,id),scene=validateProject(await json(join(dir,'scene.json')));
      if(scene.id!==id)throw Error('Produced project ID mismatch');
      if(scene.version===2)validateTimeline(scene,await json(join(dir,'timeline.json')));
@@ -123,11 +127,11 @@ export async function createStudio({root=ROOT,dataDir=join(root,'studio-data'),r
     }catch(e){job.error=String(e.message??e).slice(0,1000);}
     finally{
      try{job.files=(await readdir(join(outputDir,id))).filter(x=>FILES.has(x)&& (outcome==='succeeded'||x!=='film.mp4'));}catch{}
-     job.finishedAt=new Date().toISOString();job.status=outcome;job.phase=outcome==='succeeded'?'complete':'failed';active=null;
+     job.finishedAt=new Date().toISOString();job.status=outcome;job.phase=outcome==='succeeded'?'complete':'failed';lock.release();active=null;
     }
    };
    void work();return publicJob(job);
-  }catch(e){active=null;throw e;}
+  }catch(e){lock?.release();active=null;throw e;}
  }
  const server=createServer(async(req,res)=>{
   res.setHeader('X-Content-Type-Options','nosniff');res.setHeader('Referrer-Policy','no-referrer');res.setHeader('Cross-Origin-Resource-Policy','same-origin');
