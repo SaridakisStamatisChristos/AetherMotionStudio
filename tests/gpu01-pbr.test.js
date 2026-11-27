@@ -74,11 +74,11 @@ test('colour contract: sRGB hex in, linear for shading, the same sRGB hex back (
 test('cinematic block: versioned, closed, validated; capabilities derived from it',()=>{
  assert.deepEqual(validateCinematic({version:1,materials:'pbr-v1'}),{version:1,materials:'pbr-v1'});
  assert.deepEqual(validateCinematic({version:1}),{version:1});
- for(const [x,re] of [[null,/object required/],[[],/object required/],[{materials:'pbr-v1'},/version: 1 required/],[{version:2},/version/],[{version:1,materials:'pbr-v2'},/pbr-v1 or absent/],[{version:1,materials:1},/pbr-v1 or absent/],[{version:1,lights:'studio'},/unknown field/]])
+ for(const [x,re] of [[null,/object required/],[[],/object required/],[{materials:'pbr-v1'},/version: 1 required/],[{version:2},/version/],[{version:1,materials:'pbr-v2'},/pbr-v1 or absent/],[{version:1,materials:1},/pbr-v1 or absent/],[{version:1,lights:'studio'},/lights: auto-v1/],[{version:1,shadows:'soft'},/unknown field/]])
   if(re)assert.throws(()=>validateCinematic(x),re,JSON.stringify(x));
  assert.deepEqual(requiredCapabilities({cinematic:{version:1,materials:'pbr-v1'}}),['shared','pbr-v1']);
  assert.deepEqual(requiredCapabilities({cinematic:{version:1}}),['shared']);
- assert.deepEqual(CAPABILITIES['pbr-v1'].profiles,['cinematic-v1']);assert.deepEqual(CINEMATIC_DEFAULTS,{version:1,materials:'pbr-v1'});
+ assert.deepEqual(CAPABILITIES['pbr-v1'].profiles,['cinematic-v1']);assert.deepEqual(CINEMATIC_DEFAULTS,{version:1,materials:'pbr-v1',lights:'auto-v1'});
 });
 
 test('negotiation: pbr-v1 without the Cinematic profile is RP-03, never ignored or stripped',()=>{
@@ -95,13 +95,13 @@ test('negotiation: pbr-v1 without the Cinematic profile is RP-03, never ignored 
 test('renderer options: GPU Standard gets {} (v1.2 renderer), Cinematic gets exactly its features',()=>{
  assert.deepEqual(threeOptions(load('art05-workshop-three-polished.json')),{});
  assert.deepEqual(threeOptions({renderProfile:'cinematic-v1'}),{}); // no block: Standard pixels
- assert.deepEqual(threeOptions(swatches()),{renderProfile:'cinematic-v1',materials:'pbr-v1'});
- assert.deepEqual(threeOptions({renderProfile:'cinematic-v1',cinematic:{version:1}}),{renderProfile:'cinematic-v1',materials:null});
+ assert.deepEqual(threeOptions(swatches()),{renderProfile:'cinematic-v1',materials:'pbr-v1',lights:null});
+ assert.deepEqual(threeOptions({renderProfile:'cinematic-v1',cinematic:{version:1}}),{renderProfile:'cinematic-v1',materials:null,lights:null});
  assert.deepEqual(threeOptions(null),{});
 });
 
 test('Director request: Cinematic defaults only with renderProfile; an explicit block is kept; misuse refused',()=>{
- assert.deepEqual(request({...release,backend:'three',renderProfile:'cinematic-v1'}).cinematic,{version:1,materials:'pbr-v1'});
+ assert.deepEqual(request({...release,backend:'three',renderProfile:'cinematic-v1'}).cinematic,{version:1,materials:'pbr-v1',lights:'auto-v1'});
  assert.deepEqual(request({...release,backend:'three',renderProfile:'cinematic-v1',cinematic:{version:1}}).cinematic,{version:1});
  assert.equal(Object.hasOwn(request({...release,backend:'three'}),'cinematic'),false);
  assert.throws(()=>request({...release,backend:'three',cinematic:{version:1,materials:'pbr-v1'}}),/RP-03/);

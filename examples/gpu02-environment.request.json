@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "id": "gpu02-environment",
+  "seconds": 60,
+  "language": "en-us",
+  "backend": "three",
+  "profile": "polished",
+  "topic": "A morning at the old harbour market",
+  "audience": "curious beginners",
+  "tone": "calm",
+  "style": "conversation",
+  "voice": "af_bella",
+  "seed": 13,
+  "dialogue": {
+    "style": "interview",
+    "speakers": [
+      {
+        "id": "host",
+        "name": "Visitor",
+        "voice": "af_bella",
+        "language": "en-us",
+        "character": "student"
+      },
+      {
+        "id": "guest",
+        "name": "Fisher",
+        "voice": "bm_george",
+        "language": "en-gb",
+        "character": "scientist"
+      }
+    ]
+  },
+  "script": "What time does the harbour market open? The boats come in just before sunrise. Why so early? Fish are freshest straight from the sea, and the buyers know it. What happens first? The crates go onto the stone quay, and the auction begins. How does the auction work? The price starts high and drops until someone calls out. Who buys the fish? Restaurant cooks, shop owners and a few families. And when does it all end? By mid morning the quay is washed clean and the gulls take over. Has the market always been here? For more than two hundred years, in the same place by the water.",
+  "renderProfile": "cinematic-v1"
+}
