@@ -105,5 +105,6 @@ test('9. production option --format: overrides a request, refused for authored p
  const o=parseProduction(['--request','examples/dual06-harbour.request.json','--format','square-v1','--id','x'],{read});assert.equal(o.request.format,'square-v1');
  assert.throws(()=>parseProduction(['--request','examples/dual06-harbour.request.json','--format','wide','--id','x'],{read}),/request.format/);
  assert.throws(()=>parseProduction(['--project','examples/robot-treasure.json','--format','square-v1'],{read}),/--format cannot modify an authored --project/);
- for(const format of FORMAT_IDS){const r=await direct({...load('dual06-harbour.request.json'),format});assert.equal(r.project.format??DEFAULT_FORMAT,format);}
+ // (a request without images: the media library is local data and is not present in CI)
+ for(const format of FORMAT_IDS){const r=await direct({...load('dual02-forest-typography.request.json'),format});assert.equal(r.project.format??DEFAULT_FORMAT,format);}
 });
