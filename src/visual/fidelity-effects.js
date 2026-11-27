@@ -1,4 +1,4 @@
-import {highlightMask,hashNoise} from '../core/fidelity.js';
+import {highlightMask,hashNoise,blurRGBA} from '../core/fidelity.js';
 import {glow,text,roundedBox,r} from './primitives.js';
 const caches=new WeakMap();
 function canvas(w,h){const c=document.createElement('canvas');c.width=w;c.height=h;return c;}
@@ -20,7 +20,9 @@ export function finishFilm(ctx,a,f,focus,frame,logical={w:720,h:1280}){
  if(f.depthOfField>0){x.drawImage(a.accum,0,0,s.width,s.height);const z=reset(l);z.filter='blur('+(.5+1.8*f.depthOfField)+'px)';z.drawImage(s,0,0);z.filter='none';z.globalCompositeOperation='destination-in';
   const fx=focus[0]*s.width/logical.w,fy=focus[1]*s.height/logical.h,g=z.createRadialGradient(fx,fy,s.width*.34,fx,fy,s.width*.86);g.addColorStop(0,'transparent');g.addColorStop(1,'#fff');z.fillStyle=g;z.fillRect(0,0,s.width,s.height);z.globalCompositeOperation='source-over';ctx.save();ctx.globalAlpha=f.depthOfField*.78;ctx.drawImage(l,0,0,W,H);ctx.restore();}
  // Actual luminance-derived bloom, not merely an asset-centered glow.
- if(f.bloom>0){reset(s);x.drawImage(a.accum,0,0,s.width,s.height);const data=x.getImageData(0,0,s.width,s.height);highlightMask(data.data);x.putImageData(data,0,0);const z=reset(l);z.filter='blur(3px)';z.drawImage(s,0,0);z.filter='none';ctx.save();ctx.globalCompositeOperation='screen';ctx.globalAlpha=f.bloom*.82;ctx.drawImage(l,0,0,W,H);ctx.globalAlpha=f.bloom*.28;ctx.drawImage(s,0,0,W,H);ctx.restore();}
+ if(f.bloom>0){reset(s);x.drawImage(a.accum,0,0,s.width,s.height);const data=x.getImageData(0,0,s.width,s.height);highlightMask(data.data);x.putImageData(data,0,0);
+  // FIX-RS: the blur is computed in JavaScript (blurRGBA), not with the canvas filter 'blur(3px)', which drew stripes.
+  reset(l).putImageData(new ImageData(blurRGBA(data.data,s.width,s.height,3),s.width,s.height),0,0);ctx.save();ctx.globalCompositeOperation='screen';ctx.globalAlpha=f.bloom*.82;ctx.drawImage(l,0,0,W,H);ctx.globalAlpha=f.bloom*.28;ctx.drawImage(s,0,0,W,H);ctx.restore();}
  if(f.grade>0){ctx.save();const g=ctx.createLinearGradient(0,0,W,H);g.addColorStop(0,'#f6bc78');g.addColorStop(.48,'#b4a7bc');g.addColorStop(1,'#285875');ctx.fillStyle=g;ctx.globalCompositeOperation='soft-light';ctx.globalAlpha=f.grade*.34;ctx.fillRect(0,0,W,H);ctx.restore();}
  if(f.grain>0){const n=reset(a.noise),data=n.createImageData(128,128);for(let y=0;y<128;y++)for(let x=0;x<128;x++){const i=(y*128+x)*4,v=Math.round(hashNoise(x,y,frame)*255);data.data[i]=data.data[i+1]=data.data[i+2]=v;data.data[i+3]=255;}n.putImageData(data,0,0);ctx.save();ctx.globalCompositeOperation='soft-light';ctx.globalAlpha=f.grain*.22;ctx.fillStyle=ctx.createPattern(a.noise,'repeat');ctx.fillRect(0,0,W,H);ctx.restore();}
 }

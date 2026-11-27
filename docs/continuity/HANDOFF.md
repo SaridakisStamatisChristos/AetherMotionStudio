@@ -1,4 +1,30 @@
-# Forward-only handoff: Campaign B GPU-01 TESTED + RENDERED, PR open; next FIX-RS (2026-11-27)
+# Forward-only handoff: FIX-RS TESTED + RENDERED, PR open; next GPU-02 (2026-11-28)
+
+**Latest checkpoint (FIX-RS):** `feature/fix-render-stability` (renamed from fix/… so the CI test job runs; PR #69 closed → #70) from main 936d0cb. GPU-01 is merged as PR #68 on the owner's "merge and start the fix", after CI passed on dca76d5. **The FIX-RS PR is open, not merged.**
+- **Changed:**
+  - `src/index.jsx` (1-pixel read after drawFilm);
+  - `src/core/fidelity.js` (`blurRGBA`);
+  - `src/visual/fidelity-effects.js` (bloom uses blurRGBA);
+  - `tests/fixrs-capture.test.js` (6 tests).
+- **Root causes, fixes, alternatives rejected, measurements:** CAMPAIGN_B.md "FIX-RS".
+- **Results:**
+  - `npm test` 590 (0 fail); Python 70 OK; digests unchanged (`--exclude …,dual,gpu`);
+  - 4 swatch re-renders and gpu01-swatches-r3 are clean (glitch, stripes, stale frames).
+- **For the owner:**
+  - the read costs about 26 % render speed on the RTX route (28 vs 38 fps, 8 tabs);
+  - polished re-renders differ from older renders by ≤ 3 levels on about 1 % of pixels (new byte baseline);
+  - the merge needs the owner's word after CI.
+- **Measurement tools (scratchpad, re-creatable; not in the repo):**
+  - stripe score: high-pass column means in rows 26–40 %, > 1 = striped;
+  - stale scan: a frame matching a non-adjacent earlier frame at mean diff < 0.5 while differing from the previous frame by > 2;
+  - the reproduction: openBrowser + selectComposition(puppeteerInstance) + renderMedia, 1 tab.
+  - Worth turning into a repo check in GPU-10 (performance and quality profiles).
+- **Next action for "fod continue":**
+  1. If the FIX-RS PR is open, report it, confirm CI on its head, and wait for the merge word.
+  2. After the merge, clear renders older than FIX-RS. Keep gpu01-swatches-r3, gpu01-portrait-r2, the GPU-00 references, out/bench/gpu00-*, gpu01-portrait-r2-*, out/speech-cache, public/media and the v1.2 final batches. Remove out/bench/gpu01-swatch-c1/c8, fixrs-*, fixrs2-* and gpu01-swatches-r2.
+  3. Then GPU-02 on `feature/gpu-02-lighting` from main (CAMPAIGN_B.md "GPU-02"). Ask the owner about look references only if they want to steer (otherwise propose a before/after).
+
+**Previous checkpoint (GPU-01), heading as written:** Campaign B GPU-01 TESTED + RENDERED, PR open; next FIX-RS (2026-11-27)
 
 **Latest checkpoint (GPU-01):** `feature/gpu-01-pbr` from main dac8f8d. GPU-00 is merged as PR #67 on the owner's "now merge and move to gpu-01", after CI passed on d5eed73. **The GPU-01 PR is open, not merged.**
 - **Owner decisions this session:**
@@ -32,7 +58,7 @@
 - **Next action for "fod continue":**
   1. If the GPU-01 PR is open, report it, confirm CI on its head, and wait for the owner's merge word.
   2. After the merge, clear renders older than GPU-01: keep the GPU-00 references, gpu01-*-r2, out/bench/gpu00-* and gpu01-portrait-r2-*, out/speech-cache, public/media and the v1.2 final batches.
-  3. Then FIX-RS on `fix/render-stability` from main (plan in CAMPAIGN_B.md "FIX-RS"). Then GPU-02.
+  3. Then FIX-RS on `feature/fix-render-stability` (renamed from fix/… so the CI test job runs; PR #69 closed → #70) from main (plan in CAMPAIGN_B.md "FIX-RS"). Then GPU-02.
 
 **Previous checkpoint (GPU-00):** `feature/gpu-00-architecture` from main 69a3a5e (PR #66 merged on the owner's "merge pr 66 and start gpu-00"). **PR #67 is open, not merged.**
 - **Owner decisions this session:**

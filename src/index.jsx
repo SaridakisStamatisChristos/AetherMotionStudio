@@ -28,7 +28,11 @@ function Film({scene,timeline=null}){useMemo(()=>{validateProject(scene);filmFra
  const images=useMemo(()=>sceneImages(scene),[scene]),[mediaHandle]=useState(()=>images.length?delayRender('local media'):null),[mediaReady,setMediaReady]=useState(!images.length);
  useEffect(()=>{if(!images.length)return;Promise.all(images.map(loadImage)).then(()=>{setMediaReady(true);continueRender(mediaHandle);}).catch(e=>cancelRender(new Error('media load failed: '+(e?.message??e))));},[images,mediaHandle]);
  useEffect(()=>{if(!faces.length)return;Promise.all(faces.map(f=>new FontFace(f.css,'url('+staticFile(f.path)+')',{weight:String(f.weight)}).load().then(x=>{document.fonts.add(x);}))).then(()=>{setFontsReady(true);continueRender(fontHandle);}).catch(e=>cancelRender(new Error('font load failed: '+(e?.message??e))));},[faces,fontHandle]);
- useLayoutEffect(()=>{const ctx=ref.current.getContext('2d');ctx.clearRect(0,0,width,height);if(scene.version===2&&scene.shots.some(s=>s.template==='cinematic-graph'&&s.backend==='three')&&!three.current)three.current=createThreeBackend(threeOptions(scene));if(fontsReady&&mediaReady)drawFilm(ctx,scene,timeline,frame,width,height,three.current)},[frame,width,height,scene,timeline,fontsReady,mediaReady]);
+ useLayoutEffect(()=>{const ctx=ref.current.getContext('2d');ctx.clearRect(0,0,width,height);if(scene.version===2&&scene.shots.some(s=>s.template==='cinematic-graph'&&s.backend==='three')&&!three.current)three.current=createThreeBackend(threeOptions(scene));if(fontsReady&&mediaReady)drawFilm(ctx,scene,timeline,frame,width,height,three.current);
+  // FIX-RS: finish the canvas's pending GPU work before the frame can be captured (a 1-pixel read forces it). Without
+  // it, a frame whose drawing kept the GPU busy was captured from an older picture: gpu01-swatches frame 480 came out
+  // as frame 478 (1 tab) or 464 (8 tabs) although the canvas held the right pixels. Content is unchanged.
+  ctx.getImageData(0,0,1,1);},[frame,width,height,scene,timeline,fontsReady,mediaReady]);
  return <AbsoluteFill><canvas ref={ref} width={width} height={height}/><Audio src={staticFile('audio/'+scene.id+'.wav')}/></AbsoluteFill>;
 }
 // DUAL-06: output size from the project's format (absent = 1080×1920, as before).
