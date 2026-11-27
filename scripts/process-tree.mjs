@@ -21,12 +21,13 @@ export function descendants(table,rootPid){
  return [...out.values()];
 }
 // Kill the tree rooted at pid; resolves {gone:true, pids} only when no member is alive, else {gone:false, remaining}.
-export async function killTree(pid,{timeoutMs=20000,graceMs=3000}={}){
+export async function killTree(pid,{timeoutMs=20000,graceMs=3000,table=processTable}={}){
  if(!Number.isSafeInteger(pid)||pid<=0)throw Error('killTree: invalid PID');
  const deadline=Date.now()+timeoutMs;
  if(process.platform==='win32'){
   const seen=new Map();// pid -> creation time of every member found so far
-  const snap=()=>{const t=processTable();if(!t)return false;for(const [p,c] of seen){const now=t.find(x=>x.pid===p);if(now&&now.created!==c)seen.delete(p);}// reused PID: not ours
+  let readable=false;
+  const snap=()=>{const t=table();if(!t)return false;readable=true;for(const [p,c] of seen){const now=t.find(x=>x.pid===p);if(now&&now.created!==c)seen.delete(p);}// reused PID: not ours
    const roots=[pid,...seen.keys()];for(const r of roots)for(const d of descendants(t,r))if(!seen.has(d.pid))seen.set(d.pid,d.created);return true;};
   if(!snap())seen.set(pid,0);
   for(;;){
@@ -35,7 +36,10 @@ export async function killTree(pid,{timeoutMs=20000,graceMs=3000}={}){
    await sleep(300);
    const remaining=[...seen.keys()].filter(pidAlive);
    if(!remaining.length){// re-read once: anything started by a member just before it died?
-    const before=seen.size;snap();const late=[...seen.keys()].filter(pidAlive);
+    const before=seen.size;snap();
+    // Repair R11: descendants that could never be listed are not known to be gone (fail closed).
+    if(!readable)return {gone:false,remaining:['unknown descendants (process table unreadable)']};
+    const late=[...seen.keys()].filter(pidAlive);
     if(!late.length)return {gone:true,pids:[...seen.keys()]};
     if(seen.size===before&&Date.now()>deadline)return {gone:false,remaining:late};
     continue;

@@ -5,6 +5,7 @@
 //   hang*   start a grandchild and wait forever (unless FAKE_HANG_DONE=1, then succeed)
 //   liar*   exit 0 but record a film hash that does not match the film
 //   noisy*  print about 300 KB of log, then succeed
+//   chatty* keep printing a line every 20 ms and never finish
 // It takes the render lock exactly like produce.mjs (inherited from the batch runner through the token).
 import {mkdirSync,writeFileSync,readFileSync} from 'node:fs';
 import {join} from 'node:path';
@@ -27,7 +28,8 @@ const fail=msg=>{manifest.status='failed';manifest.error=msg;write(join(prod,'pr
 manifest.status='rendering';write(join(prod,'production.json'),manifest);
 if(job.startsWith('fail'))fail('intentional failure');
 if(job.startsWith('flaky')&&n===1)fail('flaky first attempt');
-if(job.startsWith('hang')&&process.env.FAKE_HANG_DONE!=='1'){
+if(job.startsWith('chatty')){setInterval(()=>console.log('Rendered 1/900 still working'),20);}
+else if(job.startsWith('hang')&&process.env.FAKE_HANG_DONE!=='1'){
  const g=spawn(process.execPath,['-e','setInterval(()=>{},1000)'],{windowsHide:true,stdio:'ignore'});
  writeFileSync(join(prod,'grandchild.pid'),String(g.pid));console.log('Rendered 1/900');setInterval(()=>{},1000);
 }else{

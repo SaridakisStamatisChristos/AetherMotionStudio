@@ -11,14 +11,14 @@
 //   films/<job>/ and verified again; failed, cancelled and interrupted attempts are moved to attempts/<attempt>/;
 // - restart recovery marks attempts a dead runner left behind as interrupted, salvages an attempt whose production had
 //   already succeeded (never re-rendered) and completes an interrupted placement; retries and interruptions are bounded.
-import {readFileSync,writeFileSync,renameSync,mkdirSync,existsSync,readdirSync,unlinkSync,lstatSync,realpathSync,statSync,statfsSync,openSync,writeSync,closeSync} from 'node:fs';
+import {readFileSync,writeFileSync,renameSync,mkdirSync,existsSync,readdirSync,unlinkSync,lstatSync,realpathSync,statSync,statfsSync,openSync,writeSync,closeSync,readSync} from 'node:fs';
 import {join,resolve,sep,dirname} from 'node:path';
 import {createHash,randomBytes} from 'node:crypto';
 import {spawn} from 'node:child_process';
 import {safeJson} from '../src/director/schema.js';
 import {FORMAT_IDS,DEFAULT_FORMAT} from '../src/core/formats.js';
 import {parseProduction} from './production-options.mjs';
-import {acquireRenderLock,holderAlive} from './render-lock.mjs';
+import {acquireRenderLock,pidAlive,processStartMs} from './render-lock.mjs';
 import {killTree as defaultKillTree} from './process-tree.mjs';
 export const BATCH_VERSION=1;
 export const LIMITS=Object.freeze({jobs:50,retries:3,interruptions:3,attempts:50,logBytes:8*1024*1024,inputBytes:1024*1024,concurrency:16,history:400,requests:200});
@@ -30,6 +30,8 @@ const slug=(x,max,what)=>{if(typeof x!=='string'||x.length>max||!/^[a-z0-9][a-z0
 const keys=(x,allowed,required,what)=>{if(!x||typeof x!=='object'||Array.isArray(x))throw Error(what+' must be an object');for(const k of Object.keys(x))if(!allowed.includes(k))throw Error(what+': unknown field "'+k+'"');for(const k of required)if(!Object.hasOwn(x,k))throw Error(what+': missing field "'+k+'"');};
 const int=(x,lo,hi,what)=>{if(!Number.isSafeInteger(x)||x<lo||x>hi)throw Error(what+' must be an integer from '+lo+' to '+hi);return x;};
 export const sha256=buf=>createHash('sha256').update(buf).digest('hex');
+// Repair R13: films are hashed in 1 MB chunks (bounded memory for long films), not read whole.
+export function hashFile(p){const h=createHash('sha256'),fd=openSync(p,'r'),buf=Buffer.alloc(1<<20);try{for(;;){const n=readSync(fd,buf,0,buf.length,null);if(!n)break;h.update(buf.subarray(0,n));}}finally{closeSync(fd);}return h.digest('hex');}
 const sleepSync=ms=>Atomics.wait(new Int32Array(new SharedArrayBuffer(4)),0,0,ms);
 // Windows: a rename can fail briefly while another process (an indexer, a reader, a process just killed) holds a handle.
 function retrying(fn){for(let i=0;;i++){try{return fn();}catch(e){if(i>=40||!['EPERM','EBUSY','EACCES'].includes(e.code))throw e;sleepSync(250);}}}
@@ -39,7 +41,8 @@ const readJson=p=>safeJson(readFileSync(p,'utf8'));
 export function safeInputPath(root,rel,what='input'){
  if(typeof rel!=='string'||rel.length>240||!/^[A-Za-z0-9_][A-Za-z0-9_./-]*\.json$/.test(rel))throw Error(what+': path must be repository-relative, using letters, digits, _ . - / and ending in .json');
  const parts=rel.split('/');
- if(parts.some(s=>s===''||s==='.'||s==='..'||s==='.git'||s==='node_modules'||RESERVED.test(s.replace(/\..*$/,''))))throw Error(what+': path segment not allowed');
+ // Windows file names are case-insensitive: CON.json and NODE_MODULES are the same as con.json and node_modules.
+ if(parts.map(s=>s.toLowerCase()).some(s=>s===''||s==='.'||s==='..'||s==='.git'||s==='node_modules'||RESERVED.test(s.replace(/\..*$/,''))))throw Error(what+': path segment not allowed');
  const base=realpathSync(root);let cur=base;
  for(const s of parts){cur=join(cur,s);let st;try{st=lstatSync(cur);}catch{throw Error(what+': file not found: '+rel);}if(st.isSymbolicLink())throw Error(what+': links are not allowed: '+rel);}
  const real=realpathSync(cur);if(!real.startsWith(base+sep))throw Error(what+': outside the repository');
@@ -94,7 +97,8 @@ const DIRS=['inputs','jobs','logs','films','attempts','requests'];
 export function createBatch(def,{root,source=null,now=()=>new Date().toISOString()}){
  const v=validateBatch(def,{root}),dir=batchDirFor(root,v.outputRoot,v.id);
  mkdirSync(dirname(dir),{recursive:true});
- try{mkdirSync(dir);}catch(e){if(e.code==='EEXIST')throw Error('Batch already exists: '+dir+'; choose a new batch id');throw e;}
+ // Repair R9: a folder without batch.json is a creation that was interrupted; say so.
+ try{mkdirSync(dir);}catch(e){if(e.code==='EEXIST')throw Error(existsSync(join(dir,'batch.json'))?'Batch already exists: '+dir+'; choose a new batch id':'An incomplete batch folder (no batch.json, its creation was interrupted) is in the way: '+dir+'; remove it or choose a new batch id');throw e;}
  for(const d of DIRS)mkdirSync(join(dir,d));
  const jobs=v.jobs.map(j=>{
   const input='inputs/'+j.id+'.json';writeFileSync(join(dir,input),j.bytes,{flag:'wx'});
@@ -109,14 +113,52 @@ export function createBatch(def,{root,source=null,now=()=>new Date().toISOString
 export function loadBatch(dir){
  const p=join(dir,'batch.json');if(!existsSync(p))throw Error('Not a complete batch (no batch.json): '+dir);
  const batch=readJson(p);if(batch.version!==BATCH_VERSION||batch.kind!=='aether-batch'||!Array.isArray(batch.jobs))throw Error('Unsupported batch manifest: '+p);
- const jobs=new Map(batch.jobs.map(j=>{slug(j.id,20,'Job id');const m=readJson(join(dir,'jobs',j.id+'.json'));if(m.id!==j.id||!Object.hasOwn(NEXT,m.state))throw Error('Corrupt job manifest: '+j.id);return [j.id,m];}));
+ // Repair R1/R2: manifests are files on disk, so they are checked like any input before a path is built from them.
+ // Every path and folder name must be exactly what this code writes; anything else is refused, never acted on.
+ const bad=m=>{throw Error('Corrupt batch manifest ('+p+'): '+m);};
+ try{slug(batch.id,32,'id');}catch{bad('id');}
+ if(typeof batch.minFreeGB!=='number'||!(batch.minFreeGB>=1&&batch.minFreeGB<=1000))bad('minFreeGB');
+ if(!Array.isArray(batch.runs)||!Array.isArray(batch.requests))bad('runs/requests');
+ if(batch.jobs.length<1||batch.jobs.length>LIMITS.jobs)bad('job count');
+ const ids=new Set();
+ for(const j of batch.jobs){
+  try{slug(j?.id,20,'job id');}catch{bad('job id '+JSON.stringify(j?.id));}
+  if(ids.has(j.id))bad('duplicate job '+j.id);ids.add(j.id);
+  if(!['request','project'].includes(j.kind))bad(j.id+' kind');
+  if(j.input!=='inputs/'+j.id+'.json')bad(j.id+' input');
+  if(typeof j.inputSha256!=='string'||!/^[a-f0-9]{64}$/.test(j.inputSha256))bad(j.id+' inputSha256');
+  if(!['cpu','three','both'].includes(j.backend))bad(j.id+' backend');
+  if(!FORMAT_IDS.includes(j.format))bad(j.id+' format');
+  const backends=j.backend==='both'?['cpu','three']:[j.backend];
+  if(!Array.isArray(j.outputSuffixes)||j.outputSuffixes.length!==backends.length||j.outputSuffixes.some((s,i)=>!new RegExp('^'+backends[i]+'-(original|polished)$').test(s))||new Set(j.outputSuffixes.map(s=>s.split('-')[1])).size!==1)bad(j.id+' outputSuffixes');
+  if(j.concurrency!==null&&!(Number.isSafeInteger(j.concurrency)&&j.concurrency>=1&&j.concurrency<=LIMITS.concurrency))bad(j.id+' concurrency');
+  if(!(Number.isSafeInteger(j.retries)&&j.retries>=0&&j.retries<=LIMITS.retries))bad(j.id+' retries');
+ }
+ const jobs=new Map(batch.jobs.map(j=>[j.id,checkJob(readJson(join(dir,'jobs',j.id+'.json')),j)]));
  return {batch,jobs};
+}
+function checkJob(m,spec){
+ const bad=x=>{throw Error('Corrupt job manifest: '+spec.id+': '+x);};
+ if(!m||m.id!==spec.id||!Object.hasOwn(NEXT,m.state))bad('id or state');
+ if(!Array.isArray(m.attempts)||!Array.isArray(m.history)||m.attempts.length>LIMITS.attempts)bad('attempts or history');
+ for(const k of ['failures','interruptions'])if(!Number.isSafeInteger(m[k])||m[k]<0)bad(k);
+ m.attempts.forEach((a,i)=>{
+  if(a?.n!==i+1||typeof a.id!=='string'||!new RegExp('^'+spec.id+'-a'+a.n+'-[a-f0-9]{4}$').test(a.id))bad('attempt '+(i+1)+' id');
+  if(JSON.stringify(a.folders)!==JSON.stringify(folderNames(a.id,spec.outputSuffixes)))bad('attempt '+a.id+' folders');
+  if(a.log!=='logs/'+a.id+'.log')bad('attempt '+a.id+' log');
+  if(a.pid!==undefined&&!(Number.isSafeInteger(a.pid)&&a.pid>0))bad('attempt '+a.id+' pid');
+  if(a.pidStart!==undefined&&a.pidStart!==null&&!Number.isFinite(a.pidStart))bad('attempt '+a.id+' pidStart');
+ });
+ if(m.outputs!==null&&(m.outputs?.folder!=='films/'+spec.id||!m.attempts.some(a=>a.id===m.outputs.attempt)))bad('outputs');
+ if(m.state==='succeeded'&&!m.outputs)bad('succeeded without outputs');
+ return m;
 }
 // Record a transition (append-only history) and persist the job manifest before the caller acts on it.
 export function transition(dir,job,to,note){
  if(!NEXT[job.state]?.includes(to))throw Error('Illegal job transition '+job.state+' -> '+to+' ('+job.id+')');
+ // Repair R8: the limit is checked before anything changes.
+ if(job.history.length>=LIMITS.history)throw Error('Job history limit reached: '+job.id);
  job.history.push({at:new Date().toISOString(),from:job.state,to,...(note?{note:String(note).slice(0,300)}:{})});
- if(job.history.length>LIMITS.history)throw Error('Job history limit reached: '+job.id);
  job.state=to;saveJob(dir,job);
 }
 export const saveJob=(dir,job)=>writeJsonAtomic(join(dir,'jobs',job.id+'.json'),job);
@@ -135,7 +177,7 @@ export function verifyOutputs(base,attemptId,folders){
  const films=folders.outputs.map((f,i)=>{
   const r=pm.results?.[i];if(!r||r.id!==f||r.status!=='succeeded'||typeof r.filmSha256!=='string')throw Error('no succeeded result for '+f);
   const film=join(base,f,'film.mp4');if(!existsSync(film))throw Error('film missing: '+f);
-  const got=sha256(readFileSync(film));if(got!==r.filmSha256)throw Error('film SHA-256 of '+f+' is '+got.slice(0,16)+'…, the production recorded '+r.filmSha256.slice(0,16)+'…');
+  const got=hashFile(film);if(got!==r.filmSha256)throw Error('film SHA-256 of '+f+' is '+got.slice(0,16)+'…, the production recorded '+r.filmSha256.slice(0,16)+'…');
   readJson(join(base,f,'probe.json'));const q=readJson(join(base,f,'quality-report.json'));if(q.errors!==0)throw Error('quality report of '+f+' has errors');
   return {folder:f,backend:r.backend,sha256:got,bytes:statSync(film).size,frames:r.frames,renderSeconds:r.renderSeconds,gl:r.gl??null,qualityStatus:r.qualityStatus,warnings:r.warnings};
  });
@@ -161,8 +203,9 @@ function place(root,dir,job,attempt){
 }
 // Bounded attempt log: the file stops at LIMITS.logBytes (one marker line); a short tail is kept for error summaries.
 function boundedLog(path,limit=LIMITS.logBytes){
- const fd=openSync(path,'wx');let n=0,cut=false,tail='';
- return {write(s){tail=(tail+s).slice(-4000);if(cut)return;const b=Buffer.from(s);if(n+b.length>limit){writeSync(fd,b.subarray(0,Math.max(0,limit-n)));writeSync(fd,'\n[log truncated at '+limit+' bytes]\n');n=limit;cut=true;return;}writeSync(fd,b);n+=b.length;},close(){try{closeSync(fd);}catch{}},get tail(){return tail;},get truncated(){return cut;}};
+ // Repair R3: a child that outlives a failed cancel may still print after the log is closed; that is ignored, not a crash.
+ const fd=openSync(path,'wx');let n=0,cut=false,tail='',closed=false;
+ return {write(s){tail=(tail+s).slice(-4000);if(cut||closed)return;const b=Buffer.from(s);if(n+b.length>limit){writeSync(fd,b.subarray(0,Math.max(0,limit-n)));writeSync(fd,'\n[log truncated at '+limit+' bytes]\n');n=limit;cut=true;return;}writeSync(fd,b);n+=b.length;},close(){if(closed)return;closed=true;try{closeSync(fd);}catch{}},get tail(){return tail;},get truncated(){return cut;}};
 }
 // Default executor: the unchanged production CLI. POSIX children get their own process group (tree cancellation).
 export function spawnProduce({root,args,env}){
@@ -183,13 +226,22 @@ function takeRequests(dir,batch){
  return out;
 }
 const effectiveConcurrency=(spec,env)=>spec.concurrency??(env.AETHER_CONCURRENCY?Number(env.AETHER_CONCURRENCY):2);
+// Is the attempt's recorded PID still that production? Repair R4: identity is the start time measured at spawn
+// (±2 s), not closeness to the attempt's own timestamp (a slow spawn or a clock step would hide a live orphan).
+// Without a measured start (older manifests, or no measurement on this platform): a 10-minute window.
+export function sameProcess(a,startMs=processStartMs){
+ if(!pidAlive(a.pid))return false;
+ const now=startMs(a.pid);if(now===null)return true;
+ if(Number.isFinite(a.pidStart))return Math.abs(now-a.pidStart)<=2000;
+ return Math.abs(now-Date.parse(a.startedAt))<=600000;
+}
 // Bring jobs a dead runner left in flight to a consistent state, never re-rendering finished work. A production the
 // dead runner started may still be running (only the runner died): its whole tree is ended first, verified gone.
 export async function recover(root,dir,batch,jobs,{log=()=>{},killTree=defaultKillTree}={}){
  for(const job of jobs.values()){
   if(TERMINAL.includes(job.state)||job.state==='queued')continue;
   const a=job.attempts.at(-1);if(!a)throw Error('Job '+job.id+' is '+job.state+' without an attempt');
-  if(a.pid&&holderAlive({pid:a.pid,startedAt:a.startedAt})){
+  if(a.pid&&sameProcess(a)){
    log(job.id+': attempt '+a.n+' is still running without its runner (PID '+a.pid+'); ending its process tree');
    const k=await killTree(a.pid);if(!k.gone)throw Error(job.id+': an orphaned production (PIDs '+k.remaining.join(', ')+') did not stop; end it in Task Manager, then run the batch again');
    a.orphanKilled=k.pids.length;
@@ -216,7 +268,7 @@ export async function recover(root,dir,batch,jobs,{log=()=>{},killTree=defaultKi
  saveBatch(dir,batch,jobs);
 }
 // Run (or resume) a batch. Resolves {status:'finished'|'stopped', exitCode, summary}.
-export async function runBatch(dir,{root,env=process.env,execute=spawnProduce,killTree=defaultKillTree,diskFree=freeBytes,pollMs=1000,log=s=>console.log(s),signals=false,holder,logBytes=LIMITS.logBytes}={}){
+export async function runBatch(dir,{root,env=process.env,execute=spawnProduce,killTree=defaultKillTree,diskFree=freeBytes,pollMs=1000,log=s=>console.log(s),signals=false,holder,logBytes=LIMITS.logBytes,attemptTag=()=>randomBytes(2).toString('hex')}={}){
  const lock=acquireRenderLock(root,{holder:holder??('batch '+dir.split(sep).at(-1)),env});
  let stopSignal=false;const onSignal=()=>{stopSignal=true;};
  if(signals)for(const s of ['SIGINT','SIGTERM','SIGBREAK'])process.on(s,onSignal);
@@ -233,11 +285,20 @@ export async function runBatch(dir,{root,env=process.env,execute=spawnProduce,ki
   let reason=null;
   for(const spec of batch.jobs){
    const job=jobs.get(spec.id);
-   while(job.state==='queued'&&!stop&&!stopSignal){
+   for(;;){
+    // Repair R5: requests are read before every attempt, so a stop or cancel sent between jobs acts before the next one starts.
+    apply(takeRequests(dir,batch));
+    if(job.state!=='queued'||stop||stopSignal)break;
     if(job.attempts.length>=LIMITS.attempts){job.error='attempt limit reached';transition(dir,job,'failed',job.error);break;}
-    const free=diskFree(dir),need=batch.minFreeGB*1024**3;
-    if(free<need){reason='low disk space: '+(free/1024**3).toFixed(1)+' GB free, the batch needs '+batch.minFreeGB+' GB before each job';stop=true;break;}
-    const n=job.attempts.length+1,id=spec.id+'-a'+n+'-'+randomBytes(2).toString('hex'),folders=folderNames(id,spec.outputSuffixes);
+    // Repair R7: free space that cannot be measured stops the batch (fail closed) instead of crashing the runner.
+    let free;try{free=diskFree(dir);}catch(e){reason='cannot measure free disk space: '+String(e.message??e).slice(0,200);stop=true;break;}
+    const need=batch.minFreeGB*1024**3;
+    if(!(free>=need)){reason='low disk space: '+(free/1024**3).toFixed(1)+' GB free, the batch needs '+batch.minFreeGB+' GB before each job';stop=true;break;}
+    // Repair R10: an attempt ID is drawn until none of its folders exists (produce.mjs would refuse it as a failure).
+    const n=job.attempts.length+1;let id,folders;
+    for(let k=0;;k++){if(k>=20)throw Error(spec.id+': no free attempt ID after 20 draws');id=spec.id+'-a'+n+'-'+attemptTag();folders=folderNames(id,spec.outputSuffixes);
+     if(!/^[a-f0-9]{4}$/.test(id.slice(-4)))throw Error('attempt tag must be 4 hex digits');
+     if(!allFolders(folders).some(f=>existsSync(join(root,'out',f))||existsSync(join(dir,'attempts',id))||existsSync(join(dir,'films',spec.id,f))))break;}
     const attempt={n,id,folders,startedAt:new Date().toISOString(),endedAt:null,outcome:'running',log:'logs/'+id+'.log',concurrency:effectiveConcurrency(spec,env),gl:env.AETHER_GL??null,location:'out'};
     job.attempts.push(attempt);transition(dir,job,'preparing','attempt '+n+' ('+id+')');
     log(spec.id+': attempt '+n+' started ('+spec.backend+', '+spec.format+', concurrency '+attempt.concurrency+')');
@@ -245,7 +306,9 @@ export async function runBatch(dir,{root,env=process.env,execute=spawnProduce,ki
     const childEnv={...env,AETHER_RENDER_LOCK_TOKEN:lock.token,...(spec.concurrency?{AETHER_CONCURRENCY:String(spec.concurrency)}:{})};
     let child;const done=new Promise(ok=>{
      try{child=execute({root,args:productionArgs(spec.kind,join(dir,spec.input),spec.backend,id,spec.format),env:childEnv});}catch(e){out.write('spawn failed: '+e.message+'\n');ok({code:-1,signal:null});return;}
-     if(child.pid){attempt.pid=child.pid;saveJob(dir,job);}// recorded so a restart can end an orphaned production
+     // Recorded so a restart can recognise and end an orphaned production (repair R4: by its measured start time).
+     // The PID is written first (measuring the start time takes about a second on Windows); then the start time.
+     if(child.pid){attempt.pid=child.pid;saveJob(dir,job);attempt.pidStart=processStartMs(child.pid);saveJob(dir,job);}
      const relay=b=>{const s=b.toString();out.write(s);for(const line of s.split(/\r?\n/))if(/^(PASS|CHECKS|QUALITY)\b|production failed/.test(line))log('  '+spec.id+': '+line.slice(0,300));};
      child.stdout?.on('data',relay);child.stderr?.on('data',relay);child.on('error',e=>{out.write('process error: '+e.message+'\n');});child.on('close',(code,signal)=>ok({code,signal}));
     });

@@ -76,7 +76,8 @@ function takeover(p,stale,{startMs}){
  try{create(g,guard);}catch(e){
   if(e.code!=='EEXIST')throw e;
   const other=readLockFile(g);
-  if(other&&!other.corrupt&&holderAlive(other,{startMs}))throw lockedError('Another process is taking over a stale render lock; try again.',other);
+  // Repair R12: a guard that is still being written (empty or partial, and fresh) belongs to a live taker: respect it.
+  if(other&&(other.corrupt?corruptAgeMs(g)<10000:holderAlive(other,{startMs})))throw lockedError('Another process is taking over a stale render lock; try again.',other.corrupt?null:other);
   try{unlinkSync(g);}catch{}
   return;// the caller retries (and may then win the guard)
  }

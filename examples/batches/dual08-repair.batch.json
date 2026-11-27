@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "id": "dual08-repair-r1",
+  "outputRoot": "out/batches",
+  "retries": 0,
+  "minFreeGB": 10,
+  "jobs": [
+    {"id": "dual08-narrator", "request": "examples/dual07-narrator.request.json", "backend": "cpu", "format": "vertical-v1", "concurrency": 8},
+    {"id": "dual08-missing", "request": "examples/batches/dual08-missing-picture.request.json", "backend": "cpu", "format": "vertical-v1"}
+  ]
+}

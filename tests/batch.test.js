@@ -95,7 +95,9 @@ test('job state machine: only listed transitions, append-only history, terminal 
  assert.throws(()=>transition(dir,j,'succeeded'),/Illegal job transition queued -> succeeded/);
  for(const s of ['preparing','rendering','verifying','placing','succeeded'])transition(dir,j,s);
  for(const s of Object.keys(NEXT))assert.throws(()=>transition(dir,j,s),/Illegal/);
- assert.deepEqual(states(loadBatch(dir).jobs.get('ok-a')),['queued','preparing','rendering','verifying','placing','succeeded']);
+ assert.deepEqual(states(j),['queued','preparing','rendering','verifying','placing','succeeded']);
+ // Repair R1/R2: a manifest that says succeeded must name its outputs; this synthetic one does not, so loading refuses it.
+ assert.throws(()=>loadBatch(dir),/succeeded without outputs/);
  for(const t of TERMINAL)assert.deepEqual(NEXT[t],[]);
 });
 
@@ -155,11 +157,12 @@ test('stop ends the running tree, keeps the job queued (resumable); resume finis
  assert.deepEqual(jobs.get('hang-b').attempts.map(a=>a.outcome),['stopped','succeeded']);assert.equal(jobs.get('ok-b').state,'succeeded');
 });
 
-test('restart recovery: the runner dies mid-job; the next run ends the orphaned production, marks the attempt interrupted and re-runs it',async()=>{
+test('restart recovery: the runner dies mid-job; the next run ends the orphaned production, marks the attempt interrupted and re-runs it',async t=>{
  const root=sandbox();const {dir}=createBatch(def('crash',[job('hang-c'),job('ok-c')]),{root});
  const runner=spawn(process.execPath,[runnerScript,root,dir],{windowsHide:true,stdio:'ignore',env});
+ t.after(async()=>{for(const p of [runner.pid,loadBatch(dir).jobs.get('hang-c').attempts[0]?.pid])if(p&&pidAlive(p))await killTree(p);});
  const gp=await waitFor(()=>gpOf(root,dir,'hang-c'));
- const orphan=loadBatch(dir).jobs.get('hang-c').attempts[0].pid;assert.ok(pidAlive(orphan));
+ const orphan=await waitFor(()=>loadBatch(dir).jobs.get('hang-c').attempts[0].pid);assert.ok(pidAlive(orphan));
  process.kill(runner.pid,'SIGKILL');await waitFor(()=>!pidAlive(runner.pid));
  assert.ok(pidAlive(orphan),'only the runner died: its production is orphaned and still running');
  assert.ok(existsSync(lockPath(root,env)),'the dead runner left its lock behind');
