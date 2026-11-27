@@ -6,7 +6,7 @@ import {validateSpeechConfig,validateSpeechTimeline} from './speech.js';
 import {validateSpeakerAssets,validateEnvelope,validateVisemes} from './talk.js';
 import {validateDialogue} from './dialogue.js';
 import {validateBodyLanguage} from './body.js';
-import {assertNegotiated} from './render-profiles.js';
+import {assertNegotiated,validateCinematic} from './render-profiles.js';
 export const FPS=30,SAMPLE_RATE=48000,SAMPLES_PER_FRAME=1600,MAX_FRAMES=9000,MAX_SHOT=3600;
 export const CHAPTERS=Object.freeze(['transactions','blocks','hashes','network','verification']);
 const fail=(p,m)=>{throw Error(p+': '+m)};
@@ -16,7 +16,7 @@ function integer(x,min,max,p){if(!Number.isSafeInteger(x)||x<min||x>max)fail(p,'
 function slug(x,p){if(typeof x!=='string'||!/^[a-z0-9][a-z0-9-]{0,47}$/.test(x)||/^(con|prn|aux|nul|com[1-9]|lpt[1-9])$/.test(x))fail(p,'unsafe ID');}
 export function validateProject(s){
  if(s?.version===1)return validateScene(s);
- fields(s,['version','id','title','voice','shots'],'film',['identityLibrary','speech','audio','delivery','format','renderProfile']);
+ fields(s,['version','id','title','voice','shots'],'film',['identityLibrary','speech','audio','delivery','format','renderProfile','cinematic']);
  // GEN-09 opt-in delivery layout (src/core/reels.js); absent = the historical layout.
  if(s.delivery!==undefined&&s.delivery!=='reels-v1')fail('film.delivery','reels-v1 or absent');
  if(s.version!==2)fail('version','only 1 or 2 supported');
@@ -50,7 +50,9 @@ export function validateProject(s){
  validateDialogue(s);
  validateBodyLanguage(s);
  // GPU-00 / ADR-001: opt-in film-level render profile; absent = v1.2 (CPU Classic / GPU Standard by shot backend).
- if(s.renderProfile!==undefined)assertNegotiated({renderProfile:s.renderProfile,project:s,path:'film.renderProfile'});
+ // GPU-01: opt-in Cinematic feature block (capabilities such as pbr-v1); without renderProfile it fails with RP-03.
+ if(s.cinematic!==undefined)validateCinematic(s.cinematic);
+ if(s.renderProfile!==undefined||s.cinematic!==undefined)assertNegotiated({renderProfile:s.renderProfile,project:s,path:'film.renderProfile'});
  return s;
 }
 export function validateTimeline(s,t){

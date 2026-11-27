@@ -10,7 +10,7 @@ import {CONTENT_MODES} from './aids.js';
 import {validateVisualsRequest} from './visuals.js';
 import {FONTS,THEMES} from '../core/composition.js';
 import {isCatalogCharacter} from '../quality/crowding.js';
-import {assertNegotiated} from '../core/render-profiles.js';
+import {assertNegotiated,validateCinematic,CINEMATIC_DEFAULTS} from '../core/render-profiles.js';
 export const REQUEST_VERSION=1,IR_VERSION=1,MAX_JSON_BYTES=262144;
 const bad=(p,m)=>{throw Error(p+': '+m)};
 export function safeText(s,max,p){literal(s,max,p);if(/https?:\/\/|file:\/\/|javascript:|<\/?script\b|<iframe\b|\x60\x60\x60/i.test(s))bad(p,'URLs or executable markup not permitted');}
@@ -27,7 +27,7 @@ export function safeJson(raw){
 }
 export const normalize=s=>s.trim().replace(/\s+/g,' ');
 export function request(input){
- fields(input,['version','id','topic','script','seconds','audience','tone','style','language','voice','backend','profile','seed','identityLibrary','cast','story','speech','staging','promptVersion','dialogue','delivery','sets','look','titles','content','font','theme','visuals','format','captionStyle','soundtrack','music','renderProfile'], 'request',['version','id','topic','seconds']);
+ fields(input,['version','id','topic','script','seconds','audience','tone','style','language','voice','backend','profile','seed','identityLibrary','cast','story','speech','staging','promptVersion','dialogue','delivery','sets','look','titles','content','font','theme','visuals','format','captionStyle','soundtrack','music','renderProfile','cinematic'], 'request',['version','id','topic','seconds']);
  // GEN-09 opt-in delivery mode (Instagram Reels layout and framing); absent = unchanged output.
  if(input.delivery!==undefined&&input.delivery!=='reels-v1')bad('request.delivery','reels-v1 or absent');
  // GEN-12 topic-fitting sets: 'topic-v1' or 'none'; absent = topic-v1 for dialogue films, unchanged output otherwise.
@@ -80,6 +80,10 @@ export function request(input){
  choice(q.backend,['cpu','three'],'request.backend');choice(q.profile,['original','polished'],'request.profile');
  // GPU-00 / ADR-001: opt-in render profile (not the fidelity `profile`); refused before any planning when it cannot render.
  if(q.renderProfile!==undefined)assertNegotiated({renderProfile:q.renderProfile,backends:[q.backend],path:'request.renderProfile'});
+ // GPU-01: Cinematic features; with renderProfile and no block of its own the request gets CINEMATIC_DEFAULTS (every
+ // accepted Cinematic feature). Without renderProfile a block is refused (RP-03), never ignored.
+ if(q.cinematic!==undefined){validateCinematic(q.cinematic,'request.cinematic');if(q.renderProfile===undefined)assertNegotiated({project:{cinematic:q.cinematic},backends:[q.backend],path:'request.cinematic'});}
+ else if(q.renderProfile!==undefined)q.cinematic={...CINEMATIC_DEFAULTS};
  validateIdentityRequest(q);if(q.speech!==undefined){validateSpeechConfig(q.speech);if(q.speech.targetFrames!==q.seconds*30)bad('speech','targetFrames must equal seconds*30');}validateDialogueRequest(q);return q;
 }
 export function validateIR(ir,q,selection){

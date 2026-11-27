@@ -9,7 +9,7 @@ import {compileProjectMath} from '../src/director/math-loader.js';
 import {resolveProjectMedia} from '../src/director/media-loader.js';
 import {assertNegotiated} from '../src/core/render-profiles.js';
 export function parseProduction(args,{read=p=>readFileSync(resolve(p),'utf8'),newId=()=> 'film-'+randomBytes(6).toString('hex')}={}){
- const o={},flags=new Set(['repair']),values=new Set(['request','topic','project','pair','script','script-file','seconds','backend','profile','voice','language','id','seed','import','format']);
+ const o={},flags=new Set(['repair']),values=new Set(['request','topic','project','pair','script','script-file','seconds','backend','profile','voice','language','id','seed','import','format','compare']);
  const queue=[...args];while(queue.length){
   const raw=queue.shift();if(!raw.startsWith('--'))throw Error('Expected --option');const k=raw.slice(2);
   if(Object.hasOwn(o,k))throw Error('Duplicate option: '+k);
@@ -39,8 +39,17 @@ export function parseProduction(args,{read=p=>readFileSync(resolve(p),'utf8'),ne
  if(raw.renderProfile!==undefined)assertNegotiated({renderProfile:raw.renderProfile,backends:directorBackends,path:'request.renderProfile'});
  raw.id=id;const q=request({...raw,speech:raw.speech??requestSpeech(raw)});
  // Strictly reject conflicting supplied speech target, never silently retime authored data.
- const ids=directorBackends.map(b=>productionId(id,b,q.profile));
- return {mode:'director',request:q,id,backends:directorBackends,ids,repair:o.repair===true,imported:o.import?read(o.import):null,targetFrames:q.seconds*30,sources:null,project:null};
+ const plan=profilePlan(o,q.renderProfile,directorBackends,id,q.profile);
+ return {mode:'director',request:q,id,...plan,repair:o.repair===true,imported:o.import?read(o.import):null,targetFrames:q.seconds*30,sources:null,project:null};
+}
+// GPU-01: outputs of one production. --compare standard renders a Cinematic film twice from one shared preparation:
+// GPU Standard (the same film without its profile fields) and the Cinematic film itself. Any other use is refused.
+function profilePlan(o,renderProfile,backends,id,profile){
+ if(o.compare===undefined)return {backends,variants:backends.map(()=>({standard:false})),ids:backends.map(b=>productionId(id,b,profile,renderProfile??null)),compare:null};
+ if(o.compare!=='standard')throw Error('--compare accepts only standard');
+ if(renderProfile===undefined)throw Error('--compare standard needs a Cinematic film (renderProfile); a GPU Standard film has nothing to compare with');
+ if(backends.length!==1||backends[0]!=='three')throw Error('--compare standard renders two Three.js outputs; use --backend three');
+ return {backends:['three','three'],variants:[{standard:true},{standard:false}],ids:[productionId(id,'three',profile),productionId(id,'three',profile,renderProfile)],compare:'standard'};
 }
 // LOCAL-02 authored mode: an existing validated v2 project is the single scene definition for every backend.
 function authored(o,backends,read,newId){
@@ -55,5 +64,5 @@ function authored(o,backends,read,newId){
   if(digest(normalizedProject(pair))!==digest(normalizedProject(project)))throw Error('Authored backend pair differs after normalization; refusing matched production');
  }
  const id=o.id??newId();
- return {mode:'project',request:null,project,id,backends,ids:backends.map(b=>productionId(id,b,profile)),repair:o.repair===true,imported:null,targetFrames,profile,sources:{project:o.project,pair:o.pair??null}};
+ return {mode:'project',request:null,project,id,...profilePlan(o,project.renderProfile,backends,id,profile),repair:o.repair===true,imported:null,targetFrames,profile,sources:{project:o.project,pair:o.pair??null}};
 }

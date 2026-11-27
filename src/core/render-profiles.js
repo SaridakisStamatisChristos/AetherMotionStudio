@@ -12,7 +12,22 @@ export const PROFILE_IDS=Object.freeze(['cpu-classic','gpu-standard',...RENDER_P
 const ALL=Object.freeze([...PROFILE_IDS]);
 // One entry per capability: the milestone that added it and the profiles that support it. Each Campaign B milestone
 // adds its own entry (pbr-v1, env-light-v1, …) only when it is accepted.
-export const CAPABILITIES=Object.freeze({shared:Object.freeze({since:'v1.2',profiles:ALL})});
+export const CAPABILITIES=Object.freeze({shared:Object.freeze({since:'v1.2',profiles:ALL}),
+ // GPU-01: physically based material presets (src/visual/pbr.js), selected by film.cinematic.materials 'pbr-v1'.
+ 'pbr-v1':Object.freeze({since:'GPU-01',profiles:Object.freeze(['cinematic-v1'])})});
+// GPU-01: the film-level Cinematic feature block (versioned, every key optional). It only selects capabilities; the
+// profile itself is renderProfile. Absent = no Cinematic feature (cinematic-v1 then draws GPU Standard pixels).
+export const CINEMATIC_VERSION=1;
+export const CINEMATIC_FEATURES=Object.freeze({materials:Object.freeze({'pbr-v1':'pbr-v1'})});
+// What a Director request with renderProfile gets when it brings no cinematic block of its own (every accepted feature).
+export const CINEMATIC_DEFAULTS=Object.freeze({version:CINEMATIC_VERSION,materials:'pbr-v1'});
+export function validateCinematic(x,path='film.cinematic'){
+ if(!x||typeof x!=='object'||Array.isArray(x))throw Error(path+': object required');
+ for(const k of Object.keys(x))if(k!=='version'&&!Object.hasOwn(CINEMATIC_FEATURES,k))throw Error(path+'.'+k+': unknown field');
+ if(x.version!==CINEMATIC_VERSION)throw Error(path+'.version: '+CINEMATIC_VERSION+' required');
+ for(const [k,values] of Object.entries(CINEMATIC_FEATURES))if(Object.hasOwn(x,k)&&(typeof x[k]!=='string'||!Object.hasOwn(values,x[k])))throw Error(path+'.'+k+': '+Object.keys(values).join(', ')+' or absent');
+ return x;
+}
 // Stable diagnostic codes (ADR-001 section 5). RP-06 is reserved for the GPU-10 resource estimate.
 export const DIAGNOSTIC_CODES=Object.freeze({
  'RP-01':'unknown-profile','RP-02':'backend-mismatch','RP-03':'capability-unsupported','RP-04':'matched-pair-mismatch','RP-05':'software-gl','RP-06':'over-budget'});
@@ -33,7 +48,17 @@ export function renderProfileDiagnostics(value,path='renderProfile'){
 // The profile a shot renders with.
 export function shotProfile(renderProfile,backend){return renderProfile??(backend==='three'?'gpu-standard':'cpu-classic');}
 // Capabilities a film needs, derived from its fields. Every v1.2 field is 'shared'; later milestones add derivations.
-export function requiredCapabilities(project){if(!project||typeof project!=='object')return [];return ['shared'];}
+export function requiredCapabilities(project){
+ if(!project||typeof project!=='object')return [];
+ const c=['shared'],x=project.cinematic;
+ if(x&&typeof x==='object')for(const [k,values] of Object.entries(CINEMATIC_FEATURES))if(Object.hasOwn(values,x[k]))c.push(values[x[k]]);
+ return c;
+}
+// Renderer options for one film: the Cinematic features to draw, only when the film is Cinematic (validated first).
+export function threeOptions(project){
+ if(project?.renderProfile===undefined||!project.cinematic)return {};
+ return {renderProfile:project.renderProfile,materials:project.cinematic.materials??null};
+}
 // Full negotiation for a v2 project, or for a planned production (renderProfile + requested backends) before any
 // project exists. Returns {ok, profile, capabilities, diagnostics}; never changes its input.
 export function negotiate({renderProfile,project=null,backends=null,gl=null,table=CAPABILITIES,path='renderProfile'}={}){
@@ -49,7 +74,7 @@ export function negotiate({renderProfile,project=null,backends=null,gl=null,tabl
   for(const [s,i] of graph)if(s.backend!=='three')diagnostics.push(diag('RP-02','error','shots['+i+'].backend',renderProfile+' renders only on Three.js, but this shot asks for '+JSON.stringify(s.backend),['set the shot backend to three','remove renderProfile (an explicit edit)','cancel']));
  }
  const capabilities=project?requiredCapabilities(project):['shared'];
- const profiles=cinematic?[renderProfile]:project?[...new Set(graph.map(([s])=>shotProfile(undefined,s.backend)))]:(backends??[]).map(b=>shotProfile(undefined,b));
+ const profiles=cinematic?[renderProfile]:graph.length?[...new Set(graph.map(([s])=>shotProfile(undefined,s.backend)))]:[...new Set((backends??[]).map(b=>shotProfile(undefined,b)))];
  for(const c of capabilities){const entry=table[c];
   if(!entry){diagnostics.push(diag('RP-03','error','capabilities','unknown capability '+c,['update the profile table','cancel']));continue;}
   for(const p of profiles)if(!entry.profiles.includes(p))diagnostics.push(diag('RP-03','error','capabilities','the film uses '+c+', which '+p+' does not support',[...RENDER_PROFILES.filter(r=>entry.profiles.includes(r)).map(r=>'add renderProfile "'+r+'"'),'remove the features that need '+c+' (an explicit edit)','cancel']));}

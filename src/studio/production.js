@@ -1,4 +1,5 @@
 import {validateProject,validateTimeline} from '../core/timeline.js';
+import {RENDER_PROFILES} from '../core/render-profiles.js';
 export function defaultSpeech(seconds){
  if(!Number.isSafeInteger(seconds)||seconds<6||seconds>300)throw Error('Production duration must be an integer from 6 to 300 seconds');
  return {version:1,targetFrames:seconds*30,fixedShots:{},speakers:{},shotSpeakers:{},pronunciations:{},captions:{mode:'both',highlight:true,maxChars:32,maxLines:2,maxCps:18,readable:true},mouths:'visemes-v1',mix:{narration:1,music:.55,ambience:.35,sfx:.45,duck:.35,fadeSeconds:.25,peak:.92},cues:[],syncActions:true};
@@ -12,11 +13,18 @@ export function requestSpeech(q,{speakerNames=false}={}){
  if(q.content)s={...s,fit:'speech-v1',mix:{...s.mix,master:'mix-v2'}};
  return s;
 }
-export function productionId(id,backend,profile){
+export function productionId(id,backend,profile,renderProfile=null){
  if(typeof id!=='string'||!/^[a-z0-9][a-z0-9-]{0,31}$/.test(id)||/^(con|prn|aux|nul|com[1-9]|lpt[1-9]|constructor|prototype)$/.test(id))throw Error('Production ID must be a safe lowercase slug (max 32 characters)');
  if(!['cpu','three'].includes(backend)||!['original','polished'].includes(profile))throw Error('Invalid production backend/profile');
+ // GPU-01: a Cinematic output is named apart from the GPU Standard output of the same id (never the same folder).
+ if(renderProfile!==null){if(!RENDER_PROFILES.includes(renderProfile)||backend!=='three')throw Error('Invalid production render profile');return id+'-'+renderProfile.replace('-v','v')+'-'+profile;}
  return id+'-'+backend+'-'+profile;
 }
+// GPU-01 matched Standard vs Cinematic: the GPU Standard side of a Cinematic film is the same film without its
+// renderProfile and cinematic block (an explicit, user-requested comparison; never applied to a single production).
+export function standardVariant(p){const r=structuredClone(p);delete r.renderProfile;delete r.cinematic;return r;}
+// Normalized scene for the Standard vs Cinematic parity check: everything except backend, id and the profile fields.
+export function normalizedScene(p){return normalizedProject(standardVariant(p));}
 // LOCAL-02: matched production accepts speech-first projects (Director or authored) and authored
 // fixed-budget graph projects. Never retimes: the budget is the speech target or the authored sum.
 export function matchedTargetFrames(p){
@@ -26,11 +34,12 @@ export function matchedTargetFrames(p){
  if(!d.every(Number.isSafeInteger))throw Error('Matched production requires a speech budget or fixed durationFrames on every shot');
  return d.reduce((a,b)=>a+b,0);
 }
-export function matchedProject(p,timeline,id,backend){
+export function matchedProject(p,timeline,id,backend,{standard=false}={}){
  matchedTargetFrames(p);
  if(!['cpu','three'].includes(backend))throw Error('Invalid matched backend');
  if(!timeline)throw Error('Matched production requires the measured shared timeline');
- const result=structuredClone(p);result.id=id;for(const s of result.shots)s.backend=backend;
+ if(standard&&(backend!=='three'||p.renderProfile===undefined))throw Error('The GPU Standard side of a comparison needs a Cinematic film on three');
+ const result=standard?standardVariant(p):structuredClone(p);result.id=id;for(const s of result.shots)s.backend=backend;
  validateProject(result);validateTimeline(result,timeline);return result;
 }
 // Fidelity profile of an authored project: polished iff every shot carries a fidelity block.
