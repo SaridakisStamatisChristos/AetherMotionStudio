@@ -129,6 +129,21 @@ test('mixed batch: success, bounded retries, flaky recovery, failed verification
  writeFileSync(film,'tampered');const v=verifyBatch(dir).find(x=>x.job==='ok-cpu');assert.equal(v.ok,false);assert.match(v.error,/film SHA-256/);
 });
 
+test('DUAL-09: a long film\'s large production reports (over the 256 KB request limit) verify; a hostile report is refused',async()=>{
+ const root=sandbox();
+ const {dir}=createBatch(def('long',[job('long-pair',{backend:'both'})]),{root});
+ let calls=0;const r=await runBatch(dir,{root,env,execute:x=>{calls++;return execute(x);},...quiet});
+ const j=loadBatch(dir).jobs.get('long-pair');
+ assert.equal(j.state,'succeeded',j.error);assert.equal(calls,1,'a passing production is never re-rendered');assert.equal(r.exitCode,0);
+ const q=join(dir,'films','long-pair',j.attempts[0].id+'-cpu-polished','quality-report.json');assert.ok(statSync(q).size>262144,'report is '+statSync(q).size+' bytes');
+ assert.deepEqual(verifyBatch(dir).map(x=>x.ok),[true]);
+ // still bounded and safe: an oversized or prototype-polluting report fails verification with a clear message
+ const keep=readFileSync(q);
+ writeFileSync(q,'{"errors":0,"pad":"'+'x'.repeat(33*1024*1024)+'"}');assert.match(verifyBatch(dir)[0].error,/quality-report\.json is larger than 32 MB/);
+ writeFileSync(q,'{"errors":0,"__proto__":{"x":1}}');assert.match(verifyBatch(dir)[0].error,/unsafe JSON key/);
+ writeFileSync(q,keep);assert.equal(verifyBatch(dir)[0].ok,true);
+});
+
 test('cancel ends the running job\'s whole process tree (verified), records it and the batch continues',async()=>{
  const root=sandbox();const {dir}=createBatch(def('cancel',[job('hang-a'),job('ok-after')]),{root});
  const run=runBatch(dir,{root,env,execute,...quiet});

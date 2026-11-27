@@ -6,6 +6,7 @@
 //   liar*   exit 0 but record a film hash that does not match the film
 //   noisy*  print about 300 KB of log, then succeed
 //   chatty* keep printing a line every 20 ms and never finish
+//   long*   succeed with quality reports larger than the 256 KB request JSON limit (DUAL-09)
 // It takes the render lock exactly like produce.mjs (inherited from the batch runner through the token).
 import {mkdirSync,writeFileSync,readFileSync} from 'node:fs';
 import {join} from 'node:path';
@@ -35,7 +36,9 @@ else if(job.startsWith('hang')&&process.env.FAKE_HANG_DONE!=='1'){
 }else{
  if(job.startsWith('noisy'))for(let i=0;i<3000;i++)console.log('Rendered '+i+'/900 '+'x'.repeat(90));
  for(const [i,o] of outputIds.entries()){
-  const film=Buffer.from('fake film '+o);writeFileSync(join(out,o,'film.mp4'),film);write(join(out,o,'probe.json'),{frames:900});write(join(out,o,'quality-report.json'),{errors:0,warnings:0,status:'pass'});
+  const film=Buffer.from('fake film '+o);writeFileSync(join(out,o,'film.mp4'),film);write(join(out,o,'probe.json'),{frames:900});
+  // long*: a quality report the size of a real ~4-minute film's (DUAL-09 found 504 KB), above the 256 KB request limit
+  write(join(out,o,'quality-report.json'),{errors:0,warnings:0,status:'pass',...(job.startsWith('long')?{frames:Array.from({length:5000},(_,k)=>({frame:k,checks:['contrast','safe-area','captions'],note:'x'.repeat(60)}))}:{})});
   manifest.results.push({id:o,backend:backends[i],status:'succeeded',frames:900,renderSeconds:1,gl:null,qualityStatus:'pass',warnings:0,filmSha256:job.startsWith('liar')?'0'.repeat(64):createHash('sha256').update(film).digest('hex')});
  }
  if(outputIds.length===2)write(join(prod,'comparison.json'),{pass:true});
