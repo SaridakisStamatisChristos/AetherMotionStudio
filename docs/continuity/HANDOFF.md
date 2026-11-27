@@ -1,6 +1,33 @@
-# Forward-only handoff: Campaign B (GPU-First Cinematic Expansion) ready to start at GPU-00 (2026-11-27)
+# Forward-only handoff: Campaign B GPU-00 TESTED + MEASURED, PR #67 open (2026-11-27)
 
-**Latest checkpoint (Campaign B setup):**
+**Latest checkpoint (GPU-00):** `feature/gpu-00-architecture` from main 69a3a5e (PR #66 merged on the owner's "merge pr 66 and start gpu-00"). **PR #67 is open, not merged.**
+- **Owner decisions this session:**
+  - **ADR-001 Accepted** ("Approve as written", UI choice);
+  - **budget delegated** ("what you propose since this is not the only computer that will use the program"), so the proposal recorded is relative to the rendering machine. The owner asked for every option to be explained; do that in plain words whenever offering choices.
+- **Built:**
+  - `docs/CAMPAIGN_B_AUDIT.md` (inventory);
+  - `docs/adr/ADR-001-render-profiles.md` (Accepted);
+  - `src/core/render-profiles.js` (profiles, capability table `shared`, negotiation, RP-01…RP-06, report fields), wired into `src/core/timeline.js`, `src/director/schema.js`, `src/director/index.js`, `src/director/foundry.js`, `scripts/production-options.mjs`, `scripts/produce.mjs` (RP-05 warning) and `scripts/native-render.mjs` (report fields, `threeVersion`);
+  - `tests/gpu00-profiles.test.js` (12 tests);
+  - `examples/gpu00-{portrait,product,environment,science}.request.json`;
+  - `docs/continuity/CAMPAIGN_B_PROTOCOL.md` (campaign-b-protocol-v1 with the budget and the Standard baseline table);
+  - a new section in DUAL_BACKEND_POLICY.md.
+- **Results:**
+  - `npm test` 572 (571 pass, 0 fail, 1 Windows skip); Python 63 OK; fonts up to date; digests unchanged (graph 3d33fbaee198acad, geometry 14dec244d171dc56, detail2 e3f80439a292f21a, director 8a0ad025b6c9f6d6);
+  - 4 reference productions on vulkan (sourceDirty false, commit 7e8945c), all PASS; 12 bench runs, 0 failed. Numbers in CAMPAIGN_B_PROTOCOL.md.
+- **Agent stills:** portrait frame 24.2 and the product contact sheet were inspected; both look normal for Standard.
+- **Unresolved, recorded:**
+  - product reference: 3 motion and 5 silence warnings, `OFF_FRAME` object-2 in 3 shots, laptop small in frame;
+  - the environment reference's Director picks are charts and props, not a rich place (GPU-07's job);
+  - frame_glitch and loudness not run on the references;
+  - RP-06 enforcement (device memory and free RAM preflight) is GPU-10;
+  - PR #67 CI result to confirm before the merge.
+- **Next action for "fod continue":**
+  1. If PR #67 is open, report it, confirm CI is green on its head, and wait for the owner's merge word.
+  2. After the merge, clear renders older than GPU-00. Keep out/gpu00-*, out/bench/gpu00-*, out/speech-cache, public/media, and the v1.2 final films named below as the regression baseline.
+  3. Then GPU-01 (CAMPAIGN_B.md "GPU-01"): first the capability `pbr-v1` and the Standard-vs-Cinematic matched mode (one shared preparation, two Three.js renders).
+
+**Previous checkpoint (Campaign B setup):**
 - **Campaign A is complete:** tag `v1.2-dual-backend-final` → main 2cb82ef (owner "tag"; no release publication).
 - **The owner supplied the Campaign B master directive** and asked for the FOD setup to start in a new session.
 - **Stored on `chore/campaign-b-setup`** (docs only):
