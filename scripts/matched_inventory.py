@@ -3,8 +3,11 @@ import hashlib,json
 def load(p,n):return json.loads((p/n).read_text(encoding='utf-8'))
 def sha(p):
     with p.open('rb') as f:return hashlib.file_digest(f,'sha256').hexdigest()
-def normalized(p,backend):
+def normalized(p,backend,profiles=False):
     s=load(p,'scene.json');s.pop('id')
+    # GPU-01 Standard vs Cinematic: the pair is the same film apart from its profile fields.
+    if profiles:
+        s.pop('renderProfile',None);s.pop('cinematic',None)
     for x in s['shots']:
         assert x.pop('backend')==backend
     return s
@@ -16,9 +19,14 @@ def expected_frames(project):
     d=[s['durationFrames'] for s in project['shots']]
     assert all(type(x) is int for x in d),'authored matched project needs fixed shot durations'
     return sum(d)
-def check_shared(a,b):
-    """Project/timeline/shared-file/inventory parity without decoding media. Returns (total, shared hashes, inventory verified)."""
-    project=normalized(a,'cpu');assert project==normalized(b,'three'),'different project'
+def check_shared(a,b,profiles=False):
+    """Project/timeline/shared-file/inventory parity without decoding media. Returns (total, shared hashes, inventory verified).
+    profiles=True (GPU-01): a is GPU Standard and b the Cinematic film, both on three."""
+    if profiles:
+        assert 'renderProfile' not in load(a,'scene.json') and 'renderProfile' in load(b,'scene.json'),'profile pair must be GPU Standard then Cinematic'
+        project=normalized(a,'three',True);assert project==normalized(b,'three',True),'different project'
+    else:
+        project=normalized(a,'cpu');assert project==normalized(b,'three'),'different project'
     t=load(a,'timeline.json');assert t==load(b,'timeline.json'),'different timeline'
     total=t['durationFrames'];fit=(project.get('speech') or {}).get('fit')=='speech-v1'
     # Fix A: with speech.fit 'speech-v1' the measured length may be shorter than the budget (never longer).

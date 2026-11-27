@@ -17,6 +17,7 @@ import {Audio} from '@remotion/media';
 import {FORMAT} from './core/contract.js';
 import {formatOf} from './core/formats.js';
 import {validateProject,filmFrames} from './core/timeline.js';
+import {threeOptions} from './core/render-profiles.js';
 import {createThreeBackend} from './visual/three-backend.js';
 import {drawFilm} from './core/draw-film.js';
 import baseline from '../examples/robot-treasure.json';
@@ -27,7 +28,7 @@ function Film({scene,timeline=null}){useMemo(()=>{validateProject(scene);filmFra
  const images=useMemo(()=>sceneImages(scene),[scene]),[mediaHandle]=useState(()=>images.length?delayRender('local media'):null),[mediaReady,setMediaReady]=useState(!images.length);
  useEffect(()=>{if(!images.length)return;Promise.all(images.map(loadImage)).then(()=>{setMediaReady(true);continueRender(mediaHandle);}).catch(e=>cancelRender(new Error('media load failed: '+(e?.message??e))));},[images,mediaHandle]);
  useEffect(()=>{if(!faces.length)return;Promise.all(faces.map(f=>new FontFace(f.css,'url('+staticFile(f.path)+')',{weight:String(f.weight)}).load().then(x=>{document.fonts.add(x);}))).then(()=>{setFontsReady(true);continueRender(fontHandle);}).catch(e=>cancelRender(new Error('font load failed: '+(e?.message??e))));},[faces,fontHandle]);
- useLayoutEffect(()=>{const ctx=ref.current.getContext('2d');ctx.clearRect(0,0,width,height);if(scene.version===2&&scene.shots.some(s=>s.template==='cinematic-graph'&&s.backend==='three')&&!three.current)three.current=createThreeBackend();if(fontsReady&&mediaReady)drawFilm(ctx,scene,timeline,frame,width,height,three.current)},[frame,width,height,scene,timeline,fontsReady,mediaReady]);
+ useLayoutEffect(()=>{const ctx=ref.current.getContext('2d');ctx.clearRect(0,0,width,height);if(scene.version===2&&scene.shots.some(s=>s.template==='cinematic-graph'&&s.backend==='three')&&!three.current)three.current=createThreeBackend(threeOptions(scene));if(fontsReady&&mediaReady)drawFilm(ctx,scene,timeline,frame,width,height,three.current)},[frame,width,height,scene,timeline,fontsReady,mediaReady]);
  return <AbsoluteFill><canvas ref={ref} width={width} height={height}/><Audio src={staticFile('audio/'+scene.id+'.wav')}/></AbsoluteFill>;
 }
 // DUAL-06: output size from the project's format (absent = 1080×1920, as before).

@@ -7,7 +7,7 @@ import {direct} from '../src/director/index.js';
 import {digest} from '../src/director/catalog.js';
 import {validateProject,validateTimeline} from '../src/core/timeline.js';
 import {repairProject} from '../src/quality/preflight.js';
-import {matchedProject,normalizedProject,sharedArtifacts,verifyShared} from '../src/studio/production.js';
+import {matchedProject,normalizedProject,normalizedScene,sharedArtifacts,verifyShared} from '../src/studio/production.js';
 import {parseProduction} from './production-options.mjs';
 import {motionCheck} from '../src/quality/motion-check.js';
 import {crowdingCheck} from '../src/quality/crowding.js';
@@ -45,7 +45,7 @@ for(const p of [production,prep,...outputs])if(existsSync(p))throw Error('Output
 // Unique reservation and immutable planned artifacts; no reuse of stale outputs.
 mkdirSync(production);for(const p of outputs)mkdirSync(p);
 const write=(p,value)=>{const tmp=p+'.tmp';writeFileSync(tmp,JSON.stringify(value,null,2)+'\n');renameSync(tmp,p);};
-const manifest={version:1,release:'1.0.0',status:'planning',mode:o.mode,id:o.id,request:o.request,sources:o.sources,backends:o.backends,outputIds:o.ids,repair:o.repair,provider:o.mode==='project'?'authored':'offline-or-imported',targetFrames:o.targetFrames,sourceCommit:env.GITHUB_SHA??null,results:[],renderInvocations:0,preparationInvocations:0};
+const manifest={version:1,release:'1.0.0',status:'planning',mode:o.mode,id:o.id,request:o.request,sources:o.sources,backends:o.backends,outputIds:o.ids,compare:o.compare??null,repair:o.repair,provider:o.mode==='project'?'authored':'offline-or-imported',targetFrames:o.targetFrames,sourceCommit:env.GITHUB_SHA??null,results:[],renderInvocations:0,preparationInvocations:0};
 const update=()=>write(join(production,'production.json'),manifest);
 update();
 try{
@@ -86,14 +86,17 @@ try{
  manifest.timelineDigest=digest(timeline);manifest.frameAllocation=timeline.shots.map(s=>({id:s.id,startFrame:s.startFrame,endFrame:s.endFrame}));
  manifest.modelFingerprint=existsSync(join(prep,'speech-report.json'))?read(join(prep,'speech-report.json')).modelFingerprint:null;
  const prepared=o.backends.map((backend,i)=>{
-  const out=outputs[i],id=o.ids[i],before=matchedProject(authored,timeline,id,backend),r=repairProject(before,timeline,{enabled:o.repair});
+  const out=outputs[i],id=o.ids[i],variant=o.variants?.[i]??{standard:false},before=matchedProject(authored,timeline,id,backend,variant),r=repairProject(before,timeline,{enabled:o.repair});
   if(r.report.after.issues.some(x=>x.severity==='error'))throw Error('Blocking preflight issue for '+backend);
   write(join(out,'quality-original-project.json'),before);write(join(out,'quality-preflight.json'),r.report);write(join(out,'scene.json'),r.project);
   for(const name of shared)copyFileSync(join(prep,name),join(out,name));
   copyFileSync(join(prep,'mix.wav'),join(root,'public','audio',id+'.wav'));
-  return {out,scene:r.project,backend,id};
+  // GPU-01: label = backend, or the profile side of a --compare standard production.
+  return {out,scene:r.project,backend,id,label:o.compare?(variant.standard?'gpu-standard':r.project.renderProfile):backend};
  });
- if(prepared.length===2&&digest(normalizedProject(prepared[0].scene))!==digest(normalizedProject(prepared[1].scene)))throw Error('Backend parity failed before native rendering');
+ // GPU-01: a Standard vs Cinematic pair must be the same film apart from its profile fields.
+ const norm=o.compare?normalizedScene:normalizedProject;
+ if(prepared.length===2&&digest(norm(prepared[0].scene))!==digest(norm(prepared[1].scene)))throw Error((o.compare?'Profile':'Backend')+' parity failed before native rendering');
  manifest.normalizedProjectDigest=digest(normalizedProject(prepared[0].scene));
  // Per-output shared-input inventory; compare_release.py verifies both copies are identical and match the files.
  const inventory={version:1,production:o.id,mode:o.mode,sourceCommit:manifest.sourceCommit,sourceDirty:manifest.sourceDirty,targetFrames:manifest.targetFrames,timelineDigest:manifest.timelineDigest,frameAllocation:manifest.frameAllocation,normalizedProjectDigest:manifest.normalizedProjectDigest,modelFingerprint:manifest.modelFingerprint,inputHashes:manifest.inputHashes,sharedHashes:manifest.sharedHashes};
@@ -102,7 +105,7 @@ try{
  // GEN-08: projected parts with a depth test; v1 stays exported and tested) and crowding-v1 (GEN-04).
  for(const p of prepared){const checks={version:1,motion:motionCheck(p.scene,timeline),visibility:visibility2Check(p.scene,timeline),crowding:crowdingCheck(p.scene,timeline),...(p.scene.delivery?{reels:reelsCheck(p.scene,timeline)}:{}),silence:silenceCheck(p.scene,timeline),...(p.scene.shots.some(s=>s.composition)?{aids:aidsCheck(p.scene,timeline)}:{})};write(join(p.out,'quality-checks.json'),checks);
   manifest.checks={motionWarnings:checks.motion.warnings.length,visibilityWarnings:checks.visibility.warnings.length,crowdingWarnings:checks.crowding.warnings.length,...(checks.reels?{reelsWarnings:checks.reels.warnings.length}:{}),silenceWarnings:checks.silence.warnings.length,...(checks.aids?{aidsWarnings:checks.aids.warnings.length}:{})};
-  console.log('CHECKS:',p.backend,checks.motion.policy,'warnings',checks.motion.warnings.length,checks.visibility.policy,'warnings',checks.visibility.warnings.length,checks.crowding.policy,'warnings',checks.crowding.warnings.length,...(checks.reels?[checks.reels.policy,'warnings',checks.reels.warnings.length]:[]),checks.silence.policy,'warnings',checks.silence.warnings.length,'talk',checks.silence.talkShare,...(checks.aids?[checks.aids.policy,'warnings',checks.aids.warnings.length]:[]),JSON.stringify([...checks.motion.warnings,...checks.visibility.warnings,...checks.crowding.warnings,...(checks.reels?.warnings??[]),...(checks.aids?.warnings??[])].map(w=>w.code+':'+w.shot+'/'+(w.asset??w.pair))));}
+  console.log('CHECKS:',p.label,checks.motion.policy,'warnings',checks.motion.warnings.length,checks.visibility.policy,'warnings',checks.visibility.warnings.length,checks.crowding.policy,'warnings',checks.crowding.warnings.length,...(checks.reels?[checks.reels.policy,'warnings',checks.reels.warnings.length]:[]),checks.silence.policy,'warnings',checks.silence.warnings.length,'talk',checks.silence.talkShare,...(checks.aids?[checks.aids.policy,'warnings',checks.aids.warnings.length]:[]),JSON.stringify([...checks.motion.warnings,...checks.visibility.warnings,...checks.crowding.warnings,...(checks.reels?.warnings??[]),...(checks.aids?.warnings??[])].map(w=>w.code+':'+w.shot+'/'+(w.asset??w.pair))));}
  // Fix A gate: a film fitted to its speech must not keep long silences (silence-v1); other films only report them.
  if(timelineFit(prepared))for(const p of prepared){const w=read(join(p.out,'quality-checks.json')).silence.warnings;if(w.length)throw Error('silence-v1 failed for a speech-fitted film: '+JSON.stringify(w));}
  manifest.status='rendering';update();
@@ -110,20 +113,20 @@ try{
  const soundtrack=id=>join(root,'public','audio',id+'.wav');
  // Deliberately sequential on one runner, same audio and timeline, same concurrency.
  for(const p of prepared){
-  const row={id:p.id,backend:p.backend,status:'running'};manifest.results.push(row);manifest.renderInvocations++;update();
+  const row={id:p.id,backend:p.backend,...(o.compare?{profile:p.label}:{}),status:'running'};manifest.results.push(row);manifest.renderInvocations++;update();
   try{
    verifyShared(manifest.sharedHashes,outputHash(p.out),p.id);
    if(sha(soundtrack(p.id))!==manifest.sharedHashes['mix.wav'])throw Error('Render soundtrack differs from shared mix: '+p.id);
    const timing=renderNative({root,out:p.out,scene:p.scene,timeline,quality:true,python,env});
    verifyShared(manifest.sharedHashes,outputHash(p.out),p.id);
    if(sha(soundtrack(p.id))!==manifest.sharedHashes['mix.wav'])throw Error('Render soundtrack changed during render: '+p.id);
-   const report=read(join(p.out,'quality-report.json'));if(report.errors!==0||timing.backend!==p.backend)throw Error('Native quality/backend gate failed');
+   const report=read(join(p.out,'quality-report.json'));if(report.errors!==0||timing.backend!==p.backend||timing.renderProfile!==(p.scene.renderProfile??null))throw Error('Native quality/backend/profile gate failed');
    Object.assign(row,{status:'succeeded',renderSeconds:timing.renderSeconds,frames:timeline.durationFrames,gl:timing.gl,qualityStatus:report.status,warnings:report.warnings,filmSha256:sha(join(p.out,'film.mp4')),filmBytes:statSync(join(p.out,'film.mp4')).size});
-  }catch(e){row.status='failed';row.error=String(e.message??e).slice(0,1200);console.error(p.backend+' production failed:',row.error);}
+  }catch(e){row.status='failed';row.error=String(e.message??e).slice(0,1200);console.error(p.label+' production failed:',row.error);}
   update();
  }
  if(manifest.results.some(x=>x.status!=='succeeded'))throw Error('One or more native backends failed; successful outputs preserved');
- if(prepared.length===2)runChecked(root,python,['scripts/compare_release.py',prepared[0].out,prepared[1].out,join(production,'comparison.json')],env);
+ if(prepared.length===2)runChecked(root,python,['scripts/compare_release.py',prepared[0].out,prepared[1].out,join(production,'comparison.json'),...(o.compare?['--profiles']:[])],env);
  manifest.status='succeeded';update();
  for(const p of prepared)copyFileSync(join(production,'production.json'),join(p.out,'production.json'));
  console.log('PASS: one-click production',o.id,'frames',manifest.targetFrames,'native renders',manifest.renderInvocations,'shared audio preparations',manifest.preparationInvocations);
