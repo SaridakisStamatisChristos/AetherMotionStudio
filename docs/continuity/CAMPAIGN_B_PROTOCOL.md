@@ -10,7 +10,7 @@ Binding for every Campaign B milestone. Tracker: [CAMPAIGN_B.md](CAMPAIGN_B.md).
 1. Clean committed source (`sourceDirty false`).
 2. `npm test` fail 0 and Python OK, with new positive, negative and adversarial tests.
 3. Legacy digests unchanged, measured with `node scripts/fod-digests.mjs . --exclude talk04,talk05,gen01,gen09,gen12,fixa,dual,gpu`. **Correction (GPU-01):** `gpu` must be excluded like `dual`, because the script also hashes new example fixtures; without it, the gpu00 requests and the gpu01 swatch film change the graph and director lines. Values: (graph 3d33fbaee198acad, geometry 14dec244d171dc56, detail2 e3f80439a292f21a, director 8a0ad025b6c9f6d6), unless a versioned opt-in change records its new digest and the reason.
-4. CPU Classic and GPU Standard regressions: byte-identical where they were (CPU, `swangle`), visually identical on `vulkan`.
+4. CPU Classic and GPU Standard regressions: byte-identical where they were (CPU, `swangle`), visually identical on `vulkan`. **Exception (FIX-RS, 2026-11-28):** bloom is now blurred in JavaScript, so polished re-renders differ from pre-FIX-RS renders by at most 3 levels on about 1 % of pixels. The byte baseline for later milestones is the FIX-RS merge, not v1.2.
 5. Fresh `gpu<NN>` films with GL route, WebGL renderer string, profile, GPU memory, wall time and fps.
 6. Agent stills from named frames on every profile; the owner's review is recorded separately.
 7. Measurements reported against the budget below, on the reference workloads of the milestone.

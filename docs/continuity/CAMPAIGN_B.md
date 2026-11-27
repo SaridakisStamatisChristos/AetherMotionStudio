@@ -18,9 +18,9 @@ Status words: PLANNED · NEXT · ACTIVE · IMPLEMENTED · TESTED · RENDERED · 
 | ID | Milestone | Status | Branch / PR | Evidence |
 |---|---|---|---|---|
 | GPU-00 | Architecture transition (ADR) and measurable budget | **TESTED + MEASURED** (ADR-001 Accepted; budget delegated → protocol-v1 frozen) | `feature/gpu-00-architecture` / PR #67 (open) | ADR-001, CAMPAIGN_B_AUDIT.md, CAMPAIGN_B_PROTOCOL.md, tests/gpu00-profiles.test.js, out/bench/gpu00-*-r1-bench |
-| GPU-01 | PBR materials and colour management | **TESTED + RENDERED** (PR open, not merged) | `feature/gpu-01-pbr` | src/visual/pbr.js, tests/gpu01-pbr.test.js, tests/test_profile_pair.py, out/gpu01-{swatches,portrait}-r2-*, out/bench/gpu01-portrait-r2-* |
-| FIX-RS | Render stability: random striped frames and the one-frame flash at cuts with parallel tabs (pre-existing, GPU Standard too) | **NEXT** (owner 2026-11-27: "Separate unit next") | `fix/render-stability` (planned) | GPU-01 findings below |
-| GPU-02 | Lighting, shadows and environment illumination | PLANNED (after FIX-RS) | — | — |
+| GPU-01 | PBR materials and colour management | **MERGED** (PR #68 → 936d0cb) | `feature/gpu-01-pbr` | src/visual/pbr.js, tests/gpu01-pbr.test.js, tests/test_profile_pair.py, out/gpu01-{swatches,portrait}-r2-*, out/bench/gpu01-portrait-r2-* |
+| FIX-RS | Render stability: random striped frames and the one-frame flash at cuts with parallel tabs (pre-existing, GPU Standard too) | **TESTED + RENDERED** (PR open, not merged) | `fix/render-stability` | FIX-RS section below; out/gpu01-swatches-r3-*, out/bench/fixrs2-* |
+| GPU-02 | Lighting, shadows and environment illumination | NEXT (after the FIX-RS merge) | — | — |
 | GPU-03 | Procedural texture and material library | PLANNED | — | — |
 | GPU-04 | External 3D assets (GLB) and high-detail geometry | PLANNED | — | — |
 | GPU-05 | High-fidelity character system | PLANNED | — | — |
@@ -165,6 +165,22 @@ Found during GPU-01 on the Three.js route (vulkan). Both defects appear in GPU S
   2. Find the cause in the shared pipeline (index.jsx draw timing, three-backend shadow map and render state, Remotion tab chunking).
   3. Fix minimally; prove the fix with repeated multi-tab renders on CPU, swangle and vulkan, plus frame_glitch on every film.
   4. Re-render the swatch film as gpu01-swatches-r3 to show it clean.
+- **Result (2026-11-28, `fix/render-stability`, TESTED + RENDERED, PR open, not merged):**
+  - **Cut flash: root cause.** The canvas held the right pixels when the frame was captured (full-canvas readback at draw time), but the capture returned an older picture while the GPU was still busy.
+    - 1 tab: frame 480 = 478; 8 tabs: 480 = 464; reproduced on a 0–490 `renderFrames` PNG run (not the encoder).
+    - **Fix:** a 1-pixel `getImageData` right after `drawFilm` (src/index.jsx).
+    - Alternatives tested and rejected:
+      - two requestAnimationFrame holds (still stale);
+      - a WebGL-only `readPixels` (still stale);
+      - a CPU-backed main canvas (clean with 1 tab, stale with 8).
+  - **Stripes: root cause.** Chrome's canvas filter `blur(3px)` on the bloom canvas, just written with `putImageData`, returns a striped picture for a whole tab whenever `selectComposition` ran in the same browser first. That is how produce (Remotion CLI) and perf-bench render.
+    - Reproduced 2/2 on 0–90 renders. Bloom 0 or no blur removed it; grain, atmosphere, grade and contact shadow did not; willReadFrequently canvases did not.
+    - Depth of field (also a blur filter, normal canvas source) is unaffected (tested). The parity floor-shadow blur draws shapes, not putImageData data.
+    - **Fix:** `blurRGBA` (src/core/fidelity.js), a separable Gaussian, sigma 3, premultiplied, transparent outside: the same operation as the filter, in JavaScript.
+  - **Verification:** 4 full swatch re-renders (1 tab ×2, 8 tabs ×2) are all clean (frame_glitch, stripe score 0.02, no stale frames). gpu01-swatches-r3 (Standard + Cinematic, commit 1725227, sourceDirty false) is clean on all three checks.
+  - **Cost, measured (8 tabs, same film):** about 28 fps with the fixes vs 38.4 without the read. The read costs about 26 % on the RTX route; the JS blur costs nothing measurable. The read is kept because no cheaper alternative was reliable.
+  - **Pixel change (deliberate, measured):** polished films' bloom glow differs from the canvas filter by at most 3 levels on about 1 % of pixels (CPU stills, PSNR 71–77 dB). Re-renders of polished films after FIX-RS are therefore **not byte-identical** to earlier renders, on CPU too. That is the new byte baseline. Old film files are untouched; digests unchanged.
+  - **Tests:** tests/fixrs-capture.test.js (6: read after draw, no hacks left, blurRGBA behaviour and refusals, bloom never uses the filter). `npm test` 590 (0 fail, 1 skip); Python 70 OK.
 
 ### GPU-02: lighting, shadows and environment illumination
 - **Audit:** the current light rig, shadowMap, lighting-parity, fog.
@@ -293,3 +309,4 @@ Found during GPU-01 on the Three.js route (vulkan). Both defects appear in GPU S
 - 2026-11-27: PR #66 merged (owner "merge pr 66 and start gpu-00") → main 69a3a5e. GPU-00 on `feature/gpu-00-architecture`: baseline green (560 tests, digests = v1.2); inventory → docs/CAMPAIGN_B_AUDIT.md; **ADR-001 Accepted by the owner** ("Approve as written"); DUAL_BACKEND_POLICY pointer section added (earlier sections unchanged); profile skeleton (`renderProfile: 'cinematic-v1'`, capability table `shared`, RP-01…RP-06) TESTED (572 tests, 0 fail, digests unchanged); 4 GPU Standard reference films + 12 bench runs on vulkan; budget delegated by the owner ("this is not the only computer that will use the program") → device-relative budget frozen in CAMPAIGN_B_PROTOCOL.md (campaign-b-protocol-v1). PR #67 open, not merged.
 - 2026-11-27: PR #67 merged (owner "now merge and move to gpu-01") → main dac8f8d (CI green on d5eed73); GPU-10 "ask the owner to configure the budget check first" added to the roadmap (owner). Renders older than GPU-00 cleared (out/bench/d09-*, 236 MB).
 - 2026-11-27: GPU-01 on `feature/gpu-01-pbr` — capability pbr-v1 (cinematic block), MeshPhysicalMaterial presets chosen per part, room light per material, steel-tinted metals, Standard-vs-Cinematic matched mode (`--compare standard`, compare_release --profiles). Tests 584 (0 fail), Python 70 OK, legacy digests unchanged (with `,gpu` excluded), GPU Standard stills byte-identical to main (swangle). Films gpu01-swatches-r2 and gpu01-portrait-r2 (PASS, sourceDirty false, b6dad1a). Defects found and recorded → owner chose a separate unit FIX-RS next.
+- 2026-11-28: PR #68 (GPU-01) merged (owner "merge and start the fix") → main 936d0cb; renders older than GPU-01 cleared (518 MB, gpu01 r1). FIX-RS on `fix/render-stability`: both defects reproduced and root-caused (stale capture; Chrome canvas blur filter after putImageData), fixed (per-frame 1-pixel read; blurRGBA), verified clean on 4 re-renders and gpu01-swatches-r3; cost about −26 % fps on the RTX route; bloom pixels change by ≤ 3 levels (new byte baseline). PR open, not merged.
