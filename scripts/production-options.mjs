@@ -6,6 +6,7 @@ import {digest} from '../src/director/catalog.js';
 import {validateProject} from '../src/core/timeline.js';
 import {defaultSpeech,productionId,matchedTargetFrames,projectProfile,normalizedProject} from '../src/studio/production.js';
 import {compileProjectMath} from '../src/director/math-loader.js';
+import {resolveProjectMedia} from '../src/director/media-loader.js';
 export function parseProduction(args,{read=p=>readFileSync(resolve(p),'utf8'),newId=()=> 'film-'+randomBytes(6).toString('hex')}={}){
  const o={},flags=new Set(['repair']),values=new Set(['request','topic','project','pair','script','script-file','seconds','backend','profile','voice','language','id','seed','import']);
  const queue=[...args];while(queue.length){
@@ -42,7 +43,8 @@ export function parseProduction(args,{read=p=>readFileSync(resolve(p),'utf8'),ne
 function authored(o,backends,read,newId){
  for(const k of ['script','script-file','seconds','profile','voice','language','seed','import'])if(o[k]!==undefined)throw Error('--'+k+' cannot modify an authored --project; edit the project file instead');
  // DUAL-03: equations in authored projects are compiled to outlines (Node, MathJax) before validation.
- const load=p=>validateProject(compileProjectMath(safeJson(read(p))));
+ // DUAL-05: image items are resolved from the local media library (hash and structure verified) at the same boundary.
+ const load=p=>validateProject(resolveProjectMedia(compileProjectMath(safeJson(read(p)))));
  const project=load(o.project),targetFrames=matchedTargetFrames(project),profile=projectProfile(project);
  if(o.pair!==undefined){
   const pair=load(o.pair);

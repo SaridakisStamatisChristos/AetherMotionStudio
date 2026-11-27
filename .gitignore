@@ -10,3 +10,5 @@ out/
 !.env.example
 
 studio-data/
+# DUAL-05 local media library (user data)
+public/media/

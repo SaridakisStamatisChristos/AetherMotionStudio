@@ -15,6 +15,7 @@ import {reelsProject} from '../core/reels.js';
 import {planAids,holdComposition} from './aids.js';
 import {placeVisuals,mergeShotsForVisuals} from './visuals.js';
 import {compileProjectMath} from './math-loader.js';
+import {resolveProjectMedia} from './media-loader.js';
 import {dialogueSpeech,stageDialogueAssets,dialogueShotFields,pointAtSetPiece,DIALOGUE_CAMERAS} from './dialogue.js';
 export function foundryShortlist(query,registry){return searchRegistry({...query,limit:300},registry).filter(x=>x.kind!=='legacy').slice(0,Math.min(query.limit??8,20)).map(({id,kind,revision,category,pack,quality,backends,lods,motion})=>({id,kind,revision,category,pack,quality,backends,lods,motion}));}
 export const PROMPT_VERSION='director-ir-v1.1';
@@ -35,7 +36,7 @@ export function allocateFrames(shots,total){
  const deficit=total-frames.reduce((a,b)=>a+b,0);for(let i=0;i<deficit;i++)frames[order[i][0]]++;
  return frames;
 }
-export function compile(q,ir,selection){
+export function compile(q,ir,selection,{mediaRoot}={}){
  validateIR(ir,q,selection);
  // DUAL-03: authored visuals define their shots (sentences they name are merged into one shot).
  ir=mergeShotsForVisuals(q,ir);
@@ -84,6 +85,8 @@ export function compile(q,ir,selection){
   return {...rest,composition:s.titleHold?holdComposition(c):c};})};}
  // DUAL-03: equations are compiled to outlines here (Node, MathJax) before the final validation.
  out=compileProjectMath(out);
+ // DUAL-05: image items are resolved from the local media library (hash and structure verified), never invented.
+ out=resolveProjectMedia(out,mediaRoot?{root:mediaRoot}:{});
  if(out!==project)validateProject(out);
  return out;
 }
@@ -129,7 +132,7 @@ export function buildPrompt(q,plan,feedback=null){
  'Request: '+JSON.stringify(promptRequest),'Retrieved assets per shot: '+JSON.stringify(compact),...(feedback?['Previous output failed validation. Return corrected JSON only. Error: '+feedback]:[])].join('\n');
 }
 function errorInfo(e){return {code:e.code??'validation',message:String(e.message??e).slice(0,300)};}
-export async function direct(input,{adapter=null,imported=null,maxRepairs=1,foundryRequests=null}={}){
+export async function direct(input,{adapter=null,imported=null,maxRepairs=1,foundryRequests=null,mediaRoot=null}={}){
  const started=performance.now(),q=request(input);
  if(!Number.isInteger(maxRepairs)||maxRepairs<0||maxRepairs>2)throw Error('maxRepairs: 0–2 required');
  if(adapter&&imported!==null)throw Error('choose provider or imported IR, not both');
@@ -141,7 +144,7 @@ export async function direct(input,{adapter=null,imported=null,maxRepairs=1,foun
   try{
    if(adapter){const result=await adapter.generate(prompt,{seed:q.seed});reported=result.usage??reported;ir=safeJson(result.text);}
    else ir=imported!==null?safeJson(imported):offlineIR(q,plan);
-   project=compile(q,ir,plan.selection);
+   project=compile(q,ir,plan.selection,mediaRoot?{mediaRoot}:{});
    attempts.push({attempt:i+1,status:'valid',promptBytes:Buffer.byteLength(prompt),promptDigest:digest(prompt),usage:reported,ms:performance.now()-t});break;
   }catch(e){const error=errorInfo(e);attempts.push({attempt:i+1,status:'invalid',promptBytes:Buffer.byteLength(prompt),promptDigest:digest(prompt),usage:reported,ms:performance.now()-t,error});feedback=error.message;
    if(!adapter||i===maxRepairs||error.code!=='validation'){const failure=new Error('director: '+error.message);failure.report={status:'failed',attempts,provider:adapter?.name??(imported!==null?'import':'offline')};throw failure;}
