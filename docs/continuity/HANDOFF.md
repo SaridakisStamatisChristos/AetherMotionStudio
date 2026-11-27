@@ -9,7 +9,8 @@
   - 8 new fixtures (examples/dual09-*.request.json) across all content modes, the three formats, 30/60/90 s and a 235.7 s film, on both backends, plus DUAL-07 narrator and DUAL-06 harbour regressions;
   - final films: out/batches/dual09-matrix-r2 (dialogue, narrator, mixed, typography, maths, gallery, 2 regressions) and out/batches/dual09-final-r1 (charts, long); `batch.mjs verify` ok on all;
   - superseded batches: dual09-matrix-r1 (environment not set), dual09-long-r1 and dual09-charts-r1 (list defect).
-- **Tests:** 554 JS (0 fail, 1 Windows skip), Python 63 OK, digests = DUAL-00, fonts current. Clean install from a fresh clone: same results.
+- **Owner review changes (no re-render, owner's decision):** CPU far-eye repair (5b104a9, `CRAFTED.detailBias` 0.10) and no light beams in new Director films (`fidelity.lightShafts: 0`; Director digest now 8a0ad025b6c9f6d6).
+- **Tests:** 560 JS (0 fail, 1 Windows skip), Python 63 OK, graph/geometry/detail2 = DUAL-00, Director digest changed on purpose (above), fonts current. Clean install from a fresh clone: same results.
 - **Measured:** CPU 28.5 fps byte-stable; Three vulkan 44.3 fps, 1.59 GB GPU memory, **not byte-stable** (visually identical, ≥ 51.5 dB; known since DUAL-04); Three swangle 3.4 fps, byte-stable.
 - **Changed files:**
   - code: src/visual/preview-media.js, studio/app.js, scripts/batch-lib.mjs, src/director/aids.js;
@@ -99,7 +100,7 @@ Date: 2026-11-27. The owner types only **"fod continue"**. Binding facts: CURREN
 1. `git status --short --branch`, `git rev-parse HEAD`, `git fetch`, `gh pr list --state open`, `git tag --list`. Expect main **0e83826** (or later if this handoff PR was merged); only `v0.4-render-baseline` tagged.
 2. Read CLAUDE.md, AGENTS.md, CURRENT_STATE.md, this file and CAMPAIGN_A.md (plus the DUAL-08 directive section).
 3. Baseline:
-   - `node scripts/fod-digests.mjs . --exclude talk04,talk05,gen01,gen09,gen12,fixa,dual` must print graph 3d33fbaee198acad, geometry 14dec244d171dc56, detail2 e3f80439a292f21a, director 7 requests 2cbf9916e65da935;
+   - `node scripts/fod-digests.mjs . --exclude talk04,talk05,gen01,gen09,gen12,fixa,dual` must print graph 3d33fbaee198acad, geometry 14dec244d171dc56, detail2 e3f80439a292f21a, director 7 requests **8a0ad025b6c9f6d6** (since DUAL-09: every Director plan carries `fidelity.lightShafts: 0`, owner "those lights should be removed"; 2cbf9916e65da935 before);
    - `npm test` must give fail 0 (522 tests at 0e83826, 1 Windows skip; CI runs all 522). Also run it once with public/media renamed away: CI has no local media library;
    - `PYTHONPATH=scripts .venv/Scripts/python.exe -m unittest discover -s tests -p "test_*.py"` must give 63 OK;
    - `node scripts/font-metrics.mjs --check` must say up to date.

@@ -26,7 +26,7 @@ export function mathsReport(project){const rows=[];for(const s of project.shots)
  if((x.type==='graph'||x.type==='array')&&x.algorithm)rows.push({shot:s.id,item:x.id,kind:x.type,status:'verified-'+x.algorithm.name});
  if(x.type==='plot')rows.push({shot:s.id,item:x.id,kind:'plot',status:'ranges-checked'});}
  return {version:1,items:rows,summary:{items:rows.length,verified:rows.filter(r=>r.status.startsWith('verified')).length,notChecked:rows.filter(r=>r.status==='not-checked').length}};}
-const profile={bloom:.6,atmosphere:.5,contactShadow:.65,surfaceDetail:.65,depthOfField:.25,motionBlur:.24,grain:.12,grade:.55,particles:.65,typography:1};
+const profile={bloom:.6,atmosphere:.5,contactShadow:.65,surfaceDetail:.65,depthOfField:.25,motionBlur:.24,grain:.12,grade:.55,particles:.65,typography:1,lightShafts:0};
 const words=s=>s.trim().split(/\s+/).length;
 export function allocateFrames(shots,total){
  const weights=shots.map(s=>Math.max(1,s.narration.reduce((n,t)=>n+words(t),0))),min=60;

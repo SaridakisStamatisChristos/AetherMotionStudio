@@ -42,7 +42,7 @@ Script rules: [SCRIPT_FORMAT.md](SCRIPT_FORMAT.md). Troubleshooting: see below.
 Not in v1.2 (Campaign B or later, by policy): PBR/HDR lighting, post-processing, skeletal rigs, imported animated models, GPU particles, GPU-only features.
 
 ## Qualification (DUAL-09, `campaign-a-protocol-v1` final matrix)
-**Automated:** 554 JS tests (0 fail, 1 Windows-only skip; the PR CI run is recorded in CAMPAIGN_A.md), Python 63 OK, legacy digests identical to DUAL-00 (graph 3d33fbaee198acad, geometry 14dec244d171dc56, detail2 e3f80439a292f21a, director 7 requests 2cbf9916e65da935), font metrics current.
+**Automated:** 560 JS tests (0 fail, 1 Windows-only skip; the PR CI run is recorded in CAMPAIGN_A.md), Python 63 OK, legacy digests identical to DUAL-00 (graph 3d33fbaee198acad, geometry 14dec244d171dc56, detail2 e3f80439a292f21a); the Director digest changed once, on purpose (2cbf9916e65da935 → 8a0ad025b6c9f6d6: no light beams, below), font metrics current.
 **Films** (batch `dual09-matrix-r2`, RTX route `AETHER_GL=vulkan`, concurrency 8; every pair: one speech preparation, shared hashes exact, full decode, quality 0 errors):
 | Film | Content | Format | Length (frames) | CPU / Three.js SHA-256 | Render s (CPU / Three) |
 |---|---|---|---|---|---|
@@ -61,6 +61,10 @@ Shared speech, timeline and captions of reg-harbour06 equal DUAL-06 exactly (mix
 - the batch refused a passing 235.7 s production because its 504 KB quality report exceeded the 256 KB request JSON limit, and the retry re-rendered it (production reports now have their own 32 MB bound);
 - the planner drew lists with their first item missing ("planted tomatoes, beans, lettuce and squash" → Beans, Lettuce, Squash; "rain, snow, sleet or hail" → Snow, Sleet, Hail); now the whole sentence is shown instead. All 77 example plans compared: only the two new DUAL-09 fixtures change;
 - the charts fixture's pie legend repeated the percentage (fixture fixed; kg values).
+**Owner review changes (after the films; not re-rendered, owner's decision: "the films are quite good as they are")**:
+- **No more light beams** (owner: "those lights should be removed. they dont offer anything"): the diagonal light shafts of the atmosphere effect are gone from every new Director film, on both backends (new optional idelity.lightShafts, Director writes 0; dust and lighting unchanged; authored projects unchanged). Checked on native stills of d09-dialogue, CPU and Three.js, before and after.
+- **Both eyes on turned heads (CPU)** (owner: "the turning person in some frames with one eye visible and one invisible"): a person's eyes, brows, nose and mouth now sort in front of the head on the crafted CPU painter (CRAFTED.detailBias 0.10), like the robot-eye repair. Tested over 6,000+ head poses and cameras; Three.js was never affected.
+- The qualification films above were rendered **before** these two changes, so they still show the beams and, on CPU, the occasional missing far eye. New films get both changes.
 **Crash recovery, for real:** the session window closed during the matrix (runner killed mid-render). `batch.mjs resume` set the interrupted attempt aside and re-ran it; the seven finished pairs were kept untouched.
 **Agent inspection:** four stills per film (15/40/65/90 %), both backends: characters large and uncut, captions in their boxes, aids and pictures identical across backends. **Owner review: pending.**
 

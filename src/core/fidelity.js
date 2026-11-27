@@ -1,8 +1,12 @@
 // Opt-in, bounded visual controls. Absent profile preserves v0.4.
 export const FIDELITY_DEFAULTS=Object.freeze({bloom:.55,atmosphere:.45,contactShadow:.65,surfaceDetail:.6,depthOfField:.35,motionBlur:.35,grain:.15,grade:.45,particles:.6,typography:.8});
+// lightShafts (DUAL-09, owner: "those lights should be removed. they dont offer anything"): strength of the diagonal
+// light beams of the atmosphere effect. Optional and not merged into the defaults, so existing projects and their
+// digests are unchanged (absent = 1, the historical beams). The Director writes 0 for every new film.
+export const FIDELITY_OPTIONAL=Object.freeze(['lightShafts']);
 export function validateFidelity(s,p='fidelity'){
  if(!s||typeof s!=='object'||Array.isArray(s))throw Error(p+': object required');
- for(const [k,v] of Object.entries(s)){if(!Object.hasOwn(FIDELITY_DEFAULTS,k))throw Error(p+'.'+k+': unknown field');if(typeof v!=='number'||!Number.isFinite(v)||v<0||v>1)throw Error(p+'.'+k+': expected finite number in [0,1]');}
+ for(const [k,v] of Object.entries(s)){if(!Object.hasOwn(FIDELITY_DEFAULTS,k)&&!FIDELITY_OPTIONAL.includes(k))throw Error(p+'.'+k+': unknown field');if(typeof v!=='number'||!Number.isFinite(v)||v<0||v>1)throw Error(p+'.'+k+': expected finite number in [0,1]');}
  return s;
 }
 export function fidelity(s){return s===undefined?null:{...FIDELITY_DEFAULTS,...s};}
