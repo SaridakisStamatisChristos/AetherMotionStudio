@@ -24,7 +24,7 @@ Status words: PLANNED · NEXT · ACTIVE · IMPLEMENTED · TESTED · RENDERED · 
 | GPU-03 | Procedural texture and material library | **MERGED** (PR #72 → 9d26a5b) | `feature/gpu-03-textures` | src/visual/pbr-textures.js, tests/gpu03-textures.test.js, out/gpu03-*-r1-* |
 | FIX-NR | Narrator films: no extra caption box; subjects large and never cut (Director, all new films) | **MERGED** (PR #73 → 6d21a35) | `feature/fix-narrator` | FIX-NR section below |
 | GPU-04 | External 3D assets (GLB) and high-detail geometry | **MERGED** (PR #74 → e706f2a; verified existing + hardened) | `feature/gpu-04-glb` | tests/gpu04-glb.test.js; GPU-04 section below |
-| GPU-05 | High-fidelity character system | NEXT (after the GPU-04 merge; ask the owner first about art direction and the first 2–3 hero characters) | — | — |
+| GPU-05 | High-fidelity character system | **TESTED + RENDERED** (PR open, not merged; skeleton/morph/LOD deferral asked) | `feature/gpu-05-characters` | src/core/hero-characters.js, tests/gpu05-characters.test.js, out/gpu05-portrait-r1-* |
 | GPU-06 | Animation, dialogue and facial performance | PLANNED | — | — |
 | GPU-07 | Rich environments and scene dressing | PLANNED | — | — |
 | GPU-08 | Cinematic camera and post-processing | PLANNED | — | — |
@@ -243,6 +243,13 @@ Found by the owner in gpu03-product-r1. The same plan exists in gpu00-product-r1
   - imported rigs through explicit adapters only.
   - Start with 2–3 hero characters; the box characters stay a valid style.
 - **Evidence:** identity held across shots, full-body framing never cut, contacts and attachments pass; character review sheet and budget.
+- **Result (2026-11-28, `feature/gpu-05-characters`, b75da76):**
+  - owner choices: look "B Soft rounded" (stills today vs soft vs crisp; crisp dropped as indistinguishable from today), heroes student, scientist, service-robot;
+  - `cinematic.characters: 'soft-v1'` → capability hero-char-v1; Director Cinematic default; rounded part boxes (radius 0.48 × thinnest side, cap 0.16 m, inside the box) on Three only; soft-v1 films draw humans at detail 3;
+  - tests 613 (0 fail, 1 skip), Python 70 OK, digests unchanged, GPU Standard swangle still byte-identical to main;
+  - film gpu05-portrait-r1 (`--compare standard`, RTX vulkan, sourceDirty false): PASS, CHECKS 0 warnings on both sides, frame_glitch clean on both;
+  - noticed, not caused here: a topic-set floor lamp can stand right behind a speaker's head (staging; candidate for GPU-07);
+  - **not built:** SkinnedMesh skeleton, morph targets, LODs, imported-rig adapters → proposed deferral to GPU-06 (owner decides at merge); no budget run (owner rule).
 
 ### GPU-06: animation, dialogue and facial performance
 - **Build:**
@@ -340,3 +347,4 @@ Found by the owner in gpu03-product-r1. The same plan exists in gpu00-product-r1
 - 2026-11-28: PR #73 (FIX-NR) merged (owner "merge") → main 6d21a35; renders deleted. GPU-04 on `feature/gpu-04-glb`: owner chose plain GLB only and own generated models; GLB import verified existing (AF05); unreachable glTF nodes now refused; 22 hostile-case tests; one comparison render PASS. Tests 608 (0 fail); digests unchanged (director f5b5104977219fdf). PR open, not merged.
 - 2026-11-28: PR #74 (GPU-04) merged (owner "merge") → main e706f2a; renders deleted. Fresh-session docs updated (owner "update claudemd, agents md, handoff, continuity docs in order to start fress in a new session with fod continue"). Next: GPU-05.
 - 2026-11-28: owner decided before GPU-05 that the engine creates the hero characters (no imports for now; rigged imports may be reconsidered after GPU-06).
+- 2026-11-28: PR #74 (GPU-04) merged → main e706f2a. GPU-05 on `feature/gpu-05-characters`: owner chose the engine-made characters, look "B Soft rounded" over stills, heroes student/scientist/robot. hero-char-v1 (`cinematic.characters: 'soft-v1'`, Director default; detail-3 humans). Tests 613 (0 fail); digests unchanged; Standard byte-identical. Film gpu05-portrait-r1 PASS (b75da76, sourceDirty false), checks 0, glitch clean. Skeleton/morph/LOD deferral to GPU-06 asked. PR open, not merged.
