@@ -1,8 +1,10 @@
 import {validateProject,validateTimeline} from '../core/timeline.js';
 import {RENDER_PROFILES} from '../core/render-profiles.js';
+// GPU-06 (owner 2026-11-28: Rhubarb "a dependency … in every pc"): new productions time mouth shapes with the locked
+// Rhubarb Lip Sync (installed by release_setup.py); 'visemes-v1' (estimated) stays selectable.
 export function defaultSpeech(seconds){
  if(!Number.isSafeInteger(seconds)||seconds<6||seconds>300)throw Error('Production duration must be an integer from 6 to 300 seconds');
- return {version:1,targetFrames:seconds*30,fixedShots:{},speakers:{},shotSpeakers:{},pronunciations:{},captions:{mode:'both',highlight:true,maxChars:32,maxLines:2,maxCps:18,readable:true},mouths:'visemes-v1',mix:{narration:1,music:.55,ambience:.35,sfx:.45,duck:.35,fadeSeconds:.25,peak:.92},cues:[],syncActions:true};
+ return {version:1,targetFrames:seconds*30,fixedShots:{},speakers:{},shotSpeakers:{},pronunciations:{},captions:{mode:'both',highlight:true,maxChars:32,maxLines:2,maxCps:18,readable:true},mouths:'rhubarb-v1',mix:{narration:1,music:.55,ambience:.35,sfx:.45,duck:.35,fadeSeconds:.25,peak:.92},cues:[],syncActions:true};
 }
 // DUAL-07: the speech settings a Director request gets when it brings none. One rule for produce.mjs and the Studio:
 // dialogue films hide speaker names unless asked (owner 2026-11-26); content-mode films are fitted to their speech and
