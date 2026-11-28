@@ -10,7 +10,6 @@ A missing tool is an error with the install command; there is no silent fallback
 """
 from pathlib import Path
 import json, os, subprocess, tempfile, wave
-import numpy as np
 
 VERSION = 'viseme-rhubarb-v1'
 SPF = 1600
@@ -57,6 +56,7 @@ def cues_to_values(cues_by_segment, segments, frames):
 
 def run(exe, audio, text, language):
     """Rhubarb on one phrase (float32 mono at 48 kHz) → its mouth cues (seconds from the phrase start)."""
+    import numpy as np  # only at preparation time (the CI test job has no numpy)
     with tempfile.TemporaryDirectory() as d:
         wav, txt = Path(d) / 'phrase.wav', Path(d) / 'phrase.txt'
         with wave.open(str(wav), 'wb') as w:

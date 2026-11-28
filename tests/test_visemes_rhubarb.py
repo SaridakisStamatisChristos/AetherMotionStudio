@@ -1,8 +1,7 @@
 """GPU-06 measured mouth shapes (speech.mouths 'rhubarb-v1'): mapping, timing, refusals; a real run only where the
 owner-approved tool is installed (never on CI)."""
-import os, unittest
+import importlib.util, os, unittest
 from unittest import mock
-import numpy as np
 import visemes_rhubarb as vr
 import setup_rhubarb
 
@@ -44,8 +43,9 @@ class RhubarbVisemes(unittest.TestCase):
         for f in files.values(): self.assertRegex(f['sha256'], r'^[0-9a-f]{64}$')
         self.assertIn('MIT', setup_rhubarb.LOCK['licence'])
 
-    @unittest.skipUnless(setup_rhubarb.executable() is not None, 'Rhubarb not installed (optional tool; never on CI)')
+    @unittest.skipUnless(setup_rhubarb.executable() is not None and importlib.util.find_spec('numpy') is not None, 'Rhubarb or numpy not installed (optional tool; never on CI)')
     def test_real_run_on_a_synthetic_phrase(self):
+        import numpy as np
         t = np.arange(int(.8 * vr.R)) / vr.R
         audio = (.3 * np.sin(2 * np.pi * 180 * t) * (np.sin(2 * np.pi * 3 * t) > 0)).astype(np.float32)
         cues = vr.run(setup_rhubarb.executable(), audio, 'hello there', 'en-us')
