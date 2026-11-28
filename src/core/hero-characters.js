@@ -19,7 +19,10 @@ export const SOFT={segments:5,share:.48,maxRadius:.16};
 export function softRadius(size){const m=Math.min(...size.map(v=>Math.max(Math.abs(v),1e-4)));return Math.min(m*SOFT.share,SOFT.maxRadius);}
 export const heroPart=surface=>!!surface&&HERO_FAMILIES.includes(surface.family);
 const raise=a=>{const f=recipeSpec(a.asset)?.family,v=a.params?.detail;return (f==='human'&&(v===undefined||v===2))||(f==='robot'&&v===undefined);};
+// GPU-06 (owner 2026-11-28: puppet skeleton, calm motion): soft-v1 shots with body language also breathe, look at the
+// character they face and show light expressions (src/core/body.js); elbows and knees bend in hero detail 4.
+export const HERO_MOTION=Object.freeze({breathing:true,gaze:true,expressions:true});
 export function heroDetail(project){
  if(project?.cinematic?.characters!=='soft-v1')return project;
- return {...project,shots:project.shots.map(s=>s.template==='cinematic-graph'&&Array.isArray(s.assets)?{...s,assets:s.assets.map(a=>raise(a)?{...a,params:{...(a.params??{}),detail:HERO_DETAIL}}:a)}:s)};
+ return {...project,shots:project.shots.map(s=>s.template==='cinematic-graph'&&Array.isArray(s.assets)?{...s,assets:s.assets.map(a=>raise(a)?{...a,params:{...(a.params??{}),detail:HERO_DETAIL}}:a),...(s.bodyLanguage?{bodyLanguage:{...s.bodyLanguage,...HERO_MOTION}}:{})}:s)};
 }

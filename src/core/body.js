@@ -25,7 +25,14 @@ const fail=(p,m)=>{throw Error(p+': '+m)};
 // peak ≈ 2.5°/s: calm, below every motion limit.
 export const WEIGHT=Object.freeze({amp:.022,holdMin:180,holdSpread:90,move:45});
 export const BODY=Object.freeze({beatFrames:18,beatMinPhrase:45,minGap:20,peakMin:600,peakRadius:5,beatPitch:.35,nodFrames:30,nodLead:10,nodMinGap:240,listenNod:.07,swayAmp:.015,swayPeriod:150,blinkFrames:[.55,.15,.1,.35,.8]});
-const KEYS=['beats','nods','blinks','sway','weight'];
+const KEYS=['beats','nods','blinks','sway','weight','breathing','gaze','expressions'];
+// GPU-06 opt-in keys (drawn by hero detail 4; other builders ignore the pose keys), all calm and deterministic:
+// - breathing: chest rise and fall, period BREATH.period frames, per-character phase;
+// - gaze: the eyes look toward the character the body faces (dialogue focusPlan), a quick saccade at each change;
+// - expressions: while speaking, a question raises the brows, an exclamation brings a bigger smile, other lines a
+//   light smile; listeners keep a soft smile. Ramps of BREATH.ramp frames at phrase starts and ends.
+export const BREATH=Object.freeze({period:120,ramp:8});
+export const EXPRESSIONS=Object.freeze({question:{brow:.8,smile:.2},exclaim:{brow:.35,smile:.8},line:{brow:.15,smile:.35},listen:{brow:0,smile:.45}});
 // GEN-15 step 2 follow-up (owner: "the characters move their left hand only"): opt-in alternateArms. Beats used to
 // lift only the right arm (pose armPitch); with alternateArms each character's beats alternate right, left, right …
 // across the film (counted over earlier shots that also alternate). Not an 'enable' key: it only changes beats.
@@ -37,7 +44,7 @@ export function validateBodyLanguage(project){
   const p='shots['+i+'].bodyLanguage',x=s.bodyLanguage;
   if(!x||typeof x!=='object'||Array.isArray(x))fail(p,'object required');
   for(const [k,v] of Object.entries(x)){if(!KEYS.includes(k)&&!OPTIONS.includes(k))fail(p+'.'+k,'unknown field');if(typeof v!=='boolean')fail(p+'.'+k,'boolean required');}
-  if(!KEYS.some(k=>x[k]===true))fail(p,'enable at least one of beats, nods, blinks, sway, weight');
+  if(!KEYS.some(k=>x[k]===true))fail(p,'enable at least one of '+KEYS.join(', '));
   if(s.speakerAssets===undefined)fail(p,'speakerAssets required');
  });
 }
@@ -96,12 +103,30 @@ export function bodyAt(project,t,frame,index){
   // Sway on every bound character (continuous across speaker changes).
   if(bl.sway)o.tilt=BODY.swayAmp*Math.sin(2*Math.PI*frame/BODY.swayPeriod+(hash(id)%628)/100);
   if(bl.weight&&weightEligible(s,id))o.hip=weightAt(id,frame);
+  if(bl.breathing)o.breath=Math.round((.5+.5*Math.sin(2*Math.PI*frame/BREATH.period+(hash(id+'/breath')%628)/100))*1000)/1000;
+  if(bl.gaze||bl.expressions)Object.assign(o,faceAt(project,t,frame,index,id,bl));
   if(bl.blinks&&!Object.hasOwn(s.assets.find(x=>x.id===id)?.tracks??{},'blink')){
    const h=hash(id),period=75+h%60,phase=(frame+h%period)%period;o.blink=phase<BODY.blinkFrames.length?BODY.blinkFrames[phase]:1;
   }
   out[id]=o;
  }
  return out;
+}
+// GPU-06: gaze and expression keys of one bound character at the frame (absolute timeline frame).
+const focusCache=new WeakMap();
+function faceAt(project,t,frame,index,id,bl){
+ const s=project.shots[index],ts=t.shots[index],o={};
+ if(bl.gaze){let byShot=focusCache.get(t);if(!byShot){byShot=new Map();focusCache.set(t,byShot);}
+  if(!byShot.has(index))byShot.set(index,focusPlan({...s,durationFrames:ts.endFrame-ts.startFrame},ts));
+  const at=(frame-ts.startFrame)/Math.max(1,ts.endFrame-ts.startFrame),target=(byShot.get(index)[id]??[]).filter(x=>x.at<=at+1e-9).at(-1)?.target;
+  const x0=a=>{const tr=s.assets.find(q=>q.id===a)?.tracks?.x;return Array.isArray(tr)?tr[0][1]:0;};
+  if(target!==undefined&&target!==id)o.gaze=Math.round(Math.max(-1,Math.min(1,(x0(target)-x0(id))/1.2))*.8*1000)/1000;}
+ if(bl.expressions){const own=ts.segments.find(g=>s.speakerAssets[g.speaker??'default']===id&&frame*1600+800>=g.startSample&&frame*1600+800<g.endSample);
+  if(own){const text=own.text.trim(),e=text.endsWith('?')?EXPRESSIONS.question:text.endsWith('!')?EXPRESSIONS.exclaim:EXPRESSIONS.line;
+   const a=Math.ceil(own.startSample/1600),z=Math.floor(own.endSample/1600),r=smooth(Math.max(0,Math.min(1,Math.min(frame-a,z-frame)/BREATH.ramp)));
+   o.brow=Math.round(e.brow*r*1000)/1000;o.smile=Math.round((EXPRESSIONS.listen.smile+(e.smile-EXPRESSIONS.listen.smile)*r)*1000)/1000;}
+  else{o.brow=EXPRESSIONS.listen.brow;o.smile=EXPRESSIONS.listen.smile;}}
+ return o;
 }
 // GEN-11: hip lean at a frame (deterministic per character ID; continuous, smooth moves between the two sides).
 export function weightAt(id,frame){
@@ -122,6 +147,7 @@ export function applyBody(state,body){
   if(o.nod!==undefined||o.tilt!==undefined){pose.nod=o.nod??0;pose.tilt=o.tilt??0;}
   if(o.blink!==undefined)pose.blink=o.blink;
   if(o.hip!==undefined)pose.hip=o.hip;
+  for(const k of ['breath','gaze','brow','smile'])if(o[k]!==undefined)pose[k]=o[k];
   if(o.beat!==undefined)pose.armPitch=Math.max(-2.8,Math.min(1,(pose.armPitch??0)+o.beat));
   if(o.beatLeft!==undefined)pose.leftArmPitch=Math.max(-2.8,Math.min(1,(pose.leftArmPitch??0)+o.beatLeft));
   a.pose=pose;}
