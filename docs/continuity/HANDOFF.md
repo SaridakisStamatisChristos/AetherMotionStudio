@@ -1,4 +1,23 @@
-# Forward-only handoff: GPU-03 TESTED + RENDERED, PR open; next FIX-NR (2026-11-28)
+# Forward-only handoff: FIX-NR TESTED + RENDERED, PR open; next GPU-04 (2026-11-28)
+
+**Latest checkpoint (FIX-NR):** `feature/fix-narrator` from main 9d26a5b. GPU-03 is merged as PR #72 on the owner's "merge and continue". **The FIX-NR PR is open, not merged.**
+- **Owner (standing):** "remove every old renders … the final will be what we keep". All renders are deleted, including the v1.2 final batches and the GPU-00 references (about 4.5 GB). After every merge, delete all renders in out/ and public/audio; keep only out/speech-cache, public/media and the fixture JSON.
+- **Changed:**
+  - `src/director/index.js` (`shotOverlays`, `narratorRig`);
+  - `src/director/offline.js` (compact narrator layout);
+  - `tests/fixnr-narrator.test.js`.
+- **Results:**
+  - 605 tests, 0 fail;
+  - digests: graph, geometry and detail2 unchanged; director **f5b5104977219fdf** (deliberate);
+  - fixnr-product-r2: one caption, large subjects, CHECKS motion/visibility/crowding 0, glitch clean;
+  - no benchmarks (owner rule).
+- **Open for the owner:** narrator films still show the shot title and subheading at the top, and the subheading repeats the first spoken sentence. Offer removing or shortening it if the owner wants.
+- **Next action for "fod continue":**
+  1. If the FIX-NR PR is open, report it, confirm CI, and wait for the merge word.
+  2. After the merge, delete all renders.
+  3. GPU-04 on `feature/gpu-04-glb`: ask the owner first about the GLB loader and decoders (GLTFLoader is in three; DRACO/meshopt/KTX2 need approval) and the format policy. Fast: tests and one render.
+
+**Previous checkpoint (GPU-03), heading as written:** GPU-03 TESTED + RENDERED, PR open; next FIX-NR (2026-11-28)
 
 **Latest checkpoint (GPU-03):** `feature/gpu-03-textures` from main 9f2d909. GPU-02 is merged as PR #71 on the owner's "merge". **The GPU-03 PR is open, not merged.**
 - **Owner decisions this session:**

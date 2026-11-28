@@ -21,9 +21,9 @@ Status words: PLANNED · NEXT · ACTIVE · IMPLEMENTED · TESTED · RENDERED · 
 | GPU-01 | PBR materials and colour management | **MERGED** (PR #68 → 936d0cb) | `feature/gpu-01-pbr` | src/visual/pbr.js, tests/gpu01-pbr.test.js, tests/test_profile_pair.py, out/gpu01-{swatches,portrait}-r2-*, out/bench/gpu01-portrait-r2-* |
 | FIX-RS | Render stability: random striped frames and the one-frame flash at cuts with parallel tabs (pre-existing, GPU Standard too) | **MERGED** (PR #70 → 3a59a65) | `feature/fix-render-stability`, PR #70 | FIX-RS section below; out/gpu01-swatches-r3-*, out/bench/fixrs2-* |
 | GPU-02 | Lighting, shadows and environment illumination | **MERGED** (PR #71 → 9f2d909) | `feature/gpu-02-lighting` | src/visual/cinematic-lights.js, tests/gpu02-lights.test.js, out/gpu02-{portrait,product,environment}-r1-*, out/bench/gpu02-portrait-r1-* |
-| GPU-03 | Procedural texture and material library | **TESTED + RENDERED** (PR open, not merged) | `feature/gpu-03-textures` | src/visual/pbr-textures.js, tests/gpu03-textures.test.js, out/gpu03-*-r1-* |
-| FIX-NR | Narrator films: no extra caption box; subjects large and never cut (Director, all new films) | **NEXT** (owner 2026-11-28: "Separate unit after GPU-03"; "we dont need extra caption box at all") | `feature/fix-narrator` (planned) | FIX-NR section below |
-| GPU-04 | External 3D assets (GLB) and high-detail geometry | PLANNED | — | — |
+| GPU-03 | Procedural texture and material library | **MERGED** (PR #72 → 9d26a5b) | `feature/gpu-03-textures` | src/visual/pbr-textures.js, tests/gpu03-textures.test.js, out/gpu03-*-r1-* |
+| FIX-NR | Narrator films: no extra caption box; subjects large and never cut (Director, all new films) | **TESTED + RENDERED** (PR open, not merged) | `feature/fix-narrator` | FIX-NR section below |
+| GPU-04 | External 3D assets (GLB) and high-detail geometry | NEXT (after the FIX-NR merge; ask the owner first about the GLB loader and decoders) | — | — |
 | GPU-05 | High-fidelity character system | PLANNED | — | — |
 | GPU-06 | Animation, dialogue and facial performance | PLANNED | — | — |
 | GPU-07 | Rich environments and scene dressing | PLANNED | — | — |
@@ -189,6 +189,14 @@ Found by the owner in gpu03-product-r1. The same plan exists in gpu00-product-r1
 - **Subjects too small and partly off-frame:** narrator shots frame one subject at `medium` with fixed camera moves (the laptop is small; the robot is off-frame in 3 shots, `OFF_FRAME` warnings). Dialogue films use `group`/`single` framing that fits everyone large. Narrator shots get group framing over all their subjects, with the same calm moves; nobody is cut by the frame edge.
 - **Scope:** Director planning only, applied to every new Director film (generalized). The Director digest changes deliberately (record the new value). Old film files are untouched.
 - **Evidence (fast, per owner):** tests including negatives; one fresh narrator film (product request) with the checks clean (no OFF_FRAME, one caption). No timed benchmark runs.
+- **Result (2026-11-28, `feature/fix-narrator`, TESTED + RENDERED, PR open):**
+  - src/director/index.js: `shotOverlays` (lower-thirds dropped everywhere, other overlay types kept) and `narratorRig` (group over 2–4 subjects, single for one; the camera move is kept);
+  - src/director/offline.js: a compact narrator layout (robot x −1.0 at scale .85; objects .35 or −.05/1.0);
+  - Director digest 8a0ad025b6c9f6d6 → **f5b5104977219fdf** (deliberate); graph, geometry and detail2 unchanged;
+  - tests/fixnr-narrator.test.js (3); `npm test` 605, 0 fail;
+  - fixnr-product-r2 (Cinematic, one render): one caption; robot and laptop large and inside the frame;
+  - CHECKS: motion 0 (was 3), visibility 0 (was 3 OFF_FRAME), crowding 0, silence 5 (pre-existing pauses of this script); frame_glitch clean.
+  - r1 (before the compact layout) was superseded.
 
 ### GPU-02: lighting, shadows and environment illumination
 - **Audit:** the current light rig, shadowMap, lighting-parity, fog.
@@ -320,3 +328,4 @@ Found by the owner in gpu03-product-r1. The same plan exists in gpu00-product-r1
 - 2026-11-28: PR #68 (GPU-01) merged (owner "merge and start the fix") → main 936d0cb; renders older than GPU-01 cleared (518 MB, gpu01 r1). FIX-RS on `fix/render-stability`: both defects reproduced and root-caused (stale capture; Chrome canvas blur filter after putImageData), fixed (per-frame 1-pixel read; blurRGBA), verified clean on 4 re-renders and gpu01-swatches-r3; cost about −26 % fps on the RTX route; bloom pixels change by ≤ 3 levels (new byte baseline). PR open, not merged.
 - 2026-11-28: PR #70 (FIX-RS) merged (owner "continue i agree with merge") → main 3a59a65; experiment renders cleared (221 MB). GPU-02 on `feature/gpu-02-lighting`: env-light-v1 (five presets, auto-v1 by environment, fill light, 2048 px key shadow), owner chose the "stronger" values over stills (Standard / subtle / stronger). Tests 596 (0 fail); digests unchanged; GPU Standard swangle still byte-identical to main. Films gpu02-{portrait,product,environment}-r1 (--compare standard, PASS, sourceDirty false, f46c097): frame_glitch clean, no stale frames, no added flicker (equal median frame-to-frame change). Contact shadows and AO deferred to GPU-08 (need post-processing). PR open, not merged.
 - 2026-11-28: PR #71 (GPU-02) merged (owner "merge") → main 9f2d909; GPU-01 renders cleared (515 MB). GPU-03 on `feature/gpu-03-textures`: owner chose procedural textures only. proc-texture-v1 implemented: Foundry bark and ground patterns, recipes per surface/part/floor, box UVs; tuned calm on stills. Tests 602 (0 fail); digests unchanged; Standard stills byte-identical to main. Films gpu03-{portrait,product,environment}-r1 PASS (d998721, sourceDirty false), glitch and stale clean. Owner found two captions and small subjects in the product film (pre-existing narrator path) → FIX-NR next. **Owner rule:** timed benchmark runs only at milestones; fast implementations first. PR open, not merged.
+- 2026-11-28: PR #72 (GPU-03) merged (owner "merge and continue") → main 9d26a5b. **Owner: "remove every old renders … the final will be what we keep"**: all renders deleted (out/batches incl. the v1.2 final batches, out/bench, all gpu00–gpu03 films, out/dual09-preview-mem, public/audio; about 4.5 GB). Kept: out/speech-cache, public/media, the fixture JSON. FIX-NR on `feature/fix-narrator`: no lower-third caption boxes, narrator group framing, compact layout; Director digest f5b5104977219fdf. PR open, not merged.
