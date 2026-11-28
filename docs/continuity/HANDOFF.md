@@ -1,4 +1,30 @@
-# Forward-only handoff: fresh session at GPU-05 (2026-11-28)
+# Forward-only handoff: GPU-05 ACCEPTED by the owner, merge word given; next GPU-06 (2026-11-28)
+
+**Latest:** PR #75 merged (owner "proceed to merging") → main e584ec3; GPU-05 rebased on it. owner polish (f4fecea; rendered from its pre-rebase twin fdecfb2): cheek bumps removed ("pimples"), closed mouth a soft rose smile arc and speaking a rounded dark oval with a tongue, leaner bodies (torso, coat, legs, arms, neck; sloped shoulders; hand anchors unchanged); film **gpu05-portrait-r3** PASS, CHECKS 0 both sides, frame_glitch clean both (r1, r2 superseded); owner: "ok this i like. proceed to merging". PR #76 merges after its CI passes; then all renders are deleted. The skeleton/morph/LOD/rig-adapter deferral to GPU-06 was proposed in PR #76 and the owner merged it without objection: confirm it in one line at the start of GPU-06.
+
+**Latest checkpoint (GPU-05):** `feature/gpu-05-characters` from main e706f2a (GPU-04 merged as PR #74). **The GPU-05 PR is open, not merged.** The docs PR #75 (`chore/fresh-session-gpu05`) should merge first; then rebase this branch on main and keep both texts in the continuity docs.
+- **Owner decisions:** the engine creates the characters; look "B Soft rounded" (chosen over agent stills: today / soft / crisp); first heroes student, scientist, service-robot; then "refine everything … neat styles", "go all the way".
+- **Refinement (7521ca7):** hero detail 4 in `src/visual/catalog-hero.js` (faces, bodies, hands, shoes, hair, outfits; refined robot), dispatched from `src/visual/catalog.js` (detail 4 valid for humans and robots; colour slots 7/8); `src/core/talk.js` (detail 4 has a mouth); `src/visual/pbr.js` (slots 7/8 shade as skin); `heroDetail` now raises to 4. Tests 616 (0 fail); digests unchanged; Standard byte-identical; film **gpu05-portrait-r2** PASS, checks 0, glitch clean (r1 superseded). The items below describe the first step (r1).
+- **Changed:**
+  - `src/core/hero-characters.js` (new: style, soft radius, hero parts, `heroDetail`);
+  - `src/core/render-profiles.js` (`cinematic.characters: 'soft-v1'`, capability hero-char-v1, Director default, `threeOptions.characters`);
+  - `src/visual/three-backend.js` (rounded real-size geometry for human/robot parts, Cinematic soft-v1 only; disposal);
+  - `src/director/index.js` (`heroDetail` pass: detail-3 humans in soft-v1 films);
+  - tests `tests/gpu05-characters.test.js` (5, with negatives) and the GPU-00…03 expectations for the new key;
+  - fixture `examples/gpu05-portrait.request.json`.
+- **Results:**
+  - `npm test` 613 (612 pass, 0 fail, 1 skip); Python 70 OK; digests unchanged (director f5b5104977219fdf);
+  - GPU Standard swangle still byte-identical to main;
+  - gpu05-portrait-r1 `--compare standard` on the RTX (vulkan), b75da76, sourceDirty false: PASS; CHECKS 0 warnings both sides; frame_glitch clean both.
+- **Unresolved, for the owner:**
+  - deferral of the SkinnedMesh skeleton, morph targets, LODs and imported-rig adapters to GPU-06 (a gate; owner's word);
+  - a topic-set floor lamp can stand right behind a speaker's head (pre-existing staging; candidate for GPU-07).
+- **Next action for "fod continue":**
+  1. If the GPU-05 PR is open, report it, confirm CI, and wait for the merge word (and the deferral answer).
+  2. After the merge, delete all renders (out/gpu05-*, out/gpu05-looks, public/audio).
+  3. GPU-06 (animation, dialogue and facial performance): ask the owner first only about a local viseme aligner (otherwise labelled estimated cues).
+
+**Previous checkpoint (fresh session), heading as written:** fresh session at GPU-05 (2026-11-28)
 
 **Start here ("fod continue").** Main is **e706f2a** (PR #74 merged). Tag `v1.2-dual-backend-final` → 2cb82ef, untouched. No unit PR is open; this record is on `chore/fresh-session-gpu05` (docs only). If its PR is still open, ask the owner to merge it.
 

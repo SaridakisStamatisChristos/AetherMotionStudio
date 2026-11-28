@@ -1,4 +1,5 @@
 import {localArm} from './catalog-rig.js';
+import {heroHuman,heroRobot} from './catalog-hero.js';
 import {partRole} from './crafted.js';
 import {surfaceKey} from './pbr.js';
 import {RECIPES} from './catalog-data.js';
@@ -14,7 +15,7 @@ export function validateAssetParams(id,params){
  if(!Object.hasOwn(recipes,id))throw Error('asset params unsupported for '+id);
  if(!params||typeof params!=='object'||Array.isArray(params))throw Error('params object required');
  for(const [k,v] of Object.entries(params)){if(['primary','secondary','accent'].includes(k)){if(typeof v!=='string'||!/^#[0-9a-fA-F]{6}$/.test(v))throw Error('invalid asset color: '+k);}
- else if(k==='detail'){if(v!==1&&v!==2&&v!==3)throw Error('invalid asset detail: '+v);if(v>=2&&recipes[id].family!=='human')throw Error('asset detail '+v+' unsupported for '+id);}
+ else if(k==='detail'){if(v!==1&&v!==2&&v!==3&&v!==4)throw Error('invalid asset detail: '+v);if(v>=2&&recipes[id].family!=='human'&&!(v===4&&recipes[id].family==='robot'))throw Error('asset detail '+v+' unsupported for '+id);}
  else if(k==='reach'){if(typeof v!=='number'||!Number.isFinite(v)||v<1||v>2)throw Error('invalid asset reach: '+v);if(recipes[id].family!=='robot')throw Error('asset reach unsupported for '+id);}
  else if(['width','height','depth'].includes(k)){if(typeof v!=='number'||!Number.isFinite(v)||v<.7||v>1.3)throw Error('invalid asset dimension: '+k);}else throw Error('unknown asset param: '+k);}
  return params;
@@ -25,7 +26,8 @@ function primitive(box,pose,palette,params={},family=null){
  const {origin=[0,0,0],yaw=0,scale=1}=pose,dimensions=[params.width??1,params.height??1,params.depth??1];
  const tf=p=>add(ry(p.map((v,i)=>v*scale*dimensions[i]),yaw),origin);
  const [primary,secondary,accent]=palette;
- const col=[params.primary??primary,params.secondary??secondary,params.accent??accent,'#e9ddd0','#162333','#8a6650','#7ebdd0'];
+ // GPU-05: slots 7 (white: eyes, soles) and 8 (rose: lips, tongue) are used only by hero detail 4 (catalog-hero.js).
+ const col=[params.primary??primary,params.secondary??secondary,params.accent??accent,'#e9ddd0','#162333','#8a6650','#7ebdd0','#f6f3ec','#b8615c'];
  // bias: CPU painter-sort depth bias only (Three ignores it); 0 for every legacy box.
  // detail (DUAL-09): a small part mounted on a face (a person's eyes, brows, nose, mouth). Only the crafted CPU painter
  // uses it (CRAFTED.detailBias); the legacy painter, Three and every checker ignore it, so geometry is unchanged.
@@ -85,6 +87,7 @@ function detail3(b,w,h,d,k){
 }
 const F={
  robot(P,[w,h,d,legs,kind],p){let {b,rod}=P;[b,rod]=headRoute(P,b,rod,p,h*.66,w*.62,[0,h*.7,0],h*.36);const step=p.walking??0,open=p.open??0;
+ if(p.params?.detail===4)return heroRobot(b,rod,[w,h,d,legs,kind],p,planted,ROBOT_MOUTH_BIAS);
  b(0,h*.5,0,w,h*.37,d,0);b(0,h*.52,d*.51,w*.62,h*.18,.04,1);b(0,h*.54,d*.54,w*.36,.045,.035,2,0,'z',true);
  if(legs){for(const s of [-1,1]){const ly=p.footLift===undefined?0:Math.max(0,s*p.footLift)*.1;
   if(p.footTwistR===undefined){rod([s*w*.27,h*.36,0],[s*w*.28,.13+ly,s*step*.17],w*.24,1);b(s*w*.28,.11+ly,.12+s*step*.17,w*.38,.22,d*.66,0);}
@@ -103,6 +106,7 @@ const F={
  if(kind>=3)b(0,h*.45,-d*.58,w*.65,h*.32,.24,1);
  },
  human(P,[w,h,d,k],p){let {b,rod}=P;[b,rod]=headRoute(P,b,rod,p,h*.84,w*.4,[0,h*.8,0],h*.48);const walk=p.walking??0,open=p.open??0;
+ if(p.params?.detail===4)return heroHuman(b,rod,[w,h,d,k],p,planted);
  for(const s of [-1,1]){const z=s*walk*.2,ly=p.footLift===undefined?0:Math.max(0,s*p.footLift)*.12;
   if(p.footTwistR===undefined){rod([s*w*.22,h*.48,0],[s*w*.24,.13+ly,z],w*.25,1);b(s*w*.24,.09+ly,z+.09,w*.34,.18,d*.65,4);}
   else{const [q,dx,dz]=planted(p,s),fx=s*w*.24+dx,fz=z+dz;rod([s*w*.22,h*.48,0],[fx,.13+ly,fz],w*.25,1);b(...add([fx,.09+ly,fz],ry([0,0,.09],q)),w*.34,.18,d*.65,4,q,'y');}const {shoulder:a,hand:c}=localArm('human',[w,h],s,p);rod(a,c,w*.2,0);b(...c,w*.22,.16,.19,3);if(p.params?.detail===3&&!(s===1&&p.grip!==undefined))fingers(rod,a,c,s,w);if(s===1&&p.grip!==undefined)for(const j of [-1,1])b(c[0]+j*(.07-.035*p.grip),c[1]-.1,c[2]+.04,.045,.1,.07,3);}

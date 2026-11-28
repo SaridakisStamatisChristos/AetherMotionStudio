@@ -295,7 +295,8 @@ test('detail 3: fingers extend beyond the hand along the arm; grip hand keeps it
 });
 test('detail 3: negatives and generator reproduction',async()=>{
  assert.throws(()=>validateProject(project([shot([{id:'r',asset:'service-robot',params:{detail:3},tracks:{x:[[0,0]]}}])])));
- assert.throws(()=>validateProject(project([shot([{id:'h',asset:'engineer',params:{detail:4},tracks:{x:[[0,0]]}}])])));
+ // GPU-05 added hero detail 4; the out-of-range negative moves to 5.
+ assert.throws(()=>validateProject(project([shot([{id:'h',asset:'engineer',params:{detail:5},tracks:{x:[[0,0]]}}])])));
  validateProject(project([shot([{id:'h',asset:'engineer',params:{detail:3},tracks:{x:[[0,0]]}}])]));
  const {build}=await import('../scripts/polish02-cast.mjs');
  for(const b of ['cpu','three']){const want=JSON.parse(readFileSync(new URL('../examples/polish02-cast-'+b+'-polished.json',import.meta.url),'utf8'));assert.deepEqual(build(b),want);}

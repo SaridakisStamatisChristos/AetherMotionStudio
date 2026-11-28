@@ -9,6 +9,7 @@ import {directorCatalog,digest} from './catalog.js';
 import {request,validateIR,safeJson} from './schema.js';
 import {baseline,offlineIR} from './offline.js';
 import {stageProject,stageShot} from '../core/staging.js';
+import {heroDetail} from '../core/hero-characters.js';
 import {applySet,topicSetFor,fitPiecesFor} from './sets.js';
 import {singleShots} from '../core/singles.js';
 import {reelsProject} from '../core/reels.js';
@@ -78,6 +79,8 @@ export function compile(q,ir,selection,{mediaRoot}={}){
  // GEN-15 step 2: dialogue films default to crafted-v2 (crafted-v1 plus glass and metal parts); crafted-v1 stays selectable.
  const look=q.look==='none'?null:q.look??(q.dialogue?'crafted-v2':null);
  if(look)out={...out,shots:out.shots.map(s=>s.template==='cinematic-graph'&&!s.geometryProfile?{...s,look}:s)};
+ // GPU-05: Cinematic soft-v1 films draw humans at detail 3 (no-op for every other film).
+ out=heroDetail(out);
  // GEN-09: Reels delivery (layout + framing inside the Reels-safe area) before singles, so singles are solved for it.
  if(q.delivery)out=reelsProject(out).project;
  // GEN-06: dialogue cuts long lines to singles of the speaker (request.dialogue.singles false keeps group shots only).
