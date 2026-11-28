@@ -66,7 +66,7 @@ Requirements: [docs/continuity/CAMPAIGN_A_DIRECTIVE.md](docs/continuity/CAMPAIGN
 - Each milestone exit needs fresh local films with new `dual-` IDs on both backends, shared speech preparation for matched pairs, negative and adversarial tests, and an actual frame inspection. Owner review is recorded separately from agent inspection.
 - Campaign A's rules above stay binding for every shared feature. Its CPU and Standard outputs are the regression baseline of Campaign B. Release notes: docs/RELEASE_1_2.md.
 
-## Campaign B — GPU-First Cinematic Expansion (active; GPU-00…04 merged, next GPU-05; 2026-11-28)
+## Campaign B — GPU-First Cinematic Expansion (active; GPU-00…07 merged, next GPU-08; 2026-11-28)
 Requirements: [docs/continuity/CAMPAIGN_B_DIRECTIVE.md](docs/continuity/CAMPAIGN_B_DIRECTIVE.md) (verbatim). Status, FOD plan, reuse map and owner decisions: [docs/continuity/CAMPAIGN_B.md](docs/continuity/CAMPAIGN_B.md). Start: tag `v1.2-dual-backend-final` (2cb82ef).
 - Goal: a genuinely more capable, opt-in **GPU Cinematic** profile on the existing Three.js renderer: PBR and colour management, lighting and environment light, procedural textures, local GLB assets, high-fidelity characters, skeletal animation and facial performance, rich sets, tasteful post, 3D scientific modes, quality tiers, and profile-aware Director and Studio. Target device RTX 4060 Laptop 8 GB; nothing else is assumed to work until measured.
 - Order: GPU-00 ADR and budgets → 01 PBR/colour → 02 lighting → 03 textures → 04 GLB assets → 05 characters → 06 animation and faces → 07 environments → 08 camera and post → 09 scientific modes → 10 performance tiers → 11 Director and Studio → 12 showcase and v2.0 qualification.

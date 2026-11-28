@@ -25,9 +25,9 @@ Status words: PLANNED · NEXT · ACTIVE · IMPLEMENTED · TESTED · RENDERED · 
 | FIX-NR | Narrator films: no extra caption box; subjects large and never cut (Director, all new films) | **MERGED** (PR #73 → 6d21a35) | `feature/fix-narrator` | FIX-NR section below |
 | GPU-04 | External 3D assets (GLB) and high-detail geometry | **MERGED** (PR #74 → e706f2a; verified existing + hardened) | `feature/gpu-04-glb` | tests/gpu04-glb.test.js; GPU-04 section below |
 | GPU-05 | High-fidelity character system | **MERGED** (PR #76 → 586d938; skeleton/morph/LOD moved to GPU-06 on the owner's word) | `feature/gpu-05-characters` | src/core/hero-characters.js, tests/gpu05-characters.test.js, out/gpu05-portrait-r1-* |
-| GPU-06 | Animation, dialogue and facial performance (+ skeleton, morph targets, LODs, rig adapters from GPU-05) | **TESTED + RENDERED**: step 1 measured mouths MERGED (PR #77 → 07c6992); step 2 skeleton/breathing/gaze/expressions PR open | `feature/gpu-06-animation`, `feature/gpu-06-skeleton` | scripts/visemes_rhubarb.py, scripts/setup_rhubarb.py, tools-lock.json, tests/gpu06-mouths.test.js, tests/test_visemes_rhubarb.py |
-| GPU-07 | Rich environments and scene dressing | **TESTED + RENDERED** (PR open, not merged) | `feature/gpu-07-environments` | src/director/rooms.js, tests/gpu07-rooms.test.js, examples/gpu07-classroom.request.json |
-| GPU-08 | Cinematic camera and post-processing | PLANNED | — | — |
+| GPU-06 | Animation, dialogue and facial performance (+ skeleton, morph targets, LODs, rig adapters from GPU-05) | **MERGED** (step 1 PR #77 → 07c6992; step 2 PR #78 → 7193dfb) | `feature/gpu-06-animation`, `feature/gpu-06-skeleton` | scripts/visemes_rhubarb.py, scripts/setup_rhubarb.py, tools-lock.json, tests/gpu06-mouths.test.js, tests/test_visemes_rhubarb.py |
+| GPU-07 | Rich environments and scene dressing | **MERGED** (PR #79 → 924b23f) | `feature/gpu-07-environments` | src/director/rooms.js, tests/gpu07-rooms.test.js, examples/gpu07-classroom.request.json |
+| GPU-08 | Cinematic camera and post-processing | NEXT (ask the owner first: effects; `three/examples` post-processing approval) | — | — |
 | GPU-09 | Scientific and non-character cinematic modes | PLANNED | — | — |
 | GPU-10 | Performance and adaptive quality profiles | PLANNED | — | — |
 | GPU-11 | Intelligent visual direction and Studio integration | PLANNED | — | — |
@@ -366,3 +366,4 @@ Found by the owner in gpu03-product-r1. The same plan exists in gpu00-product-r1
 - 2026-11-28: PR #77 (GPU-06 step 1) merged → main 07c6992 on the owner's "merge"; renders deleted. Owner "go with recommendations": puppet skeleton, LODs → GPU-10, rig adapters wait. GPU-06 step 2 (IK joints, breathing, gaze, expressions): film gpu06-dialogue-r1 PASS. PR open, not merged.
 - 2026-11-28: PR #78 (GPU-06 step 2) merged → main 7193dfb on "i watched. merge it"; renders deleted. GPU-07 topic-v4 rooms (classroom, workshop, hall; sightline-safe props; own wall and floor per room): film gpu07-classroom-r2 PASS. PR open, not merged.
 - 2026-11-28: owner asked why the teacher was alone so often → sparing solo shots by default for all dialogue films; film gpu07-classroom-r3 PASS.
+- 2026-11-28: PR #79 (GPU-07) merged → main 924b23f on the owner's "merge"; renders deleted. Fresh-session handoff prepared (owner "prepare a handoff for next session based on the principles of fod continue"). Next: GPU-08.
