@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "id": "gpu06-mouths",
+  "seconds": 60,
+  "language": "en-us",
+  "backend": "three",
+  "profile": "polished",
+  "topic": "Why we dream",
+  "audience": "curious beginners",
+  "tone": "warm",
+  "style": "interview",
+  "voice": "af_bella",
+  "seed": 11,
+  "dialogue": {
+    "style": "interview",
+    "mouths": "rhubarb-v1",
+    "speakers": [
+      {
+        "id": "host",
+        "name": "Student",
+        "voice": "af_bella",
+        "language": "en-us",
+        "character": "student"
+      },
+      {
+        "id": "guest",
+        "name": "Scientist",
+        "voice": "am_michael",
+        "language": "en-us",
+        "character": "scientist"
+      }
+    ]
+  },
+  "script": "Why do we dream at all? Nobody knows for sure, but we have some good ideas. When do dreams happen? Mostly in a stage of sleep called rapid eye movement sleep. Is the brain resting then? Not at all. It is almost as busy as when we are awake. So what is it doing? One idea is that it sorts the memories of the day and keeps the useful ones. Is that why dreams feel so strange? Partly. Pieces of different memories get mixed together. Can dreams help us? Some studies suggest that people solve problems better after a good night of sleep. So sleep is not wasted time? Not at all, it is when the brain does some of its most careful work.",
+  "renderProfile": "cinematic-v1"
+}

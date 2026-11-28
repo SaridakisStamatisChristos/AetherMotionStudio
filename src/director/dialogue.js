@@ -26,7 +26,9 @@ const human=asset=>recipeSpec(asset)?.family==='human';
 export function validateDialogueRequest(q){
  if(q.dialogue===undefined)return;
  const d=q.dialogue,p='request.dialogue';
- fields(d,['speakers','style','pace','singles'],p,['speakers']);
+ fields(d,['speakers','style','pace','singles','mouths'],p,['speakers']);
+ // GPU-06: dialogue.mouths 'rhubarb-v1' opts into measured mouth shapes (owner-approved Rhubarb Lip Sync; must be installed).
+ if(d.mouths!==undefined&&d.mouths!=='rhubarb-v1')bad(p+'.mouths','rhubarb-v1 or absent required');
  if(d.singles!==undefined&&typeof d.singles!=='boolean')bad(p+'.singles','boolean required');
  if(d.style!==undefined)choice(d.style,DIALOGUE_STYLES,p+'.style');
  if(d.pace!==undefined&&(typeof d.pace!=='number'||!Number.isFinite(d.pace)||d.pace<SPEECH_PACE.min||d.pace>1))bad(p+'.pace','number from '+SPEECH_PACE.min+' to 1 required');
@@ -87,7 +89,7 @@ export function dialogueSpeech(q,ir){
   ...((q.dialogue.pace??SPEECH_PACE.dialogue)<1?{pace:q.dialogue.pace??SPEECH_PACE.dialogue}:{}),
   // Fix A (owner: "do these: Fix A"): dialogue films are as long as their speech plus calm pauses, at most the requested
   // seconds, unless the request's speech says fit 'none'.
-  fit:base.fit??'speech-v1'};
+  fit:base.fit??'speech-v1',...(q.dialogue.mouths?{mouths:q.dialogue.mouths}:{})};
 }
 // Speakers (bound by ID) and the set piece; compile then applies staging talk-v1, which places the line and the set piece
 // beside it and adds dialogue/bodyLanguage/lighting. A provider's set-piece x is replaced when talk-v1 places it.

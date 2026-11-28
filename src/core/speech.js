@@ -27,7 +27,7 @@ export function validateSpeechConfig(c,shots=null){
  // GEN-05 opt-in: starting Kokoro speed below 1 (slightly slower, easier-to-read speech). Absent = 1 (unchanged).
  if(c.pace!==undefined)finite(c.pace,SPEECH_PACE.min,1,'speech.pace');
  // GEN-10 opt-in estimated mouth shapes for bound speakers (src/core/talk.js VISEMES, scripts/visemes.py)
- if(c.mouths!==undefined&&c.mouths!=='visemes-v1')fail('speech.mouths','visemes-v1 or absent required');
+ if(c.mouths!==undefined&&c.mouths!=='visemes-v1'&&c.mouths!=='rhubarb-v1')fail('speech.mouths','visemes-v1, rhubarb-v1 (GPU-06, measured with Rhubarb Lip Sync) or absent required');
  // Fix A opt-in: 'speech-v1' = the film is as long as the measured speech plus calm pauses, at most targetFrames
  // (scripts/speech_plan.py fit_target); 'none' or absent = exactly targetFrames (unchanged).
  if(c.fit!==undefined&&!SPEECH_FIT.includes(c.fit))fail('speech.fit','speech-v1, none or absent required');

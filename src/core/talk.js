@@ -35,14 +35,17 @@ export function validateSpeakerAssets(project){
 // forced alignment. Loudness still sets how far the mouth opens; the shape scales it and sets the mouth width.
 export const VISEMES=Object.freeze({version:'viseme-estimated-v1',codes:'XMFEAO',
  shapes:Object.freeze({X:{open:1,width:1},M:{open:0,width:1},F:{open:.25,width:1.05},E:{open:.6,width:1.25},A:{open:1,width:1},O:{open:.8,width:.62}})});
-export function usesVisemes(project){return project.speech?.mouths==='visemes-v1'&&usesTalk(project);}
+// GPU-06 opt-in measured mouth shapes (speech.mouths 'rhubarb-v1', owner-approved Rhubarb Lip Sync, tools-lock.json):
+// the same codes, timed from the spoken audio itself (scripts/visemes_rhubarb.py). Each mode has its own version and timing.
+export const MOUTH_MODES=Object.freeze({'visemes-v1':Object.freeze({version:VISEMES.version,timing:'estimated'}),'rhubarb-v1':Object.freeze({version:'viseme-rhubarb-v1',timing:'measured'})});
+export function usesVisemes(project){return Object.hasOwn(MOUTH_MODES,project.speech?.mouths??'')&&usesTalk(project);}
 export function validateVisemes(project,t){
  const v=t.visemes;
- if(v===undefined){if(usesVisemes(project))fail('timeline.visemes','required when speech.mouths is visemes-v1 and a shot binds speakerAssets');return;}
+ if(v===undefined){if(usesVisemes(project))fail('timeline.visemes','required when speech.mouths is '+project.speech.mouths+' and a shot binds speakerAssets');return;}
  if(!usesVisemes(project))fail('timeline.visemes','speech.mouths visemes-v1 and bound speakers required');
  if(!v||typeof v!=='object'||Array.isArray(v))fail('timeline.visemes','object required');
  for(const k of Object.keys(v))if(!['version','phonemizer','timing','values'].includes(k))fail('timeline.visemes.'+k,'unknown field');
- if(v.version!==VISEMES.version||v.timing!=='estimated')fail('timeline.visemes','unsupported version or timing');
+ const m=MOUTH_MODES[project.speech.mouths];if(v.version!==m.version||v.timing!==m.timing)fail('timeline.visemes','unsupported version or timing');
  if(typeof v.phonemizer!=='string'||!v.phonemizer||v.phonemizer.length>80)fail('timeline.visemes.phonemizer','name required');
  if(typeof v.values!=='string'||v.values.length!==t.durationFrames||![...v.values].every(c=>VISEMES.codes.includes(c)))fail('timeline.visemes.values','one code (XMFEAO) per frame required');
 }
@@ -66,7 +69,7 @@ export function talkAt(project,t,frame,index){
  const s=project.shots[index];if(!s?.speakerAssets||!t.speechEnvelope)return null;
  const v=t.speechEnvelope.values,at=f=>v[Math.max(0,Math.min(v.length-1,f))];
  const level=Math.min(1,(at(frame-1)+2*at(frame)+at(frame+1))/4000),speaker=speakerAt(t,index,frame),out={};
- const shape=t.visemes&&project.speech?.mouths==='visemes-v1'?visemeAt(t,frame):null;
+ const shape=t.visemes&&Object.hasOwn(MOUTH_MODES,project.speech?.mouths??'')?visemeAt(t,frame):null;
  for(const [sp,id] of Object.entries(s.speakerAssets)){
   if(!shape){out[id]=sp===speaker?Math.round(level*1000)/1000:0;continue;}
   out[id]=sp===speaker?{mouth:Math.round(level*shape.open*1000)/1000,width:shape.width}:{mouth:0,width:1};

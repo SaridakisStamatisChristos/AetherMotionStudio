@@ -11,6 +11,7 @@ from speech_plan import allocate_mixed, fit_target, caption_labels, slots, pronu
 import audio_master
 import speech_envelope
 import visemes
+import visemes_rhubarb
 from phrase_cache import PhraseCache,key_for,file_hash
 R=RATE
 
@@ -138,6 +139,8 @@ def compile_speech(scene,out,root,model_dir,kokoro):
     dest=root/'public'/'audio'/(scene['id']+'.wav');dest.parent.mkdir(parents=True,exist_ok=True);wavfile.write(dest,R,pcm(mix))
     if speech_envelope.wanted(scene):timeline['speechEnvelope']=speech_envelope.envelope(speech,target)
     # GEN-10 opt-in estimated mouth shapes: phonemes from the model's own phonemizer, timing estimated per word
+    # GPU-06 opt-in measured mouth shapes (owner-approved Rhubarb Lip Sync); same codes, timing measured from the audio
+    if visemes_rhubarb.wanted(scene):timeline['visemes']=visemes_rhubarb.visemes(speech,segments,target)
     if visemes.wanted(scene):timeline['visemes']=visemes.visemes(segments,[kokoro.tokenizer.phonemize(pronunciation(g['text'],c['pronunciations']),g['language']) for g in segments],target,'espeak-ng via kokoro-onnx '+version('kokoro-onnx'))
     (out/'timeline.json').write_text(json.dumps(timeline,indent=2,ensure_ascii=False),encoding='utf-8')
     (out/'voice-report.json').write_text(json.dumps({'backend':'kokoro-onnx','voice':scene['voice'],'sample_rate':R,'segments':segments},indent=2,ensure_ascii=False),encoding='utf-8')
