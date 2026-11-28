@@ -23,7 +23,7 @@ Status words: PLANNED · NEXT · ACTIVE · IMPLEMENTED · TESTED · RENDERED · 
 | GPU-02 | Lighting, shadows and environment illumination | **MERGED** (PR #71 → 9f2d909) | `feature/gpu-02-lighting` | src/visual/cinematic-lights.js, tests/gpu02-lights.test.js, out/gpu02-{portrait,product,environment}-r1-*, out/bench/gpu02-portrait-r1-* |
 | GPU-03 | Procedural texture and material library | **MERGED** (PR #72 → 9d26a5b) | `feature/gpu-03-textures` | src/visual/pbr-textures.js, tests/gpu03-textures.test.js, out/gpu03-*-r1-* |
 | FIX-NR | Narrator films: no extra caption box; subjects large and never cut (Director, all new films) | **MERGED** (PR #73 → 6d21a35) | `feature/fix-narrator` | FIX-NR section below |
-| GPU-04 | External 3D assets (GLB) and high-detail geometry | **VERIFIED EXISTING + HARDENED** (PR open, not merged) | `feature/gpu-04-glb` | tests/gpu04-glb.test.js; GPU-04 section below |
+| GPU-04 | External 3D assets (GLB) and high-detail geometry | **MERGED** (PR #74 → e706f2a; verified existing + hardened) | `feature/gpu-04-glb` | tests/gpu04-glb.test.js; GPU-04 section below |
 | GPU-05 | High-fidelity character system | NEXT (after the GPU-04 merge; ask the owner first about art direction and the first 2–3 hero characters) | — | — |
 | GPU-06 | Animation, dialogue and facial performance | PLANNED | — | — |
 | GPU-07 | Rich environments and scene dressing | PLANNED | — | — |
@@ -322,7 +322,7 @@ Found by the owner in gpu03-product-r1. The same plan exists in gpu00-product-r1
 - GPU-01/02: Cinematic look references, if the owner wants to steer (otherwise the agent proposes a before/after for review).
 - GPU-03: approval for importing local textures carrying third-party licences.
 - GPU-04: GLB support scope and the use of `three/examples` loaders and decoders (DRACO/meshopt/KTX2); any external asset licence.
-- GPU-05: character art direction; the first 2–3 hero characters.
+- GPU-05: character art direction; the first 2–3 hero characters. **Decided 2026-11-28: the engine creates them (procedural, extending the catalog builder); no imported or self-made models for now; the look is chosen from agent-rendered stills.**
 - GPU-06: any local alignment dependency for visemes (otherwise estimated cues, labelled).
 - GPU-10: **configuration of the pre-render budget check (RP-06), asked first, before building it** (owner 2026-11-27); quality tier defaults.
 - GPU-11: Studio default profile.
@@ -338,3 +338,5 @@ Found by the owner in gpu03-product-r1. The same plan exists in gpu00-product-r1
 - 2026-11-28: PR #71 (GPU-02) merged (owner "merge") → main 9f2d909; GPU-01 renders cleared (515 MB). GPU-03 on `feature/gpu-03-textures`: owner chose procedural textures only. proc-texture-v1 implemented: Foundry bark and ground patterns, recipes per surface/part/floor, box UVs; tuned calm on stills. Tests 602 (0 fail); digests unchanged; Standard stills byte-identical to main. Films gpu03-{portrait,product,environment}-r1 PASS (d998721, sourceDirty false), glitch and stale clean. Owner found two captions and small subjects in the product film (pre-existing narrator path) → FIX-NR next. **Owner rule:** timed benchmark runs only at milestones; fast implementations first. PR open, not merged.
 - 2026-11-28: PR #72 (GPU-03) merged (owner "merge and continue") → main 9d26a5b. **Owner: "remove every old renders … the final will be what we keep"**: all renders deleted (out/batches incl. the v1.2 final batches, out/bench, all gpu00–gpu03 films, out/dual09-preview-mem, public/audio; about 4.5 GB). Kept: out/speech-cache, public/media, the fixture JSON. FIX-NR on `feature/fix-narrator`: no lower-third caption boxes, narrator group framing, compact layout; Director digest f5b5104977219fdf. PR open, not merged.
 - 2026-11-28: PR #73 (FIX-NR) merged (owner "merge") → main 6d21a35; renders deleted. GPU-04 on `feature/gpu-04-glb`: owner chose plain GLB only and own generated models; GLB import verified existing (AF05); unreachable glTF nodes now refused; 22 hostile-case tests; one comparison render PASS. Tests 608 (0 fail); digests unchanged (director f5b5104977219fdf). PR open, not merged.
+- 2026-11-28: PR #74 (GPU-04) merged (owner "merge") → main e706f2a; renders deleted. Fresh-session docs updated (owner "update claudemd, agents md, handoff, continuity docs in order to start fress in a new session with fod continue"). Next: GPU-05.
+- 2026-11-28: owner decided before GPU-05 that the engine creates the hero characters (no imports for now; rigged imports may be reconsidered after GPU-06).

@@ -1,4 +1,46 @@
-# Forward-only handoff: GPU-04 VERIFIED EXISTING + HARDENED, PR open; next GPU-05 (2026-11-28)
+# Forward-only handoff: fresh session at GPU-05 (2026-11-28)
+
+**Start here ("fod continue").** Main is **e706f2a** (PR #74 merged). Tag `v1.2-dual-backend-final` → 2cb82ef, untouched. No unit PR is open; this record is on `chore/fresh-session-gpu05` (docs only). If its PR is still open, ask the owner to merge it.
+
+**Campaign B so far (all merged on the owner's word):**
+
+| Unit | PR → main | What it gave |
+|---|---|---|
+| GPU-00 | #67 → dac8f8d | ADR-001 Accepted; `renderProfile: 'cinematic-v1'`; preflight RP-01…RP-06; device-relative budget (CAMPAIGN_B_PROTOCOL.md) |
+| GPU-01 | #68 → 936d0cb | `cinematic.materials: 'pbr-v1'`: physical materials per part (src/visual/pbr.js); `--compare standard` |
+| FIX-RS | #70 → 3a59a65 | 1-pixel read after every frame (no stale frames); bloom blur in JS (no stripes) |
+| GPU-02 | #71 → 9f2d909 | `cinematic.lights` (`auto-v1` + 5 presets, owner's "stronger" values; src/visual/cinematic-lights.js) |
+| GPU-03 | #72 → 9d26a5b | `cinematic.textures: 'proc-v1'`: procedural textures (src/visual/pbr-textures.js; Foundry bark/ground) |
+| FIX-NR | #73 → 6d21a35 | no lower-third caption boxes; narrator group framing; compact layout (Director digest f5b5104977219fdf) |
+| GPU-04 | #74 → e706f2a | GLB import verified existing (AF05 own reader); unreachable nodes refused; 22 hostile tests |
+
+- Director requests with `renderProfile` get `cinematic: {version: 1, materials: 'pbr-v1', lights: 'auto-v1', textures: 'proc-v1'}` by default.
+- GPU Standard and CPU Classic are unchanged by every Cinematic unit (swangle stills byte-identical; digests).
+- **Deliberate byte changes:** FIX-RS bloom (≤ 3 levels) and FIX-NR Director plans.
+- **Baseline:**
+  - `npm test` 608 (607 pass, 0 fail, 1 Windows skip); Python 70 OK;
+  - digests with `--exclude talk04,talk05,gen01,gen09,gen12,fixa,dual,gpu`: graph 3d33fbaee198acad, geometry 14dec244d171dc56, detail2 e3f80439a292f21a, director f5b5104977219fdf.
+
+**Standing owner rules (2026-11-28; also in CLAUDE.md):**
+- fast implementations; benchmarks (perf-bench ×3) only at GPU-10/GPU-12 or on request;
+- after every merge delete all renders (keep out/speech-cache, public/media, the fixture JSON); "the final will be what we keep";
+- no caption boxes in Director films;
+- explain every option in plain words before asking, and make proposals that fit other machines too;
+- GPU-10 must first ask the owner to configure the budget check;
+- code branches are `feature/…` (CI runs only there and on main).
+
+**Next action for "fod continue": GPU-05 (high-fidelity characters).**
+1. Bootstrap (CLAUDE.md), `git switch main && git pull`, then branch `feature/gpu-05-characters`.
+2. Read CAMPAIGN_B.md "GPU-05", directive §4 GPU-05, and the seams: src/visual/catalog.js and catalog-rig.js (human/robot recipes, detail 2/3 faces, `headed`), src/core/identity.js, src/core/body.js and talk.js, src/foundry/hero.js and hero-recipes.js.
+3. **Owner decision (2026-11-28, before GPU-05): the engine creates the hero characters** ("yes i agree"). It extends the existing procedural character builder (catalog recipes and rig) into refined stylized characters. No imported or self-made models now: rigged GLB characters need skins and animations, which the importer refuses by design and the owner's GPU-04 choice excludes. Importing rigged characters may be reconsidered after GPU-06 (skeletons and animation), on the owner's word.
+   - **Ask the owner only about the look** (UI choice, options explained plainly, shown as rendered stills the agent makes): e.g. rounded-stylized vs detailed-blocky, and which 2–3 characters to start with (e.g. scientist, student, robot).
+   - Keep the box characters as a valid style.
+4. **Build:** opt-in, versioned, Cinematic only, generalized (every film can use the new characters through the Director); tests including negatives.
+5. **Evidence:** one comparison render with checks; then checkpoint, PR, and merge only on the owner's word.
+
+**Render session (PowerShell):** `$env:PYTHON=(Resolve-Path .venv/Scripts/python.exe).Path; $env:AETHER_FFMPEG=(Resolve-Path .venv/Lib/site-packages/imageio_ffmpeg/binaries/ffmpeg-win-x86_64-v7.1.exe).Path; $env:AETHER_FFPROBE=(Resolve-Path node_modules/@remotion/compositor-win32-x64-msvc/ffprobe.exe).Path; $env:AETHER_GL="vulkan"; $env:AETHER_CONCURRENCY="8"`. Run long renders detached (CLAUDE.md tooling lessons).
+
+**Previous checkpoint (GPU-04), heading as written:** GPU-04 VERIFIED EXISTING + HARDENED, PR open; next GPU-05 (2026-11-28)
 
 **Latest checkpoint (GPU-04):** `feature/gpu-04-glb` from main 6d21a35. FIX-NR is merged as PR #73 on the owner's "merge". **The GPU-04 PR is open, not merged.**
 - **Owner:** plain GLB only; own generated models only.

@@ -66,14 +66,21 @@ Requirements: [docs/continuity/CAMPAIGN_A_DIRECTIVE.md](docs/continuity/CAMPAIGN
 - Each milestone exit needs fresh local films with new `dual-` IDs on both backends, shared speech preparation for matched pairs, negative and adversarial tests, and an actual frame inspection. Owner review is recorded separately from agent inspection.
 - Campaign A's rules above stay binding for every shared feature. Its CPU and Standard outputs are the regression baseline of Campaign B. Release notes: docs/RELEASE_1_2.md.
 
-## Campaign B — GPU-First Cinematic Expansion (active; directive supplied 2026-11-27)
+## Campaign B — GPU-First Cinematic Expansion (active; GPU-00…04 merged, next GPU-05; 2026-11-28)
 Requirements: [docs/continuity/CAMPAIGN_B_DIRECTIVE.md](docs/continuity/CAMPAIGN_B_DIRECTIVE.md) (verbatim). Status, FOD plan, reuse map and owner decisions: [docs/continuity/CAMPAIGN_B.md](docs/continuity/CAMPAIGN_B.md). Start: tag `v1.2-dual-backend-final` (2cb82ef).
 - Goal: a genuinely more capable, opt-in **GPU Cinematic** profile on the existing Three.js renderer: PBR and colour management, lighting and environment light, procedural textures, local GLB assets, high-fidelity characters, skeletal animation and facial performance, rich sets, tasteful post, 3D scientific modes, quality tiers, and profile-aware Director and Studio. Target device RTX 4060 Laptop 8 GB; nothing else is assumed to work until measured.
 - Order: GPU-00 ADR and budgets → 01 PBR/colour → 02 lighting → 03 textures → 04 GLB assets → 05 characters → 06 animation and faces → 07 environments → 08 camera and post → 09 scientific modes → 10 performance tiers → 11 Director and Studio → 12 showcase and v2.0 qualification.
-- **Policy gate:** the owner must approve ADR-001 (docs/adr/) before any GPU-exclusive capability. Until then docs/DUAL_BACKEND_POLICY.md stays unchanged and only inventory, measurement and drafting are allowed. After approval the policy gets a new section and every earlier section stays binding.
+- **Policy:** ADR-001 (docs/adr/) is Accepted (owner 2026-11-27); DUAL_BACKEND_POLICY.md has the pointer section and every earlier section stays binding. GPU-exclusive capabilities live only in GPU Cinematic: a film-level `renderProfile: 'cinematic-v1'` plus the versioned `cinematic` block (`materials: 'pbr-v1'`, `lights`, `textures: 'proc-v1'`). Capabilities are derived from that block and negotiated in preflight (RP-01…RP-06).
 - **Three profiles, one engine:** CPU Classic (CPU Canvas), GPU Standard (Three.js as at v1.2), GPU Cinematic (opt-in, versioned). Shared contracts (audio, captions, timeline, content primitives, asset IDs, jobs, encode and verify) are reused, never forked. Cinematic-only scenes on CPU or Standard fail in preflight with a precise diagnostic and explicit choices: no stripping, no substitution, no renderer switch.
 - **Determinism:** frame-addressed state is deterministic. GPU pixels are not byte-stable (measured in Campaign A), so reports carry renderer, profile and asset versions plus the device identity.
 - **Reuse before building:** extend three-backend.js, the crafted looks, Foundry materials, geometry, import quarantine, packs and LOD, cinematography, body and talk, fidelity effects, perf-bench and batch. No second registry, pipeline or renderer.
 - **Data, not code:** bounded declarative scene and asset data. No executable GLB extensions, no network inside renders, no LLM-generated render code.
 - **Approvals:** new dependencies or decoders (even those shipped in `three/examples`), external assets and licences, quality-tier defaults, Studio default profile, merges and the proposed `v2.0-gpu-cinematic` tag all need the owner.
-- **Evidence per milestone:** fresh `gpu<NN>-<slug>-r<n>` films on the RTX route; CPU and Standard regression unchanged; benchmarks ≥ 3 runs from hash-checked prepared inputs; agent stills on every profile, with owner review recorded separately; budgets reported against the agreed table.
+- **Evidence per unit (owner 2026-11-28: fast):**
+  - tests including negatives;
+  - one fresh `gpu<NN>-<slug>-r<n>` render (Standard vs Cinematic via `--compare standard` when the unit changes Cinematic);
+  - frame_glitch and stale checks;
+  - CPU and Standard regression unchanged (digests; swangle stills byte-identical);
+  - agent stills, with owner review recorded separately.
+  - perf-bench ×3 only at GPU-10 and GPU-12 or on request. Budgets: CAMPAIGN_B_PROTOCOL.md (device-relative).
+- **Renders are not kept** until the final films (owner): delete all renders after every merge.
