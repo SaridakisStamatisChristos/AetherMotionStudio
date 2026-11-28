@@ -8,6 +8,8 @@ import {CRAFTED,MATERIALS,chamferedBox,craftedColor,isCrafted,mixColor} from './
 import {hashNoise} from '../core/fidelity.js';
 import {emitGraph,boxBasis,ENVIRONMENTS} from '../core/graph.js';
 import {CINEMATIC_SHADOW,lightPresetFor,resolveLights} from './cinematic-lights.js';
+import {createTextureCache} from '../foundry/materials.js';
+import {PART_TILE,FLOOR_REPEAT,TEXTURE_BASE_MEAN,TEXTURE_NORMAL_SCALE,TEXTURE_ANISOTROPY,boxUV,floorTexture,partTexture,validateRecipe} from './pbr-textures.js';
 import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
 import {PBR_LIGHT,pbrParameters,surfaceFor} from './pbr.js';
 // Explicit real WebGL renderer. No silent fallback. Remotion CI uses software GL.
@@ -49,12 +51,27 @@ export function createThreeBackend(options={}){
  // light (RoomEnvironment through PMREM; generated once per film, no file and no network) so metal and glass reflect.
  const pbrMaterials=new Map();let pmrem=null,roomTexture=null;
  if(pbr){pmrem=new THREE.PMREMGenerator(renderer);const room=new RoomEnvironment();roomTexture=pmrem.fromScene(room,PBR_LIGHT.roomBlur).texture;room.traverse(o=>{o.geometry?.dispose?.();if(o.material)for(const m of [o.material].flat())m.dispose();});}
- function pbrMaterial(color,surface){const k=color+':'+surface;let m=pbrMaterials.get(k);if(m)return m;
+ function pbrMaterial(color,surface,recipe=null){const k=color+':'+surface+':'+(recipe?JSON.stringify(recipe):'');let m=pbrMaterials.get(k);if(m)return m;
   const {envMapIntensity,...p}=pbrParameters(surface,color);m=new THREE.MeshPhysicalMaterial(p);
+  // GPU-03: the texture modulates the preset (base map averages TEXTURE_BASE_MEAN, so the colour is lifted to keep the
+  // part's mean colour); roughness and normal maps add grain. No texture = the GPU-01/02 material exactly.
+  if(recipe){const s=textureSet(recipe);m.map=s.map;m.roughnessMap=s.roughnessMap;if(s.normalMap){m.normalMap=s.normalMap;m.normalScale.set(TEXTURE_NORMAL_SCALE,TEXTURE_NORMAL_SCALE);}m.color.multiplyScalar(1/TEXTURE_BASE_MEAN);}
   // The room light is attached per material, never as scene.environment: with scene.environment three ignores each
   // material's envMapIntensity and uses scene.environmentIntensity for all (WebGLRenderer.js, three 0.180), which left
   // metals as faint as paint. Per material, each preset keeps its own share; the floor and glowing parts get none.
   m.envMap=roomTexture;m.userData.envBase=envMapIntensity*PBR_LIGHT.environmentIntensity;m.envMapIntensity=m.userData.envBase*envShare;pbrMaterials.set(k,m);return m;}
+ // GPU-03 proc-texture-v1 (Cinematic with pbr-v1 only): Foundry procedural textures (seeded, versioned, budgeted cache)
+ // on parts and the floor. Textured parts use real-size geometry with box-projected UVs (equal texel density on every
+ // object); untextured parts keep the GPU-02 geometry path. GPU Standard never reaches this code.
+ const tex=pbr&&options.textures==='proc-v1',texCache=tex?createTextureCache():null,texSets=new Map(),uvGeometries=new Map();
+ function textureSet(recipe,repeat=1){const g=texCache.get(validateRecipe(recipe)),k=g.key+':'+repeat;let s=texSets.get(k);if(s)return s;
+  const mk=(data,srgb)=>{const t=new THREE.DataTexture(data,g.resolution,g.resolution,THREE.RGBAFormat);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(repeat,repeat);t.magFilter=THREE.LinearFilter;t.minFilter=THREE.LinearMipmapLinearFilter;t.generateMipmaps=true;t.anisotropy=Math.min(TEXTURE_ANISOTROPY,renderer.capabilities.getMaxAnisotropy());if(srgb)t.colorSpace=THREE.SRGBColorSpace;t.needsUpdate=true;return t;};
+  s={map:mk(g.maps.base,true),roughnessMap:mk(g.maps.roughness,false),normalMap:g.maps.normal?mk(g.maps.normal,false):null};texSets.set(k,s);return s;}
+ function uvGeometry(size,look){const k=(look?'c':'r')+size.map(v=>Math.round(v*1e4)).join(',');let g=uvGeometries.get(k);if(g)return g;
+  if(look)g=crafted(size).clone();else{g=geometry.clone();const p=g.attributes.position,q=g.attributes.normal,s=size.map(v=>Math.abs(v)<1e-6?1e-6:v);
+   for(let j=0;j<p.count;j++){p.setXYZ(j,p.getX(j)*s[0],p.getY(j)*s[1],p.getZ(j)*s[2]);const nx=q.getX(j)/s[0],ny=q.getY(j)/s[1],nz=q.getZ(j)/s[2],l=Math.hypot(nx,ny,nz)||1;q.setXYZ(j,nx/l,ny/l,nz/l);}}
+  g.setAttribute('uv',new THREE.Float32BufferAttribute(boxUV(g.attributes.position.array,g.attributes.normal.array,PART_TILE),2));
+  if(uvGeometries.size>4000){for(const x of uvGeometries.values())x.dispose();uvGeometries.clear();}uvGeometries.set(k,g);return g;}
  let width=0,height=0;
  function render(state,W,H){
   if(width!==W||height!==H){renderer.setSize(W,H,false);width=W;height=H;}
@@ -70,20 +87,26 @@ export function createThreeBackend(options={}){
    rim.color.set(L.rim.color);rim.intensity=L.rim.intensity;rim.position.set(...L.rim.dir);renderer.toneMappingExposure*=L.exposure;
    if(L.environment!==envShare){envShare=L.environment;for(const m of pbrMaterials.values())m.envMapIntensity=m.userData.envBase*envShare;}}
   else if(fill)fill.intensity=0;
+  // GPU-03: the floor's texture follows the shot's light preset (auto-v1 by environment when the film has no lights).
+  if(tex){const want=state.materialProfile||state.geometryProfile?null:textureSet(floorTexture(lightPresetFor(lights??'auto-v1',environmentName(env)).id),FLOOR_REPEAT);
+   if((want?.map??null)!==floorMat.map){floorMat.map=want?.map??null;floorMat.roughnessMap=want?.roughnessMap??null;floorMat.normalMap=want?.normalMap??null;floorMat.needsUpdate=true;}
+   if(want)floorMat.color.multiplyScalar(1/TEXTURE_BASE_MEAN);}
   let i=0;if(state.geometryProfile){const commands=meshCommands(state);if(state.geometryProfile==='foundry-af05'){const needed=new Set(commands.map(c=>c.meshKey));for(const [k,g] of foundryGeometry)if(!needed.has(k)){g.dispose();foundryGeometry.delete(k)}}for(const cmd of commands){if(!foundryGeometry.has(cmd.meshKey))foundryGeometry.set(cmd.meshKey,toBufferGeometry(cmd.mesh));let mesh=pool[i++];if(!mesh){mesh=new THREE.Mesh();mesh.matrixAutoUpdate=false;scene.add(mesh);pool.push(mesh);}mesh.geometry=foundryGeometry.get(cmd.meshKey);mesh.material=cmd.surface?premium.get(cmd.surface,cmd.importTexture):material(cmd.color,cmd.emissive,detail);mesh.castShadow=!cmd.emissive&&cmd.surface?.alphaMode!=='blend';mesh.receiveShadow=true;mesh.visible=true;mesh.matrix.makeBasis(...cmd.axes.map(a=>new THREE.Vector3(...a)));mesh.matrix.setPosition(...cmd.origin);mesh.matrixWorldNeedsUpdate=true;}}else emitGraph(state,(center,size,color,tf=p=>p,emissive=false,bias=0,role=null,faceDetail=false,surface=null)=>{
    let mesh=pool[i++];if(!mesh){mesh=new THREE.Mesh(geometry,material(color,emissive,detail));mesh.matrixAutoUpdate=false;scene.add(mesh);pool.push(mesh);}
-   const look=isCrafted(state.look);mesh.geometry=look?crafted(size):geometry;
+   const look=isCrafted(state.look);
    // pbr-v1: the same base colour the Standard path uses for this part (crafted palette and role tint), new shading.
-   const kind=pbr?surfaceFor(surface,role,emissive):null;
-   if(kind&&kind!=='emissive'){const T=CRAFTED.three,M=look&&state.look==='crafted-v2'&&role?MATERIALS[role]:null,c0=look?craftedColor(color,T.palette):color;mesh.material=pbrMaterial(M?mixColor(c0,M.tint,M.mix):c0,kind);}
+   const kind=pbr?surfaceFor(surface,role,emissive):null,recipe=tex&&kind&&kind!=='emissive'?partTexture(kind,surface):null;
+   mesh.geometry=recipe?uvGeometry(size,look):look?crafted(size):geometry;
+   if(kind&&kind!=='emissive'){const T=CRAFTED.three,M=look&&state.look==='crafted-v2'&&role?MATERIALS[role]:null,c0=look?craftedColor(color,T.palette):color;mesh.material=pbrMaterial(M?mixColor(c0,M.tint,M.mix):c0,kind,recipe);}
    else mesh.material=look?craftedMaterial(color,emissive,detail,state.look==='crafted-v2'?role:null):material(color,emissive,detail);mesh.castShadow=!emissive;mesh.receiveShadow=true;mesh.visible=true;
-   const {origin,axes}=boxBasis(center,tf),v=axes.map((a,j)=>new THREE.Vector3(...a).multiplyScalar(look?1:size[j]));
+   const {origin,axes}=boxBasis(center,tf),v=axes.map((a,j)=>new THREE.Vector3(...a).multiplyScalar(look||recipe?1:size[j]));
    mesh.matrix.makeBasis(...v);mesh.matrix.setPosition(...origin);mesh.matrixWorldNeedsUpdate=true;
   });
   for(;i<pool.length;i++)pool[i].visible=false;
   renderer.render(scene,camera);return renderer.domElement;
  }
- function dispose(){for(const m of pbrMaterials.values())m.dispose();pbrMaterials.clear();roomTexture?.dispose();pmrem?.dispose();premium.dispose();roughnessMap.dispose();geometry.dispose();for(const g of foundryGeometry.values())g.dispose();floorGeo.dispose();floorMat.dispose();grid.geometry.dispose();grid.material.dispose();for(const m of materialCache.values())m.dispose();for(const g of craftedGeometry.values())g.dispose();for(const m of craftedMaterials.values())m.dispose();key.shadow.map?.dispose();renderer.dispose();renderer.forceContextLoss();}
+ function dispose(){for(const s of texSets.values())for(const t of Object.values(s))t?.dispose();texSets.clear();for(const g of uvGeometries.values())g.dispose();uvGeometries.clear();texCache?.clear?.();
+  for(const m of pbrMaterials.values())m.dispose();pbrMaterials.clear();roomTexture?.dispose();pmrem?.dispose();premium.dispose();roughnessMap.dispose();geometry.dispose();for(const g of foundryGeometry.values())g.dispose();floorGeo.dispose();floorMat.dispose();grid.geometry.dispose();grid.material.dispose();for(const m of materialCache.values())m.dispose();for(const g of craftedGeometry.values())g.dispose();for(const m of craftedMaterials.values())m.dispose();key.shadow.map?.dispose();renderer.dispose();renderer.forceContextLoss();}
  // DUAL-07 audit repair: the actual WebGL adapter (unmasked when the browser allows it), never a guess.
  function adapter(){try{const gl=renderer.getContext(),ext=gl.getExtension('WEBGL_debug_renderer_info');
   if(ext)return {renderer:String(gl.getParameter(ext.UNMASKED_RENDERER_WEBGL)),vendor:String(gl.getParameter(ext.UNMASKED_VENDOR_WEBGL)),source:'unmasked'};

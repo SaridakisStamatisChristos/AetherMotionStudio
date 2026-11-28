@@ -56,7 +56,7 @@ test('Director defaults and renderer options carry the lights; GPU Standard gets
  assert.equal(CINEMATIC_DEFAULTS.lights,'auto-v1');
  assert.equal(request({...release,backend:'three',renderProfile:'cinematic-v1'}).cinematic.lights,'auto-v1');
  assert.equal(request({...release,backend:'three',renderProfile:'cinematic-v1',cinematic:{version:1,lights:'forest-daylight-v1'}}).cinematic.lights,'forest-daylight-v1');
- assert.deepEqual(threeOptions(lit('night-v1')),{renderProfile:'cinematic-v1',materials:'pbr-v1',lights:'night-v1'});
+ assert.deepEqual(threeOptions(lit('night-v1')),{renderProfile:'cinematic-v1',materials:'pbr-v1',lights:'night-v1',textures:null});
  assert.deepEqual(threeOptions(load('art05-workshop-three-polished.json')),{});
  for(const [k,[lo,hi]] of Object.entries(LIGHT_RANGES))assert.ok(lo<hi,k);
 });

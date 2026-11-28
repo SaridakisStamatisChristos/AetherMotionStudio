@@ -3,7 +3,9 @@ import {unit} from './geometry.js';
 export const MATERIAL_VERSION=1;
 export const TEXTURE_SIZES=Object.freeze([256,512,1024,2048]);
 export const TEXTURE_BUDGET=96*1024*1024;
-const patterns=['plain','brushed','wood','woven','scratches','edge-wear','ceramic','dirt','paint','panel','stone','paper','leather'];
+// GPU-03 adds 'bark' and 'ground' (procedural only, owner 2026-11-28). Existing patterns and their keys are unchanged.
+export const TEXTURE_PATTERNS=Object.freeze(['plain','brushed','wood','woven','scratches','edge-wear','ceramic','dirt','paint','panel','stone','paper','leather','bark','ground']);
+const patterns=TEXTURE_PATTERNS;
 const preset=(baseColor,roughness,metallic,pattern,extra={})=>Object.freeze({baseColor,roughness,metallic,pattern,...extra});
 export const MATERIALS=Object.freeze({
  'painted-metal':preset('#ad5140',.36,.48,'paint',{clearcoat:.34}),
@@ -79,6 +81,10 @@ function heightAt(u,v,t){
  case 'stone':return .5+.24*Math.sin(tau*(n*x+n*y+.34*s(n,1)))+.12*(g-.5);
  case 'paper':return .5+.08*s(n*4,0)+.08*(g-.5);
  case 'leather':return .5+.15*s(n*7,n*3)*s(n*2,n*8)+.10*(g-.5);
+ // GPU-03: bark = vertical fissured ridges along v with slow waviness; ground = coarse clods plus fine grit. Both are
+ // periodic in u and v (tile without seams) and use only the lattice hash (deterministic for a seed).
+ case 'bark':return .5+.24*Math.sin(tau*(n*6*x+.22*s(n,n*2)))*(.62+.38*s(0,n*3))+.10*(g-.5);
+ case 'ground':return .5+.13*s(n*2,n*3)*s(n*3,n*2)+.09*(noise(Math.floor(x*32)%32,Math.floor(y*32)%32,(t.seed+1)|0)-.5)*2+.14*(g-.5);
  default:throw Error('unsupported pattern');
  }}
 const write=(a,i,r,g=r,b=r)=>{a[i]=r;a[i+1]=g;a[i+2]=b;a[i+3]=255};
