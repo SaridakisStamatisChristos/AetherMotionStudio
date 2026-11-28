@@ -81,7 +81,8 @@ Previous header, kept: (fresh-session checkpoint: **main e706f2a**. Campaign B *
   - **owner: "refine everything … neat styles", "go all the way"** → hero detail 4 (src/visual/catalog-hero.js; shared geometry, humans and robots): domed eyes with pupils and highlights, brows, cheeks, nose, neck, one-piece torso, smooth limbs, mitten hands, two-tone shoes, hair and outfits per character; refined robot. soft-v1 films draw unset/detail-2 humans and unset robots at detail 4 (explicit 1 and 3 kept); new colour slots 7/8 (white, blush) only in detail 4;
   - box characters stay a valid style (Standard, CPU, Cinematic without the key); GPU Standard stills byte-identical.
   - **Not built (deferral asked of the owner):** SkinnedMesh skeleton, morph targets, LODs, imported-rig adapters → proposed for GPU-06.
-- **Next: GPU-05 merge on the owner's word, then GPU-06.**
+  - owner polish (f4fecea; rendered from its pre-rebase twin fdecfb2): cheek bumps removed ("pimples"), closed mouth a soft rose smile arc and speaking a rounded dark oval with a tongue, leaner bodies (torso, coat, legs, arms, neck; sloped shoulders; hand anchors unchanged); film **gpu05-portrait-r3** PASS, CHECKS 0 both sides, frame_glitch clean both (r1, r2 superseded); owner: "ok this i like. proceed to merging";
+- **GPU-05 ACCEPTED by the owner; merge word given (PR #76 merges after CI). Next: GPU-06** (first confirm the skeleton/morph/LOD deferral and ask about a local viseme aligner).
 - Previous line, kept: **Next: FIX-NR** (CAMPAIGN_B.md "FIX-NR"), then GPU-04.
 - Previous line, kept: **Next: GPU-03** (procedural texture and material library), after the GPU-02 merge.
 - Previous line, kept: **Next: GPU-02** (lighting, shadows, environment), after the FIX-RS merge.

@@ -24,7 +24,7 @@ Status words: PLANNED · NEXT · ACTIVE · IMPLEMENTED · TESTED · RENDERED · 
 | GPU-03 | Procedural texture and material library | **MERGED** (PR #72 → 9d26a5b) | `feature/gpu-03-textures` | src/visual/pbr-textures.js, tests/gpu03-textures.test.js, out/gpu03-*-r1-* |
 | FIX-NR | Narrator films: no extra caption box; subjects large and never cut (Director, all new films) | **MERGED** (PR #73 → 6d21a35) | `feature/fix-narrator` | FIX-NR section below |
 | GPU-04 | External 3D assets (GLB) and high-detail geometry | **MERGED** (PR #74 → e706f2a; verified existing + hardened) | `feature/gpu-04-glb` | tests/gpu04-glb.test.js; GPU-04 section below |
-| GPU-05 | High-fidelity character system | **TESTED + RENDERED** (PR open, not merged; skeleton/morph/LOD deferral asked) | `feature/gpu-05-characters` | src/core/hero-characters.js, tests/gpu05-characters.test.js, out/gpu05-portrait-r1-* |
+| GPU-05 | High-fidelity character system | **ACCEPTED** (owner "ok this i like. proceed to merging"; PR #76; skeleton/morph/LOD proposed for GPU-06) | `feature/gpu-05-characters` | src/core/hero-characters.js, tests/gpu05-characters.test.js, out/gpu05-portrait-r1-* |
 | GPU-06 | Animation, dialogue and facial performance | PLANNED | — | — |
 | GPU-07 | Rich environments and scene dressing | PLANNED | — | — |
 | GPU-08 | Cinematic camera and post-processing | PLANNED | — | — |
@@ -254,6 +254,7 @@ Found by the owner in gpu03-product-r1. The same plan exists in gpu00-product-r1
   - hero detail 4 (src/visual/catalog-hero.js), shared geometry for humans and robots, used by soft-v1 films instead of detail 3; three agent still-review rounds (fixed floating shoulders, stacked torsos, cluttered fronts, square eyes, limb seams, protruding belt);
   - two old negatives moved from detail 4 to 5 (POLISH-02 precedent); tests 616 (0 fail, 1 skip), Python 70 OK, digests unchanged, Standard swangle still byte-identical;
   - film gpu05-portrait-r2 (`--compare standard`, RTX, sourceDirty false): PASS, CHECKS 0 both sides, frame_glitch clean both; r1 superseded.
+- **Polish (2026-11-28):** owner polish (f4fecea; rendered from its pre-rebase twin fdecfb2): cheek bumps removed ("pimples"), closed mouth a soft rose smile arc and speaking a rounded dark oval with a tongue, leaner bodies (torso, coat, legs, arms, neck; sloped shoulders; hand anchors unchanged); film **gpu05-portrait-r3** PASS, CHECKS 0 both sides, frame_glitch clean both (r1, r2 superseded); owner: "ok this i like. proceed to merging".
 
 ### GPU-06: animation, dialogue and facial performance
 - **Build:**
@@ -353,3 +354,4 @@ Found by the owner in gpu03-product-r1. The same plan exists in gpu00-product-r1
 - 2026-11-28: owner decided before GPU-05 that the engine creates the hero characters (no imports for now; rigged imports may be reconsidered after GPU-06).
 - 2026-11-28: PR #74 (GPU-04) merged → main e706f2a. GPU-05 on `feature/gpu-05-characters`: owner chose the engine-made characters, look "B Soft rounded" over stills, heroes student/scientist/robot. hero-char-v1 (`cinematic.characters: 'soft-v1'`, Director default; detail-3 humans). Tests 613 (0 fail); digests unchanged; Standard byte-identical. Film gpu05-portrait-r1 PASS (b75da76, sourceDirty false), checks 0, glitch clean. Skeleton/morph/LOD deferral to GPU-06 asked. PR open, not merged.
 - 2026-11-28: GPU-05 refinement on the owner's "refine everything … neat styles": hero detail 4 (catalog-hero.js) for humans and robots in soft-v1 films. Tests 616 (0 fail); digests unchanged; Standard byte-identical. Film gpu05-portrait-r2 PASS (7521ca7, sourceDirty false), checks 0, glitch clean. PR #76 open, not merged.
+- 2026-11-28: PR #75 (fresh-session docs) merged → main e584ec3 on the owner's "proceed to merging"; GPU-05 rebased. Owner polish (no cheek bumps, smile mouth, leaner bodies); film gpu05-portrait-r3 PASS, checks 0, glitch clean. Owner accepted ("ok this i like"); PR #76 to merge after CI.

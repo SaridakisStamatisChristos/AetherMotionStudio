@@ -1,4 +1,6 @@
-# Forward-only handoff: GPU-05 TESTED + RENDERED, PR open; next GPU-06 after the merge (2026-11-28)
+# Forward-only handoff: GPU-05 ACCEPTED by the owner, merge word given; next GPU-06 (2026-11-28)
+
+**Latest:** PR #75 merged (owner "proceed to merging") → main e584ec3; GPU-05 rebased on it. owner polish (f4fecea; rendered from its pre-rebase twin fdecfb2): cheek bumps removed ("pimples"), closed mouth a soft rose smile arc and speaking a rounded dark oval with a tongue, leaner bodies (torso, coat, legs, arms, neck; sloped shoulders; hand anchors unchanged); film **gpu05-portrait-r3** PASS, CHECKS 0 both sides, frame_glitch clean both (r1, r2 superseded); owner: "ok this i like. proceed to merging". PR #76 merges after its CI passes; then all renders are deleted. The skeleton/morph/LOD/rig-adapter deferral to GPU-06 was proposed in PR #76 and the owner merged it without objection: confirm it in one line at the start of GPU-06.
 
 **Latest checkpoint (GPU-05):** `feature/gpu-05-characters` from main e706f2a (GPU-04 merged as PR #74). **The GPU-05 PR is open, not merged.** The docs PR #75 (`chore/fresh-session-gpu05`) should merge first; then rebase this branch on main and keep both texts in the continuity docs.
 - **Owner decisions:** the engine creates the characters; look "B Soft rounded" (chosen over agent stills: today / soft / crisp); first heroes student, scientist, service-robot; then "refine everything … neat styles", "go all the way".
