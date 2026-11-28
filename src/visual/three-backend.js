@@ -80,6 +80,12 @@ export function createThreeBackend(options={}){
   g=new RoundedBoxGeometry(s[0],s[1],s[2],SOFT.segments,softRadius(s));
   if(uv)g.setAttribute('uv',new THREE.Float32BufferAttribute(boxUV(g.attributes.position.array,g.attributes.normal.array,PART_TILE),2));
   if(heroGeometries.size>4000){for(const x of heroGeometries.values())x.dispose();heroGeometries.clear();}heroGeometries.set(k,g);return g;}
+  // GPU-07: room walls (surface family 'wall', src/core/cinematography.js ROOM_BACKDROPS) as flat real-size boxes, so
+ // their columns join without the rounded-edge seams that read as stripes.
+ const wallGeometries=new Map();
+ function wallGeometry(size,uv){const s=size.map(v=>Math.max(Math.abs(v),1e-4)),k=(uv?'u':'g')+s.map(v=>Math.round(v*1e4)).join(',');let g=wallGeometries.get(k);if(g)return g;
+  g=new THREE.BoxGeometry(s[0],s[1],s[2]);if(uv)g.setAttribute('uv',new THREE.Float32BufferAttribute(boxUV(g.attributes.position.array,g.attributes.normal.array,PART_TILE),2));
+  if(wallGeometries.size>4000){for(const x of wallGeometries.values())x.dispose();wallGeometries.clear();}wallGeometries.set(k,g);return g;}
  let width=0,height=0;
  function render(state,W,H){
   if(width!==W||height!==H){renderer.setSize(W,H,false);width=W;height=H;}
@@ -104,17 +110,17 @@ export function createThreeBackend(options={}){
    const look=isCrafted(state.look);
    // pbr-v1: the same base colour the Standard path uses for this part (crafted palette and role tint), new shading.
    const kind=pbr?surfaceFor(surface,role,emissive):null,recipe=tex&&kind&&kind!=='emissive'?partTexture(kind,surface):null;
-   const hero=heroStyle!==null&&heroPart(surface);
-   mesh.geometry=hero?heroGeometry(size,!!recipe):recipe?uvGeometry(size,look):look?crafted(size):geometry;
+   const hero=heroStyle!==null&&heroPart(surface),wall=surface?.family==='wall';
+   mesh.geometry=wall?wallGeometry(size,!!recipe):hero?heroGeometry(size,!!recipe):recipe?uvGeometry(size,look):look?crafted(size):geometry;
    if(kind&&kind!=='emissive'){const T=CRAFTED.three,M=look&&state.look==='crafted-v2'&&role?MATERIALS[role]:null,c0=look?craftedColor(color,T.palette):color;mesh.material=pbrMaterial(M?mixColor(c0,M.tint,M.mix):c0,kind,recipe);}
    else mesh.material=look?craftedMaterial(color,emissive,detail,state.look==='crafted-v2'?role:null):material(color,emissive,detail);mesh.castShadow=!emissive;mesh.receiveShadow=true;mesh.visible=true;
-   const {origin,axes}=boxBasis(center,tf),v=axes.map((a,j)=>new THREE.Vector3(...a).multiplyScalar(look||recipe||hero?1:size[j]));
+   const {origin,axes}=boxBasis(center,tf),v=axes.map((a,j)=>new THREE.Vector3(...a).multiplyScalar(look||recipe||hero||wall?1:size[j]));
    mesh.matrix.makeBasis(...v);mesh.matrix.setPosition(...origin);mesh.matrixWorldNeedsUpdate=true;
   });
   for(;i<pool.length;i++)pool[i].visible=false;
   renderer.render(scene,camera);return renderer.domElement;
  }
- function dispose(){for(const s of texSets.values())for(const t of Object.values(s))t?.dispose();texSets.clear();for(const g of uvGeometries.values())g.dispose();uvGeometries.clear();for(const g of heroGeometries.values())g.dispose();heroGeometries.clear();texCache?.clear?.();
+ function dispose(){for(const s of texSets.values())for(const t of Object.values(s))t?.dispose();texSets.clear();for(const g of uvGeometries.values())g.dispose();uvGeometries.clear();for(const g of heroGeometries.values())g.dispose();heroGeometries.clear();for(const g of wallGeometries.values())g.dispose();wallGeometries.clear();texCache?.clear?.();
   for(const m of pbrMaterials.values())m.dispose();pbrMaterials.clear();roomTexture?.dispose();pmrem?.dispose();premium.dispose();roughnessMap.dispose();geometry.dispose();for(const g of foundryGeometry.values())g.dispose();floorGeo.dispose();floorMat.dispose();grid.geometry.dispose();grid.material.dispose();for(const m of materialCache.values())m.dispose();for(const g of craftedGeometry.values())g.dispose();for(const m of craftedMaterials.values())m.dispose();key.shadow.map?.dispose();renderer.dispose();renderer.forceContextLoss();}
  // DUAL-07 audit repair: the actual WebGL adapter (unmasked when the browser allows it), never a guess.
  function adapter(){try{const gl=renderer.getContext(),ext=gl.getExtension('WEBGL_debug_renderer_info');

@@ -7,14 +7,14 @@ import {readFileSync} from 'node:fs';
 import {direct} from '../src/director/index.js';
 import {request} from '../src/director/schema.js';
 import {validateProject} from '../src/core/timeline.js';
-import {ROOMS,FAR_BACKDROPS,emitEnvironment} from '../src/core/cinematography.js';
+import {ROOMS,ROOM_BACKDROPS,emitEnvironment} from '../src/core/cinematography.js';
 import {ROOMS_V4,SIGHTLINE,pieceSize,characterSpans,blocksSightline,dressRoom} from '../src/director/rooms.js';
 const q=JSON.parse(readFileSync(new URL('../examples/gpu06-dialogue.request.json',import.meta.url),'utf8'));
 const film=async(topic,extra={})=>(await direct({...q,id:'gpu07-t',topic,script:'What is this about? It is about '+topic.toLowerCase()+'. Why does it matter? Because it shapes how we live. Can you tell me more? Yes, there is a lot to learn.',...extra})).project;
 const graph=p=>p.shots.filter(s=>s.template==='cinematic-graph');
 
 test('rooms: every topic-v4 layer has a back wall and candidate props; the three new places exist',()=>{
- for(const room of new Set(Object.values(ROOMS_V4.layers))){assert.ok(Object.hasOwn(ROOMS,room),room);assert.equal(typeof FAR_BACKDROPS[ROOMS[room]],'function',room);assert.ok(ROOMS_V4.pieces[room].length>=4&&ROOMS_V4.pieces[room].length<=6,room+' calm and tidy');}
+ for(const room of new Set(Object.values(ROOMS_V4.layers))){assert.ok(Object.hasOwn(ROOMS,room),room);assert.equal(typeof ROOM_BACKDROPS[ROOMS[room]],'function',room);assert.ok(ROOMS_V4.pieces[room].length>=4&&ROOMS_V4.pieces[room].length<=6,room+' calm and tidy');}
  for(const r of ['classroom','workshop','hall'])assert.ok(Object.values(ROOMS_V4.layers).includes(r));
  const boxes=[];emitEnvironment({layers:'classroom',dressing:[['desk',0,-3,0,.8]]},(...b)=>boxes.push(b));assert.ok(boxes.length>20);
 });
