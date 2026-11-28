@@ -9,7 +9,7 @@ export const ENVELOPE_VERSION=1;
 export const SAMPLES_PER_FRAME=1600;
 export function mouthSupported(asset,params){
  const q=recipeSpec(asset);if(!q)return false;
- return q.family==='robot'||(q.family==='human'&&(params?.detail===2||params?.detail===3));
+ return q.family==='robot'||(q.family==='human'&&(params?.detail===2||params?.detail===3||params?.detail===4));
 }
 export function speakerIds(project){return ['default',...Object.keys(project.speech?.speakers??{})];}
 export function usesTalk(project){return project.version===2&&project.shots.some(s=>s.speakerAssets!==undefined);}
