@@ -32,9 +32,8 @@
 **Next action for "fod continue": GPU-05 (high-fidelity characters).**
 1. Bootstrap (CLAUDE.md), `git switch main && git pull`, then branch `feature/gpu-05-characters`.
 2. Read CAMPAIGN_B.md "GPU-05", directive §4 GPU-05, and the seams: src/visual/catalog.js and catalog-rig.js (human/robot recipes, detail 2/3 faces, `headed`), src/core/identity.js, src/core/body.js and talk.js, src/foundry/hero.js and hero-recipes.js.
-3. **Ask the owner first (UI choice, options explained plainly):**
-   - the art direction (e.g. refined stylized characters with rounded shapes and real hands and hair, vs keeping the blocky look with more detail);
-   - the first 2–3 hero characters.
+3. **Owner decision (2026-11-28, before GPU-05): the engine creates the hero characters** ("yes i agree"). It extends the existing procedural character builder (catalog recipes and rig) into refined stylized characters. No imported or self-made models now: rigged GLB characters need skins and animations, which the importer refuses by design and the owner's GPU-04 choice excludes. Importing rigged characters may be reconsidered after GPU-06 (skeletons and animation), on the owner's word.
+   - **Ask the owner only about the look** (UI choice, options explained plainly, shown as rendered stills the agent makes): e.g. rounded-stylized vs detailed-blocky, and which 2–3 characters to start with (e.g. scientist, student, robot).
    - Keep the box characters as a valid style.
 4. **Build:** opt-in, versioned, Cinematic only, generalized (every film can use the new characters through the Director); tests including negatives.
 5. **Evidence:** one comparison render with checks; then checkpoint, PR, and merge only on the owner's word.
