@@ -50,14 +50,14 @@ const update=()=>write(join(production,'production.json'),manifest);
 update();
 try{
  const lock=join(root,'package-lock.json');if(existsSync(lock)){copyFileSync(lock,join(production,'package-lock.json'));manifest.npmLockSha256=sha(lock);}else manifest.npmLockSha256=null;
- copyFileSync(join(root,'requirements-release.txt'),join(production,'requirements-release.txt'));copyFileSync(join(root,'models-lock.json'),join(production,'models-lock.json'));
+ copyFileSync(join(root,'requirements-release.txt'),join(production,'requirements-release.txt'));copyFileSync(join(root,'models-lock.json'),join(production,'models-lock.json'));copyFileSync(join(root,'tools-lock.json'),join(production,'tools-lock.json'));
  writeFileSync(join(production,'python-freeze.txt'),capture(python,['-m','pip','freeze'])+'\n');
  manifest.runtime={node:process.version,python:capture(python,['--version']),platform:process.platform,arch:process.arch,ffmpeg:capture(env.AETHER_FFMPEG??'ffmpeg',['-version']).split('\n')[0],ffprobe:capture(env.AETHER_FFPROBE??'ffprobe',['-version']).split('\n')[0]};
  if(!manifest.sourceCommit){try{manifest.sourceCommit=capture('git',['rev-parse','HEAD']);}catch{}}
  // Stale/dirty checkout evidence: tracked or untracked source changes not in sourceCommit.
  try{manifest.sourceDirty=capture('git',['status','--porcelain']).length>0;}catch{manifest.sourceDirty=null;}
  // Input checksums: locks plus exact authored source bytes.
- manifest.inputHashes={'package-lock.json':manifest.npmLockSha256,'requirements-release.txt':sha(join(root,'requirements-release.txt')),'models-lock.json':sha(join(root,'models-lock.json'))};
+ manifest.inputHashes={'package-lock.json':manifest.npmLockSha256,'requirements-release.txt':sha(join(root,'requirements-release.txt')),'models-lock.json':sha(join(root,'models-lock.json')),'tools-lock.json':sha(join(root,'tools-lock.json'))};
  if(o.mode==='project'){
   // Authored v2 project: the validated file is the single scene definition; no Director, no retiming.
   copyFileSync(resolve(o.sources.project),join(production,'authored-project.json'));manifest.inputHashes['authored-project.json']=sha(join(production,'authored-project.json'));

@@ -11,6 +11,10 @@ def verify_models():
         with (folder/name).open('rb') as f:actual=hashlib.file_digest(f,'sha256').hexdigest()
         if actual!=expected:raise RuntimeError('Model checksum mismatch: '+name+'; remove corrupt file and rerun setup')
     print('Verified locked Kokoro model and voice SHA-256',flush=True)
+    # GPU-06 (owner 2026-11-28: Rhubarb "a dependency … in every pc"): the locked mouth-timing tool is part of setup.
+    sys.path.insert(0,str(ROOT/'scripts'));import setup_rhubarb
+    if setup_rhubarb.executable() is None:raise RuntimeError('Rhubarb Lip Sync missing: run python scripts/setup_rhubarb.py')
+    print('Verified Rhubarb Lip Sync',setup_rhubarb.LOCK['release'],flush=True)
 def main():
     p=argparse.ArgumentParser();p.add_argument('--ci',action='store_true',help='use existing isolated CI Python');p.add_argument('--verify-models',action='store_true');a=p.parse_args()
     if a.verify_models:verify_models();return
@@ -25,6 +29,6 @@ def main():
     run([npm,'ci' if (ROOT/'package-lock.json').exists() else 'install','--no-audit','--no-fund'])
     run([python,'-m','pip','install','--disable-pip-version-check','-r','requirements-release.txt'])
     run([python,'-m','pip','check'])
-    run([python,'scripts/setup_models.py']);verify_models()
+    run([python,'scripts/setup_models.py']);run([python,'scripts/setup_rhubarb.py']);verify_models()
     print('Setup complete. Run npm run produce -- --topic "How a molecule is built" --seconds 30 --backend cpu',flush=True)
 if __name__=='__main__':main()

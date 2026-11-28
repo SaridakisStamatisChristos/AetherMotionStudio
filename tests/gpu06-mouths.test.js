@@ -1,6 +1,6 @@
 // GPU-06 measured mouth shapes (opt-in speech.mouths 'rhubarb-v1', owner-approved Rhubarb Lip Sync): the same per-frame
 // codes as the GEN-10 estimate, but versioned 'viseme-rhubarb-v1' with timing 'measured'; each mode accepts only its
-// own timeline data; Director dialogue films opt in with dialogue.mouths. The estimate stays the default.
+// own timeline data. Measured mouths are the default (owner 2026-11-28); dialogue.mouths 'visemes-v1' selects the estimate.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
@@ -22,7 +22,7 @@ const timed=(p,mode,pattern)=>{const t=estimatedTimeline(p,plannedTimeline(p)),n
 test('mouth modes: estimate unchanged, rhubarb-v1 measured; speech.mouths accepts both and nothing else',async()=>{
  assert.deepEqual(MOUTH_MODES['visemes-v1'],{version:VISEMES.version,timing:'estimated'});
  assert.deepEqual(MOUTH_MODES['rhubarb-v1'],{version:'viseme-rhubarb-v1',timing:'measured'});
- assert.equal(defaultSpeech(60).mouths,'visemes-v1','the estimate stays the default');
+ assert.equal(defaultSpeech(60).mouths,'rhubarb-v1','measured mouths are the default (owner 2026-11-28)');
  const p=await film('rhubarb-v1');validateProject(p);assert.equal(usesVisemes(p),true);
  for(const bad of ['rhubarb','rhubarb-v2','lip-sync',1])assert.throws(()=>validateSpeechConfig({...p.speech,mouths:bad}),/mouths/,String(bad));
 });
@@ -43,8 +43,8 @@ test('measured shapes drive the mouth like the estimate: closures shut it, round
  assert.ok(shut.every(x=>x.mouth===0));assert.ok(round.some(x=>x.mouth>0&&x.width<1));
 });
 
-test('Director: dialogue.mouths rhubarb-v1 opts in; absent keeps the estimate; other values refused',async()=>{
- const on=await direct({...q0,dialogue:{...q0.dialogue,mouths:'rhubarb-v1'}}),off=await direct(q0);
- assert.equal(on.project.speech.mouths,'rhubarb-v1');assert.notEqual(off.project.speech.mouths,'rhubarb-v1');
- for(const bad of ['visemes-v1','yes',true])assert.throws(()=>request({...q0,dialogue:{...q0.dialogue,mouths:bad}}),/dialogue.mouths: rhubarb-v1 or absent/,String(bad));
+test('Director: measured mouths by default; dialogue.mouths visemes-v1 selects the estimate; other values refused',async()=>{
+ const on=await direct({...q0,dialogue:{...q0.dialogue,mouths:'rhubarb-v1'}}),est=await direct({...q0,dialogue:{...q0.dialogue,mouths:'visemes-v1'}}),def=await direct(q0);
+ assert.equal(on.project.speech.mouths,'rhubarb-v1');assert.equal(def.project.speech.mouths,'rhubarb-v1');assert.equal(est.project.speech.mouths,'visemes-v1');
+ for(const bad of ['rhubarb','yes',true])assert.throws(()=>request({...q0,dialogue:{...q0.dialogue,mouths:bad}}),/dialogue.mouths: rhubarb-v1, visemes-v1 or absent/,String(bad));
 });

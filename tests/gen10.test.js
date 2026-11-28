@@ -14,14 +14,15 @@ import {plannedTimeline} from '../src/studio/model.js';
 import {emitAsset} from '../src/visual/assets.js';
 
 const read=n=>JSON.parse(readFileSync(new URL('../examples/'+n+'.json',import.meta.url),'utf8'));
-const dialogue=async()=>{const q=read('talk04-dialogue.request'),s=defaultSpeech(q.seconds);return (await direct({...q,speech:s})).project;};
+// GPU-06 made measured mouths (rhubarb-v1) the default; these tests select the GEN-10 estimate explicitly.
+const dialogue=async()=>{const q=read('talk04-dialogue.request'),s={...defaultSpeech(q.seconds),mouths:'visemes-v1'};return (await direct({...q,speech:s})).project;};
 // estimated timeline with a flat envelope and a given viseme string pattern
 const timed=(p,pattern)=>{const t=estimatedTimeline(p,plannedTimeline(p)),n=t.durationFrames;
  return {...t,speechEnvelope:{version:1,unit:'permille-rms',values:Array(n).fill(800)},visemes:{version:VISEMES.version,phonemizer:'test',timing:'estimated',values:pattern.repeat(Math.ceil(n/pattern.length)).slice(0,n)}};};
 const speakingFrame=(p,t)=>{for(const [i,s] of t.shots.entries()){const g=s.segments[0];if(g&&p.shots[i].speakerAssets)return {index:i,frame:Math.floor((g.startSample+g.endSample)/2/1600),speaker:g.speaker};}};
 
 test('speech.mouths contract: on in defaultSpeech, visemes-v1 or absent; negatives',async()=>{
- assert.equal(defaultSpeech(60).mouths,'visemes-v1');
+ assert.equal(defaultSpeech(60).mouths,'rhubarb-v1'); // GPU-06 default (owner 2026-11-28); the estimate stays selectable
  const p=await dialogue();validateProject(p);assert.equal(usesVisemes(p),true);
  for(const bad of ['visemes',true,1,null,'lip-sync']){const x=structuredClone(p);x.speech.mouths=bad;assert.throws(()=>validateProject(x),/mouths/,String(bad));}
  const x=structuredClone(p);delete x.speech.mouths;validateSpeechConfig(x.speech);assert.equal(usesVisemes(x),false);

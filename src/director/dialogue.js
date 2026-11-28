@@ -27,8 +27,8 @@ export function validateDialogueRequest(q){
  if(q.dialogue===undefined)return;
  const d=q.dialogue,p='request.dialogue';
  fields(d,['speakers','style','pace','singles','mouths'],p,['speakers']);
- // GPU-06: dialogue.mouths 'rhubarb-v1' opts into measured mouth shapes (owner-approved Rhubarb Lip Sync; must be installed).
- if(d.mouths!==undefined&&d.mouths!=='rhubarb-v1')bad(p+'.mouths','rhubarb-v1 or absent required');
+ // GPU-06: dialogue.mouths picks the mouth timing: 'rhubarb-v1' (measured, the default through defaultSpeech) or 'visemes-v1' (estimated).
+ if(d.mouths!==undefined&&d.mouths!=='rhubarb-v1'&&d.mouths!=='visemes-v1')bad(p+'.mouths','rhubarb-v1, visemes-v1 or absent required');
  if(d.singles!==undefined&&typeof d.singles!=='boolean')bad(p+'.singles','boolean required');
  if(d.style!==undefined)choice(d.style,DIALOGUE_STYLES,p+'.style');
  if(d.pace!==undefined&&(typeof d.pace!=='number'||!Number.isFinite(d.pace)||d.pace<SPEECH_PACE.min||d.pace>1))bad(p+'.pace','number from '+SPEECH_PACE.min+' to 1 required');
