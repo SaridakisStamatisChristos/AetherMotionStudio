@@ -11,7 +11,7 @@ import {baseline,offlineIR} from './offline.js';
 import {stageProject,stageShot} from '../core/staging.js';
 import {heroDetail} from '../core/hero-characters.js';
 import {applySet,topicSetFor,fitPiecesFor} from './sets.js';
-import {singleShots} from '../core/singles.js';
+import {singleShots,SINGLES} from '../core/singles.js';
 import {reelsProject} from '../core/reels.js';
 import {planAids,holdComposition} from './aids.js';
 import {placeVisuals,mergeShotsForVisuals} from './visuals.js';
@@ -85,7 +85,7 @@ export function compile(q,ir,selection,{mediaRoot}={}){
  // GEN-09: Reels delivery (layout + framing inside the Reels-safe area) before singles, so singles are solved for it.
  if(q.delivery)out=reelsProject(out).project;
  // GEN-06: dialogue cuts long lines to singles of the speaker (request.dialogue.singles false keeps group shots only).
- if(q.dialogue&&q.dialogue.singles!==false)out=singleShots(out).project;
+ if(q.dialogue&&q.dialogue.singles!==false)out=singleShots(out,{...SINGLES,mode:q.dialogue.singles==='all'?'all':'sparing'}).project;
  // Owner 2026-11-26 ("No titles at all"): dialogue films default to a clean top (titles 'none' on every graph shot);
  // request.titles 'shots' keeps the per-shot titles. Narrator films are unchanged unless they ask for 'none'.
  // DUAL-01: content modes default to a clean top as well (the visual aids take that space).

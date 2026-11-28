@@ -17,7 +17,8 @@ const directed=async(n,dialogue={})=>{const r=read(n+'.request');return (await d
 const est=p=>estimatedTimeline(p,plannedTimeline(p));
 
 test('Director interview: long lines become singles; nobody cut; every check clean; words and order kept',async()=>{
- const p=await directed('gen01-interview'),flat=await directed('gen01-interview',{singles:false});
+ // GPU-07 follow-up: every-long-line singles are now dialogue.singles 'all' (the default is sparing, tested below)
+ const p=await directed('gen01-interview',{singles:'all'}),flat=await directed('gen01-interview',{singles:false});
  const singles=p.shots.filter(s=>s.id.endsWith('-single'));
  assert.ok(singles.length>=2,String(singles.length));
  assert.deepEqual(p.shots.flatMap(s=>s.narration),flat.shots.flatMap(s=>s.narration),'same lines, same order');
@@ -42,7 +43,7 @@ test('singles off: the GEN-03 shots exactly; invalid option rejected; three-spea
  assert.deepEqual(flat.shots.map(s=>s.id),['shot-1','shot-2','shot-3','shot-4','shot-5','shot-6']);
  assert.ok(flat.shots.every(s=>s.cameraRig.framing==='group'&&!s.titleHold));
  await assert.rejects(directed('gen01-interview',{singles:'yes'}),/singles/);
- const three=await directed('talk04-dialogue',{singles:false}),r=singleShots(three);
+ const three=await directed('talk04-dialogue',{singles:false}),r=singleShots(three,{...SINGLES,mode:'all'});
  assert.equal(r.report.singles.length,0);assert.ok(r.report.kept.length>0);
  assert.ok(r.report.kept.every(k=>['no framing keeps everyone whole','characters move'].includes(k.reason)),JSON.stringify(r.report.kept));
  assert.deepEqual(r.project,three,'nothing changed');
@@ -64,4 +65,20 @@ test('contract negatives: framing single needs a known subject; titleHold is tru
  bad(x=>delete x.shots[s].cameraRig.subject);bad(x=>x.shots[s].cameraRig.subject='ghost');
  bad(x=>x.shots[s].cameraRig.subjects=['host','guest']);
  bad(x=>x.shots[s].titleHold=false);bad(x=>x.shots[0].titleHold=true);
+});
+
+test('sparing singles (default; owner "Fewer solo shots"): longest lines only, never in neighbouring shots, at most a third of the words',async()=>{
+ const words=t=>t.trim().split(/\s+/).length;
+ for(const n of ['gen01-interview','talk04-dialogue']){
+  const p=await directed(n),all=await directed(n,{singles:'all'}),flat=await directed(n,{singles:false});
+  const singles=p.shots.filter(s=>s.id.endsWith('-single'));
+  assert.ok(singles.length<=all.shots.filter(s=>s.id.endsWith('-single')).length,n);
+  const total=flat.shots.reduce((m,s)=>m+s.narration.reduce((k,t)=>k+words(t),0),0),solo=singles.reduce((m,s)=>m+words(s.narration[0]),0);
+  assert.ok(solo<=total/3+1e-9,n+' share '+solo+'/'+total);
+  const origin=singles.map(s=>flat.shots.findIndex(x=>x.id===s.id.replace(/-single$/,'')));
+  for(let i=1;i<origin.length;i++)assert.ok(origin[i]-origin[i-1]>1,n+' neighbouring singles');
+  assert.deepEqual(p.shots.flatMap(s=>s.narration),flat.shots.flatMap(s=>s.narration),'same lines, same order');
+ }
+ const p=await directed('gen01-interview');assert.ok(p.shots.some(s=>s.id.endsWith('-single')),'still some variety');
+ await assert.rejects(directed('gen01-interview',{singles:'some'}),/singles/);
 });
