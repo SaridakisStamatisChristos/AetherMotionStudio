@@ -60,10 +60,10 @@ export function compile(q,ir,selection,{mediaRoot}={}){
   // TALK-04: speakers staged as characters + one set piece; camera frames the whole line (no single subject).
   // GEN-02: stage first (line, set piece, group framing), then point (an aimer counts as authored blocking for talk-v1).
   if(q.dialogue){const assets=stageDialogueAssets(q,s.assets[0]);
-   const staged=stageShot({id:'shot-'+(i+1),template:'cinematic-graph',backend:q.backend,durationFrames:speech.fixedShots['shot-'+(i+1)]??null,transitionFrames:i?10:0,transition:i?'fade':'cut',heading:s.heading,subheading:s.subheading,environment:s.environment,camera:{},cameraRig:{preset:s.camera,framing:'medium',padding:.1},assets,effects:s.effect?[{preset:s.effect,target:'object-1'}]:[],...(s.overlay?{overlays:[s.overlay]}:{}),narration:s.narration,...(q.profile==='polished'?{fidelity:{...profile}}:{}),...dialogueShotFields(q)},'talk-v1',speech);return {...staged,assets:pointAtSetPiece(q,s,staged.assets)};}
+   const staged=stageShot({id:'shot-'+(i+1),template:'cinematic-graph',backend:q.backend,durationFrames:speech.fixedShots['shot-'+(i+1)]??null,transitionFrames:i?10:0,transition:i?'fade':'cut',heading:s.heading,subheading:s.subheading,environment:s.environment,camera:{},cameraRig:{preset:s.camera,framing:'medium',padding:.1},assets,effects:s.effect?[{preset:s.effect,target:'object-1'}]:[],...shotOverlays(s),narration:s.narration,...(q.profile==='polished'?{fidelity:{...profile}}:{}),...dialogueShotFields(q)},'talk-v1',speech);return {...staged,assets:pointAtSetPiece(q,s,staged.assets)};}
   let assets=s.assets.map((a,j)=>({id:'object-'+(j+1),asset:a.asset,tracks:{x:[[0,a.x??(j-(s.assets.length-1)/2)*1.25]],...(a.identity?{...(a.scale===undefined?{}:{scale:[[0,a.scale]]})}:a.action==='idle'?{}:{scale:[[0,a.scale??.85]]})},...(a.action?{actions:[{name:a.action,start:.06,end:.94,blend:.1,...(['walk','run'].includes(a.action)?{mode:'loop',speed:2}:{})}]}:{})}));
   if(q.identityLibrary)assets=compileIdentityAssets(q,s,assets);
-  return {id:'shot-'+(i+1),template:'cinematic-graph',backend:q.backend,durationFrames:q.speech?(q.speech.fixedShots['shot-'+(i+1)]??null):budgets[i],transitionFrames:i?10:0,transition:i?'fade':'cut',heading:s.heading,subheading:s.subheading,environment:s.environment,...(q.identityLibrary?identityLocation(q,s):{}),camera:{},cameraRig:{preset:s.camera,subject:assets[0].id,framing:'medium',padding:.1},assets,effects:s.effect?[{preset:s.effect,target:assets[0].id}]:[],...(s.overlay?{overlays:[s.overlay]}:{}),narration:s.narration,...(q.profile==='polished'?{fidelity:{...profile}}:{})};
+  return {id:'shot-'+(i+1),template:'cinematic-graph',backend:q.backend,durationFrames:q.speech?(q.speech.fixedShots['shot-'+(i+1)]??null):budgets[i],transitionFrames:i?10:0,transition:i?'fade':'cut',heading:s.heading,subheading:s.subheading,environment:s.environment,...(q.identityLibrary?identityLocation(q,s):{}),camera:{},cameraRig:narratorRig(s.camera,assets),assets,effects:s.effect?[{preset:s.effect,target:assets[0].id}]:[],...shotOverlays(s),narration:s.narration,...(q.profile==='polished'?{fidelity:{...profile}}:{})};
  })};
  validateProject(project);if(!speech&&project.shots.reduce((n,s)=>n+s.durationFrames,0)!==q.seconds*FPS)throw Error('duration: frame allocation mismatch');
  // ART-04 opt-in staging pass; absent request.staging keeps director output byte-identical.
@@ -143,6 +143,14 @@ export function buildPrompt(q,plan,feedback=null){
  'Request: '+JSON.stringify(promptRequest),'Retrieved assets per shot: '+JSON.stringify(compact),...(feedback?['Previous output failed validation. Return corrected JSON only. Error: '+feedback]:[])].join('\n');
 }
 function errorInfo(e){return {code:e.code??'validation',message:String(e.message??e).slice(0,300)};}
+// FIX-NR (owner 2026-11-28: "we dont need extra caption box at all"): Director films never carry a lower-third caption
+// overlay; the speech captions are the only caption. Other overlay types (labels, charts, arrows …) are kept.
+export function shotOverlays(s){return s.overlay&&s.overlay.type!=='lower-third'?{overlays:[s.overlay]}:{};}
+// FIX-NR: narrator shots frame every subject large and inside the 9:16 safe area, as dialogue films do: 'group' over all
+// subjects (2–4), 'single' for one; the planned camera move (dolly-in, orbit, …) is kept. Before, 'medium' framed only
+// the first subject, so the second was small or cut by the frame edge (gpu00/gpu03-product OFF_FRAME warnings).
+export function narratorRig(preset,assets){const ids=assets.map(a=>a.id).slice(0,4);
+ return ids.length>=2?{preset,framing:'group',subjects:ids,padding:.1}:{preset,subject:ids[0],framing:'single',padding:.1};}
 export async function direct(input,{adapter=null,imported=null,maxRepairs=1,foundryRequests=null,mediaRoot=null}={}){
  const started=performance.now(),q=request(input);
  if(!Number.isInteger(maxRepairs)||maxRepairs<0||maxRepairs>2)throw Error('maxRepairs: 0–2 required');
