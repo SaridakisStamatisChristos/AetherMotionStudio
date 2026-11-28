@@ -349,11 +349,68 @@ export const FAR_BACKDROPS=Object.freeze({
   on(box,[2.5,2.4,-6.1],[1.25,.95,.06],'#33291f');on(box,[2.5,2.4,-6.04],[1.0,.72,.04],'#a6835a');
  }
 });
+// GPU-07 'topic-v4' room walls (owner 2026-11-28: classroom, workshop, grand interior; "calm and tidy"; then "better
+// variety in backgrounds. they repeat the same brown striped pattern"). Each room has its own wall colour and design;
+// wall surfaces carry the WALL key, which the Three backend draws as flat (unrounded) boxes, so the ten wall columns
+// join without seams. The CPU painter keeps the columns (it ignores the key). FAR_BACKDROPS above stay unchanged.
+const WALL=Object.freeze({family:'wall',slot:0});
+const flat=(box,c,s,col,bias=0)=>box(c,s,col,id,false,bias,null,false,WALL);
+function roomWall(box,color,trim,dado){
+ for(let i=0;i<10;i++){const x=-6.75+i*1.5;flat(box,[x,2.6,-6.3],[1.5,5.2,.3],color);flat(box,[x,.12,-6.1],[1.5,.24,.12],trim,DETAIL);
+  if(dado){flat(box,[x,.6,-6.13],[1.5,1.0,.04],dado[0],DETAIL);flat(box,[x,1.12,-6.1],[1.5,.07,.1],dado[1],DETAIL);}}
+}
+// Room floor: one flat matte slab over the stage floor (top 1 cm above it), sorted far on the CPU painter.
+const floor=(box,col)=>flat(box,[0,-.025,.45],[17,.03,13.5],col,-50);
+const courses=(box,from,to,step,col)=>{for(let y=from;y<=to+1e-9;y+=step)flat(box,[0,y,-6.14],[15,.025,.02],col,DETAIL);};
+export const ROOM_BACKDROPS=Object.freeze({
+ // pale tiled laboratory with a long window
+ lab(box){floor(box,'#8b989b');roomWall(box,'#b4bfc2','#86939a');courses(box,.5,4.5,.5,'#adb8bb');for(let x=-6;x<=6;x+=1)flat(box,[x,2.6,-6.14],[.02,5,.02],'#adb8bb',DETAIL);
+  windowPane(box,0,2.75,6.2,1.15,'#7fa6b4','#e4e9ea');},
+ tech:FAR_BACKDROPS.tech,street:FAR_BACKDROPS.street,forest:FAR_BACKDROPS.forest,
+ // light grey-blue office with three tall windows
+ office(box){floor(box,'#485566');roomWall(box,'#8a9aab','#5f6c7a');for(const x of [-3.7,0,3.7])windowPane(box,x,2.5,2.2,2.2,'#9fb9cc','#e1e5e8');},
+ // soft sage home with a wooden dado, a window and a picture
+ home(box){floor(box,'#6e5440');roomWall(box,'#8d957a','#5a4a39',['#7a6248','#5b4a38']);windowPane(box,-2.3,2.45,2.0,1.6,'#a9c2cc','#efe8dc');
+  on(box,[2.5,2.5,-6.1],[1.25,.95,.06],'#5b4a38');on(box,[2.5,2.5,-6.04],[1.0,.72,.04],'#c39a63');},
+ // light green-grey classroom: wooden dado, chalkboard, clock, windows
+ classroom(box){floor(box,'#8f7454');roomWall(box,'#a9b3a2','#6c5640',['#86694b','#6c5640']);
+  on(box,[0,2.4,-6.1],[3.8,1.45,.06],'#8a6a48');on(box,[0,2.4,-6.05],[3.55,1.22,.04],'#2f4a3c');
+  on(box,[0,1.63,-6.0],[3.7,.07,.14],'#8a6a48');on(box,[-.9,2.6,-6.02],[.9,.03,.02],'#dfe6dc');on(box,[.55,2.25,-6.02],[1.2,.03,.02],'#dfe6dc');
+  for(const x of [-4.4,4.4])windowPane(box,x,2.5,1.7,1.9,'#a9c4cf','#efeae0');
+  on(box,[0,3.6,-6.06],[.42,.42,.05],'#f2eee4');on(box,[0,3.6,-6.02],[.03,.16,.02],'#2b2b2b');},
+ // grey block workshop: horizontal courses, pegboard with tools, shelves of parts, a high window
+ workshop(box){floor(box,'#5b5e5c');roomWall(box,'#6e726f','#4d504e');courses(box,.4,4.8,.4,'#616562');
+  on(box,[-2.6,2.25,-6.1],[3.2,1.6,.05],'#a3825a');
+  for(let r=0;r<3;r++)for(let c=0;c<5;c++)on(box,[-3.8+c*.6,1.75+r*.5,-6.05],[.08+.1*((r+c)%2),.3-.08*((r*3+c)%3),.04],['#46505a','#a0503b','#4f5b48'][(r+c)%3]);
+  for(const y of [1.6,2.4,3.2]){on(box,[2.7,y,-6.0],[2.8,.08,.35],'#7a5a3c');for(let i=0;i<4;i++)on(box,[1.6+i*.72,y+.16,-5.95],[.34,.24,.26],['#c08b3c','#5d7a8c','#8c5a4a','#6e8a5a'][(i+Math.round(y*5))%4]);}
+  windowPane(box,0,3.35,1.5,.8,'#b3c6cd','#3a3d3b');},
+ // warm stone hall: courses, pale columns, tall windows, two paintings
+ hall(box){floor(box,'#ad9f86');roomWall(box,'#9c8f7d','#7d7262');courses(box,.8,4.8,.8,'#8f8371');
+  for(let i=-3;i<=3;i++){on(box,[i*2.2,2.6,-5.95],[.5,5.2,.4],'#e0d7c4');on(box,[i*2.2,.2,-5.9],[.66,.4,.5],'#c9bfab');on(box,[i*2.2,5.0,-5.9],[.66,.3,.5],'#c9bfab');}
+  for(const x of [-3.3,3.3])windowPane(box,x,2.9,1.2,2.6,'#b1c8d3','#e0d7c4');
+  for(const [x,c] of [[-1.1,'#7a4e3a'],[1.1,'#3e5a6e']]){on(box,[x,2.6,-6.08],[1.3,1.0,.05],'#b08e52');on(box,[x,2.6,-6.03],[1.1,.8,.04],c);}}
+});
+// GPU-07 'topic-v4' rooms (Cinematic dialogue films): a back wall from ROOM_BACKDROPS and the props of shot.dressing,
+// chosen once per film by the Director (src/director/rooms.js) so tall props never stand behind a speaker.
+export const ROOMS=Object.freeze({'lab-room':'lab','tech-room':'tech','office-room':'office','street-room':'street','forest-room':'forest','home-room':'home',classroom:'classroom',workshop:'workshop',hall:'hall'});
+export const DRESSING_LIMITS=Object.freeze({count:12,x:[-6,6],z:[-5.2,-2.2],yaw:[-3.2,3.2],scale:[.5,1.5]});
+export function validateDressing(d,layers,path,isPiece){
+ const bad=m=>{throw Error(path+': '+m)};
+ if(!Object.hasOwn(ROOMS,layers??''))bad('needs a room layer ('+Object.keys(ROOMS).join(', ')+')');
+ if(!Array.isArray(d)||d.length>DRESSING_LIMITS.count)bad('array of at most '+DRESSING_LIMITS.count+' pieces required');
+ const L=DRESSING_LIMITS,inR=(v,[a,b])=>typeof v==='number'&&Number.isFinite(v)&&v>=a&&v<=b;
+ d.forEach((p,i)=>{if(!Array.isArray(p)||p.length!==5)bad(i+': [asset, x, z, yaw, scale] required');
+  if(typeof p[0]!=='string'||!isPiece(p[0]))bad(i+': unknown or unsuitable catalog piece '+JSON.stringify(p[0]));
+  if(!inR(p[1],L.x)||!inR(p[2],L.z)||!inR(p[3],L.yaw)||!inR(p[4],L.scale))bad(i+': position, yaw or scale out of range');});
+ return d;
+}
 // '<set>-2' layer → [backdrop, dressed set whose pieces it keeps]
 export const FAR_SETS=Object.freeze({'lab-set-2':['lab','lab-set'],'tech-set-2':['tech','tech-set'],'forest-set-2':['forest','forest-set'],'office-set-2':['office','office-set'],'street-set-2':['street','street-set'],'home-set-2':['home','home-set']});
-export const LAYERED_ENVIRONMENTS=Object.freeze(['solar-field','city-dusk','energy-hub',...Object.keys(DRESSED_SETS),...Object.keys(FAR_SETS)]);
+export const LAYERED_ENVIRONMENTS=Object.freeze(['solar-field','city-dusk','energy-hub',...Object.keys(DRESSED_SETS),...Object.keys(FAR_SETS),...Object.keys(ROOMS)]);
 export function emitEnvironment(state,box){
  const env=state.layers;if(!env)return;
+ const room=ROOMS[env];
+ if(room){ROOM_BACKDROPS[room](box);for(const [id,x,z,yaw,scale] of state.dressing??[])emitAsset(id,box,{origin:[x,0,z],yaw,scale});return;}
  const far=FAR_SETS[env];
  if(far){FAR_BACKDROPS[far[0]](box);for(const [id,x,z,yaw,scale] of DRESSED_SETS[far[1]].pieces)emitAsset(id,box,{origin:[x,0,z],yaw,scale});return;}
  const dressed=DRESSED_SETS[env];

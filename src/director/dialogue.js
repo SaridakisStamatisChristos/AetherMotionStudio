@@ -29,7 +29,8 @@ export function validateDialogueRequest(q){
  fields(d,['speakers','style','pace','singles','mouths'],p,['speakers']);
  // GPU-06: dialogue.mouths picks the mouth timing: 'rhubarb-v1' (measured, the default through defaultSpeech) or 'visemes-v1' (estimated).
  if(d.mouths!==undefined&&d.mouths!=='rhubarb-v1'&&d.mouths!=='visemes-v1')bad(p+'.mouths','rhubarb-v1, visemes-v1 or absent required');
- if(d.singles!==undefined&&typeof d.singles!=='boolean')bad(p+'.singles','boolean required');
+ // GPU-07 follow-up: singles true/absent = sparing solo shots (default), 'all' = every long line (GEN-06), false = none.
+ if(d.singles!==undefined&&typeof d.singles!=='boolean'&&d.singles!=='all')bad(p+'.singles','true, false, all or absent required');
  if(d.style!==undefined)choice(d.style,DIALOGUE_STYLES,p+'.style');
  if(d.pace!==undefined&&(typeof d.pace!=='number'||!Number.isFinite(d.pace)||d.pace<SPEECH_PACE.min||d.pace>1))bad(p+'.pace','number from '+SPEECH_PACE.min+' to 1 required');
  if(!Array.isArray(d.speakers)||d.speakers.length<2||d.speakers.length>3)bad(p+'.speakers','2–3 speakers required');

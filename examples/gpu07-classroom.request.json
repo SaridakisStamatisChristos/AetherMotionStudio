@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "id": "gpu07-classroom",
+  "seconds": 60,
+  "language": "en-us",
+  "backend": "three",
+  "profile": "polished",
+  "topic": "How we learn best at school",
+  "audience": "curious beginners",
+  "tone": "warm",
+  "style": "interview",
+  "voice": "af_bella",
+  "seed": 11,
+  "dialogue": {
+    "style": "interview",
+    "speakers": [
+      {
+        "id": "host",
+        "name": "Student",
+        "voice": "af_bella",
+        "language": "en-us",
+        "character": "student"
+      },
+      {
+        "id": "guest",
+        "name": "Teacher",
+        "voice": "am_michael",
+        "language": "en-us",
+        "character": "scientist"
+      }
+    ]
+  },
+  "script": "How do we learn best at school? A good start is to test yourself instead of just reading again. Why does testing help? When you try to remember something, your brain makes the memory stronger. Should I study everything in one long night? No, short lessons spread over several days work much better. What about taking breaks? Breaks matter, and so does sleep, because the brain sorts new lessons while you rest. Is it bad to make mistakes? Not at all! Mistakes show you exactly what to practise next.",
+  "renderProfile": "cinematic-v1"
+}

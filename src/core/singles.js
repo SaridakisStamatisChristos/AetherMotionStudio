@@ -16,7 +16,10 @@ import {createProjection} from '../visual/mesh.js';
 import {recipeSpec} from '../visual/catalog-rig.js';
 import {REELS} from './reels-layout.js';
 
-export const SINGLES=Object.freeze({version:'singles-v1',minWords:10,maxPerShot:1,offsets:Object.freeze([0,.2,.4,.6]),paddings:Object.freeze([.05,.1,.2]),presets:Object.freeze(['medium','close-up']),
+// GPU-07 follow-up (owner 2026-11-28: "why only one character at frame talking … professor is alone" → "Fewer solo
+// shots"): mode 'sparing' (Director default) keeps singles for the longest lines only, never in neighbouring shots,
+// and at most maxShare of the film's words; mode 'all' is the GEN-06 behaviour (every eligible long line).
+export const SINGLES=Object.freeze({version:'singles-v1',mode:'sparing',maxShare:1/3,minWords:10,maxPerShot:1,offsets:Object.freeze([0,.2,.4,.6]),paddings:Object.freeze([.05,.1,.2]),presets:Object.freeze(['medium','close-up']),
  frame:Object.freeze({width:720,height:1280}),inside:Object.freeze({x:Object.freeze([0,720]),y:Object.freeze([0,1280])}),samples:Object.freeze([0,.125,.25,.375,.5,.625,.75,.875,1]),safe:Object.freeze({x:[24,696],y:[310,1040]}),margin:12,maxShots:60});
 const isChar=asset=>asset==='retro-robot'||['human','robot','animal'].includes(recipeSpec(asset)?.family);
 const words=t=>String(t).trim().split(/\s+/).filter(Boolean).length;
@@ -70,10 +73,19 @@ export function singleShots(project,P0=SINGLES){
  const speech=project.speech,report={version:P.version,singles:[],kept:[]};
  if(!speech?.shotSpeakers)return {project,report};
  const out=structuredClone(project),shots=[];let total=project.shots.length;
+ // sparing: choose which shots may split before solving (longest line first; no neighbours; word share capped)
+ let allowed=null;
+ if(P.mode==='sparing'){
+  const all=project.shots.reduce((n,s)=>n+(s.narration??[]).reduce((m,t)=>m+words(t),0),0),cand=[];
+  project.shots.forEach((s,i)=>{const lines=s.narration??[],k=lines.findIndex(t=>words(t)>=P.minWords);if(k>=0)cand.push({i,id:s.id,n:words(lines[k])});});
+  cand.sort((a,b)=>b.n-a.n||a.i-b.i);allowed=new Set();const at=new Set();let used=0;
+  for(const c of cand){if(at.has(c.i-1)||at.has(c.i+1)||used+c.n>P.maxShare*all)continue;allowed.add(c.id);at.add(c.i);used+=c.n;}
+ }
  for(const s of out.shots){
   const lines=s.narration??[],ids=speech.shotSpeakers[s.id],long=lines.map((t,i)=>words(t)>=P.minWords?i:-1).filter(i=>i>=0);
   const why=s.template!=='cinematic-graph'?'not a graph shot':!ids||!s.speakerAssets?'no line speakers':!long.length?null:Object.hasOwn(speech.fixedShots,s.id)?'fixed duration':speech.cues?.some(c=>c.shot===s.id)?'audio cues':!s.assets.filter(a=>isChar(a.asset)).every(still)?'characters move':lines.length<2&&s.assets.filter(a=>isChar(a.asset)).length<2?'already a single':null;
   if(why||!long.length){if(why&&long.length)report.kept.push({shot:s.id,reason:why});shots.push(s);continue;}
+  if(allowed&&!allowed.has(s.id)){report.kept.push({shot:s.id,reason:'sparing: kept as a group shot'});shots.push(s);continue;}
   // first long line (calm: at most one single per shot), never the only line of a shot with a single character
   const k=long[0],speakerAsset=s.speakerAssets[ids[k]];
   const solo={...s,id:s.id+'-single',narration:[lines[k]],transitionFrames:0,transition:'cut'};

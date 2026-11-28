@@ -30,7 +30,7 @@ export const PBR_PRESETS=Object.freeze({
  matte:P({roughness:.78,metalness:0,clearcoat:0,clearcoatRoughness:0,sheen:0,sheenRoughness:0,ior:1.5,specularIntensity:.4,envMapIntensity:.7})});
 export const SURFACES=Object.freeze(Object.keys(PBR_PRESETS));
 // Recipe family → surface. Families not listed are machines, devices and diagrams: painted 'plastic'.
-export const FAMILY_SURFACE=Object.freeze({furniture:'wood',shelf:'wood',human:'fabric',case:'fabric',vessel:'ceramic',
+export const FAMILY_SURFACE=Object.freeze({wall:'matte',furniture:'wood',shelf:'wood',human:'fabric',case:'fabric',vessel:'ceramic',
  building:'stone',tower:'stone',arena:'stone',bridge:'stone',terrain:'stone',tree:'matte',plant:'matte',book:'matte',tool:'metal',motor:'metal'});
 // People's skin is catalog colour slot 3 (src/visual/catalog.js primitive palette '#e9ddd0' unless a recipe overrides it).
 const SKIN_SLOT=3;

@@ -1,3 +1,4 @@
+import {ROOMS_V4,characterSpans,dressRoom} from './rooms.js';
 // GEN-12 topic-fitting sets (request.sets 'topic-v1'; on by default for dialogue films, 'none' turns it off).
 // Owner order: "Gen10 and onwards"; roadmap: "Series will look repetitive". The offline Director alternated three
 // lighting palettes shot by shot and never used the layered backdrops. topic-v1 gives a film ONE location that fits
@@ -61,7 +62,9 @@ export function topicSet(q,ir){
 // Apply a set to compiled shots (graph shots only). Returns {project, report}; the input is not modified.
 export function applySet(project,set){
  if(!set.category)return {project,report:{...set,applied:false,reason:'no topic words matched'}};
- const shots=project.shots.map(s=>{if(s.template!=='cinematic-graph')return s;const {layers,...rest}=s;return {...rest,environment:set.environment,...(set.layers?{layers:set.layers}:{})};});
+ let shots=project.shots.map(s=>{if(s.template!=='cinematic-graph')return s;const {layers,...rest}=s;return {...rest,environment:set.environment,...(set.layers?{layers:set.layers}:{})};});
+ // GPU-07 topic-v4: one sightline-safe prop layout for the whole film (the room keeps its identity across shots)
+ if(set.version===ROOMS_V4.version){const dressing=dressRoom(set.layers,characterSpans(project));shots=shots.map(s=>s.template==='cinematic-graph'?{...s,dressing}:s);return {project:{...project,shots},report:{...set,applied:true,dressing}};}
  return {project:{...project,shots},report:{...set,applied:true}};
 }
 // Re-pick the dialogue IR's set pieces from the film's category (see header). Returns {ir, changes}.
@@ -141,11 +144,21 @@ const v2Index=()=>{const idx=new Map(wordIndex());for(const [c,w] of Object.entr
 // src/core/cinematography.js FAR_SETS ('<set>-2' layers: same pieces, a backdrop that belongs to the place instead of the
 // plain skyline blocks). Category choice and piece fitting are exactly topic-v2's. topic-v1 and topic-v2 are unchanged.
 export const SETS_V3=Object.freeze({version:'topic-v3',layers:Object.freeze(Object.fromEntries(Object.entries(SETS_V2.layers).map(([c,l])=>[c,l+'-2'])))});
-const DRESSED_VERSIONS=['topic-v2','topic-v3'];
+const DRESSED_VERSIONS=['topic-v2','topic-v3','topic-v4'];
+// GPU-07 'topic-v4' (src/director/rooms.js): topic-v2 scoring plus the education, making and heritage words; one room
+// per film and a sightline-safe prop layout (applySet). Earlier versions are unchanged.
+const v4Index=()=>{const idx=new Map(v2Index());for(const [c,w] of Object.entries(ROOMS_V4.words))for(const t of w.split(' '))idx.set(t,c);return idx;};
 // topicSet for a sets version ('topic-v1' unchanged; 'topic-v2' adds WORDS_V2 and the dressed layers; 'topic-v3' the far backdrops).
 export function topicSetFor(version,q,ir){
  if(!DRESSED_VERSIONS.includes(version))return topicSet(q,ir);
  if(version==='topic-v3'){const s=topicSetFor('topic-v2',q,ir);return {...s,version:SETS_V3.version,layers:s.category?SETS_V3.layers[s.category]:null};}
+ if(version==='topic-v4'){
+  const idx=v4Index(),score=Object.fromEntries(Object.keys(ROOMS_V4.layers).map(c=>[c,0]));
+  for(const t of tokens(q.topic)){const c=idx.get(t);if(c)score[c]+=SETS.topicWeight;}
+  for(const sh of ir.shots)for(const line of sh.narration)for(const t of tokens(line)){const c=idx.get(t);if(c)score[c]++;}
+  let best=null;for(const [c,v] of Object.entries(score))if(v>0&&(best===null||v>score[best]))best=c;
+  return {version:ROOMS_V4.version,category:best,environment:best?SETS.categories[best]?.environment??ROOMS_V4.environments[best]:null,layers:best?ROOMS_V4.layers[best]:null,scores:score};
+ }
  const idx=v2Index(),score=Object.fromEntries(Object.keys(SETS.categories).map(c=>[c,0]));
  for(const t of tokens(q.topic)){const c=idx.get(t);if(c)score[c]+=SETS.topicWeight;}
  for(const sh of ir.shots)for(const line of sh.narration)for(const t of tokens(line)){const c=idx.get(t);if(c)score[c]++;}
@@ -167,6 +180,9 @@ export function fitPiecesFor(version,q,ir,set){
  const pieces=OBJECT_CATALOG.filter(pieceOk),topic=new Set(tokens(q.topic)),used=new Set(),changes=[];
  const shots=ir.shots.map((s,i)=>{
   const a=s.assets?.[0];if(!a)return s;
+  // GPU-07 topic-v4: the new categories (education, making, heritage) use their own centre pieces, one per shot in order
+  const own=set.version===ROOMS_V4.version?ROOMS_V4.centerPieces[set.category]:null;
+  if(own){const pick=own.find(id=>!used.has(id))??own[i%own.length];used.add(pick);if(pick!==a.asset)changes.push({shot:i,from:a.asset,to:pick});return pick===a.asset?s:{...s,assets:[{asset:pick},...s.assets.slice(1)]};}
   const words=new Set([...tokens(s.heading),...s.narration.flatMap(tokens)]);
   const rank=id=>pieceRank(id,categoryOf(id)===set.category,words,topic);
   let pick=null;
