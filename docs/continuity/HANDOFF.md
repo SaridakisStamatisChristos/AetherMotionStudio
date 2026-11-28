@@ -1,4 +1,28 @@
-# Forward-only handoff: GPU-02 TESTED + RENDERED, PR open; next GPU-03 (2026-11-28)
+# Forward-only handoff: GPU-03 TESTED + RENDERED, PR open; next FIX-NR (2026-11-28)
+
+**Latest checkpoint (GPU-03):** `feature/gpu-03-textures` from main 9f2d909. GPU-02 is merged as PR #71 on the owner's "merge". **The GPU-03 PR is open, not merged.**
+- **Owner decisions this session:**
+  - procedural textures only;
+  - the narrator defects get a separate unit after GPU-03 (FIX-NR);
+  - "we dont need extra caption box at all";
+  - "timed turns only at the milestones … we need fast implementations".
+- **Changed:**
+  - `src/foundry/materials.js` (bark and ground; `TEXTURE_PATTERNS` exported);
+  - `src/visual/pbr-textures.js` (new);
+  - `src/visual/three-backend.js` (texture sets, UV geometry, floor, disposal);
+  - `src/core/render-profiles.js` (proc-texture-v1, textures rule);
+  - tests `tests/gpu03-textures.test.js`, with the GPU-00/01/02 test expectations updated;
+  - fixtures `examples/gpu03-*.request.json`.
+- **Results:**
+  - 602 tests, 0 fail; digests unchanged; Standard byte-identical;
+  - 3 comparison films PASS, clean on glitch and stale checks;
+  - bench (already running before the owner's rule): 1.04 × Standard, +470 MiB GPU memory.
+- **Next action for "fod continue":**
+  1. If the GPU-03 PR is open, report it, confirm CI, and wait for the merge word.
+  2. After the merge, clear renders older than GPU-03: keep gpu03-*, the GPU-00 references, out/speech-cache, public/media and the v1.2 batches; remove gpu02-* and out/bench/gpu02-*.
+  3. FIX-NR on `feature/fix-narrator` (CAMPAIGN_B.md "FIX-NR"). Fast: tests, one fresh narrator film, checks; no benchmarks. Then GPU-04 (ask the owner first about the GLB loader and decoders: an owner decision).
+
+**Previous checkpoint (GPU-02), heading as written:** GPU-02 TESTED + RENDERED, PR open; next GPU-03 (2026-11-28)
 
 **Latest checkpoint (GPU-02):** `feature/gpu-02-lighting` from main 3a59a65. FIX-RS is merged as PR #70 on the owner's "continue i agree with merge", after CI passed on 8c01269. **The GPU-02 PR is open, not merged.**
 - **Owner decision:** the "stronger" lighting values (UI choice over Standard / subtle / stronger stills).
