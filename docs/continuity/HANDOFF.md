@@ -1,4 +1,19 @@
-# Forward-only handoff: FIX-NR TESTED + RENDERED, PR open; next GPU-04 (2026-11-28)
+# Forward-only handoff: GPU-04 VERIFIED EXISTING + HARDENED, PR open; next GPU-05 (2026-11-28)
+
+**Latest checkpoint (GPU-04):** `feature/gpu-04-glb` from main 6d21a35. FIX-NR is merged as PR #73 on the owner's "merge". **The GPU-04 PR is open, not merged.**
+- **Owner:** plain GLB only; own generated models only.
+- **Changed:**
+  - `scripts/import-formats.mjs` (unreachable nodes refused);
+  - `tests/gpu04-glb.test.js` (new).
+- **Results:**
+  - 608 tests, 0 fail; digests unchanged (director f5b5104977219fdf);
+  - gpu04-imported-r1 comparison PASS, glitch clean.
+- **Next action for "fod continue":**
+  1. If the GPU-04 PR is open, report it, confirm CI, and wait for the merge word.
+  2. After the merge, delete all renders.
+  3. GPU-05 (high-fidelity characters): first ask the owner about art direction and the first 2–3 hero characters (UI choice, options explained). Keep the box characters as a valid style. Fast: tests and one render.
+
+**Previous checkpoint (FIX-NR), heading as written:** FIX-NR TESTED + RENDERED, PR open; next GPU-04 (2026-11-28)
 
 **Latest checkpoint (FIX-NR):** `feature/fix-narrator` from main 9d26a5b. GPU-03 is merged as PR #72 on the owner's "merge and continue". **The FIX-NR PR is open, not merged.**
 - **Owner (standing):** "remove every old renders … the final will be what we keep". All renders are deleted, including the v1.2 final batches and the GPU-00 references (about 4.5 GB). After every merge, delete all renders in out/ and public/audio; keep only out/speech-cache, public/media and the fixture JSON.
