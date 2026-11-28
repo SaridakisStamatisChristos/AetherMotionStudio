@@ -103,8 +103,10 @@ export function offlineIR(q,plan){
   if(q.content==='explainer-v1'){const objects=[explainerObject(plan,i)];
    return {heading:b.heading,subheading:b.subheading,narration:b.narration,camera:cameras[(i+q.seed%cameras.length)%cameras.length],environment:q.style.toLowerCase().includes('warm')?'amber':i%2?'midnight':'laboratory',assets:objects.map(asset=>({asset,action:'presentation-turn',scale:1.1,x:0})),effect:i%2?'cyan-aura':'gold-sparks'};}
   const objects=(preferred.length?preferred:selected.filter(o=>o.id!=='retro-robot').slice(0,1).map(o=>o.id)).slice(0,2);
-  const assets=objects.map((asset,j)=>({asset,action:j===0?'presentation-turn':'idle',scale:objects.length===1?1.15:.86,x:objects.length===1?.5:j===0?-.1:1.35}));
-  assets.push({asset:'retro-robot',action:i===0?'wave':i%2?'point':'inspect',x:-1.5,scale:.72});
+  // FIX-NR: a compact layout (objects and the robot closer together, the robot a little larger) so group framing can
+  // fill the vertical frame; before, about 2.9 m between the outer subjects kept everything small (owner 2026-11-28).
+  const assets=objects.map((asset,j)=>({asset,action:j===0?'presentation-turn':'idle',scale:objects.length===1?1.15:.86,x:objects.length===1?.35:j===0?-.05:1.0}));
+  assets.push({asset:'retro-robot',action:i===0?'wave':i%2?'point':'inspect',x:-1.0,scale:.85});
   return {heading:b.heading,subheading:b.subheading,narration:b.narration,camera:cameras[(i+q.seed%cameras.length)%cameras.length],environment:q.style.toLowerCase().includes('warm')?'amber':i%2?'midnight':'laboratory',assets,effect:i%2?'cyan-aura':'gold-sparks',overlay:{type:'lower-third',slot:'lower',text:trunc(b.subheading,56),animation:'slide',start:.18,end:.93}};
  })};
  // TALK-04: dialogue splits this same narration into turns (no new lines); identity stories are not combinable.
