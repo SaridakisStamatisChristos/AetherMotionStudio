@@ -59,7 +59,7 @@ test('capability proc-texture-v1: Cinematic only, needs pbr-v1 materials, Direct
  assert.throws(()=>validateCinematic({version:1,materials:'pbr-v1',textures:'photo-v1'}),/textures: proc-v1 or absent/);
  const noProfile=swatch({version:1,materials:'pbr-v1',textures:'proc-v1'});delete noProfile.renderProfile;
  assert.throws(()=>validateProject(noProfile),e=>e instanceof RenderProfileError&&e.code==='RP-03'&&/proc-texture-v1/.test(e.message));
- assert.deepEqual(threeOptions(swatch({version:1,materials:'pbr-v1',textures:'proc-v1'})),{renderProfile:'cinematic-v1',materials:'pbr-v1',lights:null,textures:'proc-v1'});
+ assert.deepEqual(threeOptions(swatch({version:1,materials:'pbr-v1',textures:'proc-v1'})),{renderProfile:'cinematic-v1',materials:'pbr-v1',lights:null,textures:'proc-v1',characters:null});
 });
 
 test('texture cache: bounded by its budget, evicts least recently used, refuses an oversized texture',()=>{
