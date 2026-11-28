@@ -3,10 +3,14 @@
 Follow [AGENTS.md](AGENTS.md). Keep development forward-only (FODP v1.0, [docs/continuity/](docs/continuity/README.md)) and preserve canonical decisions.
 
 ## Active campaign
-**Campaign B — GPU-First Cinematic Expansion** (directive supplied by the owner 2026-11-27, to start in a new session).
-- Requirements: [CAMPAIGN_B_DIRECTIVE.md](docs/continuity/CAMPAIGN_B_DIRECTIVE.md) (verbatim). Status, FOD plan, decisions and evidence: [CAMPAIGN_B.md](docs/continuity/CAMPAIGN_B.md).
+**Campaign B — GPU-First Cinematic Expansion** (owner directive 2026-11-27).
+- Requirements: [CAMPAIGN_B_DIRECTIVE.md](docs/continuity/CAMPAIGN_B_DIRECTIVE.md) (verbatim). Status, FOD plan, decisions and evidence: [CAMPAIGN_B.md](docs/continuity/CAMPAIGN_B.md). Protocol and budgets: [CAMPAIGN_B_PROTOCOL.md](docs/continuity/CAMPAIGN_B_PROTOCOL.md).
 - Milestones GPU-00 … GPU-12 run strictly in order.
-- **GPU-00's first gate is an owner-approved ADR** (render profiles and capability negotiation). Until the owner approves it, [DUAL_BACKEND_POLICY.md](docs/DUAL_BACKEND_POLICY.md) stays unchanged and no GPU-exclusive scene capability may be implemented.
+- **Merged so far (2026-11-28):**
+  - GPU-00: [ADR-001](docs/adr/ADR-001-render-profiles.md) is Accepted, so the profiles CPU Classic, GPU Standard and opt-in GPU Cinematic (`renderProfile: 'cinematic-v1'`) are in force;
+  - GPU-01: pbr-v1 materials; GPU-02: env-light-v1 lighting; GPU-03: proc-texture-v1 procedural textures; GPU-04: GLB import verified and hardened;
+  - two shared-pipeline fixes, FIX-RS (stale frames, striped bloom) and FIX-NR (no caption boxes, large narrator framing).
+- **Next: GPU-05** (high-fidelity characters). It starts with the owner's choice of art direction and the first 2–3 hero characters.
 - **Campaign A is complete and tagged** (`v1.2-dual-backend-final` → 2cb82ef; [RELEASE_1_2.md](docs/RELEASE_1_2.md); tracker [CAMPAIGN_A.md](docs/continuity/CAMPAIGN_A.md)). Never move, delete or rewrite that tag. Its CPU and Standard behaviour is the regression baseline for everything in Campaign B.
 
 ## Mandatory session bootstrap ("fod continue" / FOD RESUME)
@@ -36,7 +40,7 @@ Follow [AGENTS.md](AGENTS.md). Keep development forward-only (FODP v1.0, [docs/c
   - First inspect the machine, tool versions, GPU, drivers, models and dependency setup.
   - The default Three GL is swangle. The owner's RTX route is opt-in `AETHER_GL=vulkan` (verify with nvidia-smi; record the WebGL renderer string).
   - Do not change system configuration or install global packages without permission; avoid the full matrix during bootstrap.
-- For matched performance/visual comparisons prepare speech exactly once; share the measured timeline, narration PCM, mix and caption sidecars, and verify hashes. Benchmarks: ≥ 3 runs per fixture from hash-checked prepared inputs (perf-bench). Preserve original gates; do not weaken tests or edit historical evidence to make results green.
+- For matched performance/visual comparisons prepare speech exactly once; share the measured timeline, narration PCM, mix and caption sidecars, and verify hashes (`produce.mjs --backend three --compare standard` for Standard vs Cinematic). **Benchmarks (perf-bench ×3) only at the budget milestones GPU-10 and GPU-12 or on the owner's request** (owner 2026-11-28: "timed turns only at the milestones … we need fast implementations"). Every other unit gets tests, the quality checks (frame_glitch, stale scan) and one render. Preserve original gates; do not weaken tests or edit historical evidence to make results green.
 - No claim of tests passed, CI green, render succeeded, GPU use, merged, released or user approval unless observed. Verify the actual source revision and media; keep structural evidence, agent inspection, human visual review, audio review and performance claims separate.
 - Work on one authorized unit at a time. Implement minimal coherent changes, add tests including negatives, verify actual results and preserve old evidence. Keep generated media/models, dependencies, secrets and machine-specific data out of Git. New behaviour is opt-in or versioned until the owner promotes it; accepted films stay unchanged.
 - Git: one branch per unit, always from main, never stacked. Push and open a PR (the owner allows pushes). **Merge only on the owner's explicit word, after the PR CI test job passes.** Docs-only `chore/…` branches get no CI by design. No tags or releases without the owner's word. No automatic changes to GitHub Actions policies.
@@ -52,6 +56,11 @@ The owner types only "fod continue" and delegates whole units.
   - never call loudness-driven mouths "lip-sync";
   - no gimmicky effects (the owner removed the light beams: "they dont offer anything"), so every Cinematic effect must earn its place in a before/after comparison.
 - **Re-renders:** don't re-render a whole set of films just to test; use single stills where they suffice.
+- **Speed (owner 2026-11-28):** fast implementations; the rest can wait. Keep reports short.
+- **Renders on disk (owner 2026-11-28):** "the final will be what we keep". After every merge, delete all renders in out/ and public/audio. Keep only out/speech-cache, public/media and the fixture JSON.
+- **Captions:** no extra caption box in any Director film ("we dont need extra caption box at all").
+- **Choices:** explain every option in plain words before asking. Proposals must suit other machines, not only this laptop.
+- **GPU-10:** first ask the owner to configure the pre-render budget check (RP-06).
 
 ## Tooling lessons (this machine; they cost real time)
 - Do not pass regex backslashes or `\n` through Bash heredocs or `node -e`: they get mangled. Use the editor tool, or write a .cjs/.mjs file to the scratchpad and run it.
@@ -62,6 +71,9 @@ The owner types only "fod continue" and delegates whole units.
 - **Long renders and batches run detached:** `Start-Process powershell.exe -ArgumentList '-NoProfile','-Command',<command> -WindowStyle Hidden`, then `Wait-Process` in a background shell. A closed session window kills attached renders (DUAL-09; batch resume recovered it). Never pass `-ExecutionPolicy Bypass`.
 - PowerShell mangles `git rev-parse <ref>^{commit}`; use `git rev-list -n 1 <ref>`. `assert.deepEqual` compares functions by identity, so record canvas gradients as tokens.
 - `nvidia-smi --query-gpu=… --format=csv` columns carry units ("0 %", "0 MiB"); parse the raw text, not `Import-Csv` headers.
+- **CI runs only on `main` and `feature/**` pushes.** Name every code unit `feature/…` (a `fix/…` branch got no CI). Docs-only `chore/…` branches get no CI by design.
+- **Digests:** `node scripts/fod-digests.mjs . --exclude talk04,talk05,gen01,gen09,gen12,fixa,dual,gpu` (exclude `gpu` fixtures as well). Expected: graph 3d33fbaee198acad, geometry 14dec244d171dc56, detail2 e3f80439a292f21a, director f5b5104977219fdf.
+- **Visual checks:** run `scripts/frame_glitch.py` on every film (needs `AETHER_FFMPEG`). Before any Cinematic change, check GPU Standard stays byte-identical with swangle stills on main vs the branch.
 
 ## End-of-unit checkpoint (FOD CHECKPOINT)
 - Update CURRENT_STATE.md (cumulative canon, active status, durable obligations), HANDOFF.md (current checkpoint, changed files, commands and results, unresolved risks, next action) and the CAMPAIGN_B.md row and ledger, coherently with the artifact. Update the roadmap and source-specific contracts when they change; do not erase earlier binding facts. Use the [templates](docs/continuity/FODP_TEMPLATES.md).

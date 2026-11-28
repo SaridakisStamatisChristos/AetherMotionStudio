@@ -2,7 +2,8 @@
 
 ## Current: Campaign B — GPU-First Cinematic Expansion (directive supplied 2026-11-27)
 GPU-00 … GPU-12 in order. Requirements: [CAMPAIGN_B_DIRECTIVE.md](CAMPAIGN_B_DIRECTIVE.md). Status, FOD plan and owner decisions: [CAMPAIGN_B.md](CAMPAIGN_B.md), the single status authority; this file only indexes it.
-- Next: GPU-00 (ADR-001 first; owner approval before any GPU-exclusive capability).
+- Merged: GPU-00 (ADR-001 accepted), GPU-01 materials, FIX-RS, GPU-02 lighting, GPU-03 textures, FIX-NR, GPU-04 GLB (2026-11-27…28).
+- Next: GPU-05 high-fidelity characters (owner chooses art direction and the first 2–3 hero characters first).
 - The earlier "GEN-16 Three cinematic profile" proposal is absorbed into Campaign B (GPU-01/02/08).
 
 ## Completed: Campaign A — Universal Dual-Backend Finalization (2026-11-26 … 27)
