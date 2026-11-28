@@ -53,7 +53,8 @@ export function compile(q,ir,selection,{mediaRoot}={}){
  // GEN-12: the film's topic set; dialogue set pieces are re-picked from its category (after the IR check, on the IR).
  // GEN-15 step 2: dialogue films default to topic-v2 (dressed sets, word-matched pieces); topic-v1 stays selectable.
  // Unit 5 (OPEN-2): dialogue films default to topic-v3 (topic-v2 plus far backdrops that fit the place).
- const setVersion=q.sets==='none'?null:q.sets??(q.dialogue?'topic-v3':null);
+ // GPU-07: Cinematic dialogue films (renderProfile) default to topic-v4 rooms; GPU Standard keeps topic-v3.
+ const setVersion=q.sets==='none'?null:q.sets??(q.dialogue?(q.renderProfile?'topic-v4':'topic-v3'):null);
  const set=setVersion?topicSetFor(setVersion,q,ir):null;
  if(set&&q.dialogue)ir=fitPiecesFor(setVersion,q,ir,set).ir;
  const budgets=allocateFrames(ir.shots,q.seconds*FPS),speech=withSoundOptions(q,q.dialogue?dialogueSpeech(q,ir):q.speech);
