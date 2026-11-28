@@ -20,7 +20,7 @@ const code=c=>e=>e instanceof RenderProfileError&&e.code===c&&e.message.startsWi
 test('profile table: three profiles, one shared capability, stable codes',()=>{
  assert.deepEqual(RENDER_PROFILES,['cinematic-v1']);assert.deepEqual(PROFILE_IDS,['cpu-classic','gpu-standard','cinematic-v1']);
  // GPU-01 added pbr-v1 (Cinematic only); shared stays on every profile.
- assert.deepEqual(Object.keys(CAPABILITIES),['shared','pbr-v1','env-light-v1']);assert.deepEqual(CAPABILITIES.shared.profiles,PROFILE_IDS);
+ assert.deepEqual(Object.keys(CAPABILITIES),['shared','pbr-v1','env-light-v1','proc-texture-v1']);assert.deepEqual(CAPABILITIES.shared.profiles,PROFILE_IDS);
  assert.deepEqual(Object.keys(DIAGNOSTIC_CODES),['RP-01','RP-02','RP-03','RP-04','RP-05','RP-06']);
  assert.ok(Object.isFrozen(CAPABILITIES)&&Object.isFrozen(CAPABILITIES.shared.profiles));
 });
@@ -72,7 +72,7 @@ test('Director request: renderProfile is negotiated with the request backend; ab
  const [a,b]=await Promise.all([direct({...q,id:'gpu00-a'}),direct({...q,id:'gpu00-a',renderProfile:'cinematic-v1'})]);
  assert.equal(Object.hasOwn(a.project,'renderProfile'),false);assert.equal(b.project.renderProfile,'cinematic-v1');
  // only the profile fields differ (GPU-01: a request with renderProfile gets the default Cinematic block)
- const {renderProfile,cinematic,...rest}=b.project;assert.equal(renderProfile,'cinematic-v1');assert.deepEqual(cinematic,{version:1,materials:'pbr-v1',lights:'auto-v1'});assert.deepEqual(rest,a.project);
+ const {renderProfile,cinematic,...rest}=b.project;assert.equal(renderProfile,'cinematic-v1');assert.deepEqual(cinematic,{version:1,materials:'pbr-v1',lights:'auto-v1',textures:'proc-v1'});assert.deepEqual(rest,a.project);
  validateProject(b.project);
  // a Cinematic plan and a Standard plan are never treated as the same normalized scene
  assert.notDeepEqual(normalizedProject(a.project),normalizedProject(b.project));

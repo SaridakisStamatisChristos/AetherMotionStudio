@@ -16,6 +16,7 @@ Binding for every Campaign B milestone. Tracker: [CAMPAIGN_B.md](CAMPAIGN_B.md).
 7. Measurements reported against the budget below, on the reference workloads of the milestone.
 
 ## Benchmarks
+- **Owner revision (2026-11-28): "timed turns only at the milestones. not every time. we need fast implementations."** Routine units and fix units: tests, quality checks (frame_glitch, stale scan) and one render; **no perf-bench runs**. The 3-run benchmarks below apply only at the budget milestones: GPU-10 (performance and the owner's budget configuration), GPU-12 (final qualification), or when the owner asks.
 - At least 3 measured runs per fixture with `scripts/perf-bench.mjs`, from hash-checked prepared inputs. Report median and range.
 - The production render is the first (cold) run. Bench runs open a fresh browser each time (`reuseBrowser false`).
 - Never compare across different inputs, machines, GL routes or concurrency without saying so.
@@ -85,3 +86,7 @@ The owner asked for a budget that is not tied to one laptop. So every limit is *
   - **RAM over the 3 GB reference cap:** Cinematic median 3.13 GB, max 3.40 GB. The Standard side of the same film reached 3.04 GB too, so the reference laptop's free RAM (about 3.4 GB) is the real constraint. Reported, not hidden. It goes to the owner's GPU-10 budget configuration (lower concurrency is the declared remedy there).
 - **Flicker:** median frame-to-frame change identical on both sides (0.51/0.51 portrait, 0.49/0.51 product, 0.40/0.41 environment). The 95th–99th percentiles are 10–25 % higher in Cinematic: cuts and fades with more contrast. frame_glitch is clean on all 6 films; no stale frames.
 - **Regression:** GPU Standard swangle stills byte-identical to main (portrait frame 726). Digests unchanged.
+
+## GPU-03 measurements (pbr-v1 + env-light-v1 + proc-texture-v1 vs GPU Standard)
+- gpu03-portrait-r1 (1800 frames; `--compare standard`; commit d998721, sourceDirty false; vulkan; concurrency 8). These runs had already started when the owner limited benchmarks to milestones. GPU Standard: wall 79.7/74.6/73.3 s (median 74.6), 24.9 fps, peak GPU 1492–1516 MiB, RAM growth 2.52/2.94/2.89 GB; Cinematic: wall 77.8/77.6/93.6 s (median 77.8), 23.8 fps, peak GPU 1963–1979 MiB, RAM growth 2.01/2.51/3.68 GB.
+- Glitch and stale scans are clean on all 6 films (portrait, product, environment; both sides). GPU Standard stills are byte-identical to main.

@@ -36,8 +36,8 @@ Before any expensive work, a preflight check compares the capabilities a film ne
 |---|---|---|
 | `shared` | v1.2 | Classic, Standard, Cinematic |
 | `pbr-v1` (physical material presets; film field `cinematic: {version: 1, materials: 'pbr-v1'}`) | GPU-01 (merged, PR #68) | Cinematic |
-| `env-light-v1` (lighting presets, environment light; film field `cinematic.lights`, `auto-v1` or a preset id) | GPU-02 (implemented, PR open) | Cinematic |
-| `proc-texture-v1` | GPU-03 | Cinematic |
+| `env-light-v1` (lighting presets, environment light; film field `cinematic.lights`, `auto-v1` or a preset id) | GPU-02 (merged, PR #71) | Cinematic |
+| `proc-texture-v1` (film field `cinematic.textures: 'proc-v1'`, needs pbr-v1) | GPU-03 (implemented, PR open) | Cinematic |
 | `glb-v1` (validated local GLB) | GPU-04 | Cinematic |
 | `skeletal-v1`, `morph-v1` | GPU-05/06 | Cinematic |
 | `scene-set-v1` (instanced environments) | GPU-07 | Cinematic |
