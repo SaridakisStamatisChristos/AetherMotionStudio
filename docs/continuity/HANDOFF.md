@@ -1,7 +1,8 @@
 # Forward-only handoff: GPU-05 TESTED + RENDERED, PR open; next GPU-06 after the merge (2026-11-28)
 
 **Latest checkpoint (GPU-05):** `feature/gpu-05-characters` from main e706f2a (GPU-04 merged as PR #74). **The GPU-05 PR is open, not merged.** The docs PR #75 (`chore/fresh-session-gpu05`) should merge first; then rebase this branch on main and keep both texts in the continuity docs.
-- **Owner decisions:** the engine creates the characters; look "B Soft rounded" (chosen over agent stills: today / soft / crisp); first heroes student, scientist, service-robot.
+- **Owner decisions:** the engine creates the characters; look "B Soft rounded" (chosen over agent stills: today / soft / crisp); first heroes student, scientist, service-robot; then "refine everything … neat styles", "go all the way".
+- **Refinement (7521ca7):** hero detail 4 in `src/visual/catalog-hero.js` (faces, bodies, hands, shoes, hair, outfits; refined robot), dispatched from `src/visual/catalog.js` (detail 4 valid for humans and robots; colour slots 7/8); `src/core/talk.js` (detail 4 has a mouth); `src/visual/pbr.js` (slots 7/8 shade as skin); `heroDetail` now raises to 4. Tests 616 (0 fail); digests unchanged; Standard byte-identical; film **gpu05-portrait-r2** PASS, checks 0, glitch clean (r1 superseded). The items below describe the first step (r1).
 - **Changed:**
   - `src/core/hero-characters.js` (new: style, soft radius, hero parts, `heroDetail`);
   - `src/core/render-profiles.js` (`cinematic.characters: 'soft-v1'`, capability hero-char-v1, Director default, `threeOptions.characters`);

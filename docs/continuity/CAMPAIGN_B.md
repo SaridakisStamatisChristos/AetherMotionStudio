@@ -250,6 +250,10 @@ Found by the owner in gpu03-product-r1. The same plan exists in gpu00-product-r1
   - film gpu05-portrait-r1 (`--compare standard`, RTX vulkan, sourceDirty false): PASS, CHECKS 0 warnings on both sides, frame_glitch clean on both;
   - noticed, not caused here: a topic-set floor lamp can stand right behind a speaker's head (staging; candidate for GPU-07);
   - **not built:** SkinnedMesh skeleton, morph targets, LODs, imported-rig adapters → proposed deferral to GPU-06 (owner decides at merge); no budget run (owner rule).
+- **Refinement (2026-11-28, 7521ca7; owner "refine everything … neat styles", "go all the way"):**
+  - hero detail 4 (src/visual/catalog-hero.js), shared geometry for humans and robots, used by soft-v1 films instead of detail 3; three agent still-review rounds (fixed floating shoulders, stacked torsos, cluttered fronts, square eyes, limb seams, protruding belt);
+  - two old negatives moved from detail 4 to 5 (POLISH-02 precedent); tests 616 (0 fail, 1 skip), Python 70 OK, digests unchanged, Standard swangle still byte-identical;
+  - film gpu05-portrait-r2 (`--compare standard`, RTX, sourceDirty false): PASS, CHECKS 0 both sides, frame_glitch clean both; r1 superseded.
 
 ### GPU-06: animation, dialogue and facial performance
 - **Build:**
@@ -348,3 +352,4 @@ Found by the owner in gpu03-product-r1. The same plan exists in gpu00-product-r1
 - 2026-11-28: PR #74 (GPU-04) merged (owner "merge") → main e706f2a; renders deleted. Fresh-session docs updated (owner "update claudemd, agents md, handoff, continuity docs in order to start fress in a new session with fod continue"). Next: GPU-05.
 - 2026-11-28: owner decided before GPU-05 that the engine creates the hero characters (no imports for now; rigged imports may be reconsidered after GPU-06).
 - 2026-11-28: PR #74 (GPU-04) merged → main e706f2a. GPU-05 on `feature/gpu-05-characters`: owner chose the engine-made characters, look "B Soft rounded" over stills, heroes student/scientist/robot. hero-char-v1 (`cinematic.characters: 'soft-v1'`, Director default; detail-3 humans). Tests 613 (0 fail); digests unchanged; Standard byte-identical. Film gpu05-portrait-r1 PASS (b75da76, sourceDirty false), checks 0, glitch clean. Skeleton/morph/LOD deferral to GPU-06 asked. PR open, not merged.
+- 2026-11-28: GPU-05 refinement on the owner's "refine everything … neat styles": hero detail 4 (catalog-hero.js) for humans and robots in soft-v1 films. Tests 616 (0 fail); digests unchanged; Standard byte-identical. Film gpu05-portrait-r2 PASS (7521ca7, sourceDirty false), checks 0, glitch clean. PR #76 open, not merged.

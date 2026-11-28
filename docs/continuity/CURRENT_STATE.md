@@ -77,7 +77,8 @@ Previous header, kept: (fresh-session checkpoint: **main e706f2a**. Campaign B *
 - **GPU-05 status (2026-11-28): TESTED + RENDERED, PR open, not merged.** **Binding:**
   - the engine creates the hero characters (owner); look "B Soft rounded" (owner choice over stills); heroes student, scientist, service-robot;
   - `cinematic.characters: 'soft-v1'` (capability `hero-char-v1`, Cinematic only; Director default): every human/robot part is a real-size rounded box inside its part box, so bounds and every check stay valid (src/core/hero-characters.js);
-  - soft-v1 films raise detail-2 or unset humans to detail 3 (explicit 1 and 3 kept);
+  - (superseded the same day) soft-v1 films raised detail-2 humans to detail 3;
+  - **owner: "refine everything … neat styles", "go all the way"** → hero detail 4 (src/visual/catalog-hero.js; shared geometry, humans and robots): domed eyes with pupils and highlights, brows, cheeks, nose, neck, one-piece torso, smooth limbs, mitten hands, two-tone shoes, hair and outfits per character; refined robot. soft-v1 films draw unset/detail-2 humans and unset robots at detail 4 (explicit 1 and 3 kept); new colour slots 7/8 (white, blush) only in detail 4;
   - box characters stay a valid style (Standard, CPU, Cinematic without the key); GPU Standard stills byte-identical.
   - **Not built (deferral asked of the owner):** SkinnedMesh skeleton, morph targets, LODs, imported-rig adapters → proposed for GPU-06.
 - **Next: GPU-05 merge on the owner's word, then GPU-06.**
