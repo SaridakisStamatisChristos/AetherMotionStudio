@@ -1,4 +1,48 @@
-# Forward-only handoff: GPU-07 (rooms) TESTED + RENDERED, PR open (2026-11-28)
+# Forward-only handoff: fresh session at GPU-08 (2026-11-28)
+
+**Start here ("fod continue").** Main is **924b23f** (PR #79 merged). Tag `v1.2-dual-backend-final` → 2cb82ef, untouched. No unit PR is open. This record is on `chore/fresh-session-gpu08` (docs only, no CI by design); if its PR is still open, ask the owner to merge it.
+
+**Campaign B so far (all merged on the owner's word):**
+
+| Unit | PR → main | What it gave |
+|---|---|---|
+| GPU-00 | #67 → dac8f8d | ADR-001 Accepted; `renderProfile: 'cinematic-v1'`; preflight RP-01…RP-06 |
+| GPU-01 | #68 → 936d0cb | `cinematic.materials: 'pbr-v1'`; `--compare standard` |
+| FIX-RS | #70 → 3a59a65 | no stale frames; bloom blur in JS |
+| GPU-02 | #71 → 9f2d909 | `cinematic.lights` (auto-v1 + 5 presets) |
+| GPU-03 | #72 → 9d26a5b | `cinematic.textures: 'proc-v1'` |
+| FIX-NR | #73 → 6d21a35 | no caption boxes; narrator framing |
+| GPU-04 | #74 → e706f2a | GLB import verified and hardened |
+| GPU-05 | #76 → 586d938 | `cinematic.characters: 'soft-v1'` (hero-char-v1); hero detail 4 (src/visual/catalog-hero.js) |
+| GPU-06 step 1 | #77 → 07c6992 | measured mouths, Rhubarb Lip Sync (tools-lock.json; setup installs it; `speech.mouths: 'rhubarb-v1'` default) |
+| GPU-06 step 2 | #78 → 7193dfb | puppet skeleton (IK elbows/knees), breathing, gaze, expressions (body.js) |
+| GPU-07 | #79 → 924b23f | sets `topic-v4` rooms (src/director/rooms.js, ROOM_BACKDROPS, shot.dressing); sparing solo shots (singles.js) |
+
+- Director requests with `renderProfile` get `cinematic: {version: 1, materials: 'pbr-v1', lights: 'auto-v1', textures: 'proc-v1', characters: 'soft-v1'}`, hero detail 4, body motion keys and `topic-v4` rooms (dialogue films).
+- GPU Standard and CPU Classic are unchanged by every Cinematic unit (digests; swangle stills). Deliberate shared changes: FIX-RS bloom, FIX-NR Director plans, measured mouths by default, sparing solo shots by default.
+- **Baseline:** `npm test` 631 (630 pass, 0 fail, 1 Windows skip); Python 77 OK; digests with `--exclude talk04,talk05,gen01,gen09,gen12,fixa,dual,gpu`: graph 3d33fbaee198acad, geometry 14dec244d171dc56, detail2 e3f80439a292f21a, director f5b5104977219fdf.
+
+**Owner decisions this session (2026-11-28, binding):**
+- Characters: engine-made; "B Soft rounded"; heroes student, scientist, robot; refined "everything … neat styles"; no cheek bumps, smile mouth, leaner bodies ("ok this i like").
+- Puppet skeleton, not a skinned mesh; LODs → GPU-10; imported-rig adapters only when the owner wants imports.
+- Rhubarb Lip Sync approved and made a standard dependency on every PC ("make it a dependency and it works in every pc"); numpy in the CI test job.
+- Rooms: all six improved + classroom, workshop, grand interior; "calm and tidy"; "better variety in backgrounds" (no repeated striped walls).
+- Dialogue: "Fewer solo shots" (sparing singles for all dialogue films).
+
+**Standing owner rules (also in CLAUDE.md):** fast implementations; perf-bench ×3 only at GPU-10/GPU-12; after every merge delete all renders (keep out/speech-cache, public/media, fixture JSON); no caption boxes in Director films; explain every option in plain words before asking (UI choices); proposals must suit other machines; code branches `feature/…`; merge only on the owner's word after the PR CI test job passes.
+
+**Next action for "fod continue": GPU-08 (cinematic camera and post-processing).**
+1. Bootstrap (CLAUDE.md), `git switch main && git pull`, then branch `feature/gpu-08-post`.
+2. Read CAMPAIGN_B.md "GPU-08" and directive §GPU-08; seams: `src/core/fidelity.js` and the JS post path (bloom blur from FIX-RS, grain, grade, depthOfField in `shot.fidelity`), `src/visual/three-backend.js`, `src/core/cinematography.js` (camera rigs), captions on the shared 2D path.
+3. **Ask the owner first (UI choice, options explained):** which effects matter (depth of field, colour grade, vignette, haze/fog, bloom tuning, motion blur only after temporal tests); and whether `three/examples` post-processing may be used (needs approval under AGENTS.md) or the existing JS post path is extended (no new dependency). Each effect must earn its place in a before/after (the owner removed light beams: "they dont offer anything").
+4. Build opt-in, versioned (`cinematic.post`), frame-addressed and bounded; captions and overlays never blurred or graded; per-effect toggles; tests including negatives.
+5. Evidence: agent stills (before/after per effect), one `--compare standard` film with checks and frame_glitch; then checkpoint, PR, merge only on the owner's word; delete renders after the merge.
+
+**Known open items:** topic-v4 on the CPU backend (explicit request.sets only) is not render-checked; measured budgets and LODs wait for GPU-10.
+
+**Render session (PowerShell):** `$env:PYTHON=(Resolve-Path .venv/Scripts/python.exe).Path; $env:AETHER_FFMPEG=(Resolve-Path .venv/Lib/site-packages/imageio_ffmpeg/binaries/ffmpeg-win-x86_64-v7.1.exe).Path; $env:AETHER_FFPROBE=(Resolve-Path node_modules/@remotion/compositor-win32-x64-msvc/ffprobe.exe).Path; $env:AETHER_GL="vulkan"; $env:AETHER_CONCURRENCY="8"`. Run long renders detached (CLAUDE.md tooling lessons).
+
+**Previous checkpoint (GPU-07), heading as written:** GPU-07 (rooms) TESTED + RENDERED, PR open (2026-11-28)
 
 **Latest checkpoint (GPU-07):** `feature/gpu-07-environments` from main 7193dfb (GPU-06 step 2 merged as PR #78). **The PR is open, not merged.**
 - GPU-07 on `feature/gpu-07-environments` (0ad368d, a5ccba9). Owner: improve all six rooms and add classroom, workshop and grand interior ("add everything"), "calm and tidy"; then "better variety in backgrounds. they repeat the same brown stripped pattern". **Sets `topic-v4`** (Cinematic dialogue default via request.renderProfile; GPU Standard keeps topic-v3; selectable for any request): ten topic categories (education, making, heritage added; src/director/rooms.js ROOMS_V4) pick one room per film; **shot.dressing** (validated: room layer, catalog props only, bounds, ≤ 12) holds one prop layout for the whole film, chosen at plan time: tall props never stand in any speaker's sightline (next spot or left out), props never overlap, 4–6 per room; new rooms get fitting centre pieces (books, toolbox, gate). **ROOM_BACKDROPS** (src/core/cinematography.js; FAR_BACKDROPS unchanged): own wall and floor per room (pale tiled lab, grey-blue office, sage home with dado, green-grey classroom with chalkboard, grey block workshop, warm stone hall); wall parts carry surface family 'wall' (matte), drawn by Three as flat real-size boxes (no rounded-edge seams). No foreground props: in 9:16 they would leave the frame or cover characters (depth from the centre piece, props and the wall). Tests 630 JS (0 fail; 5 new in tests/gpu07-rooms.test.js), digests unchanged. Film **gpu07-classroom-r2** (`--compare standard`, RTX, a5ccba9, sourceDirty false; 1378 frames, fitted to speech): PASS, CHECKS 0 both sides, frame_glitch clean both (r1 superseded by the variety change).

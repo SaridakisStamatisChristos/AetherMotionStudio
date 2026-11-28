@@ -6,7 +6,7 @@ Open Claude Code in the AetherMotionStudio repository root and type:
 fod continue
 ```
 
-CLAUDE.md makes that a full bootstrap: Git state, AGENTS.md, CURRENT_STATE.md, HANDOFF.md, CAMPAIGN_B.md, then the HANDOFF "Next action" (the earliest unfinished Campaign B milestone; at 2026-11-28 that is GPU-05, starting with the owner's art-direction choice). A longer form, if a session needs it:
+CLAUDE.md makes that a full bootstrap: Git state, AGENTS.md, CURRENT_STATE.md, HANDOFF.md, CAMPAIGN_B.md, then the HANDOFF "Next action" (the earliest unfinished Campaign B milestone; at 2026-11-28 that is GPU-08, starting with the owner's choice of effects (was GPU-05, starting with the owner's art-direction choice). A longer form, if a session needs it:
 
 ```text
 FOD RESUME. Continue Campaign B (docs/continuity/CAMPAIGN_B_DIRECTIVE.md, status and plan in CAMPAIGN_B.md) from the earliest unfinished milestone, following CLAUDE.md, AGENTS.md, CURRENT_STATE.md and HANDOFF.md. Preserve the tag v1.2-dual-backend-final and keep CPU Classic and GPU Standard unchanged. ADR-001 is accepted: GPU-exclusive work only in the opt-in GPU Cinematic profile. Fast implementations; benchmarks only at milestones; delete renders after each merge. Inspect existing implementations before building; reuse and extend, never rebuild. Real tests, local RTX renders and measured budgets only; checkpoint state, handoff and the campaign tracker after each verified transition. Merge or tag only on my word.

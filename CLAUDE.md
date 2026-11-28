@@ -9,8 +9,11 @@ Follow [AGENTS.md](AGENTS.md). Keep development forward-only (FODP v1.0, [docs/c
 - **Merged so far (2026-11-28):**
   - GPU-00: [ADR-001](docs/adr/ADR-001-render-profiles.md) is Accepted, so the profiles CPU Classic, GPU Standard and opt-in GPU Cinematic (`renderProfile: 'cinematic-v1'`) are in force;
   - GPU-01: pbr-v1 materials; GPU-02: env-light-v1 lighting; GPU-03: proc-texture-v1 procedural textures; GPU-04: GLB import verified and hardened;
-  - two shared-pipeline fixes, FIX-RS (stale frames, striped bloom) and FIX-NR (no caption boxes, large narrator framing).
-- **Next: GPU-05** (high-fidelity characters). It starts with the owner's choice of art direction and the first 2–3 hero characters.
+  - two shared-pipeline fixes, FIX-RS (stale frames, striped bloom) and FIX-NR (no caption boxes, large narrator framing);
+  - GPU-05 (#76): engine-made hero characters, `cinematic.characters: 'soft-v1'` (soft rounded) and hero detail 4 (faces, lean bodies, hands, shoes, hair, outfits);
+  - GPU-06 (#77, #78): measured mouths with **Rhubarb Lip Sync** (a standard dependency installed by setup; `speech.mouths: 'rhubarb-v1'` is the default) and a puppet skeleton (IK elbows and knees), breathing, eye gaze and light expressions;
+  - GPU-07 (#79): sets `topic-v4` rooms for Cinematic dialogue films (classroom, workshop and hall added; one sightline-safe prop layout per film; own wall and floor per room) and sparing solo shots for all dialogue films.
+- **Next: GPU-08** (cinematic camera and post-processing). Ask the owner first: which effects matter (each must earn its place in a before/after; no gimmicks), and whether `three/examples` post-processing may be used (needs approval) or the existing JS post path is extended.
 - **Campaign A is complete and tagged** (`v1.2-dual-backend-final` → 2cb82ef; [RELEASE_1_2.md](docs/RELEASE_1_2.md); tracker [CAMPAIGN_A.md](docs/continuity/CAMPAIGN_A.md)). Never move, delete or rewrite that tag. Its CPU and Standard behaviour is the regression baseline for everything in Campaign B.
 
 ## Mandatory session bootstrap ("fod continue" / FOD RESUME)
@@ -60,7 +63,9 @@ The owner types only "fod continue" and delegates whole units.
 - **Renders on disk (owner 2026-11-28):** "the final will be what we keep". After every merge, delete all renders in out/ and public/audio. Keep only out/speech-cache, public/media and the fixture JSON.
 - **Captions:** no extra caption box in any Director film ("we dont need extra caption box at all").
 - **Choices:** explain every option in plain words before asking. Proposals must suit other machines, not only this laptop.
-- **GPU-10:** first ask the owner to configure the pre-render budget check (RP-06).
+- **GPU-10:** first ask the owner to configure the pre-render budget check (RP-06). LODs belong there (measured, never silent).
+- **Characters (owner 2026-11-28):** soft rounded, lean bodies, simple faces with a smile, no cheek bumps, neat uncluttered outfits; puppet skeleton (no skinned mesh); imported rigs only when the owner asks.
+- **Rooms and shots (owner 2026-11-28):** calm and tidy rooms with clear variety (no repeated walls or floors); never a prop behind a head; solo shots sparing (most shots show both speakers).
 
 ## Tooling lessons (this machine; they cost real time)
 - Do not pass regex backslashes or `\n` through Bash heredocs or `node -e`: they get mangled. Use the editor tool, or write a .cjs/.mjs file to the scratchpad and run it.
@@ -74,6 +79,10 @@ The owner types only "fod continue" and delegates whole units.
 - **CI runs only on `main` and `feature/**` pushes.** Name every code unit `feature/…` (a `fix/…` branch got no CI). Docs-only `chore/…` branches get no CI by design.
 - **Digests:** `node scripts/fod-digests.mjs . --exclude talk04,talk05,gen01,gen09,gen12,fixa,dual,gpu` (exclude `gpu` fixtures as well). Expected: graph 3d33fbaee198acad, geometry 14dec244d171dc56, detail2 e3f80439a292f21a, director f5b5104977219fdf.
 - **Visual checks:** run `scripts/frame_glitch.py` on every film (needs `AETHER_FFMPEG`). Before any Cinematic change, check GPU Standard stays byte-identical with swangle stills on main vs the branch.
+- **PowerShell quoting (cost time 2026-11-28):** inside double-quoted strings a backtick escapes the next letter (`` `f `` became a form feed in a source comment; a test catches control characters). Never pass multi-line or quoted text as a `git commit -m` or `gh pr edit --body` argument: write it to a scratchpad file and use `git commit -F` / `gh pr create|edit --body-file`. For multi-line source edits use the editor tool or a scratchpad .mjs script.
+- **Deleting audio:** `Remove-Item public/audio/*` is refused by the safety rule; delete the named files (e.g. `Get-ChildItem public/audio -Name | Where-Object { $_ -like 'gpu07-*' } | …`).
+- **Python on CI:** the test job installs numpy 2.2.6 and Rhubarb (cached); still import heavy modules lazily in scripts so pure tests stay light.
+- **Still reviews:** temporary scripts `scripts/.tmp-*.mjs` built from `direct()` output or a small v2 scene plus a synthetic timeline (`{version:1,fps:30,sampleRate:48000,durationFrames:90,shots:[…segments…]}`), `renderStill` on `AETHER_GL=vulkan`; crop and stack with ffmpeg; review faces up close; delete the script before committing.
 
 ## End-of-unit checkpoint (FOD CHECKPOINT)
 - Update CURRENT_STATE.md (cumulative canon, active status, durable obligations), HANDOFF.md (current checkpoint, changed files, commands and results, unresolved risks, next action) and the CAMPAIGN_B.md row and ledger, coherently with the artifact. Update the roadmap and source-specific contracts when they change; do not erase earlier binding facts. Use the [templates](docs/continuity/FODP_TEMPLATES.md).
