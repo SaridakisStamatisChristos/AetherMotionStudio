@@ -22,9 +22,9 @@ Status words: PLANNED · NEXT · ACTIVE · IMPLEMENTED · TESTED · RENDERED · 
 | FIX-RS | Render stability: random striped frames and the one-frame flash at cuts with parallel tabs (pre-existing, GPU Standard too) | **MERGED** (PR #70 → 3a59a65) | `feature/fix-render-stability`, PR #70 | FIX-RS section below; out/gpu01-swatches-r3-*, out/bench/fixrs2-* |
 | GPU-02 | Lighting, shadows and environment illumination | **MERGED** (PR #71 → 9f2d909) | `feature/gpu-02-lighting` | src/visual/cinematic-lights.js, tests/gpu02-lights.test.js, out/gpu02-{portrait,product,environment}-r1-*, out/bench/gpu02-portrait-r1-* |
 | GPU-03 | Procedural texture and material library | **MERGED** (PR #72 → 9d26a5b) | `feature/gpu-03-textures` | src/visual/pbr-textures.js, tests/gpu03-textures.test.js, out/gpu03-*-r1-* |
-| FIX-NR | Narrator films: no extra caption box; subjects large and never cut (Director, all new films) | **TESTED + RENDERED** (PR open, not merged) | `feature/fix-narrator` | FIX-NR section below |
-| GPU-04 | External 3D assets (GLB) and high-detail geometry | NEXT (after the FIX-NR merge; ask the owner first about the GLB loader and decoders) | — | — |
-| GPU-05 | High-fidelity character system | PLANNED | — | — |
+| FIX-NR | Narrator films: no extra caption box; subjects large and never cut (Director, all new films) | **MERGED** (PR #73 → 6d21a35) | `feature/fix-narrator` | FIX-NR section below |
+| GPU-04 | External 3D assets (GLB) and high-detail geometry | **VERIFIED EXISTING + HARDENED** (PR open, not merged) | `feature/gpu-04-glb` | tests/gpu04-glb.test.js; GPU-04 section below |
+| GPU-05 | High-fidelity character system | NEXT (after the GPU-04 merge; ask the owner first about art direction and the first 2–3 hero characters) | — | — |
 | GPU-06 | Animation, dialogue and facial performance | PLANNED | — | — |
 | GPU-07 | Rich environments and scene dressing | PLANNED | — | — |
 | GPU-08 | Cinematic camera and post-processing | PLANNED | — | — |
@@ -217,6 +217,14 @@ Found by the owner in gpu03-product-r1. The same plan exists in gpu00-product-r1
 - **Evidence:** a material pack and reference gallery.
 
 ### GPU-04: external 3D assets (GLB) and high-detail geometry
+- **Result (2026-11-28):**
+  - **Owner decisions:** "Plain GLB only" (no DRACO/meshopt/KTX2 decoders); models from "own generated only" (no third-party model files).
+  - **Audit:** GLB/glTF import already exists since AF05: the Foundry's own strict reader `parseGLTF` (scripts/import-formats.mjs), quarantine, licence check, digested bundles, both-backend rendering (`foundry-af05` profile), and an original code-generated fixture corpus with malicious cases. three's GLTFLoader is not used and stays unused.
+  - **Hardening:** 16 hostile variants were probed. All were refused except nodes no scene reaches (silently ignored), which are now refused ("nothing is dropped silently"). tests/gpu04-glb.test.js (22 hostile cases: cycles, shared and unreachable nodes, deep hierarchies, animations, skins, accessor and view length lies, non-finite and absurd transforms, compression extensions, data and remote links, glTF 1, container lies).
+  - **Render:** gpu04-imported-r1 (`--compare standard`, b4d4f12, sourceDirty false) PASS; frame_glitch clean on both sides; models upright with correct colours.
+  - **Note:** imported Foundry meshes keep their Foundry materials and lighting in Cinematic (pbr-v1, env-light-v1 and proc-texture-v1 apply to the catalog box stream). Extending Cinematic shading to imported meshes is a possible later item.
+  - **Not built:** "high-detail procedural hero props" (the Foundry hero recipes AF02/AF04 exist); GLB rigs and animations (refused by design; GPU-05/06).
+- Plan as written at setup:
 - **Owner decisions first:** the GLB loader and decoders (inside `three`; DRACO/meshopt/KTX2 need explicit approval); the format policy (self-contained GLB first).
 - **Build:**
   - extend Foundry quarantine and manifests for local GLB: file and decoded sizes, mesh/vertex/triangle/node/texture counts, transforms, animation lengths, extension allowlist, recursion and resource budgets;
@@ -329,3 +337,4 @@ Found by the owner in gpu03-product-r1. The same plan exists in gpu00-product-r1
 - 2026-11-28: PR #70 (FIX-RS) merged (owner "continue i agree with merge") → main 3a59a65; experiment renders cleared (221 MB). GPU-02 on `feature/gpu-02-lighting`: env-light-v1 (five presets, auto-v1 by environment, fill light, 2048 px key shadow), owner chose the "stronger" values over stills (Standard / subtle / stronger). Tests 596 (0 fail); digests unchanged; GPU Standard swangle still byte-identical to main. Films gpu02-{portrait,product,environment}-r1 (--compare standard, PASS, sourceDirty false, f46c097): frame_glitch clean, no stale frames, no added flicker (equal median frame-to-frame change). Contact shadows and AO deferred to GPU-08 (need post-processing). PR open, not merged.
 - 2026-11-28: PR #71 (GPU-02) merged (owner "merge") → main 9f2d909; GPU-01 renders cleared (515 MB). GPU-03 on `feature/gpu-03-textures`: owner chose procedural textures only. proc-texture-v1 implemented: Foundry bark and ground patterns, recipes per surface/part/floor, box UVs; tuned calm on stills. Tests 602 (0 fail); digests unchanged; Standard stills byte-identical to main. Films gpu03-{portrait,product,environment}-r1 PASS (d998721, sourceDirty false), glitch and stale clean. Owner found two captions and small subjects in the product film (pre-existing narrator path) → FIX-NR next. **Owner rule:** timed benchmark runs only at milestones; fast implementations first. PR open, not merged.
 - 2026-11-28: PR #72 (GPU-03) merged (owner "merge and continue") → main 9d26a5b. **Owner: "remove every old renders … the final will be what we keep"**: all renders deleted (out/batches incl. the v1.2 final batches, out/bench, all gpu00–gpu03 films, out/dual09-preview-mem, public/audio; about 4.5 GB). Kept: out/speech-cache, public/media, the fixture JSON. FIX-NR on `feature/fix-narrator`: no lower-third caption boxes, narrator group framing, compact layout; Director digest f5b5104977219fdf. PR open, not merged.
+- 2026-11-28: PR #73 (FIX-NR) merged (owner "merge") → main 6d21a35; renders deleted. GPU-04 on `feature/gpu-04-glb`: owner chose plain GLB only and own generated models; GLB import verified existing (AF05); unreachable glTF nodes now refused; 22 hostile-case tests; one comparison render PASS. Tests 608 (0 fail); digests unchanged (director f5b5104977219fdf). PR open, not merged.
