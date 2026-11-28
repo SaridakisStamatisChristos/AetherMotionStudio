@@ -5,7 +5,7 @@
 // parts above the hips lean with the weight shift, planted feet (turnSteps), hands at localArm's hand anchor, grip,
 // blink, mouth and mouthWidth, and the overall height and width of each recipe.
 // Colour slots: 0 top clothes, 1 trousers/hair (robot joints), 2 accent, 3 skin (robot shell), 4 dark, 5 lip,
-// 6 light blue, 7 white (eyes, soles), 8 blush.
+// 6 light blue, 7 white (eyes, soles), 8 rose (lips, tongue).
 import {localArm} from './catalog-rig.js';
 import {add,ry} from './vectors.js';
 const lerp=(a,c,t)=>a.map((v,i)=>v+(c[i]-v)*t);
@@ -23,35 +23,35 @@ function hair(b,k,hw,hd,hy,hh,z0){
  else if(k===7)b(0,hy+hh*.3,0,hw*1.05,hh*.13,hd*1.05,2);                         // headband
 }
 function clothes(b,rod,w,h,d,k){
- const z=d*.46;
+ const z=d*.4;
  if(k===1){ // long lab coat over shirt and tie
   b(0,h*.7,z+.01,w*.22,h*.12,.02,6);b(0,h*.685,z+.02,w*.06,h*.13,.015,4);
   b(0,h*.48,z+.01,.018,h*.2,.02,4);b(-w*.26,h*.7,z+.018,.025,h*.04,.02,2);return;}
  if(k===6){ // hoodie and backpack
-  b(0,h*.77,-d*.28,w*.62,h*.05,d*.34,0);for(const s of [-1,1])b(s*w*.25,h*.66,z+.01,w*.08,h*.2,.02,2);
-  b(0,h*.64,-d*.6,w*.72,h*.21,.24,2);b(0,h*.6,-d*.73,w*.5,h*.08,.04,2);return;}
- if(k!==6&&k!==4)b(0,h*.49,0,w*.9,h*.025,d*.88,4); // belt on work and office outfits
+  b(0,h*.77,-d*.24,w*.54,h*.05,d*.3,0);for(const s of [-1,1])b(s*w*.21,h*.66,z+.01,w*.07,h*.2,.02,2);
+  b(0,h*.64,-d*.52,w*.64,h*.21,.22,2);b(0,h*.6,-d*.64,w*.44,h*.08,.04,2);return;}
+ if(k!==6&&k!==4)b(0,h*.49,0,w*.8,h*.025,d*.78,4); // belt on work and office outfits
  if(k===3){b(0,h*.7,z,w*.22,h*.1,.02,7);b(0,h*.68,z+.012,w*.07,h*.13,.015,2);return;} // office shirt and tie
- if(k===2||k===5){b(0,h*.62,z+.005,w*.96,h*.02,.02,2);b(0,h*.58,z+.005,w*.96,h*.02,.02,2);return;} // work vest stripes
+ if(k===2||k===5){b(0,h*.62,z+.005,w*.8,h*.02,.02,2);b(0,h*.58,z+.005,w*.8,h*.02,.02,2);return;} // work vest stripes
  if(k===7){b(0,h*.64,z+.005,w*.36,h*.07,.015,7);return;} // runner bib
- if(k===4){b(0,h*.64,z+.01,w*.4,h*.08,.04,1);b(0,h*.64,-d*.6,w*.7,h*.22,.3,1);} // astronaut chest and life-support packs
+ if(k===4){b(0,h*.64,z+.01,w*.4,h*.08,.04,1);b(0,h*.64,-d*.52,w*.64,h*.22,.3,1);} // astronaut chest and life-support packs
 }
 export function heroHuman(b,rod,[w,h,d,k],p,planted){
  const walk=p.walking??0;
  for(const s of [-1,1]){
-  const ly=p.footLift===undefined?0:Math.max(0,s*p.footLift)*.12;let q=0,fx=s*w*.24,fz=s*walk*.2;
+  const ly=p.footLift===undefined?0:Math.max(0,s*p.footLift)*.12;let q=0,fx=s*w*.21,fz=s*walk*.2;
   if(p.footTwistR!==undefined){const [t,dx,dz]=planted(p,s);q=t;fx+=dx;fz+=dz;}
-  const hip=[s*w*.2,h*.48,0],ankle=[fx,.15+ly,fz],at=o=>add([fx,ly,fz],ry(o,q));
-  rod(hip,ankle,w*.25,1);
+  const hip=[s*w*.17,h*.48,0],ankle=[fx,.15+ly,fz],at=o=>add([fx,ly,fz],ry(o,q));
+  rod(hip,ankle,w*.21,1);
   b(...at([0,.1,.05]),w*.27,.13,d*.5,4,q,'y');b(...at([0,.035,.07]),w*.31,.07,d*.64,7,q,'y');
   const {shoulder:a,hand:c}=localArm('human',[w,h],s,p);
-  rod(a,lerp(a,c,.88),w*.2,0);
+  rod([a[0]-s*w*.1,a[1]-h*.01,a[2]],lerp(a,c,.88),w*.17,0); // sloped shoulder into the lean torso
   b(...c,w*.17,.15,.12,3);b(c[0]-s*w*.075,c[1]+.02,c[2]+.04,.05,.07,.05,3);
   if(s===1&&p.grip!==undefined)for(const j of [-1,1])b(c[0]+j*(.07-.035*p.grip),c[1]-.1,c[2]+.04,.045,.1,.07,3);
  }
  // one torso piece (no stacked rings); the lab coat runs down over the thighs
- if(k===1)b(0,h*.575,0,w*.98,h*.39,d*.94,0);else{b(0,h*.62,0,w*.96,h*.3,d*.92,0);b(0,h*.49,0,w*.86,h*.06,d*.84,1);}
- rod([0,h*.75,0],[0,h*.81,0],w*.2,3);
+ if(k===1)b(0,h*.575,0,w*.84,h*.39,d*.8,0);else{b(0,h*.62,0,w*.8,h*.3,d*.78,0);b(0,h*.49,0,w*.72,h*.06,d*.72,1);}
+ rod([0,h*.75,0],[0,h*.81,0],w*.17,3);
  clothes(b,rod,w,h,d,k);
  const hw=w*.64,hd=d*.74,hy=h*.885,hh=h*.19,z0=hd/2;
  if(k===4){b(0,hy,0,hw*1.24,hh*1.2,hd*1.2,0);b(0,hy,hd*.6,hw*.92,hh*.72,.03,6);b(-hw*.22,hy+hh*.18,hd*.6+.02,hw*.16,hh*.08,.01,7,0,'z',true);return;}
@@ -64,12 +64,14 @@ export function heroHuman(b,rod,[w,h,d,k],p,planted){
   b(ex,ey-h*.003,pz,pw,h*.046*bl,pw,4,0,'z',false,0,F);
   if(bl>.5)b(ex+w*.02,ey+h*.012,z0+.022,w*.024,w*.024,.012,7,0,'z',true,0,F);
   b(ex,h*.932,z0+.008,w*.13,h*.015,.024,1,s*(HERO_BROW[k]??0),'z',false,0,F);
-  b(s*w*.2,h*.86,z0+.003-.02,w*.08,h*.025,.04,8,0,'z',false,0,F);
   b(s*(hw/2+.012),h*.88,0,.045,h*.06,hd*.22,3);
  }
  b(0,h*.872,z0+.015-.025,w*.06,h*.035,.05,3,0,'z',false,0,F);
- b(0,h*.852,z0+.008,w*.14*mw,h*.011,.02,5,0,'z',false,0,F);
- if(p.mouth>0)b(0,h*(.846-.0225*p.mouth),z0+.012,w*.11*mw,h*.04*p.mouth,.018,4,0,'z',false,0,F);
+ // mouth: a soft closed smile (centre and two raised corners, rose lip colour); speaking opens a rounded dark oval
+ // with a tongue, both scaled by pose.mouth and pose.mouthWidth
+ const R=w*.085*mw;for(let i=-1;i<=1;i++){const a=i*.36;b(Math.sin(a)*R,h*.849+(1-Math.cos(a))*R,z0+.004-.01,R*.66,h*.009,.02,8,a,'z',false,0,F);}
+ if(p.mouth>0){const mh=h*(.012+.035*p.mouth),my=h*(.846-.016*p.mouth),ow=w*.1*mw;
+  b(0,my,z0+.006-ow/2,ow,mh,ow,4,0,'z',false,0,F);b(0,my-mh*.25,z0+.004-w*.03,w*.06*mw,mh*.4,w*.06,8,0,'z',false,0,F);}
  hair(b,k,hw,hd,hy,hh,z0);
 }
 export function heroRobot(b,rod,[w,h,d,legs,kind],p,planted,mouthBias){

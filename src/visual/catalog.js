@@ -26,8 +26,8 @@ function primitive(box,pose,palette,params={},family=null){
  const {origin=[0,0,0],yaw=0,scale=1}=pose,dimensions=[params.width??1,params.height??1,params.depth??1];
  const tf=p=>add(ry(p.map((v,i)=>v*scale*dimensions[i]),yaw),origin);
  const [primary,secondary,accent]=palette;
- // GPU-05: slots 7 (white: eyes, soles) and 8 (blush) are used only by hero detail 4 (catalog-hero.js).
- const col=[params.primary??primary,params.secondary??secondary,params.accent??accent,'#e9ddd0','#162333','#8a6650','#7ebdd0','#f6f3ec','#e3a091'];
+ // GPU-05: slots 7 (white: eyes, soles) and 8 (rose: lips, tongue) are used only by hero detail 4 (catalog-hero.js).
+ const col=[params.primary??primary,params.secondary??secondary,params.accent??accent,'#e9ddd0','#162333','#8a6650','#7ebdd0','#f6f3ec','#b8615c'];
  // bias: CPU painter-sort depth bias only (Three ignores it); 0 for every legacy box.
  // detail (DUAL-09): a small part mounted on a face (a person's eyes, brows, nose, mouth). Only the crafted CPU painter
  // uses it (CRAFTED.detailBias); the legacy painter, Three and every checker ignore it, so geometry is unchanged.

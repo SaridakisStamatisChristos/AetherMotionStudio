@@ -49,7 +49,7 @@ export function surfaceFor(key,role,emissive){
  if(emissive)return 'emissive';
  if(role==='glass'||role==='metal')return role;
  if(!key)return 'matte';
- // GPU-05: hero detail 4 eye-white and blush slots (7, 8) shade like skin, not fabric.
+ // GPU-05: hero detail 4 eye-white and lip slots (7, 8) shade like skin, not fabric.
  if(key.family==='human'&&(key.slot===SKIN_SLOT||key.slot===7||key.slot===8))return 'skin';
  return FAMILY_SURFACE[key.family]??'plastic';
 }

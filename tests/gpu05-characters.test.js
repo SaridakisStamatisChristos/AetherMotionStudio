@@ -81,7 +81,7 @@ test('hero detail 4: same footprint and height as detail 2, more parts, eyes and
   const old=bounds(boxes(id,at(id.endsWith('robot')?undefined:2))),hero=boxes(id,at(4)),nb=bounds(hero);
   for(const i of [0,1,2]){const o=old.hi[i]-old.lo[i],n=nb.hi[i]-nb.lo[i];assert.ok(Math.abs(n-o)/o<.2,id+' axis '+i+' '+o.toFixed(2)+' → '+n.toFixed(2));}
   assert.ok(nb.lo[1]>=-1e-9,id+' stands on the floor');assert.ok(hero.length>=boxes(id,at(id.endsWith('robot')?undefined:2)).length,id+' parts');}
- const s=boxes('student',at(4));assert.ok(s.some(b=>b.color==='#f6f3ec'&&b.face),'eye whites');assert.ok(s.some(b=>b.color==='#e3a091'),'blush');
+ const s=boxes('student',at(4));assert.ok(s.some(b=>b.color==='#f6f3ec'&&b.face),'eye whites');assert.ok(s.some(b=>b.color==='#b8615c'&&b.face),'rose lips');
 });
 
 test('hero detail 4: nod moves the face, not the hands; hands at the rig anchor; blink and mouth shape the face',()=>{
@@ -92,7 +92,7 @@ test('hero detail 4: nod moves the face, not the hands; hands at the rig anchor;
  const robot=catalogHandAnchor('service-robot',at(4),-1);assert.ok(boxes('service-robot',at(4)).some(b=>Math.hypot(...b.mid.map((v,i)=>v-robot[i]))<1e-9));
  const eyeH=bs=>bs.filter(b=>b.color==='#f6f3ec'&&b.face&&!b.lit).map(b=>b.size[1]);
  assert.ok(eyeH(boxes('student',at(4,{blink:.2})))[0]<eyeH(boxes('student',at(4,{blink:1})))[0]);
- assert.equal(boxes('student',at(4,{mouth:.8})).length,boxes('student',at(4,{mouth:0})).length+1,'inner mouth opens');
+ assert.equal(boxes('student',at(4,{mouth:.8})).length,boxes('student',at(4,{mouth:0})).length+2,'mouth opens with a tongue');
  assert.equal(boxes('service-robot',at(4,{mouth:.5})).length,boxes('service-robot',at(4)).length+1,'robot mouth bar');
  // planted feet and walking keep working
  assert.notDeepEqual(bounds(boxes('student',at(4,{walking:.8}))),bounds(boxes('student',at(4))));
